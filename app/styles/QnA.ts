@@ -22,7 +22,8 @@ export const TitleBlock = styled.div`
 
 export const AnswerBlock = styled.div`
     width: 90%;
-    top: 120px;
+    left: 15px;
+    top: 20px;
 
     display: flex;
     flex-direction: row;
@@ -90,4 +91,96 @@ export const SearchInput = styled.input`
 
         color: #49454F;
     }
+`
+
+export const AnswerContainer = styled.div`
+    width: 100%;
+    top: 120px;
+    
+    display: flex;
+    flex-direction: column;
+
+    position: relative;
+`
+
+export const DetailBox = styled.div`
+    position: absolute;
+    left: 290px;
+    top: 265px;
+
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+`
+
+export const DetailName = styled.span`
+    font-family: Pretendard;
+    font-size: 14px;
+    font-weight: 600;
+
+    color: black;
+`
+
+export const DetailIcon = styled.img`
+    width: 18px;
+    height: 18px;
+`
+
+export const QuestionBox = styled.div`
+    width: 100%;
+    height: 70px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    border-top: 1px solid #CAC4D0;
+    padding-right: 10px;
+`
+
+export const Qbox = styled.div`
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 5px;
+
+    position: relative;
+    left: 20px;
+`
+
+export const Q = styled.span`
+    font-family: Pretendard;
+    font-size: 16px;
+    font-weight: 700;
+
+    color: #FF412E;
+
+`
+
+export const QC = styled.span`
+    font-family: Pretendard;
+    font-size: 16px;
+    font-weight: 700;
+
+    color: black;
+`
+
+export const QCbox = styled.div`
+    width: 100%;
+    top: 40px;
+
+    position: relative;
+`
+
+export const InIcon = styled.img`
+    width: 30px;
+    height: 30px;
+
+
+
+    transform: rotate(180deg);
 `

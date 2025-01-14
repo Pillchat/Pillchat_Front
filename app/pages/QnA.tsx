@@ -21,11 +21,79 @@ function QnA(){
                 <S.SearchInput placeholder="원하는 답변을 검색해보세요." />
                 <S.SearchSVG src="search.svg" />
             </S.SearchBarContainer>
-            
-            <S.AnswerBlock>
-                <S.TitleText>답변해주기</S.TitleText>
-                <S.CheckIcon src="check.svg" />
-            </S.AnswerBlock>
+
+            <S.AnswerContainer>
+                <S.AnswerBlock>
+                    <S.TitleText>답변해주기</S.TitleText>
+                    <S.CheckIcon src="check.svg" />
+                </S.AnswerBlock>
+
+                <S.QCbox>
+                    <S.QuestionBox>
+                        <S.Qbox>
+                            <S.Q>Q.</S.Q>
+                            <S.QC>안녕하세요 약제학 질문 드립니다!</S.QC>
+                        </S.Qbox>
+                        <S.InIcon src="ArrowIcon.svg" />
+                    </S.QuestionBox>
+                    
+                    <S.QuestionBox>
+                        <S.Qbox>
+                            <S.Q>Q.</S.Q>
+                            <S.QC>안녕하세요 약제학 질문 드립니다!</S.QC>
+                        </S.Qbox>
+                        <S.InIcon src="ArrowIcon.svg" />
+                    </S.QuestionBox>
+
+                    <S.QuestionBox>
+                        <S.Qbox>
+                            <S.Q>Q.</S.Q>
+                            <S.QC>안녕하세요 약제학 질문 드립니다!</S.QC>
+                        </S.Qbox>
+                        <S.InIcon src="ArrowIcon.svg" />
+                    </S.QuestionBox>
+
+                    <S.QuestionBox>
+                        <S.Qbox>
+                            <S.Q>Q.</S.Q>
+                            <S.QC>안녕하세요 약제학 질문 드립니다!</S.QC>
+                        </S.Qbox>
+                        <S.InIcon src="ArrowIcon.svg" />
+                    </S.QuestionBox>
+
+                    <S.QuestionBox>
+                        <S.Qbox>
+                            <S.Q>Q.</S.Q>
+                            <S.QC>안녕하세요 약제학 질문 드립니다!</S.QC>
+                        </S.Qbox>
+                        <S.InIcon src="ArrowIcon.svg" />
+                    </S.QuestionBox>
+
+                    <S.QuestionBox>
+                        <S.Qbox>
+                            <S.Q>Q.</S.Q>
+                            <S.QC>안녕하세요 약제학 질문 드립니다!</S.QC>
+                        </S.Qbox>
+                        <S.InIcon src="ArrowIcon.svg" />
+                    </S.QuestionBox>
+
+                    <S.QuestionBox>
+                        <S.Qbox>
+                            <S.Q>Q.</S.Q>
+                            <S.QC>안녕하세요 약제학 질문 드립니다!</S.QC>
+                        </S.Qbox>
+                        <S.InIcon src="ArrowIcon.svg" />
+                    </S.QuestionBox>
+                </S.QCbox>
+
+
+            </S.AnswerContainer>
+
+
+            <S.DetailBox>
+                <S.DetailName>더 보기</S.DetailName>
+                <S.DetailIcon src="ArrowIcon.svg" />
+            </S.DetailBox>
         </S.Container>
     );
 }
