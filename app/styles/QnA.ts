@@ -212,3 +212,51 @@ export const EST = styled.div`
     justify-content: space-between;
     align-items: center;
 `
+
+export const Dropdown = styled.div`
+  position: absolute;
+  top: 160px;
+  left: 15px;
+
+  width: 150px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 10px 0;
+
+  background-color: white;
+  border: 1px solid #cac4d0;
+  border-radius: 5px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+
+  z-index: 1000;
+
+  ::-webkit-scrollbar {
+    width: 6px; /* 스크롤바 가로 */
+  }
+  ::-webkit-scrollbar-track {
+    background: #f5f5f5; /* 트랙 배경색 */
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cac4d0; /* 스크롤 핸들 색상 */
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #b0a9b5; /* 스크롤 핸들 호버 색상 */
+  }
+`;
+
+
+export const DropdownItem = styled.div`
+  padding: 10px 15px;
+
+  font-family: Pretendard;
+  font-size: 14px;
+  font-weight: 500;
+  color: #49454f;
+
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+`;
