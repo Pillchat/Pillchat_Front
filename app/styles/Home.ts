@@ -50,15 +50,14 @@ export const BoxTitleLine = styled.div`
     border: 3px solid rgba(255, 65, 46, 0.45);
 `
 
-export const Qta = styled.input`
+export const Qta = styled.span`
     position: relative;
     top: 70px;
 
     font-family: Pretendard;
-
-    &::placeholder {
-        text-align: center;
-    }
+    font-size: 14px;
+    font-weight: 500;
+    color: #BFBFBF;
 `
 
 export const BtnDiv = styled.div`
