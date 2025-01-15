@@ -130,19 +130,20 @@ export const DetailIcon = styled.img`
 
 export const QuestionBox = styled.div`
     width: 100%;
-    height: 70px;
+    height: auto;
 
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: space-between;
     align-items: center;
 
     border-top: 1px solid #CAC4D0;
     padding-right: 10px;
+    padding-top: 15px;
+    padding-bottom: 15px;
 `
 
 export const Qbox = styled.div`
-
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -181,4 +182,33 @@ export const InIcon = styled.img`
     height: 30px;
     
     transform: rotate(180deg);
+`
+
+export const ExpandedContent = styled.div`
+  width: 90%;
+  left: 25px;
+  
+  font-family: Pretendard;
+  font-size: 14px;
+  font-weight: 400;
+  color: #49454f;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+
+  position: relative;
+`;
+
+export const EST = styled.div`
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 `
