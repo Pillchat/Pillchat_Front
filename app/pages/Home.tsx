@@ -1,15 +1,22 @@
 'use client'
 
 import * as S from "../styles/Home"
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import QModal from "../components/QModal";
 
 function Home() {
     const [ModalOpen, setModalOpen] = useState(false);
+    const [isClient, setIsClient] = useState(false);
 
     function ModalClick(e: React.MouseEvent<HTMLDivElement>){
         setModalOpen(true);
     }
+
+    useEffect(() => {
+            setIsClient(true);
+        }, []);
+    
+        if (!isClient) return null;
 
     return (
         <>
