@@ -1,11 +1,20 @@
 'use client'
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import * as S from "../styles/Submit";
 import axios from "axios";
 
 function Submit() {
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+    const [title, setTitle] = useState<string>('');
+    const [content, setContent] = useState<string>('');
+    const [images, setImages] = useState<string[]>([]);
+
+    useEffect(() => {
+        setTitle(localStorage.getItem('title') || '');
+        setContent(localStorage.getItem('content') || '');
+        setImages(JSON.parse(localStorage.getItem('images') || '[]'));
+    }, []);
 
     const handleCheckboxChange = (subject: string) => {
         setSelectedSubjects((prev) =>
@@ -17,10 +26,15 @@ function Submit() {
 
     const handleSubmit = async () => {
         try {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/???`, {
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/questions`, {
+                title,
+                content,
+                images,
                 subjects: selectedSubjects,
             });
             console.log("전송 성공:", response.data);
+
+            localStorage.clear();
         } catch (error) {
             console.error("전송 실패:", error);
         }

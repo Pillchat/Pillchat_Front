@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import * as S from "../styles/QnA";
 import HeaderNon from "../components/Header_Non";
+import axios from "axios";
 
 interface Question {
   id: number;
@@ -10,14 +11,10 @@ interface Question {
   content: string;
 }
 
-const questions: Question[] = [
-  { id: 1, title: "안녕하세요 약제학 질문 드립니다!", content: "약제학에 대한 자세한 질문 내용입니다. 이 내용은 예시로 작성되었습니다." },
-  { id: 2, title: "화학 관련 질문입니다.", content: "화학에 대한 자세한 질문 내용입니다. 이 내용은 예시로 작성되었습니다." },
-];
-
 function QnA() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [questions, setQuestions] = useState<Question[]>([]); // 상태로 질문 목록을 관리합니다.
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const toggleExpand = (id: number) => {
@@ -28,7 +25,6 @@ function QnA() {
     setIsDropdownOpen((prev) => !prev);
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -40,6 +36,24 @@ function QnA() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, []);
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/questions`, {
+          headers: {
+            'ngrok-skip-browser-warning': '69420',
+          },
+        });
+        setQuestions(response.data); // API에서 받은 데이터를 상태로 저장
+        console.log("질문 데이터:", response.data);
+      } catch (error) {
+        console.error("질문 데이터를 가져오는 데 실패했습니다:", error);
+      }
+    };
+
+    fetchQuestions(); // 컴포넌트가 마운트될 때 질문 목록을 가져옵니다.
   }, []);
 
   return (

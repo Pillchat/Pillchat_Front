@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import * as S from "../styles/Qmodal";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 
 interface Modalprops {
@@ -12,8 +11,8 @@ function QModal({ onClose }: Modalprops) {
 
     const [TitleValue, SetTitleValue] = useState('');
     const [ContentValue, SetContentValue] = useState('');
-    const [imageFiles, setImageFiles] = useState<File[]>([]); // 파일 배열 상태
-    const [imageNames, setImageNames] = useState<string[]>([]); // 파일명 배열 상태
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
+    const [imageNames, setImageNames] = useState<string[]>([]);
     const [isClient, setIsClient] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const router = useRouter();
@@ -29,28 +28,17 @@ function QModal({ onClose }: Modalprops) {
         formData.append("title", TitleValue);
         formData.append("content", ContentValue);
 
-        // 파일들을 FormData에 추가
+        // 이미지 파일들을 FormData에 추가
         imageFiles.forEach((file) => {
             formData.append("files", file);
         });
 
-        try {
-            const response = await axios.post(
-                `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/???`,
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                    withCredentials: true,
-                }   
-            );
+        // localStorage에 저장
+        localStorage.setItem('title', TitleValue);
+        localStorage.setItem('content', ContentValue);
+        localStorage.setItem('images', JSON.stringify(imageNames));
 
-            router.push("/submit");
-
-        } catch (error) {
-            console.log("질문 및 이미지 업로드 실패:", error);
-        }
+        router.push("/Submit");
     };
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -71,11 +59,17 @@ function QModal({ onClose }: Modalprops) {
         if (e.target.files) {
             const selectedFiles = Array.from(e.target.files);
             if (selectedFiles.length + imageFiles.length <= 10) {
-                setImageFiles([...imageFiles, ...selectedFiles]);
-                setImageNames([
-                    ...imageNames,
-                    ...selectedFiles.map(file => file.name),
-                ]);
+                selectedFiles.forEach((file) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setImageFiles((prevFiles) => [...prevFiles, file]);
+                        setImageNames((prevNames) => [
+                            ...prevNames,
+                            reader.result as string,
+                        ]);
+                    };
+                    reader.readAsDataURL(file);
+                });
             } else {
                 alert("최대 10장의 이미지만 업로드할 수 있습니다.");
             }
