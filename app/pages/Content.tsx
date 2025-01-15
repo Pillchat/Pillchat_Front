@@ -11,6 +11,7 @@ function Content() {
     const [shareCount, setShareCount] = useState(0); // 공유 수 상태
     const [heartCount, setHeartCount] = useState(0); // 좋아요 수 상태
     const [isHearted, setIsHearted] = useState(false); // 좋아요 활성화 상태
+    const [imageUrl, setImageUrl] = useState("");
 
     useEffect(() => {
         setIsClient(true);
@@ -63,6 +64,15 @@ function Content() {
                     readOnly
                     disabled
                 />
+
+                <S.ImageContainer>
+                    {imageUrl ? (
+                        <S.Image src={imageUrl} alt="Content Image" />
+                    ) : (
+                        <span>사진이 없습니다.</span>
+                    )}
+                </S.ImageContainer>
+
                 <S.SVGbox>
                     <S.SoloSVG onClick={handleShareClick}>
                         <S.SVG src="Share.svg" />

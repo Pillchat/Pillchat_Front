@@ -155,7 +155,7 @@ export const SVGbox = styled.div`
 
     position: relative;
     left: 120px;
-    top: 120px;
+    top: 140px;
 `
 
 export const SoloSVG = styled.div`
@@ -204,11 +204,11 @@ export const Answerbtn = styled.div`
 export const UserAnswerBlock = styled.div`
     width: 100%;
     height: 200px;
-    top: 400px;
+    top: 180px;
 
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 30px;
 
     border-top: 2px solid #CAC4D0;
     position: relative;
@@ -292,3 +292,23 @@ export const AnswerSubmitBtn = styled.div`
     border-radius: 15px;
 
 `
+
+export const ImageContainer = styled.div`
+    width: 90%;
+    height: 200px;
+    top: 120px;
+    background-color: #f0f0f0;  /* 사진이 없는 경우 배경 색상 */
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    position: relative;
+    overflow: hidden;
+`;
+
+export const Image = styled.img`
+    width: 100%;
+    height: 100%;
+    object-fit: cover;  /* 이미지를 비율에 맞게 자르거나 채워서 보여줌 */
+`;
