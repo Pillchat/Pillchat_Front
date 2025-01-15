@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
 export const Container = styled.div`
     width: 100vw;
@@ -56,19 +56,32 @@ export const TurnPage = styled.span`
     color: #726F76;
 `
 
-export const SubmitBox = styled.div`
+export const SubmitBox = styled.div<{ isOpen: boolean }>`
     width: 90%;
-    height: 80px;
     top: 40px;
+    ${({ isOpen }) =>
+        isOpen
+            ? css`
+                  height: auto; /* 드롭다운이 열리면 높이 자동 조정 */
+                  padding-bottom: 20px;
+              `
+            : css`
+                  height: 80px; /* 닫힌 상태의 높이 */
+              `
+    }
 
     display: flex;
     flex-direction: column;
 
     border: 1px solid #d9d9d9;
     border-radius: 15px;
+    background-color: #fff;
 
     position: relative;
-`
+    cursor: pointer;
+    transition: height 0.3s ease, padding-bottom 0.3s ease;
+`;
+
 
 export const SubmitTitleText = styled.span`
     position: relative;
@@ -94,16 +107,20 @@ export const SubmitDesText = styled.span`
     color: #d9d9d9;
 `
 
-export const DetailIcon = styled.img`
+export const DetailIcon = styled.img<{ isOpen: boolean }>`
     position: absolute;
-
     width: 22px;
     height: 22px;
     left: 290px;
     top: 13px;
 
-    transform: rotate(180deg);
-`
+    ${({ isOpen }) =>
+        isOpen &&
+        css`
+            transform: rotate(90deg);
+        `}
+    transition: transform 0.3s ease;
+`;
 
 export const QuestionBox = styled.div`
     width: 100%;
@@ -159,3 +176,51 @@ export const InIcon = styled.img`
     
     transform: rotate(180deg);
 `
+
+export const NonDrop = styled.div`
+    width: 100%;
+    top: 20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    position: relative;
+`
+
+export const DropdownOption = styled.div<{ isSelected: boolean }>`
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 10px;
+    text-align: center;
+
+    font-family: Pretendard;
+    font-size: 14px;
+    font-weight: 600;
+    color: black;
+
+    background-color: ${({ isSelected }) => (isSelected ? "#e0e0e0" : "#f5f5f5")};
+    cursor: pointer;
+
+    &:hover {
+        background-color: #e0e0e0;
+    }
+`;
+
+
+export const Dropdown = styled.div`
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 10px;
+
+    background-color: white;
+    z-index: 1;
+
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
