@@ -130,3 +130,18 @@ export const CameraSVG = styled.img`
     width: 25px;
     height: 25px;
 `
+
+export const FileNames = styled.div`
+    margin-top: 10px;
+    font-family: Pretendard;
+    font-size: 14px;
+    color: #333;
+    width: 80%;
+`;
+
+export const FileName = styled.div`
+    margin: 5px 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+`;
