@@ -7,17 +7,13 @@ interface Modalprops {
     onClose: () => void;
 }
 
-interface ModalContent {
-    title: string;
-    content: string;
-}
-
 function QModal({ onClose }: Modalprops) {
     const modalBackground = useRef<HTMLDivElement>(null);
 
     const [TitleValue, SetTitleValue] = useState('');
     const [ContentValue, SetContentValue] = useState('');
-    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imageFiles, setImageFiles] = useState<File[]>([]); // 파일 배열 상태
+    const [imageNames, setImageNames] = useState<string[]>([]); // 파일명 배열 상태
     const [isClient, setIsClient] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const router = useRouter();
@@ -33,9 +29,10 @@ function QModal({ onClose }: Modalprops) {
         formData.append("title", TitleValue);
         formData.append("content", ContentValue);
 
-        if (imageFile) {
-            formData.append("file", imageFile);
-        }
+        // 파일들을 FormData에 추가
+        imageFiles.forEach((file) => {
+            formData.append("files", file);
+        });
 
         try {
             const response = await axios.post(
@@ -46,7 +43,7 @@ function QModal({ onClose }: Modalprops) {
                         'Content-Type': 'multipart/form-data',
                     },
                     withCredentials: true,
-                }
+                }   
             );
 
             router.push("/submit");
@@ -71,16 +68,23 @@ function QModal({ onClose }: Modalprops) {
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setImageFile(file);
+        if (e.target.files) {
+            const selectedFiles = Array.from(e.target.files);
+            if (selectedFiles.length + imageFiles.length <= 10) {
+                setImageFiles([...imageFiles, ...selectedFiles]);
+                setImageNames([
+                    ...imageNames,
+                    ...selectedFiles.map(file => file.name),
+                ]);
+            } else {
+                alert("최대 10장의 이미지만 업로드할 수 있습니다.");
+            }
         }
     };
 
-    // 클라이언트에서만 렌더링하도록 조건부 처리
     if (!isClient) return null;
 
-    return(
+    return (
         <S.background
             ref={modalBackground}
             onClick={(e) => {
@@ -106,13 +110,21 @@ function QModal({ onClose }: Modalprops) {
                         ref={fileInputRef}
                         onChange={handleImageChange}
                         style={{ display: 'none' }}
+                        multiple
                     />
                     <S.ArrowBtn onClick={handleSubmit}>
                         <S.ArrowSVG src="Arrow.svg" />
                     </S.ArrowBtn>
                 </S.BtnDiv>
-            </S.ModalContainer>
 
+                {imageNames.length > 0 && (
+                    <S.FileNames>
+                        {imageNames.map((name, index) => (
+                            <S.FileName key={index}>{name}</S.FileName>
+                        ))}
+                    </S.FileNames>
+                )}
+            </S.ModalContainer>
         </S.background>
     );
 }
