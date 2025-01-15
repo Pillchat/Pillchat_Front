@@ -93,3 +93,29 @@ export const SignUpBtn = styled.div`
     color: white;
     background-color: #FF412E;
 `
+
+export const ContainSelect = styled.select`
+    width: 100%;
+    height: 35px;
+
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+
+    padding-left: 15px;
+
+    font-family: Pretendard;
+    color: black;
+
+    &:focus {
+        outline: none;
+        border-color: #ff412e;
+    }
+`;
+
+export const IconWrapper = styled.div`
+    position: absolute;
+    margin-top: 40px;
+    margin-left: 290px;
+    cursor: pointer;
+    color: #FF412E;
+`;
