@@ -193,7 +193,7 @@ export const NonDrop = styled.div`
     position: relative;
 `
 
-export const DropdownOption = styled.div<{ isSelected: boolean }>`
+export const DropdownOption = styled.div<{ isSelected?: boolean }>`
     width: 100%;
 
     display: flex;
