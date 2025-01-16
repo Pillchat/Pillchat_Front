@@ -1,9 +1,11 @@
-'use client';
+'use client'
 
 import React, { useState, useEffect, useRef } from "react";
 import * as S from "../styles/QnA";
 import HeaderNon from "../components/Header_Non";
 import axios from "axios";
+import { subjects } from "../subjects";
+import { useRouter } from "next/navigation";
 
 interface Question {
   id: number;
@@ -11,11 +13,18 @@ interface Question {
   content: string;
 }
 
+interface Subject {
+  id: number;
+  name: string;
+}
+
 function QnA() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [questions, setQuestions] = useState<Question[]>([]); // 상태로 질문 목록을 관리합니다.
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
 
   const toggleExpand = (id: number) => {
     setExpandedId((prev) => (prev === id ? null : id));
@@ -24,6 +33,10 @@ function QnA() {
   const toggleDropdown = () => {
     setIsDropdownOpen((prev) => !prev);
   };
+
+  const Thebogi = () => {
+    router.push("/Detail");
+  }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -38,22 +51,47 @@ function QnA() {
     };
   }, []);
 
-  useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/questions`, {
-          headers: {
-            'ngrok-skip-browser-warning': '69420',
-          },
-        });
-        setQuestions(response.data); // API에서 받은 데이터를 상태로 저장
-        console.log("질문 데이터:", response.data);
-      } catch (error) {
-        console.error("질문 데이터를 가져오는 데 실패했습니다:", error);
+  const fetchQuestions = async (subjectId: number | null) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        console.error("Access token is missing");
+        return;
       }
-    };
+      
+      const url = subjectId
+        ? `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/subject/${subjectId}`
+        : `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions`;
+  
+      // URL만 변경하고 axios 요청
+      window.history.pushState({}, "", `/Qna${subjectId ? `?subject=${subjectId}` : ""}`);
+  
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'ngrok-skip-browser-warning': '69420', // 필요 없다면 제거
+        },
+      });
+  
+      setQuestions(response.data);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error:", error.response?.data || error.message);
+      } else {
+        console.error("Unknown error:", error);
+      }
+    }
+  };
+  
 
-    fetchQuestions(); // 컴포넌트가 마운트될 때 질문 목록을 가져옵니다.
+  const handleSubjectSelect = (subject: Subject) => {
+    setSelectedSubject(subject);
+    setIsDropdownOpen(false);
+    fetchQuestions(subject.id);
+  };
+
+  useEffect(() => {
+    fetchQuestions(null);
   }, []);
 
   return (
@@ -67,28 +105,19 @@ function QnA() {
 
       <S.SearchBarContainer>
         <S.MenuSVG src="menu.svg" onClick={toggleDropdown} />
-        <S.SearchInput placeholder="원하는 답변을 검색해보세요." />
+        <S.SearchInput 
+          placeholder={selectedSubject ? `${selectedSubject.name}에 대해서 궁금한 것을 검색해보세요.` : "궁금한 것을 검색해보세요."}
+        />
         <S.SearchSVG src="search.svg" />
       </S.SearchBarContainer>
 
       {isDropdownOpen && (
         <S.Dropdown ref={dropdownRef}>
-          <S.DropdownItem>약사윤리</S.DropdownItem>
-          <S.DropdownItem>생화학</S.DropdownItem>
-          <S.DropdownItem>미생물학</S.DropdownItem>
-          <S.DropdownItem>물리약학</S.DropdownItem>
-          <S.DropdownItem>의약품분석학</S.DropdownItem>
-          <S.DropdownItem>약물치료학</S.DropdownItem>
-          <S.DropdownItem>해부생리학</S.DropdownItem>
-          <S.DropdownItem>약물학</S.DropdownItem>
-          <S.DropdownItem>의약품합성학</S.DropdownItem>
-          <S.DropdownItem>생약학</S.DropdownItem>
-          <S.DropdownItem>약제학</S.DropdownItem>
-          <S.DropdownItem>약물동태학</S.DropdownItem>
-          <S.DropdownItem>병태생리학</S.DropdownItem>
-          <S.DropdownItem>면역학</S.DropdownItem>
-          <S.DropdownItem>보건사회약학</S.DropdownItem>
-          <S.DropdownItem>독성학</S.DropdownItem>
+          {subjects.map((subject) => (
+            <S.DropdownItem key={subject.id} onClick={() => handleSubjectSelect(subject)}>
+              {subject.name}
+            </S.DropdownItem>
+          ))}
         </S.Dropdown>
       )}
 
@@ -128,7 +157,7 @@ function QnA() {
       </S.AnswerContainer>
 
       <S.DetailBox>
-        <S.DetailName>더 보기</S.DetailName>
+        <S.DetailName onClick={Thebogi}>더 보기</S.DetailName>
         <S.DetailIcon src="ArrowIcon.svg" />
       </S.DetailBox>
     </S.Container>

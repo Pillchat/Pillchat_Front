@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "axios": "^1.7.9",
+    "lodash": "^4.17.21",
     "next": "15.1.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -17,6 +18,7 @@
     "styled-components": "^6.1.14"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.14",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

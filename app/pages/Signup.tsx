@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import * as S from "../styles/Signup";
 import HeaderNon from "../components/Header_Non";
 import axios from "axios";
@@ -14,6 +14,8 @@ function Signup() {
     const [idValue, setId] = useState("");
     const [passwordValue, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [isClient, setIsClient] = useState(false);
+
     const router = useRouter();
 
     function handleSchoolChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -35,6 +37,12 @@ function Signup() {
     function handlePasswordChange(e: React.ChangeEvent<HTMLInputElement>) {
         setPassword(e.target.value);
     };
+
+    useEffect(() => {
+                setIsClient(true);
+            }, []);
+        
+    if (!isClient) return null;
 
     const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>) => {
         const dto = {
@@ -86,12 +94,12 @@ function Signup() {
                         required
                     >
                         <option value="">학년을 선택하세요.</option>
-                        <option value="1학년">1학년</option>
-                        <option value="2학년">2학년</option>
-                        <option value="3학년">3학년</option>
-                        <option value="4학년">3학년</option>
-                        <option value="5학년">3학년</option>
-                        <option value="6학년">3학년</option>
+                        <option value="1">1학년</option>
+                        <option value="2">2학년</option>
+                        <option value="3">3학년</option>
+                        <option value="4">4학년</option>
+                        <option value="5">5학년</option>
+                        <option value="6">6학년</option>
                         <option value="휴학">휴학</option>
                         <option value="졸업">졸업</option>
                     </S.ContainSelect>
