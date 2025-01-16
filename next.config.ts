@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  /* config options here */
+const nextConfig = {
+  compiler: {
+    styledComponents: true,
+  },
 };
 
 export default nextConfig;

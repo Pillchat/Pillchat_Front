@@ -167,7 +167,10 @@ export const QC = styled.span`
 
 export const QCbox = styled.div`
     width: 100%;
+    height: 560px;
     top: 60px;
+
+    overflow-y: scroll;
 
     position: relative;
 `

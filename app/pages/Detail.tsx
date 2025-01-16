@@ -1,10 +1,11 @@
-'use client';
+'use client'
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import HeaderNon from "../components/Header_Non";
 import * as S from "../styles/Detail";
+import { subjects } from "../subjects";
 
 interface Question {
   id: number;
@@ -12,33 +13,77 @@ interface Question {
   content: string;
 }
 
-const questions: Question[] = [
-  { id: 1, title: "안녕하세요 약제학 질문 드립니다!", content: "약제학에 대한 자세한 질문 내용입니다. 이 내용은 예시로 작성되었습니다." },
-  { id: 2, title: "화학 관련 질문입니다.", content: "화학에 대한 자세한 질문 내용입니다. 이 내용은 예시로 작성되었습니다." },
-];
+interface Subject {
+  id: number;
+  name: string;
+}
 
 function Detail() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("과목명");
-  const [expandedId, setExpandedId] = useState<number | null>(null); // State for expanded content
+  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const router = useRouter(); // useRouter 훅을 이용하여 페이지 이동
 
   const toggleDropdown = () => {
     setIsDropdownOpen((prev) => !prev);
   };
 
-  const handleOptionClick = (option: any) => {
-    setSelectedOption(option);
-    setIsDropdownOpen(false);
+  const toggleExpand = (id: number) => {
+    setExpandedId((prev) => (prev === id ? null : id));
   };
 
-  const toggleExpand = (id: number) => {
-    setExpandedId((prev) => (prev === id ? null : id)); // Toggle expanded content
+  const backP = () => {
+    router.push("/Qna");
   };
+
+  const fetchQuestions = async (subjectId: number | null) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        console.error("Access token is missing");
+        return;
+      }
+
+      const url = subjectId
+        ? `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/subject/${subjectId}`
+        : `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions`;
+
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "69420",
+        },
+      });
+
+      setQuestions(response.data);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error:", error.response?.data || error.message);
+      } else {
+        console.error("Unknown error:", error);
+      }
+    }
+  };
+
+  const handleSubjectSelect = (subject: Subject) => {
+    setSelectedSubject(subject);
+    setIsDropdownOpen(false);
+    fetchQuestions(subject.id);
+  };
+
+  const handleQuestionClick = (question: Question) => {
+    router.push(`/Content?questionId=${question.id}`); // 선택한 질문의 ID를 URL 파라미터로 넘김
+  };
+
+  useEffect(() => {
+    fetchQuestions(null); // 초기 질문 목록 불러오기
+  }, []);
 
   return (
     <S.Container>
       <HeaderNon />
-      <S.TurnPage>뒤로가기</S.TurnPage>
+      <S.TurnPage onClick={backP}>뒤로가기</S.TurnPage>
 
       <S.AnswerContainer>
         <S.AnswerBlock>
@@ -47,53 +92,55 @@ function Detail() {
         </S.AnswerBlock>
 
         <S.SubmitBox isOpen={isDropdownOpen} onClick={toggleDropdown}>
-          <S.SubmitTitleText>{selectedOption}</S.SubmitTitleText>
+          <S.SubmitTitleText>
+            {selectedSubject ? selectedSubject.name : "과목 선택"}
+          </S.SubmitTitleText>
           <S.SubmitDesText>제일 자신있는 과목을 선택해서 답변해보세요.</S.SubmitDesText>
           <S.DetailIcon src="ArrowIcon.svg" isOpen={isDropdownOpen} />
 
-          <S.NonDrop>
-            {isDropdownOpen && (
-              <S.Dropdown>
-                {["약제학", "해부학", "생리학", "미생물학"].map((subject) => (
-                  <S.DropdownOption
-                    key={subject}
-                    onClick={() => handleOptionClick(subject)}
-                    isSelected={selectedOption === subject}
-                  >
-                    {subject}
-                  </S.DropdownOption>
-                ))}
-              </S.Dropdown>
-            )}
-          </S.NonDrop>
+          {isDropdownOpen && (
+            <S.Dropdown>
+              {subjects.map((subject) => (
+                <S.DropdownOption
+                  key={subject.id}
+                  onClick={() => handleSubjectSelect(subject)}
+                >
+                  {subject.name}
+                </S.DropdownOption>
+              ))}
+            </S.Dropdown>
+          )}
         </S.SubmitBox>
 
         <S.QCbox>
           {questions.map((question) => (
-                      <S.QuestionBox key={question.id}>
-                        <S.EST>
-                          <S.Qbox>
-                            <S.Q>Q.</S.Q>
-                            <S.QC>{question.title}</S.QC>
-                          </S.Qbox>
-                          <S.InIcon
-                            src="ArrowIcon.svg"
-                            onClick={() => toggleExpand(question.id)}
-                            style={{
-                              transform: expandedId === question.id ? "rotate(90deg)" : "rotate(180deg)",
-                              transition: "transform 0.3s ease",
-                            }}
-                          />
-                        </S.EST>
-                        {expandedId === question.id && (
-                          <S.ExpandedContent>
-                            {question.content.length > 100
-                              ? question.content.substring(0, 100) + "..."
-                              : question.content}
-                          </S.ExpandedContent>
-                        )}
-                      </S.QuestionBox>
-                    ))}
+            <S.QuestionBox key={question.id}>
+              <S.EST>
+                <S.Qbox onClick={() => handleQuestionClick(question)}>
+                  <S.Q>Q.</S.Q>
+                  <S.QC>{question.title}</S.QC>
+                </S.Qbox>
+                <S.InIcon
+                  src="ArrowIcon.svg"
+                  onClick={(e) => {
+                    e.stopPropagation(); // 부모 클릭 이벤트 방지
+                    toggleExpand(question.id);
+                  }}
+                  style={{
+                    transform: expandedId === question.id ? "rotate(90deg)" : "rotate(180deg)",
+                    transition: "transform 0.3s ease",
+                  }}
+                />
+              </S.EST>
+              {expandedId === question.id && (
+                <S.ExpandedContent>
+                  {question.content.length > 100
+                    ? question.content.substring(0, 100) + "..."
+                    : question.content}
+                </S.ExpandedContent>
+              )}
+            </S.QuestionBox>
+          ))}
         </S.QCbox>
       </S.AnswerContainer>
     </S.Container>

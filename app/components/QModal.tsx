@@ -15,6 +15,7 @@ function QModal({ onClose }: Modalprops) {
     const [imageNames, setImageNames] = useState<string[]>([]);
     const [isClient, setIsClient] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+
     const router = useRouter();
 
     useEffect(() => {

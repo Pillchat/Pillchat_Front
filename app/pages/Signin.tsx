@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import HeaderNon from "../components/Header_Non";
 import * as S from "../styles/Signin"
 import axios from "axios";
@@ -9,7 +9,11 @@ import { useRouter } from "next/navigation";
 function Signin(){
     const [idValue, setIdValue] = useState("");
     const [passwordValue, setPasswordValue] = useState("");
+    const [token, setToken] = useState<string | null>(null);
+    const [isClient, setIsClient] = useState(false);
     const router = useRouter();
+
+    const JWT_EXPIRY_TIME = 24 * 3600 * 1000;
 
     function handleIdChange(e: React.ChangeEvent<HTMLInputElement>){
         setIdValue(e.target.value);
@@ -18,6 +22,12 @@ function Signin(){
     function handlePasswordChange(e: React.ChangeEvent<HTMLInputElement>){
        setPasswordValue(e.target.value);
     };
+
+    useEffect(() => {
+                    setIsClient(true);
+                }, []);
+            
+    if (!isClient) return null;
 
     const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>) => {
         const dto = {
@@ -29,6 +39,7 @@ function Signin(){
             const response = await axios.post(
                 `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/auth/login`, dto, {
                     headers: {
+                        Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
                     },
                     withCredentials: true,
@@ -36,12 +47,48 @@ function Signin(){
                 
             );
             if (response.status === 200) {
+                const { access, refresh } = response.data;
+
+                localStorage.setItem("access_token", response.data);
+                localStorage.setItem("refresh_token", response.data);
+
+                setTimeout(() => onSilentRefresh(access), JWT_EXPIRY_TIME - 60000);
                 router.push("/");
             }
         } catch (error) {
             console.log("회원가입 실패:", error);
         }
     };
+
+    // 토큰 갱신
+    const onSilentRefresh = async (accessToken: string) => {
+        try {
+          const response = await axios.post(
+            `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/auth/refresh`,
+            { access_token: accessToken },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+              withCredentials: true,
+            }
+          );
+    
+          if (response.status === 200) {
+            // 응답 데이터에서 토큰 추출
+            const { access, refresh } = response.data; // 최상위 키에서 직접 추출
+    
+            // localStorage에 토큰 저장
+            localStorage.setItem("access_token", access);
+            localStorage.setItem("refresh_token", refresh);
+    
+            // 토큰 갱신 예약 호출
+            setTimeout(() => onSilentRefresh(access), JWT_EXPIRY_TIME - 60000);
+          }
+        } catch (error: any) {
+          console.error("Error while refreshing token:", error);
+        }
+      };
 
     return(
         <S.Container>
