@@ -81,8 +81,6 @@ export const SearchInput = styled.input`
     width: 100%;
     height: 100%;
 
-    padding-left: 10px;
-
     font-family: Pretendard;
     font-size: 14px;
     font-weight: 300;

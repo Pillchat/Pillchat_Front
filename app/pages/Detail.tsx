@@ -123,7 +123,7 @@ function Detail() {
                 <S.InIcon
                   src="ArrowIcon.svg"
                   onClick={(e) => {
-                    e.stopPropagation(); // 부모 클릭 이벤트 방지
+                    e.stopPropagation();
                     toggleExpand(question.id);
                   }}
                   style={{

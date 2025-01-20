@@ -77,6 +77,7 @@ export const QC = styled.textarea`
     font-weight: 700;
 
     color: black;
+    background-color: white;
 
     position: relative;
     left: 20px;
@@ -140,6 +141,7 @@ export const Content = styled.textarea`
     font-weight: 700;
 
     color: black;
+    background-color: white;
 
     position: relative;
     top: 94px;
@@ -246,6 +248,29 @@ export const UserAnswerContent = styled.textarea`
     }
 `
 
+export const UserAnswerContentList = styled.textarea`
+    width: 90%;
+    height: 60px;
+    left: 20px;
+    
+    font-family: Pretendard;
+    font-size: 14px;
+    font-weight: 300;
+
+    color: black;
+    border-bottom: 1px solid #e0e0e0;
+
+    position: relative;
+
+    &::placeholder {
+        font-family: Pretendard;
+        font-size: 14px;
+        font-weight: 300;
+
+        color: #757575;
+    }
+`
+
 export const AnswerBB = styled.div`
     width: 100%;
     height: 50px;
@@ -293,6 +318,28 @@ export const AnswerSubmitBtn = styled.div`
 
 `
 
+export const AnswerPlusBtn = styled.div`
+    width: 80px;
+    height: 30px;
+    top: 170px;
+    left: 260px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    font-family: Pretendard;
+    font-size: 14px;
+    font-size: 300;
+
+    background-color: #FF412E;
+    color: white;
+    border-radius: 15px;
+
+    position: absolute;
+`
+
 export const ImageContainer = styled.div`
     width: 90%;
     height: 200px;
@@ -311,4 +358,55 @@ export const Image = styled.img`
     width: 100%;
     height: 100%;
     object-fit: cover;  /* 이미지를 비율에 맞게 자르거나 채워서 보여줌 */
+`;
+
+export const UserAnswerContentGet = styled.textarea`
+    width: 90%;
+    height: 60px;
+    left: 20px;
+    
+    font-family: Pretendard;
+    font-size: 14px;
+    font-weight: 300;
+
+    color: black;
+
+    position: relative;
+
+    &::placeholder {
+        font-family: Pretendard;
+        font-size: 14px;
+        font-weight: 300;
+
+        color: #757575;
+    }
+`
+
+export const UserAnswerContainer = styled.div`
+    width: 100%;
+    height: 200px;
+    top: 180px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+
+    border-top: 2px solid #CAC4D0;
+    position: relative;
+`;
+
+export const UserAnswerBlockComent = styled.h2`
+    font-family: Preatendard;
+    font-size: 20px;
+    font-weight: bolder;
+
+    position: relative;
+    left: 16px;
+    top: 10px;
+`;
+
+export const UserAnswerScroll = styled.div`
+  max-height: 300px; /* 스크롤 영역의 최대 높이 */
+  overflow-y: auto;  /* 수직 스크롤 가능 */
+  margin-top: 10px;
 `;

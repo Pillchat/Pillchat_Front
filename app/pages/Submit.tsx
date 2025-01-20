@@ -36,7 +36,7 @@ function Submit() {
             content: content,
             images: images,
             subjectId: subjectIds,
-            isAnonymous: true,
+            isAnonymous: false,
         };
 
         try {
