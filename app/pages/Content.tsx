@@ -28,6 +28,7 @@ function Content() {
   const [answer, setAnswer] = useState(""); // 답변 내용 상태
   const [file, setFile] = useState<File | null>(null); // 이미지 파일 상태
   const [answers, setAnswers] = useState<any[]>([]); // 여러 답변을 배열로 저장
+  const [view, setView] = useState(0);
 
   const router = useRouter();
   const searchParams = useSearchParams(); // URL의 쿼리 파라미터를 가져옴
@@ -156,6 +157,7 @@ const fetchQuestionDetails = async (id: number) => {
     console.log("질문 정보:", response.data);
     setQuestion(response.data); // 질문 데이터를 상태에 저장
     fetchAnswerStatus(id); // 답변 상태를 확인하는 함수 호출
+    setView(response.data.viewCount);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error("Axios 오류:", error.response?.data || error.message);
@@ -324,6 +326,11 @@ const handleAnswerSubmit = async () => {
         </S.ImageContainer>
 
         <S.SVGbox>
+          <S.SoloSVG>
+            <S.eyes>조회수</S.eyes>
+            <S.count>{view}</S.count>
+          </S.SoloSVG>
+
           <S.SoloSVG onClick={handleShareClick}>
             <S.SVG src="Share.svg" />
             <S.count>{shareCount}</S.count>
