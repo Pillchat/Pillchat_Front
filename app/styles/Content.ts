@@ -156,7 +156,7 @@ export const SVGbox = styled.div`
     gap: 10px;
 
     position: relative;
-    left: 120px;
+    left: 100px;
     top: 140px;
 `
 
@@ -410,3 +410,12 @@ export const UserAnswerScroll = styled.div`
   overflow-y: auto;  /* 수직 스크롤 가능 */
   margin-top: 10px;
 `;
+
+
+export const eyes = styled.span`
+    font-family: Pretendard;
+    font-size: 12px;
+    font-weight: 800;
+
+    color: #726F76;
+`
