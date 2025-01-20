@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React, { useState, useEffect, useRef } from "react";
 import * as S from "../styles/QnA";
@@ -23,6 +23,7 @@ function QnA() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
+  const [searchTerm, setSearchTerm] = useState(""); // 검색어 상태 추가
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
 
@@ -36,7 +37,7 @@ function QnA() {
 
   const Thebogi = () => {
     router.push("/Detail");
-  }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -58,21 +59,20 @@ function QnA() {
         console.error("Access token is missing");
         return;
       }
-      
+
       const url = subjectId
         ? `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/subject/${subjectId}`
         : `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions`;
-  
-      // URL만 변경하고 axios 요청
+
       window.history.pushState({}, "", `/Qna${subjectId ? `?subject=${subjectId}` : ""}`);
-  
+
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'ngrok-skip-browser-warning': '69420', // 필요 없다면 제거
+          "ngrok-skip-browser-warning": "69420",
         },
       });
-  
+
       setQuestions(response.data);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -82,7 +82,6 @@ function QnA() {
       }
     }
   };
-  
 
   const handleSubjectSelect = (subject: Subject) => {
     setSelectedSubject(subject);
@@ -93,6 +92,11 @@ function QnA() {
   useEffect(() => {
     fetchQuestions(null);
   }, []);
+
+  // 검색 필터링 로직
+  const filteredQuestions = questions.filter((question) =>
+    question.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <S.Container>
@@ -105,8 +109,14 @@ function QnA() {
 
       <S.SearchBarContainer>
         <S.MenuSVG src="menu.svg" onClick={toggleDropdown} />
-        <S.SearchInput 
-          placeholder={selectedSubject ? `${selectedSubject.name}에 대해서 궁금한 것을 검색해보세요.` : "궁금한 것을 검색해보세요."}
+        <S.SearchInput
+          placeholder={
+            selectedSubject
+              ? `${selectedSubject.name}에 대해 검색해보세요.`
+              : "궁금한 것을 검색해보세요."
+          }
+          value={searchTerm} // 검색어 상태 연결
+          onChange={(e) => setSearchTerm(e.target.value)} // 검색어 업데이트
         />
         <S.SearchSVG src="search.svg" />
       </S.SearchBarContainer>
@@ -128,7 +138,7 @@ function QnA() {
         </S.AnswerBlock>
 
         <S.QCbox>
-          {questions.map((question) => (
+          {filteredQuestions.map((question) => (
             <S.QuestionBox key={question.id}>
               <S.EST>
                 <S.Qbox>

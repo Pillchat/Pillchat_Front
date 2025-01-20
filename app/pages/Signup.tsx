@@ -14,6 +14,7 @@ function Signup() {
     const [idValue, setId] = useState("");
     const [passwordValue, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [passwordError, setPasswordError] = useState<string | null>(null);
     const [isClient, setIsClient] = useState(false);
 
     const router = useRouter();
@@ -35,16 +36,30 @@ function Signup() {
     }
 
     function handlePasswordChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setPassword(e.target.value);
-    };
+        const value = e.target.value;
+        setPassword(value);
+
+        // 비밀번호 유효성 검사: 최소 1개 특수문자 포함 여부 확인
+        const specialCharRegex = /[!@#$%^&*]/;
+        if (!specialCharRegex.test(value)) {
+            setPasswordError("비밀번호에는 최소 1개의 특수문자(!@#$%^&*)가 포함되어야 합니다.");
+        } else {
+            setPasswordError(null);
+        }
+    }
 
     useEffect(() => {
-                setIsClient(true);
-            }, []);
-        
+        setIsClient(true);
+    }, []);
+
     if (!isClient) return null;
 
     const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>) => {
+        if (passwordError) {
+            alert("비밀번호가 유효하지 않습니다. 수정해주세요.");
+            return;
+        }
+
         const dto = {
             school: schoolValue,
             grade: gradeValue,
@@ -137,7 +152,6 @@ function Signup() {
                         {showPassword ? <AiFillEyeInvisible size={24} /> : <AiFillEye size={24} />}
                     </S.IconWrapper>
                 </S.ContainBox>
-
                 <S.SignUpBtn onClick={handleSubmit}>회원가입</S.SignUpBtn>
             </S.InputBox>
         </S.Container>
