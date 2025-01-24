@@ -159,7 +159,7 @@ export const SVGbox = styled.div`
 
     position: relative;
     left: 100px;
-    top: 140px;
+    top: 110px;
 `
 
 export const SoloSVG = styled.div`
@@ -187,7 +187,7 @@ export const Answerbtn = styled.div`
     width: 80px;
     height: 30px;
     left: 115px;
-    top: 320px;
+    top: 260px;
 
     display: flex;
     justify-content: center;
@@ -208,7 +208,7 @@ export const Answerbtn = styled.div`
 export const UserAnswerBlock = styled.div`
     width: 100%;
     height: 200px;
-    top: 180px;
+    top: 145px;
 
     display: flex;
     flex-direction: column;
@@ -274,14 +274,15 @@ export const UserAnswerContentList = styled.textarea`
 `
 
 export const AnswerBB = styled.div`
+    position: relative;
     width: 100%;
     height: 50px;
+    top: -20px;
 
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    gap: 30px;
 
     padding-left: 10px;
     padding-right: 10px;
@@ -345,7 +346,7 @@ export const AnswerPlusBtn = styled.div`
 export const ImageContainer = styled.div`
     width: 90%;
     height: 200px;
-    top: 120px;
+    top: 100px;
     background-color: #f0f0f0;  /* 사진이 없는 경우 배경 색상 */
 
     display: flex;
@@ -362,32 +363,10 @@ export const Image = styled.img`
     object-fit: cover;  /* 이미지를 비율에 맞게 자르거나 채워서 보여줌 */
 `;
 
-export const UserAnswerContentGet = styled.textarea`
-    width: 90%;
-    height: 60px;
-    left: 20px;
-    
-    font-family: Pretendard;
-    font-size: 14px;
-    font-weight: 300;
-
-    color: black;
-
-    position: relative;
-
-    &::placeholder {
-        font-family: Pretendard;
-        font-size: 14px;
-        font-weight: 300;
-
-        color: #757575;
-    }
-`
-
 export const UserAnswerContainer = styled.div`
     width: 100%;
     height: 200px;
-    top: 180px;
+    top: 100px;
 
     display: flex;
     flex-direction: column;

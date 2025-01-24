@@ -3,6 +3,8 @@
 import * as S from "../styles/Home"
 import React, { useState, useEffect } from "react";
 import QModal from "../components/QModal";
+import HeaderNon from "../components/Header_Non";
+import Footer from "../components/Footer";
 
 function Home() {
     const [ModalOpen, setModalOpen] = useState(false);
@@ -25,6 +27,8 @@ function Home() {
             )}
             
             <S.Container>
+                <HeaderNon />
+
                 <S.Prebox onClick={ModalClick}>
                     <S.BoxTitle>오늘의 질문 처방전</S.BoxTitle>
                     <S.BoxTitleLine />
@@ -39,6 +43,8 @@ function Home() {
                         </S.ArrowBtn>
                     </S.BtnDiv>
                 </S.Prebox>
+
+                <Footer />
             </S.Container>
         </>
     );
