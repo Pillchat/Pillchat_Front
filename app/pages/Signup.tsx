@@ -15,25 +15,36 @@ function Signup() {
     const [passwordValue, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [passwordError, setPasswordError] = useState<string | null>(null);
+    const [idError, setIdError] = useState<string | null>(null); // 아이디 오류 메시지 상태 추가
     const [isClient, setIsClient] = useState(false);
 
     const router = useRouter();
 
-    function handleSchoolChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setSchoolValue(e.target.value);
-    }
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
-    function handleGradeChange(e: React.ChangeEvent<HTMLSelectElement>) {
-        setGrade(e.target.value);
-    }
+    if (!isClient) return null;
 
-    function handleAgeChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setAge(e.target.value);
-    }
+    // 아이디 변경 시 중복 확인
+    const handleIdChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setId(value);
 
-    function handleIdChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setId(e.target.value);
-    }
+        // 아이디 중복 검사
+        try {
+            const response = await axios.get(
+                `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/auth/check-id?username=${value}`
+            );
+            if (response.data.exists) {
+                setIdError("이미 사용 중인 아이디입니다.");
+            } else {
+                setIdError(null); // 아이디가 중복되지 않으면 오류 메시지 제거
+            }
+        } catch (error) {
+            console.log("아이디 중복 확인 실패:", error);
+        }
+    };
 
     function handlePasswordChange(e: React.ChangeEvent<HTMLInputElement>) {
         const value = e.target.value;
@@ -48,18 +59,12 @@ function Signup() {
         }
     }
 
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
-
-    if (!isClient) return null;
-
     const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>) => {
-        if (passwordError) {
-            alert("비밀번호가 유효하지 않습니다. 수정해주세요.");
+        if (passwordError || idError) {
+            alert("회원가입 정보가 유효하지 않습니다. 수정해주세요.");
             return;
         }
-
+    
         const dto = {
             school: schoolValue,
             grade: gradeValue,
@@ -67,7 +72,7 @@ function Signup() {
             username: idValue,
             password: passwordValue,
         };
-
+    
         try {
             const response = await axios.post(
                 `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/auth/register`,
@@ -82,10 +87,16 @@ function Signup() {
             if (response.status === 200) {
                 router.push("/");
             }
-        } catch (error) {
-            console.log("회원가입 실패:", error);
+        } catch (error: any) {
+            // 409 아이디 중복 오류 처리
+            if (error.response && error.response.status === 409) {
+                setIdError("*이미 사용 중인 아이디입니다.");
+            } else {
+                console.log("회원가입 실패:", error);
+            }
         }
     };
+    
 
     return (
         <S.Container>
@@ -96,7 +107,7 @@ function Signup() {
                 <S.ContainBox>
                     <S.ContainTitle>학교</S.ContainTitle>
                     <S.ContainInputSmall
-                        onChange={handleSchoolChange}
+                        onChange={(e) => setSchoolValue(e.target.value)}
                         placeholder="학교를 적어주세요. (ex. XX대학교)"
                         required
                     />
@@ -105,7 +116,7 @@ function Signup() {
                 <S.ContainBox>
                     <S.ContainTitle>학년</S.ContainTitle>
                     <S.ContainSelect
-                        onChange={handleGradeChange}
+                        onChange={(e) => setGrade(e.target.value)}
                         required
                     >
                         <option value="">학년을 선택하세요.</option>
@@ -123,7 +134,7 @@ function Signup() {
                 <S.ContainBox>
                     <S.ContainTitle>연령</S.ContainTitle>
                     <S.ContainInputSmall
-                        onChange={handleAgeChange}
+                        onChange={(e) => setAge(e.target.value)}
                         placeholder="연령을 적어주세요. (ex. 20)"
                         required
                     />
@@ -132,10 +143,11 @@ function Signup() {
                 <S.ContainBox>
                     <S.ContainTitle>아이디</S.ContainTitle>
                     <S.ContainInputSmall
-                        onChange={handleIdChange}
+                        onChange={handleIdChange} // 중복 확인 처리
                         placeholder="아이디를 적어주세요."
                         required
                     />
+                    {idError && <S.ErrorIdMessage>{idError}</S.ErrorIdMessage>} {/* 아이디 중복 오류 메시지 */}
                 </S.ContainBox>
 
                 <S.ContainBox>
@@ -151,7 +163,9 @@ function Signup() {
                     <S.IconWrapper onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <AiFillEyeInvisible size={24} /> : <AiFillEye size={24} />}
                     </S.IconWrapper>
+                    {passwordError && <S.PwErrorMessage>{passwordError}</S.PwErrorMessage>} {/* 비밀번호 오류 메시지 */}
                 </S.ContainBox>
+                
                 <S.SignUpBtn onClick={handleSubmit}>회원가입</S.SignUpBtn>
             </S.InputBox>
         </S.Container>

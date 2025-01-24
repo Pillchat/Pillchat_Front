@@ -56,16 +56,16 @@ function QnA() {
     try {
       const token = localStorage.getItem("access_token");
       if (!token) {
-        console.error("Access token is missing");
+        console.log("Access token is missing");
         return;
       }
 
       const url = subjectId
-        ? `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/subject/${subjectId}`
-        : `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions`;
+        ? `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/subject/${subjectId}/latest`
+        : `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/latest`;
 
-      window.history.pushState({}, "", `/Qna${subjectId ? `?subject=${subjectId}` : ""}`);
-
+      window.history.pushState({}, "", `/${subjectId ? `?subject=${subjectId}` : ""}`);
+      
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${token}`,

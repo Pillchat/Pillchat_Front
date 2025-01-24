@@ -78,8 +78,10 @@ export const ContainInputLarge = styled.textarea`
 `
 
 export const SignUpBtn = styled.div`
+    position: relative;
     width: 90%;
     height: 30px;
+    top: 15px;
 
     display: flex;
     justify-content: center;
@@ -90,8 +92,8 @@ export const SignUpBtn = styled.div`
 
     border: 1px solid #FF412E;
     border-radius: 5px;
-    color: white;
     background-color: #FF412E;
+    color: white;
 `
 
 export const ContainSelect = styled.select`
@@ -119,3 +121,25 @@ export const IconWrapper = styled.div`
     cursor: pointer;
     color: #FF412E;
 `;
+
+export const ErrorIdMessage = styled.div`
+    position: absolute;
+    left: 20px;
+    top: 345px;
+
+    font-family: Pretendard;
+    font-size: 12px;
+
+    color: #F04438;
+`;
+
+export const PwErrorMessage = styled.div`
+    position: absolute;
+    left: 20px;
+    top: 435px;
+
+    font-family: Pretendard;
+    font-size: 12px;
+
+    color: #F04438;
+`

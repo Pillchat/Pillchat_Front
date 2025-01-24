@@ -54,6 +54,8 @@ export const TurnPage = styled.span`
     font-weight: 600;
 
     color: #726F76;
+    
+    z-index: 10;
 `
 
 export const SubmitBox = styled.div<{ isOpen: boolean }>`
