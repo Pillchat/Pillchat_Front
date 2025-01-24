@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import HeaderNon from "../components/Header_Non";
+import Footer from "../components/Footer";
 import * as S from "../styles/Detail";
 import { subjects } from "../subjects";
 
@@ -139,6 +140,8 @@ function Detail() {
           ))}
         </S.QCbox>
       </S.AnswerContainer>
+
+      <Footer />
     </S.Container>
   );
 }

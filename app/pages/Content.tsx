@@ -5,6 +5,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import HeaderNon from "../components/Header_Non";
+import Footer from "../components/Footer";
 import * as S from "../styles/Content";
 
 // 날짜 포맷을 위한 함수 추가
@@ -379,12 +380,15 @@ const handleAnswerSubmit = async () => {
                 onChange={handleFileChange} 
               />
             </S.CameraBtn>
+            
             <S.AnswerSubmitBtn onClick={handleAnswerSubmit}>답변 제출</S.AnswerSubmitBtn>
           </S.AnswerBB>
         </S.UserAnswerBlock>
       ) : (
         <div>답변을 기다리는 중...</div>
       )}
+
+      <Footer />
 
     </S.Container>
   );

@@ -6,6 +6,7 @@ import HeaderNon from "../components/Header_Non";
 import axios from "axios";
 import { subjects } from "../subjects";
 import { useRouter } from "next/navigation";
+import Footer from "../components/Footer";
 
 interface Question {
   id: number;
@@ -170,6 +171,8 @@ function QnA() {
         <S.DetailName onClick={Thebogi}>더 보기</S.DetailName>
         <S.DetailIcon src="ArrowIcon.svg" />
       </S.DetailBox>
+
+      <Footer />
     </S.Container>
   );
 }

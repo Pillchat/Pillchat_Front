@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import * as S from "../styles/Profile";
 import HeaderNon from "../components/Header_Non";
+import Footer from "../components/Footer";
 import axios from "axios";
 
 function Profile() {
@@ -201,6 +201,8 @@ function Profile() {
                     </S.MenuLine>
                 </S.MenuContent>
             </S.MenuDiv>
+
+            <Footer />
         </S.Container>
     );
 }
