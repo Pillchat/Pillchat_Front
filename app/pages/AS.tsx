@@ -15,7 +15,7 @@ function AS(){
                 <S.Check src="check_orange.svg" />
             </S.Pharse>
 
-            <S.Btn onClick={() => router.push("/Qna")}>다른 질문 답변해주기</S.Btn>
+            <S.Btn onClick={() => router.push("/Q")}>다른 질문 답변해주기</S.Btn>
         </S.Container>
     );
 }

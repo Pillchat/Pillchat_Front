@@ -33,10 +33,6 @@ function Detail() {
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
-  const backP = () => {
-    router.push("/Qna");
-  };
-
   const fetchQuestions = async (subjectId: number | null) => {
     try {
       const token = localStorage.getItem("access_token");
@@ -83,7 +79,7 @@ function Detail() {
   return (
     <S.Container>
       <HeaderNon />
-      <S.TurnPage onClick={backP}>뒤로가기</S.TurnPage>
+      <S.TurnPage onClick={() => router.back()}>뒤로가기</S.TurnPage>
 
       <S.AnswerContainer>
         <S.AnswerBlock>

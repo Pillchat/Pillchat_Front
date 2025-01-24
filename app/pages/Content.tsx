@@ -283,10 +283,6 @@ const handleAnswerSubmit = async () => {
 
   if (!isClient) return null;
 
-  const backP = () => {
-    router.push("/Qna");
-  };
-
   return (
     <S.Container>
       <HeaderNon />
@@ -350,45 +346,45 @@ const handleAnswerSubmit = async () => {
       </S.AnswerContainer>
 
       {hasAnswer ? (
-  <S.UserAnswerContainer>
-    <S.UserAnswerBlockComent>나의 답변:</S.UserAnswerBlockComent>
-    <S.UserAnswerScroll>
-      {answers.map((answerItem, index) => (
-        <S.UserAnswerContentList 
-          key={index}
-          value={answerItem.content}
-          readOnly // 이미 제출된 답변 내용 표시, 수정 불가
-        />
-      ))}
-    </S.UserAnswerScroll>
-    {!isAnswering && (
-      <S.AnswerPlusBtn onClick={handleAnswerClick}>답변하기</S.AnswerPlusBtn>
-    )}
-  </S.UserAnswerContainer>
-) : isAnswering ? (
-  <S.UserAnswerBlock>
-    <S.UserAnswerTitle>나의 답변:</S.UserAnswerTitle>
-    <S.UserAnswerContent 
-      value={answer} 
-      onChange={(e) => setAnswer(e.target.value)} 
-      placeholder="클릭해서 답변을 작성해주세요." 
-    />
-    <S.AnswerBB>
-      <S.CameraBtn>
-        <S.CameraSVG src="Camera.svg" />
-        <input 
-          type="file" 
-          accept="image/*" 
-          style={{ display: "none" }} 
-          onChange={handleFileChange} 
-        />
-      </S.CameraBtn>
-      <S.AnswerSubmitBtn onClick={handleAnswerSubmit}>답변 제출</S.AnswerSubmitBtn>
-    </S.AnswerBB>
-  </S.UserAnswerBlock>
-) : (
-  <div>답변을 기다리는 중...</div>
-)}
+        <S.UserAnswerContainer>
+          <S.UserAnswerBlockComent>나의 답변:</S.UserAnswerBlockComent>
+          <S.UserAnswerScroll>
+            {answers.map((answerItem, index) => (
+              <S.UserAnswerContentList 
+                key={index}
+                value={answerItem.content}
+                readOnly // 이미 제출된 답변 내용 표시, 수정 불가
+              />
+            ))}
+          </S.UserAnswerScroll>
+          {!isAnswering && (
+            <S.AnswerPlusBtn onClick={handleAnswerClick}>답변하기</S.AnswerPlusBtn>
+          )}
+        </S.UserAnswerContainer>
+      ) : isAnswering ? (
+        <S.UserAnswerBlock>
+          <S.UserAnswerTitle>나의 답변:</S.UserAnswerTitle>
+          <S.UserAnswerContent 
+            value={answer} 
+            onChange={(e) => setAnswer(e.target.value)} 
+            placeholder="클릭해서 답변을 작성해주세요." 
+          />
+          <S.AnswerBB>
+            <S.CameraBtn>
+              <S.CameraSVG src="Camera.svg" />
+              <input 
+                type="file" 
+                accept="image/*" 
+                style={{ display: "none" }} 
+                onChange={handleFileChange} 
+              />
+            </S.CameraBtn>
+            <S.AnswerSubmitBtn onClick={handleAnswerSubmit}>답변 제출</S.AnswerSubmitBtn>
+          </S.AnswerBB>
+        </S.UserAnswerBlock>
+      ) : (
+        <div>답변을 기다리는 중...</div>
+      )}
 
     </S.Container>
   );

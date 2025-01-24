@@ -7,6 +7,8 @@ export const Container = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    overflow: hidden;
 `
 
 export const TitleBlock = styled.div`
@@ -23,7 +25,7 @@ export const TitleBlock = styled.div`
 export const AnswerBlock = styled.div`
     width: 90%;
     left: 15px;
-    top: 20px;
+    top: 200px;
 
     display: flex;
     flex-direction: row;
@@ -104,7 +106,7 @@ export const AnswerContainer = styled.div`
 export const DetailBox = styled.div`
     position: absolute;
     left: 290px;
-    top: 265px;
+    top: 445px;
 
 
     display: flex;
@@ -171,9 +173,7 @@ export const QC = styled.span`
 export const QCbox = styled.div`
     width: 100%;
     height: 490px;
-    top: 40px;
-
-    overflow-y: scroll;
+    top: 225px;
 
     position: relative;
 `
