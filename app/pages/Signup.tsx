@@ -85,7 +85,7 @@ function Signup() {
                 }
             );
             if (response.status === 200) {
-                router.push("/");
+                router.push("/Signin");
             }
         } catch (error: any) {
             // 409 아이디 중복 오류 처리

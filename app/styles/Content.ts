@@ -8,12 +8,13 @@ export const Container = styled.div`
     flex-direction: column;
     align-items: center;
 
-    overflow: hidden;
+    overflow-y: scroll;
+    padding-bottom: 230px; 
 `
 
 export const AnswerBlock = styled.div`
     width: 90%;
-    top: 20px;
+    top: -20px;
 
     display: flex;
     flex-direction: row;
@@ -47,9 +48,9 @@ export const AnswerContainer = styled.div`
 `
 
 export const TurnPage = styled.span`
-    position: absolute;
-    left: 280px;
-    top: 95px;
+    position: relative;
+    left: 120px;
+    top: 30px;
 
     font-family: Pretendard;
     font-size: 16px;
@@ -61,14 +62,17 @@ export const TurnPage = styled.span`
 `
 
 export const Q = styled.span`
+    position: relative;
+    left: 20px;
+
     font-family: Pretendard;
     font-size: 22px;
     font-weight: 700;
 
     color: #FF412E;
 
-    position: relative;
-    left: 20px;
+    display: inline-block; /* inline-block 설정 */
+    vertical-align: top; /* 상단 정렬 */
 `
 
 export const QC = styled.textarea`
@@ -89,11 +93,10 @@ export const QC = styled.textarea`
 
 export const Qbox = styled.div`
     width: 100%;
-    top: 40px;
 
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+    flex-direction: column;  // 세로로 정렬
+    align-items: flex-start; // 왼쪽 정렬
+    justify-content: flex-start;
     gap: 5px;
 
     position: relative;
@@ -106,9 +109,9 @@ export const Daily = styled.span`
 
     color: #757575;
 
-    position: absolute;
-    left: 20px;
-    top: 150px;
+    position: relative;
+    left: -120px;
+    top: 20px;
 `
 
 export const ST = styled.span`
@@ -118,9 +121,9 @@ export const ST = styled.span`
 
     color: #757575;
 
-    position: absolute;
-    left: 100px;
-    top: 150px;
+    position: relative;
+    left: -20px;
+    top: -11px;
 `
 
 export const User = styled.span`
@@ -130,25 +133,43 @@ export const User = styled.span`
 
     color: #757575;
 
-    position: absolute;
-    left: 230px;
-    top: 150px;
+    position: relative;
+    left: 100px;
+    top: -43px;
+`
+
+export const Udong = styled.div`
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 `
 
 export const Content = styled.textarea`
-    width: 90%;
+  position: relative;
+  width: 90%;
+  top: 94px;
 
-    font-family: Pretendard;
-    font-size: 14px;
-    font-weight: 700;
+  padding-top: 10px;
+  padding-bottom: 10px;
 
-    color: black;
-    background-color: white;
+  font-family: Pretendard;
+  font-size: 14px;
+  font-weight: 700;
 
-    position: relative;
-    top: 94px;
-    resize: none;
-`
+  display: inline-block;
+
+  color: black;
+  background-color: white;
+
+  resize: none;  // 크기 조정 불가능
+
+  border: none;
+  outline: none;
+`;
+
 
 export const SVGbox = styled.div`
     display: flex;
@@ -159,7 +180,7 @@ export const SVGbox = styled.div`
 
     position: relative;
     left: 100px;
-    top: 110px;
+    top: -10px;
 `
 
 export const SoloSVG = styled.div`
@@ -187,7 +208,7 @@ export const Answerbtn = styled.div`
     width: 80px;
     height: 30px;
     left: 115px;
-    top: 260px;
+    top: 20px;
 
     display: flex;
     justify-content: center;
@@ -208,7 +229,7 @@ export const Answerbtn = styled.div`
 export const UserAnswerBlock = styled.div`
     width: 100%;
     height: 200px;
-    top: 145px;
+    top: 115px;
 
     display: flex;
     flex-direction: column;
@@ -324,8 +345,8 @@ export const AnswerSubmitBtn = styled.div`
 export const AnswerPlusBtn = styled.div`
     width: 80px;
     height: 30px;
-    top: 170px;
     left: 260px;
+    bottom: -20px;
 
     display: flex;
     flex-direction: row;
@@ -340,13 +361,14 @@ export const AnswerPlusBtn = styled.div`
     color: white;
     border-radius: 15px;
 
-    position: absolute;
+    position: relative;
+    flex-shrink: 0;
 `
 
-export const ImageContainer = styled.div`
+export const ImageContainer = styled.img`
     width: 90%;
     height: 200px;
-    top: 100px;
+    top: -20px;
     background-color: #f0f0f0;  /* 사진이 없는 경우 배경 색상 */
 
     display: flex;
