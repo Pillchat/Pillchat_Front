@@ -99,6 +99,10 @@ function QnA() {
     question.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleQuestionClick = (question: Question) => {
+    router.push(`/Content?questionId=${question.id}`); // 선택한 질문의 ID를 URL 파라미터로 넘김
+  };
+
   return (
     <S.Container>
       <HeaderNon />
@@ -142,7 +146,7 @@ function QnA() {
           {filteredQuestions.map((question) => (
             <S.QuestionBox key={question.id}>
               <S.EST>
-                <S.Qbox>
+                <S.Qbox onClick={() => handleQuestionClick(question)}>
                   <S.Q>Q.</S.Q>
                   <S.QC>{question.title.length > 17
                     ? question.title.substring(0, 17) + "..."

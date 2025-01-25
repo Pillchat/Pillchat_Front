@@ -109,8 +109,10 @@ export const Daily = styled.span`
 
     color: #757575;
 
+    display: flex;
+
     position: relative;
-    left: -120px;
+    left: -127px;
     top: 20px;
 `
 
@@ -122,7 +124,7 @@ export const ST = styled.span`
     color: #757575;
 
     position: relative;
-    left: -20px;
+    left: -25px;
     top: -11px;
 `
 
