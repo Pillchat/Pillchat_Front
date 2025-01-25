@@ -186,8 +186,8 @@ export const InIcon = styled.img`
 `
 
 export const ExpandedContent = styled.div`
-  width: 90%;
-  left: 25px;
+  width: 80%;
+  left: 5px;
   
   font-family: Pretendard;
   font-size: 14px;

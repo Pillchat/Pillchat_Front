@@ -33,11 +33,7 @@ function Home() {
                     <S.BoxTitle>오늘의 질문 처방전</S.BoxTitle>
                     <S.BoxTitleLine />
                     <S.Qta>클릭해서 궁금한 것 질문하기</S.Qta>
-                    <S.BtnDiv>
-                        <S.CameraBtn>
-                            <S.CameraSVG src="Camera.svg" />
-                        </S.CameraBtn>
-                        
+                    <S.BtnDiv>                        
                         <S.ArrowBtn>
                             <S.ArrowSVG src="Arrow.svg" />
                         </S.ArrowBtn>

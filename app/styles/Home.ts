@@ -10,7 +10,7 @@ export const Container = styled.div`
 `
 
 export const Prebox = styled.div`
-    width: 80%;
+    width: 90%;
     height: 250px;
     top: 50px;
 
@@ -62,12 +62,12 @@ export const Qta = styled.span`
 `
 
 export const BtnDiv = styled.div`
-    width: 100%;
+    width: 15%;
+    left: 120px;
     top: 140px;
 
     display: flex;
     flex-direction: row;
-    gap: 180px;
 
     position: relative;
 `

@@ -92,8 +92,8 @@ function QModal({ onClose }: Modalprops) {
                 <S.BoxTitle>오늘의 질문 처방전</S.BoxTitle>
                 <S.BoxTitleLine />
 
-                <S.TitltArea placeholder="제목" onChange={handleTitleChange} />
-                <S.ContentArea placeholder="내용" onChange={handleContentChange} />
+                <S.TitltArea maxLength={50} placeholder="제목" onChange={handleTitleChange} />
+                <S.ContentArea maxLength={1000} placeholder="내용" onChange={handleContentChange} />
 
                 <S.BtnDiv>
                     <S.CameraBtn onClick={handleImageUploadClick}>

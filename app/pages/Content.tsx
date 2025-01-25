@@ -7,6 +7,8 @@ import { useSearchParams } from "next/navigation";
 import HeaderNon from "../components/Header_Non";
 import Footer from "../components/Footer";
 import * as S from "../styles/Content";
+import QuestionArea from "../components/QuestionArea";
+import ContentArea from "../components/ContentArea";
 
 // 날짜 포맷을 위한 함수 추가
 const formatDate = (dateString: string) => {
@@ -22,7 +24,7 @@ function Content() {
   const [shareCount, setShareCount] = useState(0); // 공유 수 상태
   const [heartCount, setHeartCount] = useState(0); // 좋아요 수 상태
   const [isHearted, setIsHearted] = useState(false); // 좋아요 활성화 상태
-  const [imageUrl, setImageUrl] = useState(""); // 이미지 URL 상태
+  const [imageUrl, setImageUrl] = useState<string>("");
   const [question, setQuestion] = useState<any>(null); // 선택한 질문 정보 상태
   const [hasAnswer, setHasAnswer] = useState(false); // 답변 여부 상태
   const [isAnswering, setIsAnswering] = useState(false); // 답변 작성 상태
@@ -30,6 +32,7 @@ function Content() {
   const [file, setFile] = useState<File | null>(null); // 이미지 파일 상태
   const [answers, setAnswers] = useState<any[]>([]); // 여러 답변을 배열로 저장
   const [view, setView] = useState(0);
+  const [id, setId] = useState<number>(5);  // id 상태 변수 정의
 
   const router = useRouter();
   const searchParams = useSearchParams(); // URL의 쿼리 파라미터를 가져옴
@@ -60,73 +63,71 @@ function Content() {
     setIsHearted((prev) => !prev);
   };
 
-// 좋아요 상태와 좋아요 개수를 관리하는 함수
-const handleHeartClick = async () => {
-  try {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      console.error("Access token이 없습니다.");
-      return;
+  // 좋아요 상태와 좋아요 개수를 관리하는 함수
+  const handleHeartClick = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        console.error("Access token이 없습니다.");
+        return;
+      }
+
+      const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${questionId}/like`;
+
+      if (isHearted) {
+        // 좋아요 취소
+        await axios.delete(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "69420",
+          },
+          withCredentials: true,
+        });
+        setHeartCount((prev) => prev - 1); // 좋아요 개수 감소
+
+      } else {
+        // 좋아요 추가
+        await axios.post(url, {}, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "69420",
+          },
+        });
+        setHeartCount((prev) => prev + 1); // 좋아요 개수 증가
+      }
+
+      // 상태 변경 후 isHearted와 heartCount 업데이트
+      setIsHearted((prev) => !prev);
+    } catch (error) {
+      console.error("Axios 오류:", error);
     }
+  };
 
-    const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${questionId}/like`;
+  // 좋아요 개수 가져오는 함수 (처음에만 한번 호출)
+  const fetchLikeCount = async (id: number) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        console.error("Access token이 없습니다.");
+        return;
+      }
 
-    if (isHearted) {
-      // 좋아요 취소
-      await axios.delete(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "69420",
-        },
-        withCredentials: true,
+      const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${id}/likeCount`;
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}`, "ngrok-skip-browser-warning": "69420", },
       });
-      setHeartCount((prev) => prev - 1); // 좋아요 개수 감소
-
-    } else {
-      // 좋아요 추가
-      await axios.post(url, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "69420",
-        },
-      });
-      setHeartCount((prev) => prev + 1); // 좋아요 개수 증가
+      setHeartCount(response.data); // 서버에서 받아온 좋아요 개수로 상태 업데이트
+    } catch (error) {
+      console.error("좋아요 개수 가져오기 오류:", error);
     }
+  };
 
-    // 상태 변경 후 isHearted와 heartCount 업데이트
-    setIsHearted((prev) => !prev);
-  } catch (error) {
-    console.error("Axios 오류:", error);
-  }
-};
-
-// 좋아요 개수 가져오는 함수 (처음에만 한번 호출)
-const fetchLikeCount = async (id: number) => {
-  try {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      console.error("Access token이 없습니다.");
-      return;
+  // useEffect에서 중복 호출을 피하도록 수정
+  useEffect(() => {
+    if (questionId) {
+      fetchLikeCount(Number(questionId)); // questionId가 있을 때만 좋아요 개수 가져오기
     }
-
-    const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${id}/likeCount`;
-    const response = await axios.get(url, {
-      headers: { Authorization: `Bearer ${token}`, "ngrok-skip-browser-warning": "69420", },
-    });
-    setHeartCount(response.data); // 서버에서 받아온 좋아요 개수로 상태 업데이트
-  } catch (error) {
-    console.error("좋아요 개수 가져오기 오류:", error);
-  }
-};
-
-// useEffect에서 중복 호출을 피하도록 수정
-useEffect(() => {
-  if (questionId) {
-    fetchLikeCount(Number(questionId)); // questionId가 있을 때만 좋아요 개수 가져오기
-  }
-}, [questionId]);
-
-
+  }, [questionId]);
 
   // 컴포넌트 로드 시, 그리고 questionId가 변경될 때마다 fetchLikeCount 호출
   useEffect(() => {
@@ -135,38 +136,61 @@ useEffect(() => {
     }
   }, [questionId]); // questionId가 변경될 때마다 실행
   
-
-
   // 질문 상세 정보를 가져오는 함수
-const fetchQuestionDetails = async (id: number) => {
-  try {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      console.error("Access token이 없습니다.");
-      return;
-    }
+  const fetchQuestionDetails = async (id: number) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        console.error("Access token이 없습니다.");
+        return;
+      }
 
-    const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${id}`;
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "ngrok-skip-browser-warning": "69420",
-      },
-      withCredentials: true,
-    });
+      const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${id}`;
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "69420",
+        },
+        withCredentials: true,
+      });
 
-    console.log("질문 정보:", response.data);
-    setQuestion(response.data); // 질문 데이터를 상태에 저장
-    fetchAnswerStatus(id); // 답변 상태를 확인하는 함수 호출
-    setView(response.data.viewCount);
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error("Axios 오류:", error.response?.data || error.message);
-    } else {
-      console.error("알 수 없는 오류:", error);
+      setQuestion(response.data); // 질문 데이터를 상태에 저장
+      setId(response.data.id); // id를 받아온 데이터에서 설정
+      fetchAnswerStatus(id); // 답변 상태를 확인하는 함수 호출
+      setView(response.data.viewCount);
+
+      // 이미지 URL 처리
+      if (response.data.images && response.data.images.length > 0) {
+        const imagePath = response.data.images[0].url; // 이미지 경로
+        const fullImageUrl = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/images/${imagePath}`;
+
+        // URL이 제대로 출력되는지 확인
+        if (fullImageUrl.startsWith("http") || fullImageUrl.startsWith("https")) {
+          setImageUrl(fullImageUrl);
+        } else {
+          console.error("유효하지 않은 이미지 URL:", fullImageUrl);
+        }
+      } else {
+        console.error("이미지 정보가 없습니다.");
+        setImageUrl(""); // 이미지가 없으면 null로 설정
+      }
+      
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Axios 오류:", error.response?.data || error.message);
+      } else {
+        console.error("알 수 없는 오류:", error);
+      }
     }
-  }
-};
+  };
+
+  // 컴포넌트가 렌더링될 때, id에 맞는 질문 정보를 가져오기
+  useEffect(() => {
+    if (id) {
+      fetchQuestionDetails(id); // id에 맞는 질문 정보 가져오기
+    }
+  }, [id]); // id가 변경될 때마다 실행
+
 
 
   const fetchAnswerStatus = async (id: number) => {
@@ -186,11 +210,10 @@ const fetchQuestionDetails = async (id: number) => {
         withCredentials: true,
       });
 
-      console.log("답변 받기:", response.data);
       setAnswers(response.data); // 여러 개의 답변을 상태에 저장
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log("Axios 오류:", error.response?.data || error.message);
+        console.error("Axios 오류:", error.response?.data || error.message);
       } else {
         console.error("알 수 없는 오류:", error);
       }
@@ -268,7 +291,6 @@ const handleAnswerSubmit = async () => {
   }
 };
 
-
   // 파일 선택 처리 함수
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -285,6 +307,7 @@ const handleAnswerSubmit = async () => {
   if (!isClient) return null;
 
   return (
+    <>
     <S.Container>
       <HeaderNon />
       <S.TurnPage onClick={() => router.back()}>뒤로가기</S.TurnPage>
@@ -295,55 +318,49 @@ const handleAnswerSubmit = async () => {
           <S.CheckIcon src="check.svg" />
         </S.AnswerBlock>
 
-        <S.Qbox>
-          <S.Q>Q.</S.Q>
-          <S.QC
-            value={question?.title || "로딩 중..."} // 질문 제목 표시
-            readOnly
-            disabled
-          />
-        </S.Qbox>
+        <S.Udong>
+          <S.Qbox>
+            <S.Q>Q.</S.Q>
+            <QuestionArea content={question?.title || ""} />
+          </S.Qbox>
         
-        <S.Daily>{question?.createdAt ? formatDate(question.createdAt) : "로딩 중..."}</S.Daily>
-        <S.ST>과목명: {question?.subjectName || "로딩 중..."}</S.ST>
-        <S.User>질문자 : {question?.userName || "로딩 중..."}</S.User>
+          <S.Daily>{question?.createdAt ? formatDate(question.createdAt) : "로딩 중..."}</S.Daily>
+          <S.ST>과목명: {question?.subjectName || "로딩 중..."}</S.ST>
+          <S.User>질문자 : {question?.userName || "로딩 중..."}</S.User>
 
-        <S.Content
-          value={question?.content || "로딩 중..."} // 질문 내용 표시
-          readOnly
-          disabled
-        />
+          <ContentArea content={question?.content || ""}></ContentArea>
 
-        <S.ImageContainer>
           {imageUrl ? (
-            <S.Image src={imageUrl} alt="Content Image" />
+            <S.ImageContainer src={imageUrl} alt="Content Image" />
           ) : (
-            <span>사진이 없습니다.</span>
+            <></>
           )}
-        </S.ImageContainer>
 
-        <S.SVGbox>
-          <S.SoloSVG>
-            <S.eyes>조회수</S.eyes>
-            <S.count>{view}</S.count>
-          </S.SoloSVG>
+          <S.SVGbox>
+            <S.SoloSVG>
+              <S.eyes>조회수</S.eyes>
+              <S.count>{view}</S.count>
+            </S.SoloSVG>
 
-          <S.SoloSVG onClick={handleShareClick}>
-            <S.SVG src="Share.svg" />
-            <S.count>{shareCount}</S.count>
-          </S.SoloSVG>
+            <S.SoloSVG onClick={handleShareClick}>
+              <S.SVG src="Share.svg" />
+              <S.count>{shareCount}</S.count>
+            </S.SoloSVG>
 
-          <S.SoloSVG onClick={handleHeartClick}>
-            <S.SVG src={isHearted ? "Heartplus.svg" : "Heart.svg"} />
-            <S.count>{heartCount}</S.count>
-          </S.SoloSVG>
+            <S.SoloSVG onClick={handleHeartClick}>
+              <S.SVG src={isHearted ? "Heartplus.svg" : "Heart.svg"} />
+              <S.count>{heartCount}</S.count>
+            </S.SoloSVG>
 
-          <S.SVG src="More.svg" />
+            <S.SVG src="More.svg" />
         </S.SVGbox>
 
         {!hasAnswer && !isAnswering && (
           <S.Answerbtn onClick={handleAnswerClick}>답변하기</S.Answerbtn>
         )}
+
+        </S.Udong>
+
       </S.AnswerContainer>
 
       {hasAnswer ? (
@@ -358,6 +375,7 @@ const handleAnswerSubmit = async () => {
               />
             ))}
           </S.UserAnswerScroll>
+
           {!isAnswering && (
             <S.AnswerPlusBtn onClick={handleAnswerClick}>답변하기</S.AnswerPlusBtn>
           )}
@@ -385,12 +403,11 @@ const handleAnswerSubmit = async () => {
           </S.AnswerBB>
         </S.UserAnswerBlock>
       ) : (
-        <div>답변을 기다리는 중...</div>
+        <></>
       )}
-
-      <Footer />
-
     </S.Container>
+  <Footer />
+  </>
   );
 }
 
