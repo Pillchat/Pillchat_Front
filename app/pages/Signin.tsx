@@ -5,6 +5,7 @@
     import * as S from "../styles/Signin";
     import axios from "axios";
     import { useRouter } from "next/navigation";
+    import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 
     function Signin() {
     const [idValue, setIdValue] = useState("");
@@ -12,6 +13,7 @@
     const [token, setToken] = useState<string | null>(null);
     const [isClient, setIsClient] = useState(false);
     const router = useRouter();
+    const [showPassword, setShowPassword] = useState(false);
 
     const JWT_EXPIRY_TIME = 24 * 3600 * 1000; // 24시간
 
@@ -87,7 +89,6 @@
                     }
                 );
         
-                console.log("로그인 응답 데이터:", response.data); // 디버깅용 로그
                 const { access_token, refreshToken } = response.data;
         
                 if (access_token && refreshToken) {
@@ -146,7 +147,11 @@
             <S.ContainInput
                 onChange={handlePasswordChange}
                 placeholder="비밀번호를 적어주세요."
+                type={showPassword ? "text" : "password"}
             />
+            <S.IconWrapper onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? <AiFillEyeInvisible size={24} /> : <AiFillEye size={24} />}
+            </S.IconWrapper>
             </S.ContainBox>
 
             <S.AutoBox>

@@ -134,3 +134,11 @@ export const LogBtn = styled.div`
     color: white;
     background-color: #FF412E;
 `
+
+export const IconWrapper = styled.div`
+    position: absolute;
+    margin-top: 34.5px;
+    margin-left: 260px;
+    cursor: pointer;
+    color: #FF412E;
+`;
