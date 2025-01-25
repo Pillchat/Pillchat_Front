@@ -144,7 +144,9 @@ function QnA() {
               <S.EST>
                 <S.Qbox>
                   <S.Q>Q.</S.Q>
-                  <S.QC>{question.title}</S.QC>
+                  <S.QC>{question.title.length > 17
+                    ? question.title.substring(0, 17) + "..."
+                    : question.title}</S.QC>
                 </S.Qbox>
                 <S.InIcon
                   src="ArrowIcon.svg"

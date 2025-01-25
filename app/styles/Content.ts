@@ -9,7 +9,7 @@ export const Container = styled.div`
     align-items: center;
 
     overflow-y: scroll;
-    padding-bottom: 230px; 
+    padding-bottom: 120px; 
 `
 
 export const AnswerBlock = styled.div`
@@ -229,7 +229,7 @@ export const Answerbtn = styled.div`
 export const UserAnswerBlock = styled.div`
     width: 100%;
     height: 200px;
-    top: 115px;
+    top: 55px;
 
     display: flex;
     flex-direction: column;
@@ -346,7 +346,7 @@ export const AnswerPlusBtn = styled.div`
     width: 80px;
     height: 30px;
     left: 260px;
-    bottom: -20px;
+    bottom: 0px;
 
     display: flex;
     flex-direction: row;
@@ -387,8 +387,8 @@ export const Image = styled.img`
 
 export const UserAnswerContainer = styled.div`
     width: 100%;
-    height: 200px;
-    top: 100px;
+    height: 250px;
+    top: 30px;
 
     display: flex;
     flex-direction: column;
@@ -409,7 +409,7 @@ export const UserAnswerBlockComent = styled.h2`
 `;
 
 export const UserAnswerScroll = styled.div`
-  max-height: 300px; /* 스크롤 영역의 최대 높이 */
+  height: 350px;
   overflow-y: auto;  /* 수직 스크롤 가능 */
   margin-top: 10px;
 `;
