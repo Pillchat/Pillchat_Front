@@ -63,13 +63,14 @@ function QnA() {
       const token = localStorage.getItem("access_token");
       if (!token) {
         console.log("Access token is missing");
+        router.push('/Signup');
         return;
       }
-
+  
       const url = subjectId
         ? `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/subject/${subjectId}/latest`
         : `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/latest`;
-
+  
       window.history.pushState({}, "", `/${subjectId ? `?subject=${subjectId}` : ""}`);
       
       const response = await axios.get(url, {
@@ -78,7 +79,7 @@ function QnA() {
           "ngrok-skip-browser-warning": "69420",
         },
       });
-
+  
       setQuestions(response.data);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -87,7 +88,7 @@ function QnA() {
         console.error("Unknown error:", error);
       }
     }
-  };
+  };  
 
   const handleSubjectSelect = (subject: Subject) => {
     setSelectedSubject(subject);
