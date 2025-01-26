@@ -35,9 +35,9 @@ function QModal({ onClose }: Modalprops) {
         });
 
         // localStorage에 저장
-        localStorage.setItem('title', TitleValue);
-        localStorage.setItem('content', ContentValue);
-        localStorage.setItem('images', JSON.stringify(imageNames));
+        window.localStorage.setItem('title', TitleValue);
+        window.localStorage.setItem('content', ContentValue);
+        window.localStorage.setItem('images', JSON.stringify(imageNames));
 
         router.push("/Submit");
     };
