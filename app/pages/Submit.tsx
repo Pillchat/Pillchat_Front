@@ -8,9 +8,9 @@ import { subjects, subjectMap } from "../subjects";
 
 function Submit() {
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
-    const [title, setTitle] = useState<string>(localStorage.getItem('title') || '');
-    const [content, setContent] = useState<string>(localStorage.getItem('content') || '');
-    const [images, setImages] = useState<string[]>(JSON.parse(localStorage.getItem('images') || '[]'));
+    const [title, setTitle] = useState<string>(window.localStorage.getItem('title') || '');
+    const [content, setContent] = useState<string>(window.localStorage.getItem('content') || '');
+    const [images, setImages] = useState<string[]>(JSON.parse(window.localStorage.getItem('images') || '[]'));
 
     if (typeof window !== 'undefined') {
         // Perform localStorage action
