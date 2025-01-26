@@ -38,6 +38,11 @@ function Content() {
   const searchParams = useSearchParams(); // URL의 쿼리 파라미터를 가져옴
   const questionId = searchParams.get("questionId"); // questionId 파라미터 가져오기
 
+  if (typeof window !== 'undefined') {
+    // Perform localStorage action
+    const item = localStorage.getItem('key');
+  }
+
   useEffect(() => {
     if (questionId) {
       fetchQuestionDetails(Number(questionId));

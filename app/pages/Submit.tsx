@@ -12,6 +12,11 @@ function Submit() {
     const [content, setContent] = useState<string>(localStorage.getItem('content') || '');
     const [images, setImages] = useState<string[]>(JSON.parse(localStorage.getItem('images') || '[]'));
 
+    if (typeof window !== 'undefined') {
+        // Perform localStorage action
+        const item = localStorage.getItem('key');
+    }
+
     const JWT_EXPIRY_TIME = 24 * 3600 * 1000;
     const router = useRouter();
 

@@ -28,6 +28,11 @@ function QnA() {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
 
+  if (typeof window !== 'undefined') {
+    // Perform localStorage action
+    const item = localStorage.getItem('key');
+  }
+
   const toggleExpand = (id: number) => {
     setExpandedId((prev) => (prev === id ? null : id));
   };
