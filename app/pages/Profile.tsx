@@ -7,16 +7,70 @@ import Footer from "../components/Footer";
 import axios from "axios";
 
 function Profile() {
-    const [profileImage, setProfileImage] = useState(""); // 프로필 이미지 URL 상태
-    const [previewImage, setPreviewImage] = useState<string | null>(""); // 미리보기 이미지 상태
+    const [profileImage, setProfileImage] = useState<string>(""); // 실제 프로필 이미지 URL 상태
+    const [previewImage, setPreviewImage] = useState<string | null>(null); // 미리보기 이미지 상태
     const [username, setUsername] = useState(""); // 닉네임 상태
     const [school, setSchool] = useState(""); // 학교 상태
     const [grade, setGrade] = useState(""); // 학년 상태
 
+    const handleImageChange = async (e: any) => {
+        const token = localStorage.getItem("access_token");
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // 미리보기 이미지 설정
+        const previewUrl = URL.createObjectURL(file);
+        setPreviewImage(previewUrl);
+
+        // 이미지 파일을 Base64로 변환
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64Image = reader.result as string;
+
+            // 업로드 요청 보내기
+            const formData = new FormData();
+            formData.append("images", base64Image);
+
+            try {
+                const response = await axios.put(
+                    `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/profile/update`,
+                    formData,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            "Content-Type": "multipart/form-data",
+                            "ngrok-skip-browser-warning": "69420",
+                        },
+                        withCredentials: true,
+                    }
+                );
+
+                // 서버에서 업로드된 이미지 URL을 받아와서 프로필 이미지 설정
+                const newImageUrl = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/images/${response.data.images[0].url}`;
+                setProfileImage(newImageUrl); // 프로필 이미지를 업데이트
+                setPreviewImage(null); // 미리보기 이미지 초기화
+            } catch (error) {
+                console.error("이미지 업로드 중 오류 발생:", error);
+            }
+        };
+
+        reader.readAsDataURL(file); // 파일을 Base64 형식으로 읽음
+    };
+
+    // 프로필 데이터 가져오기
+    useEffect(() => {
+        fetchProfileData();
+        const interval = setInterval(() => {
+            fetchProfileData(); // 1분마다 프로필 이미지 업데이트
+        }, 60000);
+
+        return () => clearInterval(interval); // 컴포넌트가 언마운트 될 때 interval 해제
+    }, []);
+
     // API에서 프로필 데이터 가져오기
     const fetchProfileData = async () => {
         const token = localStorage.getItem("access_token");
-
+    
         try {
             const response = await axios.get(
                 `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/profile/me`,
@@ -29,51 +83,25 @@ function Profile() {
                     withCredentials: true,
                 }
             );
-            const { username, school, grade, profileImage } = response.data;
+
+            const { username, school, grade, profileImage, images } = response.data;
     
-            // 상태 업데이트
             setUsername(username);
             setSchool(school);
             setGrade(grade);
-            setProfileImage(profileImage || "default-profile.png"); // 프로필 이미지가 없으면 기본 이미지 설정
-    
-            console.log(response.data);
+            
+            if (images && images[0]?.url) {
+                setProfileImage(`${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/images/${images[0].url}`);
+            } else {
+                setProfileImage(profileImage || "default-profile.png");
+            }
         } catch (error) {
             console.error("프로필 데이터를 가져오는 중 오류 발생:", error);
         }
-    };
-    
-
-    // 이미지 업로드 핸들러
-    const handleImageChange = async (e: any) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        // 미리보기 이미지 설정
-        const previewUrl = URL.createObjectURL(file);
-        setPreviewImage(previewUrl);
-
-        const formData = new FormData();
-        formData.append("profileImage", file);
-
-        try {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/profile/upload`, formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
-            setProfileImage(response.data.imageUrl); // 새로운 프로필 이미지 설정
-            setPreviewImage(null); // 미리보기 초기화
-        } catch (error) {
-            console.error("이미지 업로드 중 오류 발생:", error);
-        }
-    };
-
-    useEffect(() => {
-        fetchProfileData();
-    }, []);
+    };    
 
     return (
+        <>
         <S.Container>
             <HeaderNon />
 
@@ -83,7 +111,7 @@ function Profile() {
             <S.ProfileWrapper>
                 <label htmlFor="profile-upload">
                     <S.ProfileImg
-                        src={previewImage || profileImage || "default-profile.png"}
+                        src={previewImage || profileImage || "default-profile.png"} // 미리보기 또는 프로필 이미지
                     />
                 </label>
                 <input
@@ -94,12 +122,13 @@ function Profile() {
                     style={{ display: "none" }}
                 />
             </S.ProfileWrapper>
-
-            <S.ID>{username}</S.ID>
-            <S.SN>
-                {`${school}/${grade}학년`}
-            </S.SN>
-
+            
+            <S.Wrapper>
+                <S.ID>{username}</S.ID>
+                <S.SN>
+                    {`${school}/${grade}학년`}
+                </S.SN>
+            </S.Wrapper>
 
             <S.ForthBox>
                 <S.ContentBox>
@@ -204,6 +233,7 @@ function Profile() {
 
             <Footer />
         </S.Container>
+        </>
     );
 }
 
