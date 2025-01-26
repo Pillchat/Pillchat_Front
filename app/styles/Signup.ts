@@ -143,3 +143,15 @@ export const PwErrorMessage = styled.div`
 
     color: #F04438;
 `
+
+export const Gologin = styled.span`
+    position: absolute;
+    top: 750px;
+    left: 250px;
+
+    font-family: Pretendard;
+    font-size: 14px;
+    font-weight: 300;
+
+    color: #FF412E;
+`
