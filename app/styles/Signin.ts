@@ -144,8 +144,8 @@ export const IconWrapper = styled.div`
 `;
 
 export const Gosignup = styled.span`
-    position: absolute;
-    top: 750px;
+    position: fixed;
+    bottom: 40px;
     left: 230px;
 
     font-family: Pretendard;
