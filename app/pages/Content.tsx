@@ -319,7 +319,10 @@ const handleAnswerSubmit = async () => {
           <ContentArea content={question?.content || ""}></ContentArea>
 
           {imageUrl ? (
+            <>
+            <source srcSet="photo.webp" type="image/webp" />
             <S.ImageContainer src={imageUrl} alt="Content Image" />
+            </>
           ) : (
             <></>
           )}
