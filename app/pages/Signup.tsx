@@ -169,6 +169,8 @@ function Signup() {
                 
                 <S.SignUpBtn onClick={handleSubmit}>회원가입</S.SignUpBtn>
             </S.InputBox>
+
+            <S.Gologin onClick={() => router.push("/Signin")}>로그인 하러 가기</S.Gologin>
         </S.Container>
     );
 }

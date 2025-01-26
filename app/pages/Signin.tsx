@@ -164,6 +164,8 @@
 
             <S.LogBtn onClick={handleSubmit}>로그인</S.LogBtn>
         </S.LoginBox>
+
+        <S.Gosignup onClick={() => router.push("/Signup")}>회원가입 하러 가기</S.Gosignup>
         </S.Container>
     );
     }

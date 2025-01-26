@@ -142,3 +142,15 @@ export const IconWrapper = styled.div`
     cursor: pointer;
     color: #FF412E;
 `;
+
+export const Gosignup = styled.span`
+    position: absolute;
+    top: 750px;
+    left: 230px;
+
+    font-family: Pretendard;
+    font-size: 14px;
+    font-weight: 300;
+
+    color: #FF412E;
+`
