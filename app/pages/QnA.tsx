@@ -61,7 +61,7 @@ function QnA() {
   const fetchQuestions = async (subjectId: number | null) => {
     try {
       const token = localStorage.getItem("access_token");
-      if (!token) {
+      if (!token || token === "undefined") {
         console.log("Access token is missing");
         router.push('/Signin');
         return;
