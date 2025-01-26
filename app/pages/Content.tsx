@@ -59,9 +59,6 @@ function Content() {
     localStorage.setItem(`isHearted_${questionId}`, JSON.stringify(isHearted));
   }, [isHearted, questionId]);
 
-  const toggleHeart = () => {
-    setIsHearted((prev) => !prev);
-  };
 
   // 좋아요 상태와 좋아요 개수를 관리하는 함수
   const handleHeartClick = async () => {
@@ -121,20 +118,6 @@ function Content() {
       console.error("좋아요 개수 가져오기 오류:", error);
     }
   };
-
-  // useEffect에서 중복 호출을 피하도록 수정
-  useEffect(() => {
-    if (questionId) {
-      fetchLikeCount(Number(questionId)); // questionId가 있을 때만 좋아요 개수 가져오기
-    }
-  }, [questionId]);
-
-  // 컴포넌트 로드 시, 그리고 questionId가 변경될 때마다 fetchLikeCount 호출
-  useEffect(() => {
-    if (questionId) {
-      fetchLikeCount(Number(questionId)); // questionId를 숫자로 변환하여 전달
-    }
-  }, [questionId]); // questionId가 변경될 때마다 실행
   
   // 질문 상세 정보를 가져오는 함수
   const fetchQuestionDetails = async (id: number) => {
@@ -144,6 +127,8 @@ function Content() {
         console.error("Access token이 없습니다.");
         return;
       }
+
+      console.log("질문 받아오는 횟수")
 
       const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${id}`;
       const response = await axios.get(url, {
@@ -183,15 +168,6 @@ function Content() {
       }
     }
   };
-
-  // 컴포넌트가 렌더링될 때, id에 맞는 질문 정보를 가져오기
-  useEffect(() => {
-    if (id) {
-      fetchQuestionDetails(id); // id에 맞는 질문 정보 가져오기
-    }
-  }, [id]); // id가 변경될 때마다 실행
-
-
 
   const fetchAnswerStatus = async (id: number) => {
     try {

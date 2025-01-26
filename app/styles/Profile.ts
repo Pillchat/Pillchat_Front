@@ -8,7 +8,8 @@ export const Container = styled.div`
     flex-direction: column;
     align-items: center;
 
-    overflow-x: hidden;
+    overflow-y: scroll;
+    padding-bottom: 100px;
 `
 
 
@@ -51,9 +52,14 @@ export const ProfileImg = styled.img`
     cursor: pointer;
 `;
 
+export const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+`;
+
 export const ID = styled.span`
     position: relative;
-    left: -25px;
     top: -40px;
 
     font-family: Pretendard;
@@ -65,8 +71,11 @@ export const ID = styled.span`
 
 export const SN = styled.span`
     position: relative;
-    left: 5px;
     top: -40px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 
     font-family: Pretendard;
     font-size: 18px;
@@ -126,7 +135,7 @@ export const LineW = styled.div`
 export const LineH = styled.div`
     position: absolute;
     width: 30%;
-    left: 115px;
+    left: 113px;
     top: 70px;
 
     border: 1px solid #D9D9D9;
