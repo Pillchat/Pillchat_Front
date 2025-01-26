@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import * as S from "../styles/Submit";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -8,17 +8,22 @@ import { subjects, subjectMap } from "../subjects";
 
 function Submit() {
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
-    const [title, setTitle] = useState<string>(window.localStorage.getItem('title') || '');
-    const [content, setContent] = useState<string>(window.localStorage.getItem('content') || '');
-    const [images, setImages] = useState<string[]>(JSON.parse(window.localStorage.getItem('images') || '[]'));
-
-    if (typeof window !== 'undefined') {
-        // Perform localStorage action
-        const item = localStorage.getItem('key');
-    }
+    const [title, setTitle] = useState<string>('');
+    const [content, setContent] = useState<string>('');
+    const [images, setImages] = useState<string[]>([]);
 
     const JWT_EXPIRY_TIME = 24 * 3600 * 1000;
     const router = useRouter();
+
+    useEffect(() => {
+        // 클라이언트에서만 실행되도록 useEffect로 감싸기
+        setTitle(window.localStorage.getItem('title') || '');
+        setContent(window.localStorage.getItem('content') || '');
+        setImages(JSON.parse(window.localStorage.getItem('images') || '[]'));
+
+        // localStorage에서 데이터를 가져오는 예시
+        const item = window.localStorage.getItem('key');
+    }, []);
 
     const handleCheckboxChange = (subject: string) => {
         setSelectedSubjects((prev) =>
@@ -66,7 +71,7 @@ function Submit() {
             }
 
             router.push("/");
-            
+
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 console.log("전송 실패:", error.response?.data || error.message);
