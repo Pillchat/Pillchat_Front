@@ -53,13 +53,11 @@ function Content() {
   }, [questionId]);
 
   useEffect(() => {
-    if (questionId) {
-      fetchQuestionDetails(Number(questionId));
-      fetchLikeCount(Number(questionId));
-    }
-  }, [questionId]);
-  
-  
+  if (questionId) {
+    fetchQuestionDetails(Number(questionId));
+    fetchLikeCount(Number(questionId));
+  }
+}, [questionId]);  
 
   useEffect(() => {
     setHasAnswer(answers.length > 0); // answers 배열에 따라 hasAnswer 상태 업데이트
