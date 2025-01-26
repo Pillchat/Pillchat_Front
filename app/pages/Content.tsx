@@ -169,6 +169,8 @@ function Content() {
         console.error("이미지 정보가 없습니다.");
         setImageUrl(""); // 이미지가 없으면 null로 설정
       }
+
+      console.log("이미지 url 상태",imageUrl);
       
     } catch (error) {
       if (axios.isAxiosError(error)) {
