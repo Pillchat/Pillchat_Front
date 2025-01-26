@@ -44,15 +44,22 @@ function Content() {
   }
 
   useEffect(() => {
-    if (questionId) {
-      fetchQuestionDetails(Number(questionId));
-      fetchLikeCount(Number(questionId));
+    if (typeof window !== "undefined" && questionId) {
       const storedHearted = localStorage.getItem(`isHearted_${questionId}`);
       if (storedHearted) {
         setIsHearted(JSON.parse(storedHearted));
       }
     }
   }, [questionId]);
+
+  useEffect(() => {
+    if (questionId) {
+      fetchQuestionDetails(Number(questionId));
+      fetchLikeCount(Number(questionId));
+    }
+  }, [questionId]);
+  
+  
 
   useEffect(() => {
     setHasAnswer(answers.length > 0); // answers 배열에 따라 hasAnswer 상태 업데이트
