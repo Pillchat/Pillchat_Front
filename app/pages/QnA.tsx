@@ -63,7 +63,7 @@ function QnA() {
       const token = localStorage.getItem("access_token");
       if (!token) {
         console.log("Access token is missing");
-        router.push('/Signup');
+        router.push('/Signin');
         return;
       }
   
