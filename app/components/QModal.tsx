@@ -39,7 +39,7 @@ function QModal({ onClose }: Modalprops) {
         window.localStorage.setItem('content', ContentValue);
         window.localStorage.setItem('images', JSON.stringify(imageNames));
 
-        router.push("/Submit");
+        router.push("/subject");
     };
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
