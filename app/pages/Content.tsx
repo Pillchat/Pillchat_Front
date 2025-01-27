@@ -336,7 +336,7 @@ const handleAnswerSubmit = async () => {
             </S.SoloSVG>
 
             <S.SoloSVG onClick={handleHeartClick}>
-              <S.SVG src={isHearted ? "Heartplus.svg" : "Heart.svg"} />
+              <S.SVG src={isHearted ? "HeartPlus.svg" : "Heart.svg"} />
               <S.count>{heartCount}</S.count>
             </S.SoloSVG>
 
