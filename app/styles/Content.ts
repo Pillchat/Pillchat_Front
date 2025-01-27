@@ -9,7 +9,12 @@ export const Container = styled.div`
     align-items: center;
 
     overflow-y: scroll;
-    padding-bottom: 120px; 
+    padding-bottom: 120px;
+
+    user-select: none; /* 텍스트 선택 방지 */
+    -webkit-user-select: none; /* 크롬, 사파리 */
+    -ms-user-select: none; /* IE */
+    -moz-user-select: none; /* 파이어폭스 */
 `
 
 export const AnswerBlock = styled.div`
