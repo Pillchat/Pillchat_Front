@@ -7,35 +7,22 @@ import { useRouter } from "next/navigation";
 import { subjects, subjectMap } from "../subjects";
 
 function Submit() {
-    const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+    const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
     const [title, setTitle] = useState<string>('');
     const [content, setContent] = useState<string>('');
     const [images, setImages] = useState<string[]>([]);
-    const [selectedSubject, setSelectedSubject] = useState(null);
 
     const JWT_EXPIRY_TIME = 24 * 3600 * 1000;
     const router = useRouter();
 
     useEffect(() => {
-        // 클라이언트에서만 실행되도록 useEffect로 감싸기
         setTitle(window.localStorage.getItem('title') || '');
         setContent(window.localStorage.getItem('content') || '');
         setImages(JSON.parse(window.localStorage.getItem('images') || '[]'));
-
-        // localStorage에서 데이터를 가져오는 예시
-        const item = window.localStorage.getItem('key');
     }, []);
 
-    const handleSingleCheckboxChange = (subjectName : any) => {
+    const handleSingleCheckboxChange = (subjectName: string) => {
         setSelectedSubject(selectedSubject === subjectName ? null : subjectName);
-    };
-
-    const handleCheckboxChange = (subject: string) => {
-        setSelectedSubjects((prev) =>
-            prev.includes(subject)
-                ? prev.filter((item) => item !== subject)
-                : [...prev, subject]
-        );
     };
 
     const handleSubmit = async () => {
@@ -45,12 +32,17 @@ function Submit() {
             return;
         }
 
-        const subjectIds = selectedSubjects.map((subject) => subjectMap[subject]);
+        if (!selectedSubject) {
+            console.error("과목이 선택되지 않았습니다.");
+            return;
+        }
+
+        const subjectId = subjectMap[selectedSubject];
         const dto = {
             title: title,
             content: content,
             images: images,
-            subjectId: subjectIds,
+            subjectId: [subjectId], // 서버에서 배열 형식으로 받으므로 배열로 전달
             isAnonymous: false,
         };
 
@@ -70,8 +62,7 @@ function Submit() {
             window.localStorage.removeItem('images');
 
             if (response.status === 200) {
-                const { access, refresh } = response.data;
-
+                const { access } = response.data;
                 setTimeout(() => onSilentRefresh(access), JWT_EXPIRY_TIME - 60000);
             }
 
@@ -86,7 +77,6 @@ function Submit() {
         }
     };
 
-    // 토큰 갱신
     const onSilentRefresh = async (accessToken: string) => {
         try {
             const response = await axios.post(
@@ -102,7 +92,6 @@ function Submit() {
 
             if (response.status === 200) {
                 const { access, refresh } = response.data;
-
                 localStorage.setItem("access_token", access);
                 localStorage.setItem("refresh_token", refresh);
 
@@ -117,14 +106,14 @@ function Submit() {
         <S.Container>
             <S.BOx>
                 {subjects.map((subject, index) => (
-                <S.SubmitDIv key={index}>
-                    <S.SubmitTitle>{subject.name}</S.SubmitTitle>
-                    <S.Check
-                        type="checkbox"
-                        checked={selectedSubject === subject.name}
-                        onChange={() => handleSingleCheckboxChange(subject.name)}
-                    />
-                </S.SubmitDIv>
+                    <S.SubmitDIv key={index}>
+                        <S.SubmitTitle>{subject.name}</S.SubmitTitle>
+                        <S.Check
+                            type="checkbox"
+                            checked={selectedSubject === subject.name}
+                            onChange={() => handleSingleCheckboxChange(subject.name)}
+                        />
+                    </S.SubmitDIv>
                 ))}
             </S.BOx>
             <S.Button onClick={handleSubmit}>질문 등록하기</S.Button>

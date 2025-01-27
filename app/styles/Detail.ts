@@ -45,9 +45,9 @@ export const AnswerContainer = styled.div`
 `
 
 export const TurnPage = styled.span`
-    position: fixed;
-    left: 280px;
-    top: 85px;
+    position: relative;
+    left: 130px;
+    top: 68px;
 
     font-family: Pretendard;
     font-size: 16px;
