@@ -424,3 +424,9 @@ export const eyes = styled.span`
 
     color: #726F76;
 `
+
+export const yeahjeong = styled.span`
+    color: black;
+    font-size: 16px;
+    padding: 10px;
+`

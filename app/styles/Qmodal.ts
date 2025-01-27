@@ -147,3 +147,9 @@ export const FileName = styled.div`
     overflow: hidden;
     white-space: nowrap;
 `;
+
+export const yeahjeong = styled.span`
+    color: black;
+    font-size: 16px;
+    padding: 10px;
+`

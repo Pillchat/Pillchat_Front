@@ -96,7 +96,7 @@ function QModal({ onClose }: Modalprops) {
                 <S.ContentArea maxLength={1000} placeholder="내용" onChange={handleContentChange} />
 
                 <S.BtnDiv>
-                    <S.CameraBtn onClick={handleImageUploadClick}>
+                    {/* <S.CameraBtn onClick={handleImageUploadClick}>
                         <S.CameraSVG src="Camera.svg" />
                     </S.CameraBtn>
                     <input
@@ -106,7 +106,8 @@ function QModal({ onClose }: Modalprops) {
                         onChange={handleImageChange}
                         style={{ display: 'none' }}
                         multiple
-                    />
+                    /> */}
+                    <S.yeahjeong>예정</S.yeahjeong>
                     <S.ArrowBtn onClick={handleSubmit}>
                         <S.ArrowSVG src="Arrow.svg" />
                     </S.ArrowBtn>

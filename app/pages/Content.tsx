@@ -377,7 +377,7 @@ const handleAnswerSubmit = async () => {
             placeholder="클릭해서 답변을 작성해주세요." 
           />
           <S.AnswerBB>
-            <S.CameraBtn>
+            {/* <S.CameraBtn>
               <S.CameraSVG src="Camera.svg" />
               <input 
                 type="file" 
@@ -385,7 +385,8 @@ const handleAnswerSubmit = async () => {
                 style={{ display: "none" }} 
                 onChange={handleFileChange} 
               />
-            </S.CameraBtn>
+            </S.CameraBtn> */}
+            <S.yeahjeong>예정</S.yeahjeong>
             
             <S.AnswerSubmitBtn onClick={handleAnswerSubmit}>답변 제출</S.AnswerSubmitBtn>
           </S.AnswerBB>
