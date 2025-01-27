@@ -11,6 +11,7 @@ function Submit() {
     const [title, setTitle] = useState<string>('');
     const [content, setContent] = useState<string>('');
     const [images, setImages] = useState<string[]>([]);
+    const [selectedSubject, setSelectedSubject] = useState(null);
 
     const JWT_EXPIRY_TIME = 24 * 3600 * 1000;
     const router = useRouter();
@@ -24,6 +25,10 @@ function Submit() {
         // localStorage에서 데이터를 가져오는 예시
         const item = window.localStorage.getItem('key');
     }, []);
+
+    const handleSingleCheckboxChange = (subjectName : any) => {
+        setSelectedSubject(selectedSubject === subjectName ? null : subjectName);
+    };
 
     const handleCheckboxChange = (subject: string) => {
         setSelectedSubjects((prev) =>
@@ -112,14 +117,14 @@ function Submit() {
         <S.Container>
             <S.BOx>
                 {subjects.map((subject, index) => (
-                    <S.SubmitDIv key={index}>
-                        <S.SubmitTitle>{subject.name}</S.SubmitTitle>
-                        <S.Check
-                            type="checkbox"
-                            checked={selectedSubjects.includes(subject.name)}
-                            onChange={() => handleCheckboxChange(subject.name)}
-                        />
-                    </S.SubmitDIv>
+                <S.SubmitDIv key={index}>
+                    <S.SubmitTitle>{subject.name}</S.SubmitTitle>
+                    <S.Check
+                        type="checkbox"
+                        checked={selectedSubject === subject.name}
+                        onChange={() => handleSingleCheckboxChange(subject.name)}
+                    />
+                </S.SubmitDIv>
                 ))}
             </S.BOx>
             <S.Button onClick={handleSubmit}>질문 등록하기</S.Button>

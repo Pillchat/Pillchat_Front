@@ -45,7 +45,7 @@ export const AnswerContainer = styled.div`
 `
 
 export const TurnPage = styled.span`
-    position: absolute;
+    position: fixed;
     left: 280px;
     top: 95px;
 
@@ -110,11 +110,11 @@ export const SubmitDesText = styled.span`
 `
 
 export const DetailIcon = styled.img<{ isOpen: boolean }>`
-    position: absolute;
+    position: relative;
     width: 22px;
     height: 22px;
     left: 290px;
-    top: 13px;
+    top: -38px;
 
     ${({ isOpen }) =>
         isOpen &&

@@ -91,7 +91,10 @@ export const BtnDiv = styled.div`
 
     display: flex;
     flex-direction: row;
-    gap: 220px;
+    justify-content: space-between;
+
+    padding-left: 10px;
+    padding-right: 20px;
 
     position: relative;
 `
@@ -104,8 +107,8 @@ export const ArrowBtn = styled.div`
     justify-content: center;
     align-items: center;
 
-    width: 35px;
-    height: 35px;
+    width: 45px;
+    height: 45px;
 `
 
 export const ArrowSVG = styled.img`
@@ -118,9 +121,8 @@ export const CameraBtn = styled.div`
     justify-content: center;
     align-items: center;
 
-    width: 35px;
-    height: 35px;
-    left: 30px;
+    width: 45px;
+    height: 45px;
 
     position: relative;
 

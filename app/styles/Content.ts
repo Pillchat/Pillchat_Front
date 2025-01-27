@@ -14,7 +14,7 @@ export const Container = styled.div`
 
 export const AnswerBlock = styled.div`
     width: 90%;
-    top: -20px;
+    top: -10px;
 
     display: flex;
     flex-direction: row;
@@ -48,9 +48,9 @@ export const AnswerContainer = styled.div`
 `
 
 export const TurnPage = styled.span`
-    position: relative;
-    left: 120px;
-    top: 30px;
+    position: fixed;
+    right: 20px;
+    top: 63px;
 
     font-family: Pretendard;
     font-size: 16px;

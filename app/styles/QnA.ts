@@ -25,13 +25,13 @@ export const TitleBlock = styled.div`
 export const AnswerBlock = styled.div`
     width: 90%;
     left: 15px;
-    top: 140px;
+    bottom: 390px;
 
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 10px;
-    position: relative;
+    position: fixed;
 `
 
 export const TitleText = styled.span`
@@ -95,18 +95,18 @@ export const SearchInput = styled.input`
 
 export const AnswerContainer = styled.div`
     width: 100%;
-    top: 120px;
+    bottom: 40px;
     
     display: flex;
     flex-direction: column;
 
-    position: relative;
+    position: fixed;
 `
 
 export const DetailBox = styled.div`
-    position: absolute;
-    left: 290px;
-    top: 385px;
+    position: fixed;
+    right: 15px;
+    bottom: 392px;
 
 
     display: flex;

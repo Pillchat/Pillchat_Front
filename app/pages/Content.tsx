@@ -319,7 +319,7 @@ const handleAnswerSubmit = async () => {
           <ContentArea content={question?.content || ""}></ContentArea>
 
           {imageUrl ? (
-            <S.ImageContainer src={imageUrl} alt="Content Image" />
+            <S.ImageContainer src={imageUrl} alt="이미지 기능은 서버 문제로 적용이 안됩니다." />
           ) : (
             <></>
           )}
