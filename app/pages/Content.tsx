@@ -319,7 +319,7 @@ const handleAnswerSubmit = async () => {
           <ContentArea content={question?.content || ""}></ContentArea>
 
           {imageUrl ? (
-            <S.ImageContainer src={imageUrl} alt="Content Image" onError={() => setImageUrl("https://endlessly-cuddly-salmon.ngrok-free.app/images/image_f7aff8b0-5769-49e9-a6c0-c12a0d62b606.png")} />
+            <S.ImageContainer src={imageUrl} alt="Content Image" />
           ) : (
             <></>
           )}

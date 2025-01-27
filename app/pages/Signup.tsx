@@ -136,7 +136,7 @@ function Signup() {
                     <S.ContainTitle>연령</S.ContainTitle>
                     <S.ContainInputSmall
                         onChange={(e) => setAge(e.target.value)}
-                        placeholder="연령을 적어주세요. (ex. 20)"
+                        placeholder="만 나이를 적어주세요."
                         required
                     />
                 </S.ContainBox>
