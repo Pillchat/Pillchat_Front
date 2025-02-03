@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Suspense } from "react"; // Suspense import 추가
+import { Suspense } from "react";
+import Script from "next/script"; // ✅ Script import 추가!
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,18 +25,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-    >
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {/* Suspense를 추가하여 children을 감쌈 */}
-        <Suspense>
-          {children}
-        </Suspense>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" /> {/* ✅ head 내부로 이동 */}
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <Script
+          src="https://developers.kakao.com/sdk/js/kakao.min.js"
+          strategy="afterInteractive"
+          onLoad={() => {
+            if (window.Kakao) {
+              window.Kakao.init("NEXT_PUBLIC_KAKAO_SHARE_KEY"); // 🔹 본인의 키 입력!
+              console.log("Kakao SDK initialized:", window.Kakao.isInitialized());
+            }
+          }}
+        />
+        <Suspense>{children}</Suspense>
       </body>
     </html>
   );
