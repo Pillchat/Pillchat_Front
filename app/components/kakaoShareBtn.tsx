@@ -6,7 +6,7 @@ declare global {
   interface Window {
     Kakao: any;
   }
-} 
+}
 
 const KakaoShareButton = () => {
   const [currentUrl, setCurrentUrl] = useState("");
@@ -16,9 +16,10 @@ const KakaoShareButton = () => {
       setCurrentUrl(window.location.href); // 현재 페이지 URL 저장
     }
 
-    if (!window.Kakao) return;
-    if (!window.Kakao.isInitialized()) {
-      window.Kakao.init("NEXT_PUBLIC_KAKAO_SHARE_KEY"); // 🔹 본인의 카카오 키 입력
+    // ✅ Kakao SDK가 존재하고 초기화되지 않았다면 초기화
+    if (window.Kakao && !window.Kakao.isInitialized()) {
+      window.Kakao.init(process.env.NEXT_PUBLIC_KAKAO_SHARE_KEY); // 🔹 환경 변수로 변경
+      console.log("✅ Kakao SDK initialized");
     }
   }, []);
 
