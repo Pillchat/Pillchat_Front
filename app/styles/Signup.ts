@@ -94,6 +94,8 @@ export const SignUpBtn = styled.div`
     border-radius: 5px;
     background-color: #FF412E;
     color: white;
+
+    z-index: 10;
 `
 
 export const ContainSelect = styled.select`
@@ -152,6 +154,8 @@ export const Gologin = styled.span`
     font-family: Pretendard;
     font-size: 14px;
     font-weight: 300;
+
+    z-index: 10;
 
     color: #FF412E;
 `

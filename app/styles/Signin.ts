@@ -133,6 +133,8 @@ export const LogBtn = styled.div`
     border-radius: 5px;
     color: white;
     background-color: #FF412E;
+
+    z-index: 10;
 `
 
 export const IconWrapper = styled.div`
@@ -153,4 +155,6 @@ export const Gosignup = styled.span`
     font-weight: 300;
 
     color: #FF412E;
+
+    z-index: 10px;
 `
