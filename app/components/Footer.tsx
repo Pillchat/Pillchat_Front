@@ -17,10 +17,10 @@ function Footer() {
 
     return (
         <S.FooterCover>
-            <span>예정</span>
+            <BsFillPeopleFill size={25} color={getIconColor("")} onClick={() => router.push("")} />
             <CiChat2 size={25} color={getIconColor("/Q")} onClick={() => router.push("/Q")} />
             <FaHome size={25} color={getIconColor("/")} onClick={() => router.push("/")} />
-            <span>예정</span>
+            <FaBookOpen size={25} color={getIconColor("")} onClick={() => router.push("/")} />
             <CgProfile size={25} color={getIconColor("/Profile")} onClick={() => router.push("/Profile")} />
         </S.FooterCover>
     );
