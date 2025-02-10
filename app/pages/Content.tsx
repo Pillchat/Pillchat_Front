@@ -333,7 +333,7 @@ function Content() {
 
             <S.SoloSVG onClick={handleShareClick}>
               <S.SVG src="Share.svg" />
-              {/* <KakaoShareButton /> */}
+              <KakaoShareButton />
               <S.count>{shareCount}</S.count>
             </S.SoloSVG>
 
