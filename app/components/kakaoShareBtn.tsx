@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import * as S from "../styles/Content";
 
 declare global {
   interface Window {
@@ -35,9 +36,7 @@ const KakaoShareButton = () => {
   };
 
   return (
-    <button onClick={shareKakao} className="p-2 bg-yellow-400 rounded-lg">
-      카카오톡으로 공유하기
-    </button>
+    <S.SVG src="Share.svg" onClick={shareKakao} />
   );
 };
 
