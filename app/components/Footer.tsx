@@ -17,11 +17,11 @@ function Footer() {
 
     return (
         <S.FooterCover>
-            <BsFillPeopleFill size={25} color={getIconColor("")} onClick={() => router.push("")} />
-            <CiChat2 size={25} color={getIconColor("/Q")} onClick={() => router.push("/Q")} />
-            <FaHome size={25} color={getIconColor("/")} onClick={() => router.push("/")} />
-            <FaBookOpen size={25} color={getIconColor("")} onClick={() => router.push("/")} />
-            <CgProfile size={25} color={getIconColor("/Profile")} onClick={() => router.push("/Profile")} />
+            <BsFillPeopleFill size={25} color={getIconColor("/geshipan")} onClick={() => router.push("")} onTouchStart={(e) => e.stopPropagation()} />
+            <CiChat2 size={25} color={getIconColor("/Q")} onClick={() => router.push("/Q")} onTouchStart={(e) => e.stopPropagation()} />
+            <FaHome size={25} color={getIconColor("/")} onClick={() => router.push("/")} onTouchStart={(e) => e.stopPropagation()} />
+            <FaBookOpen size={25} color={getIconColor("/Archaive")} onClick={() => router.push("/")} onTouchStart={(e) => e.stopPropagation()} />
+            <CgProfile size={25} color={getIconColor("/Profile")} onClick={() => router.push("/Profile")} onTouchStart={(e) => e.stopPropagation()} />
         </S.FooterCover>
     );
 }
