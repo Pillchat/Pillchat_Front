@@ -10,6 +10,8 @@ import * as S from "../styles/Content";
 import QuestionArea from "../components/QuestionArea";
 import ContentArea from "../components/ContentArea";
 import KakaoShareButton from "../components/kakaoShareBtn";
+import StepForm from "../components/StepForm";
+import StepRender from "../components/StepRender";
 
 // 날짜 포맷을 위한 함수 추가
 const formatDate = (dateString: string) => {
@@ -332,7 +334,6 @@ function Content() {
             </S.SoloSVG>
 
             <S.SoloSVG onClick={handleShareClick}>
-              <S.SVG src="Share.svg" />
               <KakaoShareButton />
               <S.count>{shareCount}</S.count>
             </S.SoloSVG>
@@ -358,13 +359,13 @@ function Content() {
           <S.UserAnswerBlockComent>나의 답변:</S.UserAnswerBlockComent>
           <S.UserAnswerScroll>
             {answers.map((answerItem, index) => (
-              <S.UserAnswerContentList 
+              <S.UserAnswerContentList
                 key={index}
                 value={answerItem.content}
                 readOnly
               />
             ))}
-          </S.UserAnswerScroll>
+        </S.UserAnswerScroll>
 
           {!isAnswering && (
             <S.AnswerPlusBtn onClick={handleAnswerClick}>답변하기</S.AnswerPlusBtn>
@@ -379,7 +380,7 @@ function Content() {
             placeholder="클릭해서 답변을 작성해주세요." 
           />
           <S.AnswerBB>
-            {/* <S.CameraBtn>
+            <S.CameraBtn>
               <S.CameraSVG src="Camera.svg" />
               <input 
                 type="file" 
@@ -387,8 +388,7 @@ function Content() {
                 style={{ display: "none" }} 
                 onChange={handleFileChange} 
               />
-            </S.CameraBtn> */}
-            <S.yeahjeong>예정</S.yeahjeong>
+            </S.CameraBtn>
             
             <S.AnswerSubmitBtn onClick={handleAnswerSubmit}>답변 제출</S.AnswerSubmitBtn>
           </S.AnswerBB>
