@@ -255,6 +255,33 @@ function Content() {
   };
 
   useEffect(() => {
+    if (!questionId) return;
+
+    const fetchAnswers = async () => {
+      try {
+        const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/answers/question/${questionId}`;
+        const response = await axios.get(url, {
+          headers: {
+            "ngrok-skip-browser-warning": "69420",
+          },
+        });
+
+        const formattedAnswers = response.data.map((answer: any) => ({
+          id: answer.id,
+          content: answer.content,
+          images: answer.images || [],
+        }));
+
+        setAnswers(formattedAnswers);
+      } catch (error) {
+        console.error("답변 가져오기 오류:", error);
+      }
+    };
+
+    fetchAnswers();
+  }, [questionId]);
+
+  useEffect(() => {
     if (typeof window !== "undefined" && questionId) {
       const storedHearted = localStorage.getItem(`isHearted_${questionId}`);
       if (storedHearted) {
@@ -356,7 +383,7 @@ function Content() {
 
       {hasAnswer ? (
         <S.UserAnswerContainer>
-          <S.UserAnswerBlockComent>나의 답변:</S.UserAnswerBlockComent>
+          {/* <S.UserAnswerBlockComent>나의 답변:</S.UserAnswerBlockComent>
           <S.UserAnswerScroll>
             {answers.map((answerItem, index) => (
               <S.UserAnswerContentList
@@ -365,15 +392,15 @@ function Content() {
                 readOnly
               />
             ))}
-        </S.UserAnswerScroll>
-
+        </S.UserAnswerScroll> */}
+          <StepRender answers={answers} />
           {!isAnswering && (
             <S.AnswerPlusBtn onClick={handleAnswerClick}>답변하기</S.AnswerPlusBtn>
           )}
         </S.UserAnswerContainer>
       ) : isAnswering ? (
         <S.UserAnswerBlock>
-          <S.UserAnswerTitle>나의 답변:</S.UserAnswerTitle>
+          {/* <S.UserAnswerTitle>나의 답변:</S.UserAnswerTitle>
           <S.UserAnswerContent 
             value={answer} 
             onChange={(e) => setAnswer(e.target.value)} 
@@ -391,7 +418,8 @@ function Content() {
             </S.CameraBtn>
             
             <S.AnswerSubmitBtn onClick={handleAnswerSubmit}>답변 제출</S.AnswerSubmitBtn>
-          </S.AnswerBB>
+          </S.AnswerBB> */}
+          <StepForm />
         </S.UserAnswerBlock>
       ) : (
         <></>

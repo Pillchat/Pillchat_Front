@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { Camera, Trash } from "lucide-react";
 
 export const Container = styled.div`
-  max-width: 500px;
+  width: 90%;
   margin: 0 auto;
   padding: 16px;
 `;
