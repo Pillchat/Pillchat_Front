@@ -18,7 +18,6 @@ export default function StepForm() {
   const [isAnswering, setIsAnswering] = useState(false); // 답변 작성 상태
   const searchParams = useSearchParams(); // URL의 쿼리 파라미터를 가져옴
   const questionId = searchParams.get("questionId"); // questionId 파라미터 가져오기
-  const [file, setFile] = useState<File | null>(null); // 이미지 파일 상태
 
   const handleAddStep = () => {
     setSteps([...steps, { id: steps.length + 1, text: "" }]);
@@ -26,10 +25,6 @@ export default function StepForm() {
 
   const handleChange = (id: number, value: string) => {
     setSteps(steps.map(step => (step.id === id ? { ...step, text: value } : step)));
-  };
-
-  const handleImageUpload = (id: number, file: File | null) => {
-    setSteps(steps.map(step => (step.id === id ? { ...step, image: file } : step)));
   };
 
   const handleDeleteStep = (id: number) => {
@@ -44,7 +39,7 @@ export default function StepForm() {
         return;
       }
 
-      const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/answers/question/${questionId}/user`;
+      const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/answers/${questionId}`;
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -53,7 +48,7 @@ export default function StepForm() {
         withCredentials: true,
       });
 
-      setAnswers(response.data); // 여러 개의 답변을 상태에 저장
+      setAnswers(response.data);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Axios 오류:", error.response?.data || error.message);
@@ -63,46 +58,53 @@ export default function StepForm() {
     }
   };
 
+  const handleImageUpload = (id: number, file: File | null) => {
+    setSteps(prevSteps =>
+      prevSteps.map(step =>
+        step.id === id ? { ...step, image: file } : step
+      )
+    );
+  };
+
   const handleSubmit = async () => {
     const token = localStorage.getItem("access_token");
     if (!token) {
       console.error("Access token이 없습니다.");
       return;
     }
-  
+
     try {
       const formData = new FormData();
-      const content = steps.map(step => step.text).join("\n\n"); // 스텝을 합쳐 저장
+      const content = steps.map(step => step.text).join("\n\n");
       formData.append("content", content);
       formData.append("questionId", questionId || "");
       formData.append("isAnonymous", JSON.stringify(false));
-  
-      // 이미지가 있는 스텝의 파일 추가
-      steps.forEach((step, index) => {
+
+      // ✅ 기존 `images_1`, `images_2` 방식이 아니라, `images[]` 배열 형식으로 추가
+      steps.forEach((step) => {
         if (step.image) {
-          formData.append(`image_${index + 1}`, step.image);
+          formData.append("images", step.image); // ✅ "images[]" 배열로 전송하여 백엔드와 정상 매칭
         }
       });
-  
+
       const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/answers`;
-  
+
       const response = await axios.post(url, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "69420",
-          "Content-Type": "multipart/form-data",
         },
       });
-  
+
       console.log("답변 제출 성공:", response.data);
-  
-      // 답변 제출 후 상태 초기화
+
+      // 상태 초기화
       fetchAnswerStatus(Number(questionId));
       setHasAnswer(true);
       setIsAnswering(false);
-      setAnswer(""); // 답변 필드 초기화
-      setSteps([{ id: 1, text: "" }]); // 스텝 초기화
-  
+      setAnswer("");
+      setSteps([{ id: 1, text: "" }]);
+
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Axios 오류:", error.response?.data || error.message);
@@ -110,7 +112,7 @@ export default function StepForm() {
         console.error("알 수 없는 오류:", error);
       }
     }
-  };  
+  };
 
   return (
     <S.Container>

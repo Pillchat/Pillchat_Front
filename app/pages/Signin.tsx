@@ -62,12 +62,10 @@
         }
     };
     
-    
-
-        useEffect(() => {
-            autoLogin(); // 페이지 로드 시 자동 로그인 시도
-            setIsClient(true);
-        }, []);
+    useEffect(() => {
+        autoLogin(); // 페이지 로드 시 자동 로그인 시도
+        setIsClient(true);
+    }, []);
 
         if (!isClient) return null;
 
