@@ -353,7 +353,7 @@ export const AnswerPlusBtn = styled.div`
     width: 80px;
     height: 30px;
     left: 260px;
-    bottom: 0px;
+    top: -160px;
 
     display: flex;
     flex-direction: row;

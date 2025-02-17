@@ -383,16 +383,6 @@ function Content() {
 
       {hasAnswer ? (
         <S.UserAnswerContainer>
-          {/* <S.UserAnswerBlockComent>나의 답변:</S.UserAnswerBlockComent>
-          <S.UserAnswerScroll>
-            {answers.map((answerItem, index) => (
-              <S.UserAnswerContentList
-                key={index}
-                value={answerItem.content}
-                readOnly
-              />
-            ))}
-        </S.UserAnswerScroll> */}
           <StepRender answers={answers} />
           {!isAnswering && (
             <S.AnswerPlusBtn onClick={handleAnswerClick}>답변하기</S.AnswerPlusBtn>
@@ -400,25 +390,6 @@ function Content() {
         </S.UserAnswerContainer>
       ) : isAnswering ? (
         <S.UserAnswerBlock>
-          {/* <S.UserAnswerTitle>나의 답변:</S.UserAnswerTitle>
-          <S.UserAnswerContent 
-            value={answer} 
-            onChange={(e) => setAnswer(e.target.value)} 
-            placeholder="클릭해서 답변을 작성해주세요." 
-          />
-          <S.AnswerBB>
-            <S.CameraBtn>
-              <S.CameraSVG src="Camera.svg" />
-              <input 
-                type="file" 
-                accept="image/*" 
-                style={{ display: "none" }} 
-                onChange={handleFileChange} 
-              />
-            </S.CameraBtn>
-            
-            <S.AnswerSubmitBtn onClick={handleAnswerSubmit}>답변 제출</S.AnswerSubmitBtn>
-          </S.AnswerBB> */}
           <StepForm />
         </S.UserAnswerBlock>
       ) : (
