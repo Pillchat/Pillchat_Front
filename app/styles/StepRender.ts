@@ -29,6 +29,8 @@ export const UserAnswerContainer = styled.div`
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #fafafa;
+
+  padding-bottom: 150px;
 `;
 
 export const UserAnswerBlockComent = styled.h2`

@@ -72,7 +72,6 @@ const StepRender: React.FC<StepRenderProps> = ({ answers }) => {
 
   return (
     <S.UserAnswerContainer>
-      <S.UserAnswerBlockComent>나의 답변:</S.UserAnswerBlockComent>
       <S.UserAnswerScroll>
         {answers.length > 0 ? (
           answers.map((answerItem) => {
@@ -94,7 +93,7 @@ const StepRender: React.FC<StepRenderProps> = ({ answers }) => {
             );
           })
         ) : (
-          <p>아직 답변이 없습니다.</p>
+          <></>
         )}
       </S.UserAnswerScroll>
     </S.UserAnswerContainer>

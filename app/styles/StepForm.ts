@@ -5,6 +5,8 @@ export const Container = styled.div`
   width: 90%;
   margin: 0 auto;
   padding: 16px;
+
+  padding-bottom: 100px;
 `;
 
 export const StepBox = styled.div`
