@@ -64,6 +64,7 @@ function Content() {
         headers: {
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "69420",
+          
         },
         withCredentials: true,
       });
@@ -108,7 +109,7 @@ function Content() {
         return;
       }
 
-      const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/answers/question/${questionId}/user`;
+      const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/answers/question/${questionId}`;
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${token}`,

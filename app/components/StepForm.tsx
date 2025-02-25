@@ -44,6 +44,7 @@ export default function StepForm() {
         headers: {
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "69420",
+          "Content-Type": "multipart/form-data"
         },
         withCredentials: true,
       });
@@ -72,39 +73,44 @@ export default function StepForm() {
       console.error("Access token이 없습니다.");
       return;
     }
-
+  
     try {
       const formData = new FormData();
       const content = steps.map(step => step.text).join("\n\n");
       formData.append("content", content);
       formData.append("questionId", questionId || "");
       formData.append("isAnonymous", JSON.stringify(false));
-
-      // ✅ 기존 `images_1`, `images_2` 방식이 아니라, `images[]` 배열 형식으로 추가
-      steps.forEach((step) => {
+  
+      let hasImage = false;
+      steps.forEach(step => {
         if (step.image) {
-          formData.append("images", step.image); // ✅ "images[]" 배열로 전송하여 백엔드와 정상 매칭
+          formData.append("images", step.image);
+        } else {
+          formData.append("images", new Blob());
         }
       });
-
+  
+      if (!hasImage) {
+        formData.append("images", ""); 
+      }
+  
       const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/answers`;
-
       const response = await axios.post(url, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "69420",
         },
       });
-
+  
       console.log("답변 제출 성공:", response.data);
-
+  
       // 상태 초기화
       fetchAnswerStatus(Number(questionId));
       setHasAnswer(true);
       setIsAnswering(false);
       setAnswer("");
       setSteps([{ id: 1, text: "" }]);
-
+  
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Axios 오류:", error.response?.data || error.message);
@@ -113,6 +119,7 @@ export default function StepForm() {
       }
     }
   };
+  
 
   return (
     <S.Container>
