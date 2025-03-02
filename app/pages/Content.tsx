@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { useHeart } from "../components/HeartContext";
 import { useSearchParams } from "next/navigation";
 import HeaderNon from "../components/Header_Non";
 import Footer from "../components/Footer";
@@ -42,6 +43,9 @@ function Content() {
   const router = useRouter();
   const searchParams = useSearchParams(); // URL의 쿼리 파라미터를 가져옴
   const questionId = searchParams.get("questionId"); // questionId 파라미터 가져오기
+  const { heartData, toggleHeart } = useHeart();
+
+  if (!questionId) return null;
 
   if (typeof window !== 'undefined') {
     // CSR, SSR window 오류 해결 함수
@@ -176,65 +180,6 @@ function Content() {
     }
   };
 
-  // 좋아요 상태와 좋아요 개수를 관리하는 함수
-  const handleHeartClick = async () => {
-    try {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        console.error("Access token이 없습니다.");
-        return;
-      }
-
-      const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${questionId}/like`;
-
-      if (isHearted) {
-        // 좋아요 취소
-        await axios.delete(url, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "69420",
-          },
-          withCredentials: true,
-        });
-        setHeartCount((prev) => prev - 1); // 좋아요 개수 감소
-
-      } else {
-        // 좋아요 추가
-        await axios.post(url, {}, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "69420",
-          },
-        });
-        setHeartCount((prev) => prev + 1); // 좋아요 개수 증가
-      }
-
-      // 상태 변경 후 isHearted와 heartCount 업데이트
-      setIsHearted((prev) => !prev);
-    } catch (error) {
-      console.error("Axios 오류:", error);
-    }
-  };
-
-  // 좋아요 개수 가져오는 함수 (처음에만 한번 호출)
-  const fetchLikeCount = async (id: number) => {
-    try {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        console.error("Access token이 없습니다.");
-        return;
-      }
-
-      const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${id}/likeCount`;
-      const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${token}`, "ngrok-skip-browser-warning": "69420", },
-      });
-      setHeartCount(response.data); // 서버에서 받아온 좋아요 개수로 상태 업데이트
-    } catch (error) {
-      console.error("좋아요 개수 가져오기 오류:", error);
-    }
-  };
-
   // 파일 선택 처리 함수
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -294,7 +239,6 @@ function Content() {
   useEffect(() => {
     if (questionId) {
       fetchQuestionDetails(Number(questionId));
-      fetchLikeCount(Number(questionId));
     }
   }, [questionId]);  
 
@@ -366,9 +310,9 @@ function Content() {
               <S.count>{shareCount}</S.count>
             </S.SoloSVG>
 
-            <S.SoloSVG onClick={handleHeartClick}>
-              <S.SVG src={isHearted ? "HeartPlus.svg" : "Heart.svg"} />
-              <S.count>{heartCount}</S.count>
+            <S.SoloSVG>
+              <S.SVG onClick={() => toggleHeart(questionId)} src={heartData[questionId]?.isHearted ? "HeartPlus.svg" : "Heart.svg"} />
+              <S.count>{heartData[questionId]?.count ?? 0}</S.count>
             </S.SoloSVG>
 
             <S.SVG src="More.svg" />
