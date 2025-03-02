@@ -19,7 +19,7 @@ export const RankProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchUserRank = async () => {
       try {
-        const response = await axios.get("/api/user-rank"); // 실제 API 엔드포인트
+        const response = await axios.get("/api/user-rank");
         setRank(response.data.rank);
       } 
       

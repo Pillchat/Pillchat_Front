@@ -4,6 +4,7 @@ import "./globals.css";
 import { Suspense } from "react";
 import Script from "next/script"; // ✅ Script import
 import { RankProvider } from "./components/Rank";
+import { HeartProvider } from "./components/HeartContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +34,9 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Script src="https://developers.kakao.com/sdk/js/kakao.min.js" strategy="afterInteractive" />
         <RankProvider>
-          <Suspense>{children}</Suspense>
+          <HeartProvider>
+            <Suspense>{children}</Suspense>
+          </HeartProvider>
         </RankProvider>
       </body>
     </html>
