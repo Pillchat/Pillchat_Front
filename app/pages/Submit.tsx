@@ -43,7 +43,6 @@ function Submit() {
             content: content,
             images: images,
             subjectId: [subjectId], // 서버에서 배열 형식으로 받으므로 배열로 전달
-            isAnonymous: false,
         };
 
         try {
