@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Suspense } from "react";
-import Script from "next/script"; // ✅ Script import
+import Script from "next/script";
 import { RankProvider } from "./components/Rank";
 import { HeartProvider } from "./components/HeartContext";
+import ClientLayout from "./clientlayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,11 +34,13 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Script src="https://developers.kakao.com/sdk/js/kakao.min.js" strategy="afterInteractive" />
-        <RankProvider>
           <HeartProvider>
-            <Suspense>{children}</Suspense>
-          </HeartProvider>
-        </RankProvider>
+            <Suspense>
+              <ClientLayout>
+                {children}
+              </ClientLayout>
+            </Suspense>
+            </HeartProvider>
       </body>
     </html>
   );

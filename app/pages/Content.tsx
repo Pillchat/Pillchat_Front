@@ -11,6 +11,7 @@ import * as S from "../styles/Content";
 import QuestionArea from "../components/QuestionArea";
 import ContentArea from "../components/ContentArea";
 import KakaoShareButton from "../components/kakaoShareBtn";
+import LikeButton from "../components/LikeButton";
 import StepForm from "../components/StepForm";
 import StepRender from "../components/StepRender";
 
@@ -68,7 +69,6 @@ function Content() {
         headers: {
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "69420",
-          
         },
         withCredentials: true,
       });
@@ -132,63 +132,6 @@ function Content() {
     }
   };
 
-  // 답변 제출 함수
-  const handleAnswerSubmit = async () => {
-    if (!answer) {
-      alert("답변을 작성해주세요.");
-      return;
-  }
-
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      console.error("Access token이 없습니다.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("content", answer);
-    formData.append("questionId", questionId || ""); // questionId 추가
-    formData.append("isAnonymous", JSON.stringify(false)); // 문자열로 변환된 boolean 전달
-    if (file) {
-      formData.append("image", file); // 이미지 파일 첨부
-    }
-
-    try {
-      const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/answers`;
-      const response = await axios.post(url, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "69420",
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      console.log("답변 제출:", response.data);
-
-      // 답변이 제출된 후 해당 질문에 대한 답변을 다시 GET 요청으로 가져오기
-      fetchAnswerStatus(Number(questionId)); // 새로 추가된 답변을 가져옴
-
-      setHasAnswer(true); // 답변이 제출되면 hasAnswer 상태 업데이트
-      setIsAnswering(false); // 답변 작성 완료 후 UI 상태 변경
-      setAnswer(""); // 답변 필드를 초기화하여 새 답변 작성 준비
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Axios 오류:", error.response?.data || error.message);
-      } else {
-        console.error("알 수 없는 오류:", error);
-      }
-    }
-  };
-
-  // 파일 선택 처리 함수
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFile(file);
-      setImageUrl(URL.createObjectURL(file)); // 이미지 미리보기
-    }
-  };
-
   // 공유 클릭 처리 함수
   const handleShareClick = () => {
     setShareCount(shareCount + 1); // 공유 수 증가
@@ -201,42 +144,6 @@ function Content() {
   };
 
   useEffect(() => {
-    if (!questionId) return;
-
-    const fetchAnswers = async () => {
-      try {
-        const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/answers/question/${questionId}`;
-        const response = await axios.get(url, {
-          headers: {
-            "ngrok-skip-browser-warning": "69420",
-          },
-        });
-
-        const formattedAnswers = response.data.map((answer: any) => ({
-          id: answer.id,
-          content: answer.content,
-          images: answer.images || [],
-        }));
-
-        setAnswers(formattedAnswers);
-      } catch (error) {
-        console.error("답변 가져오기 오류:", error);
-      }
-    };
-
-    fetchAnswers();
-  }, [questionId]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && questionId) {
-      const storedHearted = localStorage.getItem(`isHearted_${questionId}`);
-      if (storedHearted) {
-        setIsHearted(JSON.parse(storedHearted));
-      }
-    }
-  }, [questionId]);
-
-  useEffect(() => {
     if (questionId) {
       fetchQuestionDetails(Number(questionId));
     }
@@ -244,24 +151,7 @@ function Content() {
 
   useEffect(() => {
     setHasAnswer(answers.length > 0); // answers 배열에 따라 hasAnswer 상태 업데이트
-  }, [answers]);
-
-  // isHearted 값이 변경될 때마다 로컬 스토리지에 저장
-  useEffect(() => {
-    localStorage.setItem(`isHearted_${questionId}`, JSON.stringify(isHearted));
-  }, [isHearted, questionId]);
-
-  // 주기적으로 답변 상태를 확인하는 useEffect
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      if (questionId) {
-        console.log("새로운 답변을 확인 중...");
-        fetchAnswerStatus(Number(questionId)); // 일정 시간마다 답변 상태 확인
-      }
-    }, 300000); // 5초마다 확인
-
-    return () => clearInterval(intervalId); // 컴포넌트 unmount 시 interval 해제
-  }, [questionId]);
+  }, [answers]);  
 
   useEffect(() => {
     setIsClient(true);
@@ -310,10 +200,7 @@ function Content() {
               <S.count>{shareCount}</S.count>
             </S.SoloSVG>
 
-            <S.SoloSVG>
-              <S.SVG onClick={() => toggleHeart(questionId)} src={heartData[questionId]?.isHearted ? "HeartPlus.svg" : "Heart.svg"} />
-              <S.count>{heartData[questionId]?.count ?? 0}</S.count>
-            </S.SoloSVG>
+            <LikeButton questionId={questionId} />
 
             <S.SVG src="More.svg" />
         </S.SVGbox>

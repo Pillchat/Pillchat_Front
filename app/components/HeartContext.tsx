@@ -21,6 +21,7 @@ export const HeartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  
   const toggleHeart = async (questionId: string) => {
     try {
       const token = localStorage.getItem("access_token");
@@ -56,6 +57,7 @@ export const HeartProvider = ({ children }: { children: ReactNode }) => {
             Authorization: `Bearer ${token}`,
             "ngrok-skip-browser-warning": "69420",
           },
+          withCredentials: true,
         });
       }
 
@@ -65,7 +67,7 @@ export const HeartProvider = ({ children }: { children: ReactNode }) => {
       console.error("Axios 오류:", error);
     }
   };
-
+  
   return (
     <HeartContext.Provider value={{ heartData, toggleHeart }}>
       {children}

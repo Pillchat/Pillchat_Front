@@ -76,3 +76,31 @@ export const ImagePreview = styled.img`
   border-radius: 6px;
   border: 1px solid #ddd;
 `;
+
+export const AcceptButton = styled.button`
+  background-color: #007aff; /* 기본 파란색 */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+
+  &:hover {
+    background-color: #005ecb; /* 어두운 파란색 */
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  /* :white_check_mark: 채택된 답변일 경우 스타일 변경 */
+  ${({ disabled }) =>
+    disabled &&
+    `
+    background-color: #bfbfbf; 
+    cursor: not-allowed;
+  `}
+`;
