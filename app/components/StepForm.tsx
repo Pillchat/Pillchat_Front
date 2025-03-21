@@ -79,7 +79,6 @@ export default function StepForm() {
       const content = steps.map(step => step.text).join("\n\n");
       formData.append("content", content);
       formData.append("questionId", questionId || "");
-      formData.append("isAnonymous", JSON.stringify(false));
   
       let hasImage = false;
       steps.forEach(step => {

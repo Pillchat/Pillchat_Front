@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import * as S from "../styles/Content";
 import { useSearchParams } from "next/navigation";
@@ -10,46 +10,60 @@ interface LikeButtonProps {
 const LikeButton = ({ questionId }: LikeButtonProps) => {
   const [likes, setLikes] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const searchParams = useSearchParams();
   const token = localStorage.getItem("access_token") || "";
 
-  // URL에서 questionId 가져오기
-  questionId = searchParams.get("questionId");
+  // URL에서 questionId 가져오기 (props보다 우선 적용)
+  const urlQuestionId = searchParams.get("questionId");
+  const finalQuestionId = urlQuestionId || questionId;
 
-  useEffect(() => {
-    if (!questionId || !token) return; // questionId나 token이 없으면 요청하지 않음
+  // 좋아요 개수 가져오는 함수
+  const fetchLikeData = useCallback(() => {
+    if (!finalQuestionId || !token) return;
 
     axios
-      .get(`${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${questionId}/like`, {
+      .get(`${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${finalQuestionId}/likeCount`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "69420",
         },
+        withCredentials: true,
       })
       .then((res) => {
-        setLikes(res.data.likes);
-        setIsLiked(res.data.isLiked); // 서버에서 isLiked 값도 받아와 설정
+        setLikes(Number(res.data.likes) || 0); // NaN 방지
+        setIsLiked(!!res.data.liked); // undefined 방지
       })
       .catch((err) => console.error("좋아요 데이터 불러오기 실패", err));
-  }, [questionId, token]);
+  }, [finalQuestionId, token]);
 
-  const handleLike = () => {
-    if (!questionId || !token) return;
+  useEffect(() => {
+    fetchLikeData();
+  }, [fetchLikeData]);
+
+  const handleLike = async () => {
+    if (!finalQuestionId || !token || isLoading) return;
+    setIsLoading(true);
 
     const method = isLiked ? "delete" : "post";
 
-    axios({
-      method,
-      url: `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${questionId}/like`,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "ngrok-skip-browser-warning": "69420",
-      },
-    })
-      .then((res) => {
-        setLikes(res.data.likes); // 좋아요 수 갱신
-        setIsLiked(!isLiked);
-      })
-      .catch((err) => console.error("좋아요 요청 실패", err));
+    try {
+      await axios({
+        method,
+        url: `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${finalQuestionId}/like`,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "69420",
+        },
+        withCredentials: true,
+      });
+
+      fetchLikeData(); // 좋아요 요청 후 최신 데이터 가져오기
+    } catch (err) {
+      console.error("좋아요 요청 실패", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

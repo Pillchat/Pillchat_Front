@@ -1,236 +1,240 @@
 'use client'
 
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { useHeart } from "../components/HeartContext";
-import { useSearchParams } from "next/navigation";
-import HeaderNon from "../components/Header_Non";
-import Footer from "../components/Footer";
-import * as S from "../styles/Content";
-import QuestionArea from "../components/QuestionArea";
-import ContentArea from "../components/ContentArea";
-import KakaoShareButton from "../components/kakaoShareBtn";
-import LikeButton from "../components/LikeButton";
-import StepForm from "../components/StepForm";
-import StepRender from "../components/StepRender";
+  import React, { useState, useEffect, useRef } from "react";
+  import axios from "axios";
+  import { useRouter } from "next/navigation";
+  import { useSearchParams } from "next/navigation";
+  import HeaderNon from "../components/Header_Non";
+  import Footer from "../components/Footer";
+  import * as S from "../styles/Content";
+  import QuestionArea from "../components/QuestionArea";
+  import ContentArea from "../components/ContentArea";
+  import KakaoShareButton from "../components/kakaoShareBtn";
+  import LikeButton from "../components/LikeButton";
+  import StepForm from "../components/StepForm";
+  import StepRender from "../components/StepRender";
 
-// 날짜 포맷을 위한 함수 추가
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}.${month}.${day}`;
-};
+  // 날짜 포맷을 위한 함수 추가
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}.${month}.${day}`;
+  };
 
-function Content() {
-  const [isClient, setIsClient] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string>("");
-
-  const [shareCount, setShareCount] = useState(0); // 공유 수 상태
-  const [heartCount, setHeartCount] = useState(0); // 좋아요 수 상태
-  const [answers, setAnswers] = useState<any[]>([]); // 여러 답변을 배열로 저장
-  const [view, setView] = useState(0); // 조회수 상태 변수 정의
-  const [id, setId] = useState<number>(5);  // id 상태 변수 정의
-
-  const [isHearted, setIsHearted] = useState(false); // 좋아요 활성화 상태
-  const [question, setQuestion] = useState<any>(null); // 선택한 질문 정보 상태
-  const [hasAnswer, setHasAnswer] = useState(false); // 답변 여부 상태
-  const [isAnswering, setIsAnswering] = useState(false); // 답변 작성 상태
-  const [answer, setAnswer] = useState(""); // 답변 내용 상태
-  const [file, setFile] = useState<File | null>(null); // 이미지 파일 상태
-
-  const router = useRouter();
-  const searchParams = useSearchParams(); // URL의 쿼리 파라미터를 가져옴
-  const questionId = searchParams.get("questionId"); // questionId 파라미터 가져오기
-  const { heartData, toggleHeart } = useHeart();
-
-  if (!questionId) return null;
-
-  if (typeof window !== 'undefined') {
-    // CSR, SSR window 오류 해결 함수
-    const item = localStorage.getItem('key');
+  interface Answer {
+    id: number;
+    content: string;
+    userId: number;
+    userName: string;
+    images: Record<string, string | null>;
+    createdAt: string;
+    accepted: boolean;
   }
 
-  // 질문 상세 정보를 가져오는 함수
-  const fetchQuestionDetails = async (id: number) => {
-    try {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        console.error("Access token이 없습니다.");
-        return;
-      }
+  interface Question {
+    id: number;
+    title: string;
+    content: string;
+    ownerId: number;
+    createdAt: string;
+    answers: Answer[];
+    subjectName?: string; // 추가
+    userName?: string; // 추가
+    questionOwner: boolean;
+  }
 
-      console.log("질문 받아오는 횟수")
+  function Content() {
+    const [isClient, setIsClient] = useState(false);
+    const [imageUrl, setImageUrl] = useState<string>("");
+    const [shareCount, setShareCount] = useState(0);
+    const [view, setView] = useState(0);
+    const [id, setId] = useState<number>(5);
+    const [question, setQuestion] = useState<Question | null>(null);
+    const [hasAnswer, setHasAnswer] = useState(false);
+    const [isAnswering, setIsAnswering] = useState(false);
+    const [questionOwner, setQuestionOwner] = useState(false);
+    const [userId, setUserId] = useState("");
 
-      const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${id}`;
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "69420",
-        },
-        withCredentials: true,
-      });
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const questionId = searchParams.get("questionId");
+    const hasFetched = useRef(false);
 
-      setQuestion(response.data); // 질문 데이터를 상태에 저장
-      setId(response.data.id); // id를 받아온 데이터에서 설정
-      fetchAnswerStatus(id); // 답변 상태를 확인하는 함수 호출
-      setView(response.data.viewCount); // 조회수 상태 설정
+    if (!questionId) return null;
 
-      // 이미지 URL 처리
-      if (response.data.images && response.data.images.length > 0) {
-        const imagePath = response.data.images[0].url; // 이미지 경로
-        const fullImageUrl = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/images/${imagePath}`;
+    if (typeof window !== "undefined") {
+      const item = localStorage.getItem("key");
+    }
 
-        // URL이 제대로 출력되는지 확인
-        if (fullImageUrl.startsWith("http") || fullImageUrl.startsWith("https")) {
+    // 질문과 답변 데이터를 한 번에 가져오는 함수
+    const fetchQuestionDetails = async (questionId: number) => {
+      try {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+          console.error("Access token이 없습니다.");
+          return;
+        }
+
+        console.log("질문 및 답변 데이터 가져오기");
+        
+        const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/questions/${questionId}/with-answers`;
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "69420",
+          },
+          withCredentials: true,
+        });
+        
+        setQuestion(response.data);
+        setId(response.data.id);
+        setUserId(response.data.userId);
+        setView(response.data.viewCount);
+        setQuestionOwner(response.data.questionOwner);
+
+        if (response.data.images && response.data.images.length > 0) {
+          const fileName = response.data.images[0].url;
+          const fullImageUrl = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/images/${fileName}`;
           setImageUrl(fullImageUrl);
         } else {
-          console.error("유효하지 않은 이미지 URL:", fullImageUrl);
+          setImageUrl("");
         }
-      } else {
-        console.error("이미지 정보가 없습니다.");
-        setImageUrl(""); // 이미지가 없으면 null로 설정
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.error("Axios 오류:", error.response?.data || error.message);
+        } else {
+          console.error("알 수 없는 오류:", error);
+        }
       }
+    };
 
-      console.log("이미지 url 상태",imageUrl);
-      
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Axios 오류:", error.response?.data || error.message);
-      } else {
-        console.error("알 수 없는 오류:", error);
-      }
-    }
-  };
+    useEffect(() => {
+      console.log("이미지 URL:", imageUrl);
+    }, [imageUrl]);
+    
 
-  const fetchAnswerStatus = async (id: number) => {
-    try {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        console.error("Access token이 없습니다.");
-        return;
-      }
-
-      const url = `${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/answers/question/${questionId}`;
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "69420",
-        },
-        withCredentials: true,
-      });
-
-      setAnswers(response.data); // 여러 개의 답변을 상태에 저장
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Axios 오류:", error.response?.data || error.message);
-      } else {
-        console.error("알 수 없는 오류:", error);
-      }
-    }
-  };
-
-  // 공유 클릭 처리 함수
-  const handleShareClick = () => {
-    setShareCount(shareCount + 1); // 공유 수 증가
-  };
-
-  // 답변 작성 상태로 변경하는 함수
-  const handleAnswerClick = () => {
-    setIsAnswering(true); // 답변 작성 상태로 변경
-    setHasAnswer(false); // 답변이 있는 경우에도 작성 상태로 전환
-  };
-
-  useEffect(() => {
-    if (questionId) {
+    useEffect(() => {
+      if (!questionId || hasFetched.current) return;
+      hasFetched.current = true;
       fetchQuestionDetails(Number(questionId));
-    }
-  }, [questionId]);  
+    }, [questionId]);
 
-  useEffect(() => {
-    setHasAnswer(answers.length > 0); // answers 배열에 따라 hasAnswer 상태 업데이트
-  }, [answers]);  
+    useEffect(() => {
+      if (question?.answers && question.answers.length > 0) {
+        setHasAnswer(true);
+      } else {
+        setHasAnswer(false);
+      }
+    }, [question, question?.answers]);
+    
+      // 공유 클릭 처리 함수
+    const handleShareClick = () => {
+      setShareCount(shareCount + 1); // 공유 수 증가
+    };
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+    // 답변 작성 상태로 변경하는 함수
+    const handleAnswerClick = () => {
+      setIsAnswering(true); // 답변 작성 상태로 변경
+      setHasAnswer(false); // 답변이 있는 경우에도 작성 상태로 전환
+    };
 
-  if (!isClient) return null;
+    useEffect(() => {
+      setIsClient(true);
+    }, []);
 
-  return (
-    <>
-    <S.Container>
-      <HeaderNon />
-      <S.TurnPage onClick={() => router.back()}>뒤로가기</S.TurnPage>
+    const fetchAnswers = async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_REACT_APP_BASE_URL}/api/answers`);
+        // 상태 업데이트 로직이 필요하면 여기에 추가
+        console.log("답변 목록:", response.data);
+      } catch (error) {
+        console.error("답변 목록을 불러오는 중 오류 발생:", error);
+      }
+    };
+    
 
-      <S.AnswerContainer>
-        <S.AnswerBlock>
-          <S.TitleText>답변해주기</S.TitleText>
-          <S.CheckIcon src="check.svg" />
-        </S.AnswerBlock>
+    if (!isClient) return null;
 
-        <S.Udong>
-          <S.Qbox>
-            <S.Q>Q.</S.Q>
-            <QuestionArea content={question?.title || ""} />
-          </S.Qbox>
-        
-          <S.Daily>{question?.createdAt ? formatDate(question.createdAt) : "로딩 중..."}</S.Daily>
-          <S.ST>과목명: {question?.subjectName || "로딩 중..."}</S.ST>
-          <S.User>질문자 : {question?.userName || "로딩 중..."}</S.User>
+      return (
+      <>
+      <S.Container>
+        <HeaderNon />
+        <S.TurnPage onClick={() => router.back()}>뒤로가기</S.TurnPage>
 
-          <ContentArea content={question?.content || ""}></ContentArea>
+        <S.AnswerContainer>
+          <S.AnswerBlock>
+            <S.TitleText>답변해주기</S.TitleText>
+            <S.CheckIcon src="check.svg" />
+          </S.AnswerBlock>
 
-          {imageUrl ? (
-            <S.ImageContainer src={imageUrl} alt="이미지 기능은 서버 문제로 적용이 안됩니다." />
-          ) : (
-            <></>
+          <S.Udong>
+            <S.Qbox>
+              <S.Q>Q.</S.Q>
+              <QuestionArea content={question?.title || ""} />
+            </S.Qbox>
+          
+            <S.Daily>{question?.createdAt ? formatDate(question.createdAt) : "로딩 중..."}</S.Daily>
+            <S.ST>과목명: {question?.subjectName || "로딩 중..."}</S.ST>
+            <S.User>질문자 : {question?.userName || "로딩 중..."}</S.User>
+
+            <ContentArea content={question?.content || ""}></ContentArea>
+
+            {imageUrl ? (
+              <S.ImageContainer src={imageUrl} alt="이미지 기능은 서버 문제로 적용이 안됩니다." />
+            ) : (
+              <></>
+            )}
+
+            <S.SVGbox>
+              <S.SoloSVG>
+                <S.eyes>조회수</S.eyes>
+                <S.count>{view}</S.count>
+              </S.SoloSVG>
+
+              <S.SoloSVG onClick={handleShareClick}>
+                <KakaoShareButton />
+                <S.count>{shareCount}</S.count>
+              </S.SoloSVG>
+
+              <LikeButton questionId={questionId} />
+
+              <S.SVG src="More.svg" />
+          </S.SVGbox>
+
+          {!hasAnswer && !isAnswering && (
+            <S.Answerbtn onClick={handleAnswerClick}>답변하기</S.Answerbtn>
           )}
 
-          <S.SVGbox>
-            <S.SoloSVG>
-              <S.eyes>조회수</S.eyes>
-              <S.count>{view}</S.count>
-            </S.SoloSVG>
+          </S.Udong>
 
-            <S.SoloSVG onClick={handleShareClick}>
-              <KakaoShareButton />
-              <S.count>{shareCount}</S.count>
-            </S.SoloSVG>
+        </S.AnswerContainer>
 
-            <LikeButton questionId={questionId} />
+        {hasAnswer ? (
+          <S.UserAnswerContainer>
+            <StepRender 
+              answers={question?.answers || []} 
+              questionOwner={questionOwner} 
+              userId={Number(userId)}
+              fetchAnswers={fetchAnswers} 
+            />
 
-            <S.SVG src="More.svg" />
-        </S.SVGbox>
-
-        {!hasAnswer && !isAnswering && (
-          <S.Answerbtn onClick={handleAnswerClick}>답변하기</S.Answerbtn>
+            {!isAnswering && (
+              <S.AnswerPlusBtn onClick={handleAnswerClick}>답변하기</S.AnswerPlusBtn>
+            )}
+          </S.UserAnswerContainer>
+        ) : isAnswering ? (
+          <S.UserAnswerBlock>
+            <StepForm />
+          </S.UserAnswerBlock>
+        ) : (
+          <></>
         )}
+      </S.Container>
+    <Footer />
+    </>
+    );
+  }
 
-        </S.Udong>
-
-      </S.AnswerContainer>
-
-      {hasAnswer ? (
-        <S.UserAnswerContainer>
-          <StepRender answers={answers} />
-          {!isAnswering && (
-            <S.AnswerPlusBtn onClick={handleAnswerClick}>답변하기</S.AnswerPlusBtn>
-          )}
-        </S.UserAnswerContainer>
-      ) : isAnswering ? (
-        <S.UserAnswerBlock>
-          <StepForm />
-        </S.UserAnswerBlock>
-      ) : (
-        <></>
-      )}
-    </S.Container>
-  <Footer />
-  </>
-  );
-}
-
-export default Content;
+  export default Content;
