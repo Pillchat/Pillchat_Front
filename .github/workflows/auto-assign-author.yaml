@@ -13,5 +13,4 @@ jobs:
     name: auto add assign author
     runs-on: ubuntu-latest
     steps:
-      - name: Auto Assign Action
-        uses: toshimaru/auto-author-assign@v2.1.1
+      - uses: kentaro-m/auto-assign-action@v2.0.0
