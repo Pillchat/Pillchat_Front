@@ -1,0 +1,16 @@
+name: auto add assign
+
+on:
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  auto-assign-author:
+    name: auto add assign author
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto Assign Action
+        uses: kentaro-m/auto-assign-action@v1.2.5
+        with:
+          configuration-path: ".github/auto-assign-config.yaml"
