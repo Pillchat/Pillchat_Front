@@ -1,5 +1,5 @@
 import React from "react";
-import QnA from "./pages/QnA";
+import QnA from "./v1/pages/QnA";
 
 const QnAPage: React.FC = () => {
   return (
