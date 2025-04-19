@@ -12,6 +12,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "autoprefixer": "^10.4.21",
     "axios": "^1.7.9",
     "lodash": "^4.17.21",
     "lucide-react": "^0.475.0",
