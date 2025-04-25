@@ -4,7 +4,7 @@
     "type-enum": [
       2,
       "always",
-      ["feature", "bugfix", "docs", "style", "refactor", "test", "chore", "ci"]
+      ["feat", "fix", "docs", "style", "refact", "test", "chore", "ci"]
     ],
     "subject-case": [2, "always", "sentence-case"]
   }
