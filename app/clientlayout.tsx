@@ -14,8 +14,8 @@ export default function ClientLayout({
   useEffect(() => {
     const accessToken = localStorage.getItem("access_token");
 
-    if (!accessToken && pathname !== "/Signin") {
-      router.push("/Signin");
+    if (!accessToken && pathname !== "/login") {
+      router.push("/login");
     }
   }, [pathname, router]);
 
