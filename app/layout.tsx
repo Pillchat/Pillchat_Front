@@ -32,9 +32,7 @@ export default function RootLayout({
           src="https://developers.kakao.com/sdk/js/kakao.min.js"
           strategy="afterInteractive"
         />
-        <Suspense>
-          <ClientLayout>{children}</ClientLayout>
-        </Suspense>
+        <Suspense>{children}</Suspense>
       </body>
     </html>
   );
