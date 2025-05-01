@@ -6,10 +6,17 @@ body {
   background: #ffffff;
 }
 
+/*
+  피그마 기준으로 업데이트/피그마 컬러코드 참고
+  - foreground: #111111
+  - muted / muted-foregroun: #EEEEEE / #999999
+  - button-foreground: #666666
+  - border: #C4C4C4
+*/
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 0 0% 7%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
@@ -18,13 +25,14 @@ body {
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 0% 60%;
+    --button-foreground: 0 0% 40%;
     --accent: 0 0% 96.1%;
     --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
+    --border: 0 0% 77%;
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
     --chart-1: 12 76% 61%;
@@ -67,6 +75,6 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background tracking-tight text-foreground;
   }
 }
