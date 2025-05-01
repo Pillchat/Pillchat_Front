@@ -26,13 +26,15 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body
-        className={`container mx-auto mt-12 max-w-screen-md pl-4 pr-4 ${pretendard.className}`}
+        className={`container mx-auto mt-12 max-w-screen-sm pl-4 pr-4 ${pretendard.className}`}
       >
         <Script
           src="https://developers.kakao.com/sdk/js/kakao.min.js"
           strategy="afterInteractive"
         />
-        <Suspense>{children}</Suspense>
+        <Suspense>
+          <ClientLayout>{children}</ClientLayout>
+        </Suspense>
       </body>
     </html>
   );

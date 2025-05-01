@@ -14,7 +14,7 @@ export const Logo: FC = () => (
         className="w-full"
       />
     </div>
-    <div className="text-lg font-semibold text-primary tracking-tight">
+    <div className="text-lg font-semibold tracking-tight text-primary">
       약대생을 위한 국내 유일 질문 처방전
     </div>
   </div>
