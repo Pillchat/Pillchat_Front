@@ -2,6 +2,6 @@ import React from "react";
 
 export function Input() {
   return (
-    <input className="w-full h-[52px] border-[#C4C4C4] font-[pretendard] font-medium text-[18px]" />
+    <input className="h-[52px] w-full border-[#C4C4C4] font-[pretendard] text-[18px] font-medium" />
   );
 }

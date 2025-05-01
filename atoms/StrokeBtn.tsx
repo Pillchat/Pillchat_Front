@@ -12,7 +12,7 @@ export function StrokeBtn({ content, Color }: StrokeBtnProps) {
         color: Color,
         border: `1px solid ${Color}`,
       }}
-      className="w-[345px] h-[52px] font-[pretendard] font-medium text-[18px] rounded-[12px] bg-white"
+      className="h-[52px] w-[345px] rounded-[12px] bg-white font-[pretendard] text-[18px] font-medium"
     >
       {content}
     </button>
