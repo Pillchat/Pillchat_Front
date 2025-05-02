@@ -20,7 +20,7 @@ function Name({ content, dark }: { content: string; dark?: boolean }) {
 
 export function ReturnHeader({ content, onIconClick, dark }: AsClick) {
   return (
-    <div className="flex h-[60px] w-full flex-row items-center justify-center relative">
+    <div className="relative flex h-[60px] w-full flex-row items-center justify-center">
       <img
         src={dark ? "/ReturnPage-white.svg" : "/ReturnPage.svg"}
         className="absolute left-5 h-6 w-6 cursor-pointer"

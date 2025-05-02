@@ -21,7 +21,7 @@ export function Input({
   disabled,
   autoFocus,
   maxLength,
-  minLength
+  minLength,
 }: Options) {
   return (
     <input

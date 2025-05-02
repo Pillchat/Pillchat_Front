@@ -24,12 +24,12 @@ export function InputField({
   disabled,
   autoFocus,
   maxLength,
-  minLength
+  minLength,
 }: InputFieldProps) {
   return (
     <div className="flex flex-col gap-[4px]">
       <p>{content}</p>
-      <Input 
+      <Input
         placeholder={placeholder}
         type={type}
         value={value}

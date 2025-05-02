@@ -33,7 +33,7 @@ export function IconInput({
   disabled,
   autoFocus,
   maxLength,
-  minLength
+  minLength,
 }: InputWithImageIconProps) {
   const [internalValue, setInternalValue] = useState("");
 
@@ -59,7 +59,7 @@ export function IconInput({
         type={type}
         value={inputValue}
         onChange={handleChange}
-        className={`w-full h-[52px] ${iconPadding} border border-[#C4C4C4] rounded-[12px] font-[pretendard] font-medium text-[15px] pl-[1rem] focus:outline-none focus:ring-1 focus:ring-black`}
+        className={`h-[52px] w-full ${iconPadding} rounded-[12px] border border-[#C4C4C4] pl-[1rem] font-[pretendard] text-[15px] font-medium focus:outline-none focus:ring-1 focus:ring-black`}
         placeholder={placeholder}
         onKeyDown={onKeyDown}
         disabled={disabled}
@@ -83,7 +83,7 @@ export function IconInput({
           </button>
         ) : (
           <div
-            className={`absolute top-1/2 ${iconPositionStyle} -translate-y-1/2 pointer-events-none`}
+            className={`absolute top-1/2 ${iconPositionStyle} pointer-events-none -translate-y-1/2`}
           >
             <img
               src={iconSrc}
