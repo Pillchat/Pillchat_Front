@@ -4,7 +4,7 @@ import { Input } from "../atoms/Input";
 interface InputFieldProps {
   content: string;
   disabled?: boolean;
-  inputValue?: string;
+  value?: string;
   placeholder?: string;
   autoFocus?: boolean;
   maxLength?: number;
@@ -14,7 +14,7 @@ interface InputFieldProps {
 export function VerifyInputField({
   content,
   disabled,
-  inputValue,
+  value,
   placeholder,
   autoFocus,
   maxLength,
@@ -26,7 +26,7 @@ export function VerifyInputField({
       <div className="flex flex-row gap-[10px]">
         <div className="w-[70%]">
           <Input
-            inputValue={inputValue}
+            value={value}
             disabled={disabled}
             placeholder={placeholder}
             autoFocus={autoFocus}

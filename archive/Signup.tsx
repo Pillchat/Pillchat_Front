@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import { ReturnHeader } from "../components/molecules/ReturnPageHeader";
-import { RoleCard } from "../components/atoms/RoleCard";
+import { RoleCard } from "@/components/molecules/RoleCard";
 import { StrokeBtn } from "../components/atoms/StrokeBtn";
-import { PrimaryBtn } from "../components/atoms/SolidBtn";
+import { SolidBtn } from "@/components/atoms/SolidBtn";
 import { InputField } from "../components/molecules/InputField";
 import { IconInputField } from "../components/molecules/IconInputField";
 import { VerifyInputField } from "../components/organisms/VerifyInputField";
@@ -163,28 +163,28 @@ function Signup() {
                   <InputField
                     content="성명"
                     disabled
-                    inputValue={`${studentInfo.studentName}`}
+                    value={`${studentInfo.studentName}`}
                   />
                   <InputField
                     content="학교명"
                     disabled
-                    inputValue={`${studentInfo.school}`}
+                    value={`${studentInfo.school}`}
                   />
                   <InputField
                     content="학과"
                     disabled
-                    inputValue={`${studentInfo.department}`}
+                    value={`${studentInfo.department}`}
                   />
                   <InputField
                     content="학번"
                     disabled
-                    inputValue={`${studentInfo.studentId}`}
+                    value={`${studentInfo.studentId}`}
                   />
                 </div>
 
                 <div className="mt-[12rem] flex flex-col gap-[15px]">
                   <StrokeBtn content="다시 촬영하기" Color="#FF412E" />
-                  <PrimaryBtn content="인증하기" bgColor="#FF412E" />
+                  <SolidBtn content="인증하기" bgColor="#FF412E" />
                 </div>
               </div>
             </>
@@ -203,23 +203,23 @@ function Signup() {
                   <InputField
                     content="성명"
                     disabled
-                    inputValue={`${expertInfo.ExpertName}`}
+                    value={`${expertInfo.ExpertName}`}
                   />
                   <InputField
                     content="면허번호"
                     disabled
-                    inputValue={`${expertInfo.ExpertId}`}
+                    value={`${expertInfo.ExpertId}`}
                   />
                   <InputField
                     content="발행날짜"
                     disabled
-                    inputValue={`${expertInfo.ImportTime}`}
+                    value={`${expertInfo.ImportTime}`}
                   />
                 </div>
 
                 <div className="mt-[18rem] flex flex-col gap-[15px]">
                   <StrokeBtn content="다시 촬영하기" Color="#FF412E" />
-                  <PrimaryBtn content="인증하기" bgColor="#FF412E" />
+                  <SolidBtn content="인증하기" bgColor="#FF412E" />
                 </div>
               </div>
             </>
@@ -272,7 +272,7 @@ function Signup() {
             </div>
 
             <div className="font-regular mt-[1rem] w-[90%]">
-              <PrimaryBtn
+              <SolidBtn
                 content="다음"
                 bgColor={checked ? "#FF412E" : "#EEEEEE"}
                 disabled={!checked}
@@ -317,7 +317,7 @@ function Signup() {
             />
 
             <div className="mt-[9rem]">
-              <PrimaryBtn
+              <SolidBtn
                 content="인증하기"
                 bgColor={email ? "#FF412E" : "#EEEEEE"}
                 disabled={email ? true : false}
@@ -387,7 +387,7 @@ function Signup() {
 
             {passwordRe.length >= 8 && password === passwordRe && (
               <div className="mt-[4rem]">
-                <PrimaryBtn
+                <SolidBtn
                   content="다음"
                   bgColor={passwordRe ? "#FF412E" : "#EEEEEE"}
                   disabled={passwordRe ? true : false}
@@ -432,7 +432,7 @@ function Signup() {
             </div>
 
             <div className="mt-[9rem]">
-              <PrimaryBtn
+              <SolidBtn
                 content="다음"
                 bgColor={nickname ? "#FF412E" : "#EEEEEE"}
                 disabled={email ? true : false}
