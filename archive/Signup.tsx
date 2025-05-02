@@ -6,7 +6,7 @@ import { RoleCard } from "../components/atoms/RoleCard";
 import { StrokeBtn } from "../components/atoms/StrokeBtn";
 import { PrimaryBtn } from "../components/atoms/SolidBtn";
 import { InputField } from "../components/molecules/InputField";
-import { IconInputField } from "../app/molecules/IconInputField";
+import { IconInputField } from "../components/molecules/IconInputField";
 import { VerifyInputField } from "../components/organisms/VerifyInputField";
 
 import { useAtom } from "jotai";
