@@ -9,7 +9,7 @@ export function PrimaryBtn({ content, bgColor }: PrimaryBtnProps) {
   return (
     <button
       style={{ backgroundColor: bgColor }}
-      className="w-[345px] h-[52px] font-[pretendard] font-medium text-[18px] text-white py-2 px-4 rounded-[12px]"
+      className="h-[52px] w-[345px] rounded-[12px] px-4 py-2 font-[pretendard] text-[18px] font-medium text-white"
     >
       {content}
     </button>

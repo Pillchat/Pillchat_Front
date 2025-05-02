@@ -35,7 +35,7 @@ export function IconInput({
         type={type}
         value={value}
         onChange={onChange}
-        className={`w-full h-[56px] ${iconPadding} py-2 rounded-[8px] focus:outline-[#C4C4C4] focus:ring-1 focus:ring-black bg-[#F2F4F7] placeholder:color-[#C4C4C4]`}
+        className={`h-[56px] w-full ${iconPadding} placeholder:color-[#C4C4C4] rounded-[8px] bg-[#F2F4F7] py-2 focus:outline-[#C4C4C4] focus:ring-1 focus:ring-black`}
         placeholder={placeholder}
         onKeyDown={onKeyDown}
       />
@@ -47,13 +47,13 @@ export function IconInput({
             onClick={onIconClick}
             className={`absolute top-1/2 ${iconPositionStyle} -translate-y-1/2`}
           >
-            <img src={iconSrc} alt={iconAlt} className="w-5 h-5" />
+            <img src={iconSrc} alt={iconAlt} className="h-5 w-5" />
           </button>
         ) : (
           <div
-            className={`absolute top-1/2 ${iconPositionStyle} -translate-y-1/2 pointer-events-none`}
+            className={`absolute top-1/2 ${iconPositionStyle} pointer-events-none -translate-y-1/2`}
           >
-            <img src={iconSrc} alt={iconAlt} className="w-5 h-5" />
+            <img src={iconSrc} alt={iconAlt} className="h-5 w-5" />
           </div>
         ))}
     </div>
