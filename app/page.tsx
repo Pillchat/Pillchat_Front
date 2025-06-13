@@ -1,12 +1,7 @@
-import React from "react";
-import QnA from "./v1/pages/QnA";
+import { FC } from "react";
 
-const QnAPage: React.FC = () => {
-  return (
-    <>
-      <QnA />
-    </>
-  );
+const Home: FC = () => {
+  return <div>Home</div>;
 };
 
-export default QnAPage;
+export default Home;

@@ -12,6 +12,9 @@ body {
   - muted / muted-foregroun: #EEEEEE / #999999
   - button-foreground: #666666
   - border: #C4C4C4
+  - secondary: #F5F5F5
+  - accent-bg: #FFF6F5
+  
 */
 @layer base {
   :root {
@@ -23,12 +26,13 @@ body {
     --popover-foreground: 0 0% 3.9%;
     --primary: 11, 82%, 50%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
+    --secondary: 0 0% 96%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 93%;
     --muted-foreground: 0 0% 60%;
+    --teritary: 0 0% 40%;
     --button-foreground: 0 0% 40%;
-    --accent: 0 0% 96.1%;
+    --accent: 6 100% 98%;
     --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -75,6 +79,6 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background tracking-tight text-foreground;
+    @apply break-keep bg-background tracking-tight text-foreground;
   }
 }

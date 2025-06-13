@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
 import { ReactNode, Suspense } from "react";
 import Script from "next/script";
-import ClientLayout from "./clientlayout";
+import "./styles/globals.css";
+import Providers from "./providers";
 
 const pretendard = localFont({
   src: "../public/fonts/PretendardVariable.woff2",
@@ -26,15 +26,15 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body
-        className={`container mx-auto mt-12 max-w-screen-sm pl-4 pr-4 ${pretendard.className}`}
+        className={`container mx-auto max-w-screen-sm ${pretendard.className}`}
       >
         <Script
           src="https://developers.kakao.com/sdk/js/kakao.min.js"
           strategy="afterInteractive"
         />
-        <Suspense>
-          <ClientLayout>{children}</ClientLayout>
-        </Suspense>
+        <Providers>
+          <Suspense>{children}</Suspense>
+        </Providers>
       </body>
     </html>
   );

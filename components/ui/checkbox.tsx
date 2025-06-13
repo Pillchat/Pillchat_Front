@@ -21,7 +21,7 @@ const Checkbox = forwardRef<
     <CheckboxPrimitive.Indicator
       forceMount
       className={cn(
-        "flex items-center justify-center text-border peer-data-[state=checked]:text-white",
+        "flex items-center justify-center text-border data-[state=checked]:text-white",
       )}
     >
       <Check className="h-4 w-4" />

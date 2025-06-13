@@ -3,13 +3,12 @@
 import { RoundedCheckbox, Logo, TextInput } from "@/components/atoms";
 import { Button } from "@/components/ui/button";
 import { Label } from "@radix-ui/react-label";
-import React, { FC } from "react";
+import { FC } from "react";
 
 //컴포넌트 분리 필요
-
 const LoginPage: FC = () => {
   return (
-    <div className="flex h-screen flex-col items-center justify-evenly">
+    <div className="flex min-h-screen flex-col items-center justify-evenly">
       <Logo />
       <div className="flex w-full flex-col gap-8">
         <div className="flex flex-col gap-4">
