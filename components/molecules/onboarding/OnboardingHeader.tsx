@@ -1,10 +1,8 @@
 "use client";
 
-import { TextButton } from "@/components/atoms";
-import { Button } from "@/components/ui/button";
+import { LeftArrowButton, TextButton } from "@/components/atoms";
 import { currentStepAtom } from "@/lib/atoms";
 import { useAtom } from "jotai";
-import { useRouter } from "next/navigation";
 
 interface OnboardingHeaderProps {
   step: number;
@@ -19,20 +17,15 @@ export const OnboardingHeader = ({
   showSkip = true,
   onSkip,
 }: OnboardingHeaderProps) => {
-  const router = useRouter();
   const [, setCurrentStep] = useAtom(currentStepAtom);
 
   return (
     <header className="flex items-center justify-between px-6 py-4">
-      <Button
-        variant="textOnly"
-        size="icon"
+      <LeftArrowButton
         onClick={() => {
           setCurrentStep((prev) => prev - 1);
         }}
-      >
-        <img src="/ChevronLeft.svg" alt="arrow-left" width={32} height={32} />
-      </Button>
+      />
       <p className="text-lg font-bold">
         {step}/{totalSteps - 1}
       </p>

@@ -26,7 +26,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body
-        className={`container mx-auto max-w-screen-sm pl-4 pr-4 ${pretendard.className}`}
+        className={`container mx-auto max-w-screen-sm ${pretendard.className}`}
       >
         <Script
           src="https://developers.kakao.com/sdk/js/kakao.min.js"
