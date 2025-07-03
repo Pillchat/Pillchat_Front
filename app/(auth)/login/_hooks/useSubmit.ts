@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { LoginFormData } from "../page";
-import { loginUser } from "@/app/functions/authService";
+import { loginUser } from "@/lib/services";
 import { useAuth } from "@/hooks";
 import { useRouter } from "next/navigation";
 

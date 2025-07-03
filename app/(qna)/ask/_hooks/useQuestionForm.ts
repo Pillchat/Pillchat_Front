@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { QuestionFormData } from "@/types/question";
-import { createQuestion } from "@/app/functions/questionService";
+import { createQuestion } from "@/lib/services";
 
 const DEFAULT_VALUES: QuestionFormData = {
   title: "",
