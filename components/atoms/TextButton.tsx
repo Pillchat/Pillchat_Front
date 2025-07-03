@@ -1,6 +1,7 @@
 import { ButtonSize, ButtonVariant } from "@/types";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { ReactNode } from "react";
 
 export const TextButton = ({
   label,
@@ -8,12 +9,14 @@ export const TextButton = ({
   size = "default",
   variant = "default",
   className,
+  supportIcon,
 }: {
   label: string;
   onClick?: () => void;
   variant?: ButtonVariant;
   size?: ButtonSize;
   className?: string;
+  supportIcon?: ReactNode;
 }) => {
   return (
     <Button
@@ -22,6 +25,7 @@ export const TextButton = ({
       onClick={onClick}
       className={cn(className)}
     >
+      {supportIcon && supportIcon}
       {label}
     </Button>
   );

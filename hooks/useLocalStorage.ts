@@ -10,8 +10,11 @@ export const useLocalStorage = () => {
   const setStorageItem = (key: string, value: unknown) => {
     const isServer = typeof window === "undefined";
     if (isServer) return;
+    if (typeof value === "object") {
+      value = JSON.stringify(value);
+    }
 
-    localStorage.setItem(key, JSON.stringify(value));
+    localStorage.setItem(key, value as string);
   };
 
   const removeStorageItem = (key: string) => {

@@ -5,21 +5,21 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow hover:bg-accent hover:text-primary",
+          "bg-primary text-primary-foreground shadow active:bg-primary/90",
         disabled: "bg-muted text-muted-foreground ",
         outline:
-          "border border-teritary hover:bg-accent hover:text-primary hover:border-primary",
+          "border border-teritary active:bg-accent active:text-primary active:border-primary",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        teritary: "border border-teritary text-foreground font-medium",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        textOnly: "bg-none cursor-pointer",
+          "bg-secondary text-secondary-foreground shadow-sm active:bg-secondary/70",
+        teritary: "text-foreground font-medium active:bg-accent/50",
+        ghost: "active:bg-accent active:text-accent-foreground",
+        link: "text-primary underline-offset-4 active:underline",
+        textOnly: "bg-none cursor-pointer active:opacity-70",
       },
       size: {
         default: "h-[3.625rem] px-4 py-3",
