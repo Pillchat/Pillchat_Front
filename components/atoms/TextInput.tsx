@@ -3,16 +3,17 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { ComponentProps, FC } from "react";
 
-interface TextInputProps extends ComponentProps<typeof Input> {
+type TextInputProps = ComponentProps<typeof Input> & {
   label?: string;
-  error?: string;
-}
+  errorMessage?: string;
+};
 
 export const TextInput: FC<TextInputProps> = ({
   label,
-  error,
+  errorMessage,
   id,
   className,
+  error,
   ...props
 }) => {
   return (
@@ -24,10 +25,13 @@ export const TextInput: FC<TextInputProps> = ({
       )}
       <Input
         id={id}
-        className={cn(error && "border-destructive", className)}
+        error={!!errorMessage || error}
+        className={className}
         {...props}
       />
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {errorMessage && (
+        <p className="text-sm text-destructive">{errorMessage}</p>
+      )}
     </div>
   );
 };
