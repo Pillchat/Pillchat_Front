@@ -34,7 +34,7 @@ export function VerifyInputField({
             minLength={minLength}
           />
         </div>
-        
+
         <button className="h-[52px] w-[30%] rounded-[12px] border border-[#FF412E] bg-white font-[pretendard] text-[#FF412E]">
           재전송
         </button>

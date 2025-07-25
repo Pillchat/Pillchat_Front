@@ -2,16 +2,16 @@ import React from "react";
 import { Input } from "../atoms/Input";
 
 export interface InputFieldProps {
-  content: string,
-  disabled?: boolean,
-  placeholder?: string,
-  type?: string,
-  value?: string,
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void,
-  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void,
-  autoFocus?: boolean,
-  maxLength?: number,
-  minLength?: number
+  content: string;
+  disabled?: boolean;
+  placeholder?: string;
+  type?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  autoFocus?: boolean;
+  maxLength?: number;
+  minLength?: number;
 }
 
 export function InputField({

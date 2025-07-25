@@ -5,8 +5,8 @@ export * from "./TextButton";
 export * from "./LeftArrowButton";
 export * from "./ImageButton";
 export * from "./TextareaWithLabel";
-export * from "./IconInput"
-export * from "./Input"
-export * from "./RoleCard"
-export * from "./SolidButton"
-export * from "./StrokeButton"
+export * from "./IconInput";
+export * from "./Input";
+export * from "./RoleCard";
+export * from "./SolidButton";
+export * from "./StrokeButton";

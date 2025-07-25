@@ -2,7 +2,7 @@
 
 import { Logo, TextInput } from "@/components/atoms";
 import { Button } from "@/components/ui/button";
-import { Label } from "@radix-ui/react-label";  
+import { Label } from "@radix-ui/react-label";
 import { FC } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "next/navigation";
