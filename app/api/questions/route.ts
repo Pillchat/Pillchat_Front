@@ -1,6 +1,7 @@
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import { QuestionCreateRequest } from "@/types/question";
+import { serverFetch } from "@/lib/functions";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST;
 
@@ -10,6 +11,7 @@ export async function POST(request: NextRequest) {
       await request.json();
 
     const authorization = request.headers.get("authorization");
+    //TODO: JSON 형식으로 변경
     const formData = new FormData();
     formData.append("title", title);
     formData.append("content", content);
@@ -37,6 +39,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { message: "서버 내부 오류가 발생했습니다." },
       { status: 500 },
+    );
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const data = await serverFetch("/api/questions", {
+      method: "GET",
+      request,
+    });
+
+    return NextResponse.json(data);
+  } catch (error: any) {
+    console.error("질문 목록 조회 API 에러:", error);
+
+    const errorInfo = JSON.parse(error.message || "{}");
+    return NextResponse.json(
+      { message: errorInfo.message || "질문 목록을 불러오는데 실패했습니다." },
+      { status: errorInfo.status || 500 },
     );
   }
 }
