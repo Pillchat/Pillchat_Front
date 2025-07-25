@@ -21,7 +21,7 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
   const router = useRouter();
 
   return (
-    <header className="flex items-center justify-between px-6 py-4">
+    <header className="sticky top-0 z-10 flex items-center justify-between bg-background px-6 py-4">
       <LeftArrowButton
         onClick={() => {
           router.back();
