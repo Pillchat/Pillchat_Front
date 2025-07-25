@@ -28,12 +28,12 @@ export const POST = async (request: NextRequest) => {
       );
     }
 
-    // 성공 응답
+    // 성공 응답 - 로그인 API와 동일한 형식으로 통일
     return NextResponse.json({
       success: true,
       data: {
-        access: data.access,
-        refresh: data.refresh,
+        access_token: data.access || data.access_token,
+        refresh_token: data.refresh || data.refresh_token,
       },
     });
   } catch (error) {
