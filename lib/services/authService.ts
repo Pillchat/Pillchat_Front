@@ -1,4 +1,4 @@
-import axios from "axios";
+import { fetchPost, setTokens, clearTokens, refreshTokens } from "../functions";
 
 export type LoginRequest = {
   email: string;
@@ -14,46 +14,22 @@ export type LoginResponse = {
   message?: string;
 };
 
-export type RefreshTokenResponse = {
-  success: boolean;
-  data?: {
-    access: string;
-    refresh: string;
-  };
-  message?: string;
-};
-
 // 로그인 API 호출
 export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
   try {
-    const response = await axios.post(`/api/auth/login`, data);
-    return response.data;
-  } catch (error: any) {
-    throw new Error(
-      error.response?.data?.message ||
-        "로그인에 실패했습니다. 다시 시도해주세요.",
+    const result = await fetchPost(`/api/auth/login`, data).then((res) =>
+      res.json(),
     );
-  }
-};
 
-// 토큰 갱신 API 호출
-export const refreshToken = async (
-  refreshToken: string,
-): Promise<RefreshTokenResponse> => {
-  try {
-    const response = await axios.post(
-      `/api/auth/refresh-token`,
-      { refreshToken },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    );
-    return response.data;
+    // 로그인 성공 시 토큰 저장
+    if (result.success && result.data) {
+      setTokens(result.data.access_token, result.data.refresh_token);
+    }
+
+    return result;
   } catch (error: any) {
     throw new Error(
-      error.response?.data?.message || "토큰 갱신에 실패했습니다.",
+      error.message || "로그인에 실패했습니다. 다시 시도해주세요.",
     );
   }
 };
