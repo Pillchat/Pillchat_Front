@@ -1,4 +1,4 @@
-import React from "react";
+import { ChangeEvent } from "react";
 import { IconInput } from "../atoms/IconInput";
 
 interface InputFieldProps {
@@ -16,7 +16,7 @@ interface InputFieldProps {
   maxLength?: number;
   minLength?: number;
   onIconClick?: () => void;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
 export function IconInputField({

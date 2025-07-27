@@ -1,4 +1,4 @@
-import React from "react";
+import { ChangeEvent, KeyboardEvent } from "react";
 import { Input } from "../atoms/Input";
 
 export interface InputFieldProps {
@@ -7,8 +7,8 @@ export interface InputFieldProps {
   placeholder?: string;
   type?: string;
   value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
   autoFocus?: boolean;
   maxLength?: number;
   minLength?: number;

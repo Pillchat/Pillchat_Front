@@ -38,7 +38,7 @@ const SignupPage: FC = () => {
       {step === Step.Role && (
         <>
           <StepHeader content="직장 확인" onIconClick={prevStep} />
-          <div className="mt-[5rem] text-[20px] font-semibold">
+          <div className="mt-[5rem] text-xl font-semibold">
             <p>현재 어떤 직종에</p>
             <p>일하고 계신가요?</p>
           </div>
@@ -74,12 +74,12 @@ const SignupPage: FC = () => {
           <StepHeader content={`${route} 확인`} onIconClick={prevStep} />
 
           <div className="mt-[1rem] flex w-[90%] flex-col items-center gap-[12px]">
-            <div className="ml-[0.25rem] w-full items-start text-[20px] font-semibold">
+            <div className="ml-[0.25rem] w-full items-start text-xl font-semibold">
               <p>{route} 인증을 위해선</p>
               <p>본인의 {valueBadge}이 필요해요.</p>
             </div>
 
-            <div className="ml-[0.25rem] w-full items-start text-[16px] font-medium text-[#666666]">
+            <div className="ml-[0.25rem] w-full items-start text-base font-medium text-button-foreground">
               <p>{valueBadge}을 준비해주세요.</p>
             </div>
 
@@ -87,7 +87,7 @@ const SignupPage: FC = () => {
               <img src={`${roleImg}`} />
             </div>
 
-            <div className="ml-[0.25rem] flex w-full flex-col items-start gap-[0.25rem] text-[14px] font-medium text-[#666666]">
+            <div className="ml-[0.25rem] flex w-full flex-col items-start gap-[0.25rem] text-[14px] font-medium text-button-foreground">
               <p>
                 1. {valueBadge}을 어두운 바닥에 두고 가이드에 맞춰 촬영해주세요.
               </p>
@@ -96,7 +96,7 @@ const SignupPage: FC = () => {
             </div>
 
             <div className="mt-[1rem] w-full" onClick={() => setStep(3)}>
-              <StrokeButton content="카메라로 촬영하기" Color="#FF412E" />
+              <StrokeButton content="카메라로 촬영하기" colorClass="brand" />
             </div>
           </div>
         </>
@@ -143,8 +143,8 @@ const SignupPage: FC = () => {
                 </div>
 
                 <div className="item-center mt-[2rem] flex w-full flex-col justify-center gap-[15px]">
-                  <StrokeButton content="다시 촬영하기" Color="#FF412E" />
-                  <SolidButton content="인증하기" bgColor="#FF412E" />
+                  <StrokeButton content="다시 촬영하기" colorClass="brand" />
+                  <SolidButton content="인증하기" bgColorClass="bg-brand" />
                 </div>
               </div>
             </>
@@ -160,8 +160,8 @@ const SignupPage: FC = () => {
                 </div>
 
                 <div className="mt-[8rem] flex w-full flex-col gap-[15px]">
-                  <StrokeButton content="다시 촬영하기" Color="#FF412E" />
-                  <SolidButton content="인증하기" bgColor="#FF412E" />
+                  <StrokeButton content="다시 촬영하기" colorClass="brand" />
+                  <SolidButton content="인증하기" bgColorClass="bg-brand" />
                 </div>
               </div>
             </>
@@ -183,14 +183,7 @@ const SignupPage: FC = () => {
           </div>
 
           <div
-            className="flex w-full flex-col items-center"
-            style={{
-              background:
-                "linear-gradient(to top, #FFFFFF 0%, #FFFFFF 24%, transparent 100%)",
-              boxShadow:
-                "0 -22px 24px rgba(255, 255, 255, 0.3), 0 -50px 40px rgba(255, 255, 255, 0.6)",
-              zIndex: 1,
-            }}
+            className="flex w-full flex-col items-center z-[1] bg-[linear-gradient(to_top,_#FFFFFF_0%,_#FFFFFF_24%,_transparent_100%)] shadow-[0_-22px_24px_rgba(255,255,255,0.3),_0_-50px_40px_rgba(255,255,255,0.6)]"
           >
             <div className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]">
               <img
@@ -199,8 +192,8 @@ const SignupPage: FC = () => {
                 onClick={() => seChecked(!checked)}
                 alt="icon"
               />
-              <div className="flex flex-row text-[13px] font-medium">
-                <p className="text-[#FF412E] underline underline-offset-2">
+              <div className="flex flex-row text-sm font-medium">
+                <p className="text-brand underline underline-offset-2">
                   서비스 이용약관
                 </p>
                 <p>에 동의합니다.</p>
@@ -210,7 +203,7 @@ const SignupPage: FC = () => {
             <div className="font-regular mt-[1rem] w-[90%]">
               <SolidButton
                 content="다음"
-                bgColor={checked ? "#FF412E" : "#EEEEEE"}
+                bgColorClass={checked ? "bg-brand" : "bg-muted"}
                 disabled={!checked}
               />
             </div>
@@ -223,7 +216,7 @@ const SignupPage: FC = () => {
           <StepHeader content="회원가입" onIconClick={prevStep} />
 
           <div className="mt-[2rem] flex w-[90%] flex-col gap-[20px]">
-            <p className="text-[20px] font-semibold">이메일을 입력해주세요.</p>
+            <p className="text-xl font-semibold">이메일을 입력해주세요.</p>
 
             <IconInputField
               content="이메일"
@@ -247,7 +240,7 @@ const SignupPage: FC = () => {
             <div className="mt-[9rem]">
               <SolidButton
                 content="인증하기"
-                bgColor={email ? "#FF412E" : "#EEEEEE"}
+                bgColorClass={email ? "bg-brand" : "bg-muted"}
                 disabled={email ? true : false}
               />
             </div>
@@ -260,7 +253,7 @@ const SignupPage: FC = () => {
           <StepHeader content="회원가입" onIconClick={prevStep} />
 
           <div className="mt-[2rem] flex w-[90%] flex-col gap-[20px]">
-            <p className="text-[20px] font-semibold">
+            <p className="text-xl font-semibold">
               비밀번호를 입력해주세요.
             </p>
 
@@ -281,7 +274,7 @@ const SignupPage: FC = () => {
                 maxLength={8}
               />
 
-              <p className="font-regular text-[14px] text-[#C4C4C4]">
+              <p className="font-regular text-[14px] text-border">
                 영어, 숫자, 특수문자를 조합한 최소 8자리
               </p>
             </div>
@@ -303,7 +296,7 @@ const SignupPage: FC = () => {
                   maxLength={8}
                 />
 
-                <p className="font-regular text-[14px] text-[#C4C4C4]">
+                <p className="font-regular text-sm text-border">
                   비밀번호를 한 번 더 입력해주세요.
                 </p>
               </div>
@@ -313,7 +306,7 @@ const SignupPage: FC = () => {
               <div className="mt-[4rem]">
                 <SolidButton
                   content="다음"
-                  bgColor={passwordRe ? "#FF412E" : "#EEEEEE"}
+                  bgColorClass={passwordRe ? "bg-brand" : "bg-muted"}
                   disabled={passwordRe ? true : false}
                 />
               </div>
@@ -327,7 +320,7 @@ const SignupPage: FC = () => {
           <StepHeader content="회원가입" onIconClick={prevStep} />
 
           <div className="mt-[2rem] flex w-[90%] flex-col gap-[20px]">
-            <p className="text-[20px] font-semibold">
+            <p className="text-xl font-semibold">
               필챗에서 활동할 닉네임을 입력해주세요.
             </p>
 
@@ -345,7 +338,7 @@ const SignupPage: FC = () => {
                 autoFocus={true}
               />
 
-              <p className="font-regular text-[14px] text-[#C4C4C4]">
+              <p className="font-regular text-sm text-border">
                 영어, 숫자를 조합한 최소 2자리
               </p>
             </div>
@@ -353,7 +346,7 @@ const SignupPage: FC = () => {
             <div className="mt-[9rem]">
               <SolidButton
                 content="다음"
-                bgColor={nickname ? "#FF412E" : "#EEEEEE"}
+                bgColorClass={nickname ? "bg-brand" : "bg-muted"}
                 disabled={email ? true : false}
               />
             </div>

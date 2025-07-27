@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { ChangeEvent, KeyboardEvent } from "react";
 
 interface InputWithImageIconProps {
   iconSrc?: string;
@@ -10,8 +11,8 @@ interface InputWithImageIconProps {
   placeholder?: string;
   type?: string;
   value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
   disabled?: boolean;
   autoFocus?: boolean;
   maxLength?: number;

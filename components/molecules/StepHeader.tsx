@@ -1,6 +1,6 @@
 import React from "react";
 
-interface AsClick {
+interface StepHeaderProps {
   onIconClick?: () => void;
   content: string;
   dark?: boolean;
@@ -18,7 +18,7 @@ function Name({ content, dark }: { content: string; dark?: boolean }) {
   );
 }
 
-export function StepHeader({ content, onIconClick, dark }: AsClick) {
+export function StepHeader({ content, onIconClick, dark }: StepHeaderProps) {
   return (
     <div
       className={`relative flex h-[60px] w-full flex-row items-center justify-center ${dark ? "bg-black" : "bg-white"}`}

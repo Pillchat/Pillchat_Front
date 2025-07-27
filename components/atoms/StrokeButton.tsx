@@ -1,18 +1,15 @@
-import React from "react";
-
 interface StrokeBtnProps {
   content: string;
-  Color: string;
+  colorClass: string;
 }
 
-export function StrokeButton({ content, Color }: StrokeBtnProps) {
+export function StrokeButton({ content, colorClass }: StrokeBtnProps) {
   return (
     <button
-      style={{
-        color: Color,
-        border: `1px solid ${Color}`,
-      }}
-      className="h-[52px] w-full rounded-[12px] bg-white font-[pretendard] text-[18px] font-medium"
+      className={`
+        h-[52px] w-full rounded-[12px] bg-white text-[18px] font-medium 
+        text-${colorClass} border border-${colorClass}
+      `}
     >
       {content}
     </button>
