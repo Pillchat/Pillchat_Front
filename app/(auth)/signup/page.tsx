@@ -182,9 +182,7 @@ const SignupPage: FC = () => {
             />
           </div>
 
-          <div
-            className="flex w-full flex-col items-center z-[1] bg-[linear-gradient(to_top,_#FFFFFF_0%,_#FFFFFF_24%,_transparent_100%)] shadow-[0_-22px_24px_rgba(255,255,255,0.3),_0_-50px_40px_rgba(255,255,255,0.6)]"
-          >
+          <div className="z-[1] flex w-full flex-col items-center bg-[linear-gradient(to_top,_#FFFFFF_0%,_#FFFFFF_24%,_transparent_100%)] shadow-[0_-22px_24px_rgba(255,255,255,0.3),_0_-50px_40px_rgba(255,255,255,0.6)]">
             <div className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]">
               <img
                 className="h-[26px] w-[26px]"
@@ -253,9 +251,7 @@ const SignupPage: FC = () => {
           <StepHeader content="회원가입" onIconClick={prevStep} />
 
           <div className="mt-[2rem] flex w-[90%] flex-col gap-[20px]">
-            <p className="text-xl font-semibold">
-              비밀번호를 입력해주세요.
-            </p>
+            <p className="text-xl font-semibold">비밀번호를 입력해주세요.</p>
 
             <div className="flex flex-col gap-[5px]">
               <IconInputField
