@@ -1,14 +1,18 @@
-interface StrokeBtnProps {
+import { Button, ButtonProps } from "@/components/ui/button";
+
+interface StrokeBtnProps extends Omit<ButtonProps, "variant"> {
   content: string;
-  colorClass: string;
+  variant?: "stroke-gray" | "stroke-brand";
 }
 
-export function StrokeButton({ content, colorClass }: StrokeBtnProps) {
+export function StrokeButton({
+  content,
+  variant = "stroke-gray",
+  ...props
+}: StrokeBtnProps) {
   return (
-    <button
-      className={`h-[52px] w-full rounded-[12px] bg-white text-[18px] font-medium text-${colorClass} border border-${colorClass} `}
-    >
+    <Button variant={variant} {...props} className="h-[52px] w-full rounded-xl text-[1.125rem] font-medium bg-white">
       {content}
-    </button>
+    </Button>
   );
 }

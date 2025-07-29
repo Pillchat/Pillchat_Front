@@ -96,7 +96,7 @@ const SignupPage: FC = () => {
             </div>
 
             <div className="mt-[1rem] w-full" onClick={() => setStep(3)}>
-              <StrokeButton content="카메라로 촬영하기" colorClass="brand" />
+              <StrokeButton content="카메라로 촬영하기" variant="stroke-brand" />
             </div>
           </div>
         </>
@@ -143,8 +143,8 @@ const SignupPage: FC = () => {
                 </div>
 
                 <div className="item-center mt-[2rem] flex w-full flex-col justify-center gap-[15px]">
-                  <StrokeButton content="다시 촬영하기" colorClass="brand" />
-                  <SolidButton content="인증하기" bgColorClass="bg-brand" />
+                  <StrokeButton content="다시 촬영하기" variant="stroke-brand" />
+                  <SolidButton content="인증하기" variant={"brand"} />
                 </div>
               </div>
             </>
@@ -160,8 +160,8 @@ const SignupPage: FC = () => {
                 </div>
 
                 <div className="mt-[8rem] flex w-full flex-col gap-[15px]">
-                  <StrokeButton content="다시 촬영하기" colorClass="brand" />
-                  <SolidButton content="인증하기" bgColorClass="bg-brand" />
+                  <StrokeButton content="다시 촬영하기" variant="stroke-brand" />
+                  <SolidButton content="인증하기" variant={"brand"} />
                 </div>
               </div>
             </>
@@ -201,7 +201,7 @@ const SignupPage: FC = () => {
             <div className="font-regular mt-[1rem] w-[90%]">
               <SolidButton
                 content="다음"
-                bgColorClass={checked ? "bg-brand" : "bg-muted"}
+                variant={checked ? "brand" : "disabled"}
                 disabled={!checked}
               />
             </div>
@@ -238,7 +238,7 @@ const SignupPage: FC = () => {
             <div className="mt-[9rem]">
               <SolidButton
                 content="인증하기"
-                bgColorClass={email ? "bg-brand" : "bg-muted"}
+                variant={email ? "brand" : "disabled"}
                 disabled={email ? true : false}
               />
             </div>
@@ -302,7 +302,7 @@ const SignupPage: FC = () => {
               <div className="mt-[4rem]">
                 <SolidButton
                   content="다음"
-                  bgColorClass={passwordRe ? "bg-brand" : "bg-muted"}
+                  variant={passwordRe ? "brand" : "disabled"}
                   disabled={passwordRe ? true : false}
                 />
               </div>
@@ -342,7 +342,7 @@ const SignupPage: FC = () => {
             <div className="mt-[9rem]">
               <SolidButton
                 content="다음"
-                bgColorClass={nickname ? "bg-brand" : "bg-muted"}
+                variant={nickname ? "brand" : "disabled"}
                 disabled={email ? true : false}
               />
             </div>

@@ -1,20 +1,9 @@
-interface SolidBtnProps {
-  content: string;
-  bgColorClass?: string;
-  disabled?: boolean;
-}
+import { Button, ButtonProps } from "../ui/button";
 
-export function SolidButton({
-  content,
-  bgColorClass = "bg-gray-500",
-  disabled,
-}: SolidBtnProps) {
+export function SolidButton({ content, variant = "brand", ...props }: ButtonProps) {
   return (
-    <button
-      className={`h-[52px] w-full rounded-[12px] px-4 py-2 text-[18px] font-medium text-white ${bgColorClass}`}
-      disabled={disabled}
-    >
+    <Button variant={variant} {...props} className="h-[52px] w-full rounded-xl px-4 py-2 text-[1.125rem] font-medium text-white">
       {content}
-    </button>
+    </Button>
   );
 }
