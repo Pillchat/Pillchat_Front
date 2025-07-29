@@ -96,7 +96,10 @@ const SignupPage: FC = () => {
             </div>
 
             <div className="mt-[1rem] w-full" onClick={() => setStep(3)}>
-              <StrokeButton content="카메라로 촬영하기" variant="stroke-brand" />
+              <StrokeButton
+                content="카메라로 촬영하기"
+                variant="stroke-brand"
+              />
             </div>
           </div>
         </>
@@ -143,7 +146,10 @@ const SignupPage: FC = () => {
                 </div>
 
                 <div className="item-center mt-[2rem] flex w-full flex-col justify-center gap-[15px]">
-                  <StrokeButton content="다시 촬영하기" variant="stroke-brand" />
+                  <StrokeButton
+                    content="다시 촬영하기"
+                    variant="stroke-brand"
+                  />
                   <SolidButton content="인증하기" variant={"brand"} />
                 </div>
               </div>
@@ -160,7 +166,10 @@ const SignupPage: FC = () => {
                 </div>
 
                 <div className="mt-[8rem] flex w-full flex-col gap-[15px]">
-                  <StrokeButton content="다시 촬영하기" variant="stroke-brand" />
+                  <StrokeButton
+                    content="다시 촬영하기"
+                    variant="stroke-brand"
+                  />
                   <SolidButton content="인증하기" variant={"brand"} />
                 </div>
               </div>

@@ -11,7 +11,11 @@ export function StrokeButton({
   ...props
 }: StrokeBtnProps) {
   return (
-    <Button variant={variant} {...props} className="h-[52px] w-full rounded-xl text-[1.125rem] font-medium bg-white">
+    <Button
+      variant={variant}
+      {...props}
+      className="h-[52px] w-full rounded-xl bg-white text-[1.125rem] font-medium"
+    >
       {content}
     </Button>
   );
