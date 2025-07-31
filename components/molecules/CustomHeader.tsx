@@ -21,13 +21,13 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
   const router = useRouter();
 
   return (
-    <header className="flex items-center justify-between px-6 py-4">
+    <header className="flex w-full items-center justify-between px-6 py-4">
       <LeftArrowButton
         onClick={() => {
           router.back();
         }}
       />
-      <p className="text-lg font-bold">{title}</p>
+      <p className="text-lg font-semibold">{title}</p>
       {showIcon ? (
         <Button variant="textOnly" size="icon" onClick={() => router.push("/")}>
           <img src="/Home.svg" alt="arrow-left" width={32} height={32} />
