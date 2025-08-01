@@ -11,7 +11,7 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-primary text-primary-foreground shadow active:bg-primary/90",
-        disabled: "bg-muted text-muted-foreground ",
+        disabled: "bg-muted text-muted-foreground",
         outline:
           "border border-teritary active:bg-accent active:text-primary active:border-primary",
         secondary:
@@ -20,6 +20,9 @@ const buttonVariants = cva(
         ghost: "active:bg-accent active:text-accent-foreground",
         link: "text-primary underline-offset-4 active:underline",
         textOnly: "bg-none cursor-pointer active:opacity-70",
+        brand: "bg-[#FF412E] text-white active:bg-[#FF412E]",
+        "stroke-gray": "bg-white text-gray-500 border border-gray-500",
+        "stroke-brand": "bg-white text-brand border border-brand",
       },
       size: {
         default: "h-[3.625rem] px-4 py-3",
