@@ -55,7 +55,7 @@ export const fetchPost = async (url: string, data: any) => {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  let response = await fetch(url, {
+  const response = await fetch(url, {
     method: "POST",
     body: JSON.stringify(data),
     headers: {
@@ -74,4 +74,35 @@ export const fetchPost = async (url: string, data: any) => {
   }
 
   return response;
+};
+
+export const fetchAPI = async (url: string, method: string, data?: any) => {
+  const token = getToken();
+  const headers: Record<string, string> = {};
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(url, {
+    method,
+    body: JSON.stringify(data),
+    headers: {
+      "Content-Type": "application/json",
+      ...headers,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({
+      message: "서버 오류가 발생했습니다.",
+    }));
+    throw new Error(
+      errorData.message || `HTTP error! status: ${response.status}`,
+    );
+  }
+
+  const result = await response.json();
+
+  return result;
 };
