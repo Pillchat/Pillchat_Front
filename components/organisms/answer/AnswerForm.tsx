@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchAPI, fetchPost } from "@/lib/functions";
+import { fetchAPI } from "@/lib/functions";
 import { ImageButton, TextButton } from "@/components/atoms";
 import { CustomCard, CustomHeader } from "@/components/molecules";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { useAnswerSteps } from "@/app/(qna)/answer/[id]/_hooks";
 import { ViewQuestion } from "./ViewQuestion";
 import { QuestionResponse } from "@/types";
+import { map, some } from "lodash";
 
 export interface AnswerFormData {
   title: string;
@@ -42,7 +43,11 @@ export const AnswerForm = ({ questionId }: AnswerFormProps) => {
   //TODO: hook으로 분리
   const mutation = useMutation({
     mutationFn: (formData: AnswerFormData) => {
-      return fetchPost("/api/answers", { ...formData, questionId, steps });
+      return fetchAPI("/api/answers", "POST", {
+        ...formData,
+        questionId,
+        steps,
+      });
     },
     onSuccess: (data) => {
       console.log("Answer posted:", data);
@@ -75,6 +80,8 @@ export const AnswerForm = ({ questionId }: AnswerFormProps) => {
         title="답변하기"
         rightButtonLabel="작성 완료"
         onRightButtonClick={handleRightButtonClick}
+        //TODO: 조건 수정 필요할수도?
+        isActive={some(steps, (step) => step.content.length > 0)}
       />
 
       {isLoading ? (
@@ -83,7 +90,7 @@ export const AnswerForm = ({ questionId }: AnswerFormProps) => {
         question && <ViewQuestion question={question} />
       )}
       <div className="mx-6 flex flex-1 flex-col gap-3 pb-5">
-        {steps.map((step, index) => (
+        {map(steps, (step, index) => (
           <CustomCard
             key={step.id}
             title={`STEP ${index + 1}`}
