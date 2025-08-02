@@ -47,11 +47,11 @@ export const ViewQuestion: FC<{ question: QuestionResponse }> = ({
             {map(images, (image) => (
               <div
                 key={image}
-                className="bg-brandSecondary mt-4 flex h-48 w-full animate-pulse items-center justify-center rounded-lg"
+                className="mt-4 flex h-48 w-full animate-pulse items-center justify-center rounded-lg bg-brandSecondary"
               />
             ))}
             {/* 이미지 Fallback */}
-            <div className="bg-brandSecondary mt-4 flex h-48 w-full animate-pulse items-center justify-center rounded-lg" />
+            <div className="mt-4 flex h-48 w-full animate-pulse items-center justify-center rounded-lg bg-brandSecondary" />
           </div>
         </DialogContent>
       </Dialog>

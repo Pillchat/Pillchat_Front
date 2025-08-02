@@ -20,6 +20,7 @@ export type QuestionResponse = {
   content: string;
   subject: string;
   reward: string;
+  images: string[];
   createdAt: string;
   updatedAt: string;
 };
