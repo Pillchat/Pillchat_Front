@@ -11,18 +11,18 @@ import { useAnswerSteps } from "@/app/(qna)/answer/[id]/_hooks";
 import { ViewQuestion } from "./ViewQuestion";
 import { QuestionResponse } from "@/types";
 
-export type AnswerFormData = {
+export interface AnswerFormData {
   title: string;
   content: string;
   subject: string;
   reward: string;
   images?: string[];
   subjectId: string;
-};
+}
 
-type AnswerFormProps = {
+interface AnswerFormProps {
   questionId: string;
-};
+}
 
 export const AnswerForm = ({ questionId }: AnswerFormProps) => {
   const { steps, addStep, updateStep, removeStep } = useAnswerSteps();
@@ -59,15 +59,6 @@ export const AnswerForm = ({ questionId }: AnswerFormProps) => {
     queryKey: ["question", questionId],
     queryFn: () => fetchAPI(`/api/questions/${questionId}`, "GET"),
     enabled: !!questionId,
-    initialData: {
-      id: "",
-      title: "",
-      content: "",
-      subject: "",
-      reward: "",
-      createdAt: "",
-      updatedAt: "",
-    },
   });
 
   const onSubmit = (data: AnswerFormData) => {
@@ -86,11 +77,11 @@ export const AnswerForm = ({ questionId }: AnswerFormProps) => {
         onRightButtonClick={handleRightButtonClick}
       />
 
-      {/* {isLoading ? (
+      {isLoading ? (
         <div className="mx-6 my-5 h-12 animate-pulse rounded bg-gray-100" />
       ) : (
         question && <ViewQuestion question={question} />
-      )} */}
+      )}
       <div className="mx-6 flex flex-1 flex-col gap-3 pb-5">
         {steps.map((step, index) => (
           <CustomCard
