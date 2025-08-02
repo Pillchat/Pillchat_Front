@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { ChangeEvent, KeyboardEvent } from "react";
+"use client";
+
+import { ChangeEvent, KeyboardEvent, useState } from "react";
 
 interface InputWithImageIconProps {
   iconSrc?: string;

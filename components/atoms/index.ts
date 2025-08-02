@@ -10,3 +10,4 @@ export * from "./Input";
 export * from "./RoleCard";
 export * from "./SolidButton";
 export * from "./StrokeButton";
+export * from "./PharmMoney";
