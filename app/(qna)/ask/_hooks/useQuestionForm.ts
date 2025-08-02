@@ -1,8 +1,8 @@
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { QuestionFormData } from "@/types/question";
-import { createQuestion } from "@/lib/services";
+import { QuestionCreateRequest, QuestionFormData } from "@/types/question";
+import { fetchAPI } from "@/lib/functions";
 
 const DEFAULT_VALUES: QuestionFormData = {
   title: "",
@@ -32,7 +32,8 @@ export const useQuestionForm = () => {
   const selectedSubject = watch("subject");
 
   const mutation = useMutation({
-    mutationFn: createQuestion,
+    mutationFn: (data: QuestionCreateRequest) =>
+      fetchAPI("/api/questions", "POST", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["questionsList"] });
       router.push("/ask/complete");
