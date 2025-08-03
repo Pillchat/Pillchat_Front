@@ -5,18 +5,20 @@ import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { FC } from "react";
 
-type CustomHeaderProps = {
+interface CustomHeaderProps {
   title: string;
   rightButtonLabel?: string;
   showIcon?: boolean;
   onRightButtonClick?: () => void;
-};
+  isActive?: boolean;
+}
 
 export const CustomHeader: FC<CustomHeaderProps> = ({
   title,
   showIcon = false,
   rightButtonLabel = "",
   onRightButtonClick,
+  isActive = false,
 }) => {
   const router = useRouter();
 
@@ -37,7 +39,9 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
           label={rightButtonLabel}
           variant="textOnly"
           onClick={onRightButtonClick}
-          className="text-md p-0 text-muted-foreground"
+          className={`text-md p-0 ${
+            isActive ? "text-foreground" : "text-muted-foreground"
+          }`}
         />
       )}
     </header>

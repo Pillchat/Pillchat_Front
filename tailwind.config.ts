@@ -33,6 +33,10 @@ export default {
           DEFAULT: "hsl(var(--brand))",
           foreground: "hsl(var(--brand-foreground))",
         },
+        brandSecondary: {
+          DEFAULT: "hsl(var(--brand-secondary))",
+          foreground: "hsl(var(--brand-secondary-foreground))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",

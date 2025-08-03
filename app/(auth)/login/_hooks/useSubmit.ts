@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { LoginFormData } from "../page";
-import { loginUser } from "@/app/functions/authService";
 import { useAuth } from "@/hooks";
 import { useRouter } from "next/navigation";
+import { fetchAPI, setTokens } from "@/lib/functions";
 
 export const useSubmit = () => {
   const router = useRouter();
@@ -16,7 +16,7 @@ export const useSubmit = () => {
     setError(null);
 
     try {
-      const response = await loginUser({
+      const response = await fetchAPI("/api/auth/login", "POST", {
         email: data.email,
         password: data.password,
       });

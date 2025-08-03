@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useLocalStorage } from "./useLocalStorage";
-import { refreshToken } from "@/app/functions/authService";
+import { refreshTokens } from "@/lib/functions";
 
 const JWT_EXPIRY_TIME = 24 * 3600 * 1000; // 24시간
 
@@ -15,11 +15,6 @@ export const useAuth = () => {
       setStorageItem("access_token", accessToken);
       setStorageItem("refresh_token", refreshTokenValue);
 
-      console.log("토큰이 localStorage에 저장되었습니다:", {
-        access_token: accessToken,
-        refresh_token: refreshTokenValue,
-      });
-
       // 자동 토큰 갱신 설정 (24시간 - 1분 전에 갱신)
       setTimeout(() => {
         handleSilentRefresh(accessToken);
@@ -32,16 +27,20 @@ export const useAuth = () => {
   const handleSilentRefresh = useCallback(
     async (accessToken: string) => {
       try {
-        const response = await refreshToken(accessToken);
-
-        if (response.success && response.data) {
-          const { access, refresh } = response.data;
-          setStorageItem("access_token", access);
-          setStorageItem("refresh_token", refresh);
+        const response = await refreshTokens();
+        if (
+          response &&
+          typeof response === "object" &&
+          "access_token" in response &&
+          "refresh_token" in response
+        ) {
+          const { access_token, refresh_token } = response;
+          setStorageItem("access_token", access_token);
+          setStorageItem("refresh_token", refresh_token);
 
           // 다시 자동 갱신 설정
           setTimeout(() => {
-            handleSilentRefresh(access);
+            handleSilentRefresh(access_token);
           }, JWT_EXPIRY_TIME - 60000);
         }
       } catch (error: any) {
