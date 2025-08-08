@@ -6,3 +6,4 @@ export * from "./IconInputField";
 export * from "./InputField";
 export * from "./StepHeader";
 export * from "./GeneralHeader";
+export * from "./TabsWithUnderline";
