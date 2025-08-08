@@ -42,7 +42,7 @@ export const BottomNavbar: FC = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="shadow-t dark:shadow-t-gray-800 fixed bottom-0 left-1/2 z-50 flex h-[5.625rem] w-full max-w-screen-sm -translate-x-1/2 items-center justify-between bg-white px-6 dark:bg-gray-900">
+    <nav className="shadow-t dark:shadow-t-gray-800 fixed bottom-0 left-1/2 z-50 flex h-[5.625rem] w-full max-w-screen-sm -translate-x-1/2 items-center justify-between border-t-[1px] border-[#E2E2E2] bg-transparent px-6">
       {NAV_ITEMS.map((item) => {
         const IconComponent = item.icon;
         return (
