@@ -7,3 +7,4 @@ export * from "./InputField";
 export * from "./StepHeader";
 export * from "./GeneralHeader";
 export * from "./TabsWithUnderline";
+export * from "./BottomNavbar";
