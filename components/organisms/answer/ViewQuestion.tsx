@@ -10,6 +10,7 @@ import { FC } from "react";
 import { QuestionResponse } from "@/types/question";
 import { format } from "date-fns";
 import { map } from "lodash";
+import { IconWithCount } from "@/components/atoms";
 
 export const ViewQuestion: FC<{ question: QuestionResponse }> = ({
   question,
@@ -33,10 +34,7 @@ export const ViewQuestion: FC<{ question: QuestionResponse }> = ({
               <div className="flex flex-row items-center gap-3 align-middle">
                 {/* TODO: 작성자 정보 추가 */}
                 <span className="text-foreground">{"작성자"}</span>
-                <span className="flex flex-row items-center">
-                  <img src="/Eye.svg" alt="eye" className="h-5 w-5" />
-                  <span>{"조회수"}</span>
-                </span>
+                <IconWithCount src="/Eye.svg" count={100} />
                 <span>{format(createdAt, "yyyy-MM-dd HH:mm:ss")}</span>
               </div>
               <PharmMoney reward={reward} />
