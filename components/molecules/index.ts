@@ -8,3 +8,4 @@ export * from "./StepHeader";
 export * from "./GeneralHeader";
 export * from "./TabsWithUnderline";
 export * from "./BottomNavbar";
+export * from "./ListCard";
