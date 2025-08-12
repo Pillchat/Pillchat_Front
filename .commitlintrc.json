@@ -5,6 +5,7 @@
       2,
       "always",
       ["feat", "fix", "docs", "style", "refact", "test", "chore", "ci"]
-    ]
+    ],
+    "subject-case": [0]
   }
 }

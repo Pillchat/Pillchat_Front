@@ -11,3 +11,4 @@ export * from "./RoleCard";
 export * from "./SolidButton";
 export * from "./StrokeButton";
 export * from "./PharmMoney";
+export * from "./IconWithCount";
