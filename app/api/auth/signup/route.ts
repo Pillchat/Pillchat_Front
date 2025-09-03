@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { SignupFormData } from "@/app/(auth)/signup/page";
 
 export const POST = async (request: NextRequest) => {
-  const { username, password, school, grade, age } =
+  const { nickname, password } =
     (await request.json()) as SignupFormData;
 
   try {
@@ -10,7 +10,7 @@ export const POST = async (request: NextRequest) => {
       `${process.env.NEXT_PUBLIC_API_HOST}/api/auth/register`,
       {
         method: "POST",
-        body: JSON.stringify({ username, password, school, grade, age }),
+        body: JSON.stringify({ nickname, password }),
         headers: {
           "Content-Type": "application/json",
         },
