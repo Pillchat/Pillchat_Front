@@ -2,8 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { SignupFormData } from "@/app/(auth)/signup/page";
 
 export const POST = async (request: NextRequest) => {
-  const { nickname, password } =
-    (await request.json()) as SignupFormData;
+  const { nickname, password } = (await request.json()) as SignupFormData;
 
   try {
     const response = await fetch(
