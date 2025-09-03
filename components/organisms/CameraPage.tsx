@@ -1,7 +1,9 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { useSetAtom } from 'jotai';
-import { tempTokenAtom } from '@/store/tempToken';
-import { useUpload } from '@/app/(auth)/signup/_hooks';
+'use client'
+
+import React, { useRef, useState, useEffect, useCallback } from "react";
+import { useSetAtom } from "jotai";
+import { tempTokenAtom } from "@/store/tempToken";
+import { useUpload } from "@/app/(auth)/signup/_hooks";
 
 interface CameraPageProps {
   setStep: (step: number) => void;
@@ -9,16 +11,22 @@ interface CameraPageProps {
   setOcrData: (data: any) => void;
 }
 
-export const CameraPage: React.FC<CameraPageProps> = ({ setStep, route, setOcrData }) => {
+export const CameraPage: React.FC<CameraPageProps> = ({
+  setStep,
+  route,
+  setOcrData,
+}) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
-  const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">(
+    "portrait",
+  );
   const { onUpload, isLoading, error } = useUpload();
   const setTempToken = useSetAtom(tempTokenAtom);
 
   const dataURLtoFile = (dataurl: string, filename: string) => {
-    const arr = dataurl.split(',');
+    const arr = dataurl.split(",");
     const mime = arr[0].match(/:(.*?);/)![1];
     const bstr = atob(arr[1]);
     let n = bstr.length;
@@ -33,25 +41,30 @@ export const CameraPage: React.FC<CameraPageProps> = ({ setStep, route, setOcrDa
     const initCamera = async () => {
       try {
         const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter((device) => device.kind === 'videoinput');
-        const rearCamera = videoDevices.find((device) => device.label.toLowerCase().includes('back'));
+        const videoDevices = devices.filter(
+          (device) => device.kind === "videoinput",
+        );
+        const rearCamera = videoDevices.find((device) =>
+          device.label.toLowerCase().includes("back"),
+        );
         const constraints: MediaStreamConstraints = {
           video: {
             deviceId: rearCamera ? { exact: rearCamera.deviceId } : undefined,
             width: { ideal: 1920 },
             height: { ideal: 1080 },
-            facingMode: "environment"
+            facingMode: "environment",
           },
-          audio: false
+          audio: false,
         };
 
-        const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        const mediaStream =
+          await navigator.mediaDevices.getUserMedia(constraints);
         setStream(mediaStream);
         if (videoRef.current) {
           videoRef.current.srcObject = mediaStream;
         }
       } catch (err) {
-        console.error('카메라 접근 실패:', err);
+        console.error("카메라 접근 실패:", err);
       }
     };
 
@@ -59,7 +72,7 @@ export const CameraPage: React.FC<CameraPageProps> = ({ setStep, route, setOcrDa
 
     return () => {
       if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
       }
     };
   }, []);
@@ -83,7 +96,7 @@ export const CameraPage: React.FC<CameraPageProps> = ({ setStep, route, setOcrDa
     if (!videoRef.current) return;
 
     const video = videoRef.current;
-    const frame = document.querySelector('.capture-frame') as HTMLElement;
+    const frame = document.querySelector(".capture-frame") as HTMLElement;
     if (frame) {
       const videoRect = video.getBoundingClientRect();
       const frameRect = frame.getBoundingClientRect();
@@ -96,17 +109,20 @@ export const CameraPage: React.FC<CameraPageProps> = ({ setStep, route, setOcrDa
       const sw = frameRect.width * scaleX;
       const sh = frameRect.height * scaleY;
 
-      const canvas = document.createElement('canvas');
+      const canvas = document.createElement("canvas");
       canvas.width = sw;
       canvas.height = sh;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
-        const croppedImage = canvas.toDataURL('image/png');
+        const croppedImage = canvas.toDataURL("image/png");
         setImgSrc(croppedImage);
 
-        const file = dataURLtoFile(croppedImage, 'capture.png');
-        const result = await onUpload(file, route === "학생" ? "student" : "professional");
+        const file = dataURLtoFile(croppedImage, "capture.png");
+        const result = await onUpload(
+          file,
+          route === "학생" ? "student" : "professional",
+        );
 
         if (result?.success) {
           setTempToken(result.tempToken);
@@ -131,8 +147,8 @@ export const CameraPage: React.FC<CameraPageProps> = ({ setStep, route, setOcrDa
         />
       ) : (
         <div className="flex h-full items-center justify-center text-white">
-          카메라 접근 권한이 거부되어 촬영할 수 없습니다.
-          인증을 위해 브라우저를 통해 카메라 권한을 허용해주세요.
+          카메라 접근 권한이 거부되어 촬영할 수 없습니다. 인증을 위해 브라우저를
+          통해 카메라 권한을 허용해주세요.
         </div>
       )}
 
@@ -155,7 +171,7 @@ export const CameraPage: React.FC<CameraPageProps> = ({ setStep, route, setOcrDa
             className="rounded-full bg-white px-4 py-4 text-black shadow-md"
             disabled={isLoading}
           >
-            <img src={'/Camera_Vector.svg'} alt="촬영버튼" />
+            <img src={"/Camera_Vector.svg"} alt="촬영버튼" />
           </button>
           {error && <div className="mt-2 text-red-500">{error}</div>}
         </div>
@@ -166,7 +182,7 @@ export const CameraPage: React.FC<CameraPageProps> = ({ setStep, route, setOcrDa
             className="rounded-full bg-white px-4 py-4 text-black shadow-md"
             disabled={isLoading}
           >
-            <img src={'/Camera_Vector.svg'} alt="촬영버튼" />
+            <img src={"/Camera_Vector.svg"} alt="촬영버튼" />
           </button>
           {error && <div className="mt-2 text-red-500">{error}</div>}
         </div>

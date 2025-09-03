@@ -4,7 +4,10 @@ export const useCheckVerify = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>();
 
-  const onCheckVerify = async (email: string, code: string): Promise<{ success: boolean; status: number; message?: string }> => {
+  const onCheckVerify = async (
+    email: string,
+    code: string,
+  ): Promise<{ success: boolean; status: number; message?: string }> => {
     setIsLoading(true);
     setError(null);
 
@@ -23,7 +26,11 @@ export const useCheckVerify = () => {
         return { success: false, status: response.status, message };
       }
 
-      return { success: true, status: 200, message: data.message || "인증 성공" };
+      return {
+        success: true,
+        status: 200,
+        message: data.message || "인증 성공",
+      };
     } catch (err: any) {
       setError(err.message || "인증 오류 발생");
       return { success: false, status: 500, message: err.message };

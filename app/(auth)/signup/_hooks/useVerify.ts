@@ -36,7 +36,9 @@ export const useVerify = () => {
       setIsVerified(true);
     } catch (error: any) {
       console.error("인증코드 발송 실패:", error);
-      setError(error.message || "인증코드 발송에 실패했습니다. 다시 시도해주세요.");
+      setError(
+        error.message || "인증코드 발송에 실패했습니다. 다시 시도해주세요.",
+      );
     } finally {
       setIsLoading(false);
     }
