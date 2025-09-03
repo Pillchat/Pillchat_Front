@@ -1,4 +1,4 @@
 export * from "./notificationSetting";
-export * from "./ocrVerifyAtom.ts";
+export * from "./ocrVerifyAtom"
 export * from "./profile";
 export * from "./tempToken";
