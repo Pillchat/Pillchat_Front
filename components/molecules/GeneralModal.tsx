@@ -10,7 +10,7 @@ interface ModalProps {
   message?: string;
 }
 
-const GeneralModal: FC<ModalProps> = ({
+export const GeneralModal: FC<ModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
@@ -39,5 +39,3 @@ const GeneralModal: FC<ModalProps> = ({
     </div>
   );
 };
-
-export default GeneralModal;

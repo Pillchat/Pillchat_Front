@@ -10,7 +10,7 @@ interface ModalProps {
   message?: string;
 }
 
-const SelectModal: FC<ModalProps> = ({
+export const SelectModal: FC<ModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
@@ -47,5 +47,3 @@ const SelectModal: FC<ModalProps> = ({
     </div>
   );
 };
-
-export default SelectModal;
