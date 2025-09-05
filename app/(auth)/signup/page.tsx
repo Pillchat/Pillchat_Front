@@ -2,24 +2,26 @@
 
 import { FC } from "react";
 import { useState } from "react";
-import { Step, useStep } from "./_hooks";
+import { useRouter } from "next/navigation";
+import { Step, useStep, useVerify, useCheckVerify, useSubmit } from "./_hooks";
 
 import { RoleCard, SolidButton, StrokeButton } from "@/components/atoms";
 import { StepHeader, InputField, IconInputField } from "@/components/molecules";
-import { VerifyInputField } from "@/components/organisms";
-import CameraPage from "@/components/organisms/CameraPage";
+import { VerifyInputField, CameraPage } from "@/components/organisms";
 
 export type SignupFormData = {
   email: string;
   password: string;
-  username: string;
-  school: string;
-  grade: string;
-  age: number;
+  nickname: string;
+  agreeToTerms: boolean;
+  code?: string;
 };
 
 const SignupPage: FC = () => {
   const { step, nextStep, prevStep, setStep } = useStep();
+  const { onVerify, isLoading, isVerified } = useVerify();
+  const { onCheckVerify } = useCheckVerify();
+  const { onSubmit } = useSubmit();
 
   const [route, setRoute] = useState("");
   const [valueBadge, setValueBadge] = useState("");
@@ -27,11 +29,56 @@ const SignupPage: FC = () => {
   const [checked, seChecked] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordRe, setShowPasswordRe] = useState(false);
+  const [ocrData, setOcrData] = useState<any>(null);
+  const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordRe, setPasswordRe] = useState("");
   const [nickname, setNickname] = useState("");
+  const [code, setCode] = useState("");
+
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const handleVerify = async () => {
+    if (!email) return;
+    await onVerify(email);
+  };
+
+  const handleCheckVerify = async () => {
+    if (!email || !code) return;
+    const result = await onCheckVerify(email, code);
+
+    if (result.status === 200) {
+      nextStep();
+    } else if (result.status === 400) {
+      alert("인증코드가 잘못되었습니다.");
+      setCode(""); // 이메일 인증 코드 초기화
+    } else {
+      alert(result.message || "인증에 실패했습니다.");
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (!email) return;
+    await onVerify(email);
+  };
+
+  const handleSubmit = async () => {
+    if (!nickname || !email || !password) {
+      alert("닉네임, 이메일, 비밀번호를 모두 입력해주세요.");
+      return;
+    }
+
+    await onSubmit({
+      email,
+      password,
+      nickname,
+      agreeToTerms: true,
+    });
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center">
@@ -115,7 +162,11 @@ const SignupPage: FC = () => {
                 dark={true}
               />
 
-              <CameraPage />
+              <CameraPage
+                setStep={setStep}
+                route={route}
+                setOcrData={setOcrData}
+              />
             </>
           ) : route === "전문가" ? (
             <>
@@ -125,7 +176,11 @@ const SignupPage: FC = () => {
                 dark={true}
               />
 
-              <CameraPage />
+              <CameraPage
+                setStep={setStep}
+                route={route}
+                setOcrData={setOcrData}
+              />
             </>
           ) : null}
         </>
@@ -136,41 +191,77 @@ const SignupPage: FC = () => {
           {route === "학생" ? (
             <>
               <StepHeader content={`${route} 인증`} onIconClick={prevStep} />
-
               <div className="mt-[1rem] flex w-[90%] flex-col">
                 <div className="flex flex-col gap-[20px]">
-                  <InputField content="성명" disabled={true} />
-                  <InputField content="학교명" disabled />
-                  <InputField content="학과" disabled />
-                  <InputField content="학번" disabled />
+                  <InputField
+                    content="성명"
+                    disabled
+                    value={ocrData?.fields.name || ""}
+                  />
+                  <InputField
+                    content="학교명"
+                    disabled
+                    value={ocrData?.fields.university || ""}
+                  />
+                  <InputField
+                    content="학과"
+                    disabled
+                    value={ocrData?.fields.department || ""}
+                  />
+                  <InputField
+                    content="학번"
+                    disabled
+                    value={ocrData?.fields.studentId || ""}
+                  />
                 </div>
 
                 <div className="item-center mt-[2rem] flex w-full flex-col justify-center gap-[15px]">
                   <StrokeButton
                     content="다시 촬영하기"
                     variant="stroke-brand"
+                    onClick={() => setStep(3)}
                   />
-                  <SolidButton content="인증하기" variant={"brand"} />
+                  <SolidButton
+                    content="다음"
+                    variant={"brand"}
+                    onClick={() => nextStep()}
+                  />
                 </div>
               </div>
             </>
           ) : route === "전문가" ? (
             <>
               <StepHeader content={`${route} 인증`} onIconClick={prevStep} />
-
               <div className="mt-[1rem] flex w-[90%] flex-col">
                 <div className="flex flex-col gap-[20px]">
-                  <InputField content="성명" disabled />
-                  <InputField content="면허번호" disabled />
-                  <InputField content="발행날짜" disabled />
+                  <InputField
+                    content="성명"
+                    disabled
+                    value={ocrData?.fields.name || ""}
+                  />
+                  <InputField
+                    content="면허번호"
+                    disabled
+                    value={ocrData?.fields.licenseNumber || ""}
+                  />
+                  <InputField
+                    content="발행날짜"
+                    disabled
+                    value={ocrData?.fields.issueDate || ""}
+                  />
                 </div>
 
                 <div className="mt-[8rem] flex w-full flex-col gap-[15px]">
                   <StrokeButton
                     content="다시 촬영하기"
                     variant="stroke-brand"
+                    onClick={() => setStep(3)}
                   />
-                  <SolidButton content="인증하기" variant={"brand"} />
+                  <SolidButton
+                    content="다음"
+                    variant={"brand"}
+                    onClick={() => nextStep()}
+                  />
                 </div>
               </div>
             </>
@@ -212,6 +303,9 @@ const SignupPage: FC = () => {
                 content="다음"
                 variant={checked ? "brand" : "disabled"}
                 disabled={!checked}
+                onClick={() => {
+                  nextStep();
+                }}
               />
             </div>
           </div>
@@ -239,18 +333,40 @@ const SignupPage: FC = () => {
               autoFocus={true}
             />
 
-            <VerifyInputField
-              content="이메일 인증"
-              placeholder="인증번호를 적어주세요"
-            />
-
-            <div className="mt-[9rem]">
-              <SolidButton
-                content="인증하기"
-                variant={email ? "brand" : "disabled"}
-                disabled={email ? true : false}
-              />
-            </div>
+            {!isVerified ? (
+              <>
+                <VerifyInputField
+                  content="이메일 인증"
+                  placeholder="인증번호를 적어주세요"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  api={handleVerify}
+                />
+                <SolidButton
+                  content="인증번호 받기"
+                  variant={email ? "brand" : "disabled"}
+                  disabled={isLoading}
+                  onClick={() => handleVerify()}
+                />
+              </>
+            ) : (
+              <>
+                <VerifyInputField
+                  content="인증번호"
+                  placeholder="인증번호를 적어주세요"
+                  onChange={(e) => setCode(e.target.value)}
+                  api={handleResendCode}
+                />
+                <SolidButton
+                  content="인증하기"
+                  variant={isValidEmail(email) ? "brand" : "disabled"}
+                  disabled={!isValidEmail(email) || isLoading}
+                  onClick={() => {
+                    handleCheckVerify();
+                  }}
+                />
+              </>
+            )}
           </div>
         </>
       )}
@@ -279,7 +395,7 @@ const SignupPage: FC = () => {
                 maxLength={8}
               />
 
-              <p className="font-regular text-[14px] text-border">
+              <p className="font-regular text-sm text-border">
                 영어, 숫자, 특수문자를 조합한 최소 8자리
               </p>
             </div>
@@ -298,7 +414,7 @@ const SignupPage: FC = () => {
                   placeholder="비밀번호를 적어주세요"
                   type={showPasswordRe ? "text" : "password"}
                   minLength={8}
-                  maxLength={8}
+                  maxLength={16}
                 />
 
                 <p className="font-regular text-sm text-border">
@@ -307,15 +423,16 @@ const SignupPage: FC = () => {
               </div>
             )}
 
-            {passwordRe.length >= 8 && password === passwordRe && (
-              <div className="mt-[4rem]">
-                <SolidButton
-                  content="다음"
-                  variant={passwordRe ? "brand" : "disabled"}
-                  disabled={passwordRe ? true : false}
-                />
-              </div>
-            )}
+            <div className="mt-[4rem]">
+              <SolidButton
+                content="다음"
+                variant={passwordRe ? "brand" : "disabled"}
+                disabled={password !== passwordRe}
+                onClick={() => {
+                  nextStep();
+                }}
+              />
+            </div>
           </div>
         </>
       )}
@@ -351,8 +468,12 @@ const SignupPage: FC = () => {
             <div className="mt-[9rem]">
               <SolidButton
                 content="다음"
-                variant={nickname ? "brand" : "disabled"}
-                disabled={email ? true : false}
+                variant={nickname && email ? "brand" : "disabled"}
+                disabled={!(nickname && email)}
+                onClick={() => {
+                  handleSubmit();
+                  router.push("/");
+                }}
               />
             </div>
           </div>

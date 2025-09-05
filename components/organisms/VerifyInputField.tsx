@@ -9,6 +9,8 @@ interface InputFieldProps {
   autoFocus?: boolean;
   maxLength?: number;
   minLength?: number;
+  api?: () => void;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
 }
 
 export function VerifyInputField({
@@ -19,6 +21,8 @@ export function VerifyInputField({
   autoFocus,
   maxLength,
   minLength,
+  api,
+  onChange,
 }: InputFieldProps) {
   return (
     <div className="flex flex-col gap-[4px]">
@@ -32,10 +36,14 @@ export function VerifyInputField({
             autoFocus={autoFocus}
             maxLength={maxLength}
             minLength={minLength}
+            onChange={onChange}
           />
         </div>
 
-        <button className="h-[52px] w-[30%] rounded-[12px] border border-[#FF412E] bg-white font-[pretendard] text-[#FF412E]">
+        <button
+          onClick={api}
+          className="h-[52px] w-[30%] rounded-[12px] border border-[#FF412E] bg-white font-[pretendard] text-[#FF412E]"
+        >
           재전송
         </button>
       </div>
