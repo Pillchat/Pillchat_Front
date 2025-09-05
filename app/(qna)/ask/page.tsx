@@ -14,6 +14,9 @@ const QuestionPage = () => {
     selectedSubject,
     handleSubjectToggle,
     handleRightButtonClick,
+    handleImagesChange,
+    questionId,
+    imageButtonRef,
     isLoading,
     error,
   } = useQuestionForm();
@@ -34,8 +37,11 @@ const QuestionPage = () => {
         </div>
       )}
       <div className="mx-6 flex flex-grow flex-col gap-5">
-        <ImageButton />
-
+        <ImageButton
+          ref={imageButtonRef}
+          onImagesChange={handleImagesChange}
+          questionId={questionId}
+        />
         <Controller
           name="title"
           control={control}
@@ -49,7 +55,6 @@ const QuestionPage = () => {
             />
           )}
         />
-
         <Controller
           name="content"
           control={control}
@@ -63,7 +68,6 @@ const QuestionPage = () => {
             />
           )}
         />
-
         <Controller
           name="subject"
           control={control}
@@ -92,8 +96,8 @@ const QuestionPage = () => {
             </div>
           )}
         />
-
-        <Controller
+        {/* TODO: 팜머니 기능 추가시 활성화 */}
+        {/* <Controller
           name="reward"
           control={control}
           rules={QUESTION_FORM_RULES.reward}
@@ -106,7 +110,7 @@ const QuestionPage = () => {
               {...field}
             />
           )}
-        />
+        /> */}
       </div>
     </div>
   );

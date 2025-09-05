@@ -16,11 +16,11 @@ const NAV_ITEMS = [
     icon: HomeIcon,
     label: "홈",
   },
-  {
-    href: "#",
-    icon: CommunityIcon,
-    label: "커뮤니티",
-  },
+  // {
+  //   href: "#",
+  //   icon: CommunityIcon,
+  //   label: "커뮤니티",
+  // },
   {
     href: "/qna",
     icon: QnaIcon,
