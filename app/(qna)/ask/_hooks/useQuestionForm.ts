@@ -3,18 +3,23 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { QuestionCreateRequest, QuestionFormData } from "@/types/question";
 import { fetchAPI } from "@/lib/functions";
+import { useState, useRef } from "react";
+import { ImageButtonRef } from "@/components/atoms/ImageButton";
 
 const DEFAULT_VALUES: QuestionFormData = {
   title: "",
   content: "",
   subject: "",
-  subjectId: "2",
-  reward: "",
+  subjectId: "",
+  images: [],
 };
 
 export const useQuestionForm = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [questionId] = useState(() => `temp-${Date.now()}`);
+  const imageButtonRef = useRef<ImageButtonRef>(null);
 
   const form = useForm<QuestionFormData>({
     mode: "onChange",
@@ -49,17 +54,37 @@ export const useQuestionForm = () => {
   };
 
   const onSubmit = (data: QuestionFormData) => {
-    const submitData = {
+    const submitData: QuestionCreateRequest = {
       title: data.title,
       content: data.content,
       subjectId: data.subjectId,
-      reward: data.reward,
+      images: uploadedImages,
     };
+
     mutation.mutate(submitData);
   };
 
-  const handleRightButtonClick = () => {
-    handleSubmit(onSubmit)();
+  const handleImagesChange = (images: any[]) => {
+    const successfulUploads = images
+      .filter((img) => img.uploadStatus === "pending")
+      .map((img) => img.file.name);
+
+    setUploadedImages(successfulUploads);
+  };
+
+  const handleRightButtonClick = async () => {
+    // 먼저 이미지 업로드 실행
+    try {
+      if (imageButtonRef.current) {
+        await imageButtonRef.current.uploadAll();
+      }
+      // 이미지 업로드 완료 후 질문 등록
+      handleSubmit(onSubmit)();
+    } catch (error) {
+      console.error("이미지 업로드 실패:", error);
+      // 이미지 업로드가 실패해도 질문은 등록할 수 있도록 함
+      handleSubmit(onSubmit)();
+    }
   };
 
   return {
@@ -68,6 +93,9 @@ export const useQuestionForm = () => {
     selectedSubject,
     handleSubjectToggle,
     handleRightButtonClick,
+    handleImagesChange,
+    questionId,
+    imageButtonRef,
     isLoading: mutation.isPending,
     error: mutation.error,
   };
