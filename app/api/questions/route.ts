@@ -9,9 +9,7 @@ export async function POST(request: NextRequest) {
     const { title, content, subjectId, images }: QuestionCreateRequest =
       await request.json();
 
-    const headers: Record<string, string> = {
-      "Content-Type": "multipart/form-data",
-    };
+    const headers: Record<string, string> = {};
 
     const formData = new FormData();
     formData.append("title", title);
@@ -32,11 +30,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const data = await fetch(API_BASE_URL + "/api/questions", {
+    const response = await fetch(API_BASE_URL + "/api/questions", {
       method: "POST",
       headers,
       body: formData,
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
 
     return NextResponse.json(data);
   } catch (error: unknown) {
