@@ -9,7 +9,7 @@ export const POST = async (request: NextRequest) => {
       `${process.env.NEXT_PUBLIC_API_HOST}/api/auth/login`,
       {
         method: "POST",
-        body: JSON.stringify({ username: email, password }),
+        body: JSON.stringify({ email, password }),
         headers: {
           "Content-Type": "application/json",
         },
