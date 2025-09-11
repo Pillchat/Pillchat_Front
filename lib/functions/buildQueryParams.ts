@@ -1,5 +1,10 @@
-export const buildQueryParams = (params: Record<string, string>) => {
+export const buildQueryParams = (params: Record<string, string | string[]>) => {
   return Object.entries(params)
-    .map(([key, value]) => `${key}=${value}`)
+    .flatMap(([key, value]) => {
+      if (Array.isArray(value)) {
+        return value.map((v) => `${key}=${encodeURIComponent(v)}`);
+      }
+      return `${key}=${encodeURIComponent(value)}`;
+    })
     .join("&");
 };
