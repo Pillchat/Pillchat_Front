@@ -1,4 +1,3 @@
-import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import { QuestionCreateRequest } from "@/types/question";
 import { serverFetch } from "@/lib/functions";
@@ -7,39 +6,46 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST;
 
 export async function POST(request: NextRequest) {
   try {
-    const { title, content, subjectId, reward }: QuestionCreateRequest =
+    const { title, content, subjectId, images }: QuestionCreateRequest =
       await request.json();
 
-    const authorization = request.headers.get("authorization");
-    //TODO: JSON 형식으로 변경
+    const headers: Record<string, string> = {
+      "Content-Type": "multipart/form-data",
+    };
+
     const formData = new FormData();
     formData.append("title", title);
     formData.append("content", content);
     formData.append("subjectId", subjectId);
-    if (reward) {
-      formData.append("reward", reward);
+
+    // Append each image individually
+    if (images && images.length > 0) {
+      images.forEach((image) => {
+        formData.append("images", image);
+      });
     }
 
-    const response = await axios.post(
-      `${API_BASE_URL}/api/questions`,
-      formData, // FormData 객체를 직접 전달
-      { headers: { Authorization: authorization } },
-    );
+    if (request) {
+      const authorization = request.headers.get("authorization");
+      if (authorization) {
+        headers["Authorization"] = authorization;
+      }
+    }
 
-    return NextResponse.json(response.data, { status: response.status });
-  } catch (error: any) {
+    const data = await fetch(API_BASE_URL + "/api/questions", {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+
+    return NextResponse.json(data);
+  } catch (error: unknown) {
     console.error("질문 생성 API 에러:", error);
 
-    if (axios.isAxiosError(error)) {
-      const status = error.response?.status || 500;
-      const data = error.response?.data || { message: "백엔드 서버 오류" };
-      return NextResponse.json(data, { status });
-    }
+    const errorMessage = error instanceof Error ? error.message : "{}";
+    const errorInfo = JSON.parse(errorMessage);
 
-    return NextResponse.json(
-      { message: "서버 내부 오류가 발생했습니다." },
-      { status: 500 },
-    );
+    return NextResponse.json(errorInfo, { status: errorInfo.status || 500 });
   }
 }
 
