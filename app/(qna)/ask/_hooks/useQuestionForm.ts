@@ -10,7 +10,7 @@ const DEFAULT_VALUES: QuestionFormData = {
   title: "",
   content: "",
   subject: "",
-  subjectId: "",
+  subjectId: "1",
   images: [],
 };
 
@@ -21,25 +21,34 @@ export const useQuestionForm = () => {
   const [questionId] = useState(() => `temp-${Date.now()}`);
   const imageButtonRef = useRef<ImageButtonRef>(null);
 
-  const form = useForm<QuestionFormData>({
-    mode: "onChange",
-    defaultValues: DEFAULT_VALUES,
-  });
-
   const {
     control,
     handleSubmit,
     watch,
     setValue,
-    formState: { errors },
-  } = form;
+    formState: { errors, isValid },
+  } = useForm<QuestionFormData>({
+    mode: "onChange",
+    defaultValues: DEFAULT_VALUES,
+  });
 
   const selectedSubject = watch("subject");
 
   const mutation = useMutation({
     mutationFn: (data: QuestionCreateRequest) =>
       fetchAPI("/api/questions", "POST", data),
-    onSuccess: () => {
+    onSuccess: async (response) => {
+      // 질문 등록 성공 후 실제 questionId로 이미지 업로드
+      if (response?.id && imageButtonRef.current) {
+        try {
+          // ImageButton에 실제 questionId 전달하고 업로드
+          await imageButtonRef.current.uploadAll(response.id);
+        } catch (error) {
+          console.error("이미지 업로드 실패:", error);
+          // 이미지 업로드 실패해도 질문은 등록되었으므로 계속 진행
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: ["questionsList"] });
       router.push("/ask/complete");
     },
@@ -73,18 +82,8 @@ export const useQuestionForm = () => {
   };
 
   const handleRightButtonClick = async () => {
-    // 먼저 이미지 업로드 실행
-    try {
-      if (imageButtonRef.current) {
-        await imageButtonRef.current.uploadAll();
-      }
-      // 이미지 업로드 완료 후 질문 등록
-      handleSubmit(onSubmit)();
-    } catch (error) {
-      console.error("이미지 업로드 실패:", error);
-      // 이미지 업로드가 실패해도 질문은 등록할 수 있도록 함
-      handleSubmit(onSubmit)();
-    }
+    // 질문 먼저 등록 (onSuccess에서 이미지 업로드 처리)
+    handleSubmit(onSubmit)();
   };
 
   return {
@@ -98,5 +97,6 @@ export const useQuestionForm = () => {
     imageButtonRef,
     isLoading: mutation.isPending,
     error: mutation.error,
+    isValid,
   };
 };
