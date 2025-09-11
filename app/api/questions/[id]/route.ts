@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { serverFetch } from "@/lib/functions";
 
-export async function GET(request: NextRequest, context: { params }) {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
     const data = await serverFetch(`/api/questions/${id}`, {
       method: "GET",
       request,
@@ -22,9 +25,12 @@ export async function GET(request: NextRequest, context: { params }) {
   }
 }
 
-export async function PUT(request: NextRequest, context: { params }) {
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
     const body = await request.json();
 
     const data = await serverFetch(`/api/questions/${id}`, {
@@ -46,9 +52,12 @@ export async function PUT(request: NextRequest, context: { params }) {
   }
 }
 
-export async function DELETE(request: NextRequest, context: { params }) {
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
 
     const data = await serverFetch(`/api/questions/${id}`, {
       method: "DELETE",
