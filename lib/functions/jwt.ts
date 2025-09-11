@@ -4,10 +4,10 @@
 
 type JWTPayload = {
   sub?: string; // subject (userId)
-  userId?: string;
-  id?: string;
   exp?: number; // expiration time
   iat?: number; // issued at
+  userId?: string;
+  username?: string;
   [key: string]: any;
 };
 
@@ -57,8 +57,7 @@ export const getCurrentUserId = (): string | null => {
       return null;
     }
 
-    // 다양한 필드명 시도 (백엔드 구현에 따라 다름)
-    return payload.sub || payload.userId || payload.id || null;
+    return payload.userId || null;
   } catch (error) {
     console.error("Get current user ID error:", error);
     return null;
