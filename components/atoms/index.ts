@@ -1,3 +1,4 @@
+export * from "./FloatingActionButton";
 export * from "./Logo";
 export * from "./RoundedCheckBox";
 export * from "./TextInput";
@@ -19,3 +20,4 @@ export * from "./TextBadge";
 export * from "./Toast";
 export * from "./Toggle";
 export * from "./RankIndicator";
+export * from "./LikeButton";
