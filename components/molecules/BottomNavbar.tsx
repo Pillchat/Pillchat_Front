@@ -16,11 +16,11 @@ const NAV_ITEMS = [
     icon: HomeIcon,
     label: "홈",
   },
-  {
-    href: "#",
-    icon: CommunityIcon,
-    label: "커뮤니티",
-  },
+  // {
+  //   href: "#",
+  //   icon: CommunityIcon,
+  //   label: "커뮤니티",
+  // },
   {
     href: "/qna",
     icon: QnaIcon,
@@ -42,7 +42,7 @@ export const BottomNavbar: FC = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="shadow-t dark:shadow-t-gray-800 fixed bottom-0 left-1/2 z-50 flex h-[5.625rem] w-full max-w-screen-sm -translate-x-1/2 items-center justify-between border-t-[1px] border-[#E2E2E2] bg-transparent px-3 sm:px-6">
+    <nav className="shadow-t dark:shadow-t-gray-800 fixed bottom-0 left-1/2 z-50 flex h-[5.625rem] w-full max-w-screen-sm -translate-x-1/2 items-center justify-between border-t-[1px] border-[#E2E2E2] bg-background px-3 sm:px-6">
       {NAV_ITEMS.map((item) => {
         const IconComponent = item.icon;
         return (
