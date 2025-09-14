@@ -6,7 +6,7 @@ import { currentStepAtom, selectedSubjectsAtom } from "@/lib/atoms";
 import { useAtom } from "jotai";
 import { filter, includes } from "lodash";
 
-export const SelectSubject = ({ role }) => {
+export const SelectSubject = ({ role, username }) => {
   const [selectedSubjects, setSelectedSubjects] = useAtom(selectedSubjectsAtom);
   const [currentStep] = useAtom(currentStepAtom);
 
@@ -24,7 +24,7 @@ export const SelectSubject = ({ role }) => {
   return (
     <>
       <p className="my-5 text-xl font-semibold">
-        {"name"}님이
+        {username}님이
         <br />
         <span className="text-primary">
           {role === "professional"

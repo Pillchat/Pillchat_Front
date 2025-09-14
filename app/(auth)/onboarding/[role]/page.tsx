@@ -8,6 +8,7 @@ import {
   SelectSubject,
 } from "@/components/organisms";
 import { currentStepAtom } from "@/lib/atoms";
+import { getCurrentUserInfo } from "@/lib/functions";
 import { useAtom } from "jotai";
 import { useParams, useRouter } from "next/navigation";
 import { FC } from "react";
@@ -18,26 +19,28 @@ const OnboardingForRolePage: FC = () => {
   const router = useRouter();
   const { role } = useParams();
   const [currentStep] = useAtom(currentStepAtom);
+  const userInfo = getCurrentUserInfo();
+  const username = userInfo?.username || "회원";
 
   const renderContent = (role) => {
     switch (currentStep) {
       case 1:
         return role === "professional" ? (
-          <SelectSubject role={role} />
+          <SelectSubject role={role} username={username} />
         ) : (
-          <SelectPersonalInfo role={role} />
+          <SelectPersonalInfo role={role} username={username} />
         );
       case 2:
         return role === "professional" ? (
-          <SelectPersonalInfo role={role} />
+          <SelectPersonalInfo role={role} username={username} />
         ) : (
-          <SelectSubject role={role} />
+          <SelectSubject role={role} username={username} />
         );
       case 3:
         return role === "professional" ? (
           <SelectAnswerFrequency />
         ) : (
-          <SelectSubject role={role} />
+          <SelectSubject role={role} username={username} />
         );
       case 4:
         return <OnboardingComplete role={role} />;

@@ -11,7 +11,13 @@ import {
 import { filter, includes } from "lodash";
 import { useState } from "react";
 
-export const SelectPersonalInfo = ({ role }: { role: string }) => {
+export const SelectPersonalInfo = ({
+  role,
+  username,
+}: {
+  role: string;
+  username: string;
+}) => {
   const [selectedRegistrationStatus, setSelectedRegistrationStatus] = useState<
     string[]
   >([]);
@@ -49,7 +55,7 @@ export const SelectPersonalInfo = ({ role }: { role: string }) => {
   return (
     <>
       <p className="my-5 text-xl font-semibold">
-        {"name"}님의
+        {username}님의
         <br />
         맞춤형 서비스를 위한 정보를 입력해주세요.
       </p>
