@@ -19,6 +19,7 @@ const QuestionPage = () => {
     imageButtonRef,
     isLoading,
     error,
+    isValid,
   } = useQuestionForm();
 
   return (
@@ -27,6 +28,7 @@ const QuestionPage = () => {
         title="질문하기"
         rightButtonLabel={isLoading ? "등록 중..." : "등록하기"}
         onRightButtonClick={isLoading ? () => {} : handleRightButtonClick}
+        isActive={isValid}
       />
 
       {error && (

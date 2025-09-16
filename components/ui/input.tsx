@@ -10,9 +10,9 @@ const inputVariants = cva(
         default: "",
         secondary: "bg-secondary text-border border-none",
       },
-      defaultVariants: {
-        variant: "default",
-      },
+    },
+    defaultVariants: {
+      variant: "default",
     },
   },
 );

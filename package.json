@@ -14,6 +14,7 @@
     "start:https": "HTTPS=true SSL_CRT_FILE=localhost.pem SSL_KEY_FILE=localhost-key.pem react-scripts start"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.886.0",
     "@eslint/js": "^9.26.0",
     "@radix-ui/react-checkbox": "^1.2.3",
     "@radix-ui/react-dialog": "^1.1.14",

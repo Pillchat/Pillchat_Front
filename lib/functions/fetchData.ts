@@ -84,13 +84,30 @@ export const fetchAPI = async (url: string, method: string, data?: any) => {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, {
+  let requestUrl = url;
+  let requestBody: string | undefined = undefined;
+
+  if (method.toUpperCase() === "GET" && data) {
+    // GET 요청에서는 data를 쿼리 파라미터로 변환
+    const params = new URLSearchParams();
+    Object.entries(data).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach((v) => params.append(key, v));
+      } else {
+        params.append(key, value as string);
+      }
+    });
+    requestUrl = `${url}?${params.toString()}`;
+  } else if (data) {
+    // GET이 아닌 요청에서는 body에 JSON 데이터 포함
+    requestBody = JSON.stringify(data);
+    headers["Content-Type"] = "application/json";
+  }
+
+  const response = await fetch(requestUrl, {
     method,
-    body: JSON.stringify(data),
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
+    body: requestBody,
+    headers,
   });
 
   if (!response.ok) {
