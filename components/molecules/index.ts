@@ -14,3 +14,4 @@ export * from "./MeaninglessHeader";
 export * from "./UserInfoField";
 export * from "./SelectModal";
 export * from "./GeneralModal";
+export * from "./ImageCarousel";

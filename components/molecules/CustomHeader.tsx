@@ -23,7 +23,7 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
   const router = useRouter();
 
   return (
-    <header className="flex w-full items-center justify-between px-6 py-4">
+    <header className="sticky top-0 z-10 flex w-full items-center justify-between bg-white px-6 py-4">
       <LeftArrowButton
         onClick={() => {
           router.back();

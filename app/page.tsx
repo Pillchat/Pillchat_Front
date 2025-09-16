@@ -2,8 +2,16 @@
 
 import { FC } from "react";
 import { BottomNavbar, GeneralHeader } from "@/components/molecules";
+import { redirect } from "next/navigation";
+import { useLocalStorage } from "@/hooks";
 
 const Home: FC = () => {
+  const { getStorageItem } = useLocalStorage();
+
+  if (!getStorageItem("access_token")) {
+    return redirect("/login");
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <GeneralHeader />
