@@ -2,6 +2,7 @@ import { FC } from "react";
 import { IconWithCount, PharmMoney } from "../atoms";
 
 export const ListCard: FC<{
+  onClick: () => void;
   title: string;
   content: string;
   reward: string;
@@ -10,6 +11,7 @@ export const ListCard: FC<{
   answerCount: number;
   commentCount: number;
 }> = ({
+  onClick,
   title,
   content,
   reward,
