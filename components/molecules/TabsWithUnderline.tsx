@@ -11,12 +11,14 @@ interface TabsWithUnderlineProps {
   tabs: TabItem[];
   defaultValue: string;
   className?: string;
+  onValueChange?: (value: string) => void;
 }
 
 export const TabsWithUnderline: FC<TabsWithUnderlineProps> = ({
   tabs,
   defaultValue,
   className,
+  onValueChange,
 }) => {
   return (
     <Tabs defaultValue={defaultValue}>
