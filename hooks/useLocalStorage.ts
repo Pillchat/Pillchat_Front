@@ -4,7 +4,13 @@ export const useLocalStorage = () => {
     if (isServer) return;
 
     const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : null;
+    if (!item) return null;
+
+    try {
+      return JSON.parse(item);
+    } catch {
+      return item;
+    }
   };
 
   const setStorageItem = (key: string, value: unknown) => {
