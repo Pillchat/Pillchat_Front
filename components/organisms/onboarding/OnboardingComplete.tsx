@@ -1,14 +1,8 @@
 "use client";
 
-import { useAtom } from "jotai";
-import { TextButton } from "@/components/atoms";
 import { FC } from "react";
-import { useRouter } from "next/navigation";
 
 export const OnboardingComplete: FC<{ role: string }> = ({ role }) => {
-  const router = useRouter();
-  //   const [name] = useAtom(nameAtom);
-
   return (
     <>
       <div className="text-center">

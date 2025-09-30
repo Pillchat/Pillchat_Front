@@ -2,16 +2,23 @@
 
 import { TextInput } from "@/components/atoms";
 import { SectionWithChips } from "@/components/molecules";
-import { FC, useState } from "react";
+import { professionalInfoAtom } from "@/lib/atoms/onboarding";
+import { useAtom } from "jotai";
+import { FC } from "react";
 
-export const SelectAnswerFrequency: FC = () => {
-  const [answerFrequency, setAnswerFrequency] = useState<string>("");
-  const [answerType, setAnswerType] = useState<string>("");
+type SelectAnswerFrequencyProps = {
+  username: string;
+};
+
+export const SelectAnswerFrequency: FC<SelectAnswerFrequencyProps> = ({
+  username = "회원",
+}) => {
+  const [professionalInfo, setProfessionalInfo] = useAtom(professionalInfoAtom);
 
   return (
     <div>
       <p className="my-5 text-xl font-semibold">
-        {"name"}님은
+        {username}님은
         <br />
         답변을 얼마나 주기적으로 하실건가요?
       </p>
@@ -21,9 +28,11 @@ export const SelectAnswerFrequency: FC = () => {
           data={{
             "답변 형식": ["자율적", "고정적"],
           }}
-          selectedItems={[answerType]}
+          selectedItems={
+            professionalInfo.answerCycle ? [professionalInfo.answerCycle] : []
+          }
           onItemToggle={(item) => {
-            setAnswerType(item);
+            setProfessionalInfo({ ...professionalInfo, answerCycle: item });
           }}
           buttonSize="long"
           selectionMode="single"
@@ -32,9 +41,12 @@ export const SelectAnswerFrequency: FC = () => {
         <TextInput
           label="평균 답변 횟수"
           placeholder="횟수를 입력해주세요"
-          value={answerFrequency}
+          value={professionalInfo.avgAnswerCount.toString()}
           onChange={(e) => {
-            setAnswerFrequency(e.target.value);
+            setProfessionalInfo({
+              ...professionalInfo,
+              avgAnswerCount: parseInt(e.target.value) || 0,
+            });
           }}
         />
       </div>
