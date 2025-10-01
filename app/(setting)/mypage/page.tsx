@@ -17,20 +17,46 @@ const mypage: FC = () => {
   );
   const { onDelete } = useDelete();
   const { onLogout } = useLogout();
-  const { onMyProfile } = useMyProfile();
+  const { onMyProfile, isLoading, error } = useMyProfile();
 
   useEffect(() => {
     onMyProfile();
   }, [onMyProfile]);
 
+  // 에러가 있을 경우 에러 메시지 표시
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center">
+        <div className="mx-4 max-w-md rounded-lg border border-red-200 bg-red-50 p-6">
+          <h2 className="mb-2 text-lg font-semibold text-red-800">오류 발생</h2>
+          <p className="mb-4 text-red-600">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="rounded-lg bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center">
       <MeaninglessHeader />
-      <UserInfoField
-        onIconClick={() => {
-          router.push("/editprofile");
-        }}
-      />
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
+          <span className="ml-2">프로필 정보를 불러오는 중...</span>
+        </div>
+      ) : (
+        <UserInfoField
+          onIconClick={() => {
+            router.push("/editprofile");
+          }}
+        />
+      )}
 
       <div className="mt-8 w-[90%]">
         <p className="text-sm text-muted-foreground">정보</p>

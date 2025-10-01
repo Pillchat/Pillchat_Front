@@ -1,35 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
+import { serverFetch } from "@/lib/functions";
 
 export const DELETE = async (request: NextRequest) => {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}/api/auth/delete`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    );
+    const data = await serverFetch("/api/auth/delete-account", {
+      method: "DELETE",
+      data: { immediate: true },
+      request,
+    });
 
-    const data = await response?.json();
-
-    if (!response.ok) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: data.message || "계정탈퇴에 실패했습니다.",
-        },
-        { status: response.status },
-      );
+    return NextResponse.json({ success: true, data }, { status: 200 });
+  } catch (error: any) {
+    let parsedError;
+    try {
+      parsedError = JSON.parse(error.message);
+    } catch {
+      parsedError = {
+        status: 500,
+        message: error.message || "서버 오류가 발생했습니다.",
+      };
     }
-  } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: "서버 오류가 발생했습니다.",
-      },
-      { status: 500 },
-    );
+
+    const status = parsedError?.status || 500;
+    let message = parsedError?.message || "서버 오류가 발생했습니다.";
+
+    return NextResponse.json({ success: false, message }, { status });
   }
 };
