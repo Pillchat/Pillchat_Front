@@ -1,13 +1,22 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { RankIndicator } from "@/components/atoms";
 import { InfoHeader, GeneralModal } from "@/components/molecules";
+import { usePromotion } from "./_hooks/usePromotion";
 
 const grade: FC = () => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const { fetchPromotion, promotionData, isLoading, error } = usePromotion();
+
+  useEffect(() => {
+    fetchPromotion();
+  }, [fetchPromotion]);
+
+  // 승급 조건 달성 여부 확인
+  const isPromotionAchieved = (promotionData?.progress || 0) >= (promotionData?.target || 100);
 
   return (
     <div className="flex min-h-screen flex-col items-center">
@@ -22,7 +31,7 @@ const grade: FC = () => {
       <div className="flex w-[90%] flex-col items-center justify-center">
         <p className="text-2xl font-bold">현재 내 등급</p>
         <div className="mt-3">
-          <RankIndicator currentRank="gosu" />
+          <RankIndicator currentRank={promotionData?.currentGrade?.toLowerCase() || "saessak"} />
 
           <div className="mt-6 flex flex-col">
             <div className="flex flex-row items-center gap-1">
@@ -43,10 +52,14 @@ const grade: FC = () => {
 
       <div className="mt-5 flex w-[90%] flex-row items-center justify-between gap-1">
         <div className="flex flex-row items-center gap-1">
-          <img src={"/UncheckIcon.svg"} />
-          <p>질문 및 답변 합산 100개 이상</p>
+          <img src={isPromotionAchieved ? "/CheckedIcon.svg" : "/UncheckIcon.svg"} />
+          <p style={{ color: isPromotionAchieved ? "#FF412E" : "inherit" }}>
+            질문 및 답변 합산 100개 이상
+          </p>
         </div>
-        <p className="text-muted-foreground">89 / 100</p>
+        <p style={{ color: isPromotionAchieved ? "#FF412E" : "inherit" }} className={!isPromotionAchieved ? "text-muted-foreground" : ""}>
+          {promotionData?.progress || 0} / {promotionData?.target || 100}
+        </p>
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center text-sm text-muted-foreground">
@@ -61,7 +74,7 @@ const grade: FC = () => {
           setOpen(false);
         }}
         title="축하합니다!"
-        message="‘고수’ 등급으로 등업하셨어요!
+        message="'고수' 등급으로 등업하셨어요!
                         앞으로 더 열심히 활동하셔서
                         높은 등급을 노려보세요!"
       />

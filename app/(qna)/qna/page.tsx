@@ -34,12 +34,12 @@ const QnaPage: FC = () => {
     <div className="flex h-screen flex-col">
       <div className="flex-shrink-0">
         <GeneralHeader />
-        <TabsWithUnderline
+        {/* <TabsWithUnderline
           className="mx-6"
           tabs={TABS}
           defaultValue={currentStatus}
           onValueChange={handleTabChange}
-        />
+        /> */}
       </div>
       <div className="relative flex-1 overflow-y-auto">
         {isLoading ? (
@@ -51,7 +51,7 @@ const QnaPage: FC = () => {
             <div className="flex flex-col gap-5">
               {map(data, (question) => (
                 <Fragment key={question.id}>
-                  <ListCard
+                  {/* <ListCard
                     onClick={() => {
                       router.push(`/question/${question.id}`);
                     }}
@@ -62,7 +62,7 @@ const QnaPage: FC = () => {
                     viewCount={question.viewCount || 0}
                     answerCount={question.answerCount || 0}
                     commentCount={question.commentCount || 0}
-                  />
+                  /> */}
                   <Separator className="last:hidden" />
                 </Fragment>
               ))}

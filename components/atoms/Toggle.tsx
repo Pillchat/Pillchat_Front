@@ -46,10 +46,10 @@ export const Toggle: FC<ToggleProps> = ({
       wrapWidth: 40,
       wrapHeight: 18,
       wrapPadding: 2,
-      wrapRounded: 12, // wrap border-radius 직접 지정
+      wrapRounded: 12,
       knobWidth: 14,
       knobHeight: 14,
-      knobRounded: 7, // knob border-radius 직접 지정
+      knobRounded: 7,
     },
     md: {
       wrapWidth: 50,
@@ -87,7 +87,7 @@ export const Toggle: FC<ToggleProps> = ({
       onClick={handleToggle}
       onKeyDown={handleKey}
       disabled={disabled}
-      className={`relative inline-flex items-center transition-colors duration-200 ease-in-out ${
+      className={`relative inline-flex items-center transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
         disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
       }`}
       style={{
@@ -97,12 +97,13 @@ export const Toggle: FC<ToggleProps> = ({
     >
       {/* 트랙 */}
       <span
-        className="flex items-center transition-colors duration-200"
+        className={`flex items-center transition-colors duration-200 ${
+          internal ? 'bg-brand' : 'bg-muted-foreground'
+        }`}
         style={{
           width: s.wrapWidth,
           height: s.wrapHeight,
           padding: s.wrapPadding,
-          backgroundColor: internal ? "bg-brand" : "bg-muted-foregroud",
           borderRadius: s.wrapRounded,
         }}
       >
