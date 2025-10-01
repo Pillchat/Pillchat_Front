@@ -5,7 +5,11 @@ interface UploadParams {
 }
 
 export const useUpdate = () => {
-  const onUpdate = async ({ accessToken, tempNickname, keys }: UploadParams) => {
+  const onUpdate = async ({
+    accessToken,
+    tempNickname,
+    keys,
+  }: UploadParams) => {
     try {
       const response = await fetch("/api/profile/update", {
         method: "PUT",

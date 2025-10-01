@@ -5,7 +5,7 @@ export const POST = async (request: NextRequest) => {
   try {
     const data = await serverFetch("/api/auth/logout", {
       method: "POST",
-      request
+      request,
     });
 
     return NextResponse.json({ success: true, data }, { status: 200 });
@@ -13,13 +13,16 @@ export const POST = async (request: NextRequest) => {
     let parsedError;
     try {
       parsedError = JSON.parse(error.message);
-      console.log(parsedError)
+      console.log(parsedError);
     } catch {
-      parsedError = { status: 500, message: error.message || '서버 오류가 발생했습니다.' };
+      parsedError = {
+        status: 500,
+        message: error.message || "서버 오류가 발생했습니다.",
+      };
     }
-    
+
     const status = parsedError?.status || 500;
-    let message = parsedError?.message || '서버 오류가 발생했습니다.';
+    let message = parsedError?.message || "서버 오류가 발생했습니다.";
 
     return NextResponse.json({ success: false, message }, { status });
   }

@@ -2,7 +2,13 @@
 
 import { ProfileImg, GradeBadge } from "../atoms";
 import { useAtom } from "jotai";
-import { nicknameAtom, schoolAtom, gradeAtom, studentGradeAtom, profileImgAtom } from "@/store/profile";
+import {
+  nicknameAtom,
+  schoolAtom,
+  gradeAtom,
+  studentGradeAtom,
+  profileImgAtom,
+} from "@/store/profile";
 
 interface Option {
   onIconClick?: () => void;
@@ -24,7 +30,7 @@ export function UserInfoField({ onIconClick }: Option) {
           {grade && <GradeBadge />}
         </div>
         <p className="text-sm font-light">
-          {(school || '학교정보없음')} / {(studentGrade || '학년정보없음')}
+          {school || "학교정보없음"} / {studentGrade || "학년정보없음"}
         </p>
       </div>
       <img src={"/ArrowIcon.svg"} className="ml-auto" onClick={onIconClick} />

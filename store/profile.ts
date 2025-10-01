@@ -40,14 +40,15 @@ export const updateProfileAtom = atom(
       studentGrade?: string;
       id?: number;
       keys?: string[];
-    }
+    },
   ) => {
     if (update.nickname !== undefined) set(nicknameAtom, update.nickname);
     if (update.profileImg !== undefined) set(profileImgAtom, update.profileImg);
     if (update.school !== undefined) set(schoolAtom, update.school);
     if (update.grade !== undefined) set(gradeAtom, update.grade);
-    if (update.studentGrade !== undefined) set(studentGradeAtom, update.studentGrade);
+    if (update.studentGrade !== undefined)
+      set(studentGradeAtom, update.studentGrade);
     if (update.id !== undefined) set(idAtom, update.id);
     if (update.keys !== undefined) set(keysAtom, update.keys);
-  }
+  },
 );

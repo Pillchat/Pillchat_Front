@@ -15,7 +15,10 @@ export const DELETE = async (request: NextRequest) => {
     try {
       parsedError = JSON.parse(error.message);
     } catch {
-      parsedError = { status: 500, message: error.message || "서버 오류가 발생했습니다." };
+      parsedError = {
+        status: 500,
+        message: error.message || "서버 오류가 발생했습니다.",
+      };
     }
 
     const status = parsedError?.status || 500;

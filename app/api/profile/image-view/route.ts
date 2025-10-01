@@ -4,10 +4,15 @@ export const GET = async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const keys = searchParams.getAll("keys"); // 여러 key 지원
-    const accessToken = request.headers.get("authorization")?.replace("Bearer ", "");
+    const accessToken = request.headers
+      .get("authorization")
+      ?.replace("Bearer ", "");
 
     if (!accessToken) {
-      return NextResponse.json({ message: "인증 토큰이 필요합니다." }, { status: 401 });
+      return NextResponse.json(
+        { message: "인증 토큰이 필요합니다." },
+        { status: 401 },
+      );
     }
 
     // 외부 API 호출
@@ -21,7 +26,7 @@ export const GET = async (request: NextRequest) => {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
 
     const data = await response.json();
@@ -29,7 +34,7 @@ export const GET = async (request: NextRequest) => {
     if (!response.ok) {
       return NextResponse.json(
         { message: data.message || "파일 조회 실패" },
-        { status: response.status }
+        { status: response.status },
       );
     }
 

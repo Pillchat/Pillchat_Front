@@ -16,7 +16,8 @@ const grade: FC = () => {
   }, [fetchPromotion]);
 
   // 승급 조건 달성 여부 확인
-  const isPromotionAchieved = (promotionData?.progress || 0) >= (promotionData?.target || 100);
+  const isPromotionAchieved =
+    (promotionData?.progress || 0) >= (promotionData?.target || 100);
 
   return (
     <div className="flex min-h-screen flex-col items-center">
@@ -31,7 +32,11 @@ const grade: FC = () => {
       <div className="flex w-[90%] flex-col items-center justify-center">
         <p className="text-2xl font-bold">현재 내 등급</p>
         <div className="mt-3">
-          <RankIndicator currentRank={promotionData?.currentGrade?.toLowerCase() || "saessak"} />
+          <RankIndicator
+            currentRank={
+              promotionData?.currentGrade?.toLowerCase() || "saessak"
+            }
+          />
 
           <div className="mt-6 flex flex-col">
             <div className="flex flex-row items-center gap-1">
@@ -52,12 +57,17 @@ const grade: FC = () => {
 
       <div className="mt-5 flex w-[90%] flex-row items-center justify-between gap-1">
         <div className="flex flex-row items-center gap-1">
-          <img src={isPromotionAchieved ? "/CheckedIcon.svg" : "/UncheckIcon.svg"} />
+          <img
+            src={isPromotionAchieved ? "/CheckedIcon.svg" : "/UncheckIcon.svg"}
+          />
           <p style={{ color: isPromotionAchieved ? "#FF412E" : "inherit" }}>
             질문 및 답변 합산 100개 이상
           </p>
         </div>
-        <p style={{ color: isPromotionAchieved ? "#FF412E" : "inherit" }} className={!isPromotionAchieved ? "text-muted-foreground" : ""}>
+        <p
+          style={{ color: isPromotionAchieved ? "#FF412E" : "inherit" }}
+          className={!isPromotionAchieved ? "text-muted-foreground" : ""}
+        >
           {promotionData?.progress || 0} / {promotionData?.target || 100}
         </p>
       </div>

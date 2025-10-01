@@ -17,7 +17,9 @@ export const RankIndicator: React.FC<RankIndicatorProps> = ({
   currentRank,
 }) => {
   const [profileImg] = useAtom(profileImgAtom);
-  const currentIndex = ranks.findIndex((r) => r.id.toLowerCase() === currentRank.toLowerCase());
+  const currentIndex = ranks.findIndex(
+    (r) => r.id.toLowerCase() === currentRank.toLowerCase(),
+  );
 
   const visibleRanks = [
     ranks[currentIndex - 1],
@@ -35,9 +37,7 @@ export const RankIndicator: React.FC<RankIndicatorProps> = ({
           <div
             key={rank.id}
             className={`relative flex h-20 w-20 items-center justify-center rounded-full border-4 transition-all duration-300 ${
-              isActive
-                ? "border-white shadow-lg"
-                : "border-gray-400 opacity-60"
+              isActive ? "border-white shadow-lg" : "border-gray-400 opacity-60"
             }`}
             style={{ backgroundColor: rank.color }}
           >
@@ -48,9 +48,7 @@ export const RankIndicator: React.FC<RankIndicatorProps> = ({
                 className="h-16 w-16 rounded-full object-cover"
               />
             ) : (
-              <span className="text-lg font-bold text-white">
-                {rank.label}
-              </span>
+              <span className="text-lg font-bold text-white">{rank.label}</span>
             )}
           </div>
         );

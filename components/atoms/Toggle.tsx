@@ -98,7 +98,7 @@ export const Toggle: FC<ToggleProps> = ({
       {/* 트랙 */}
       <span
         className={`flex items-center transition-colors duration-200 ${
-          internal ? 'bg-brand' : 'bg-muted-foreground'
+          internal ? "bg-brand" : "bg-muted-foreground"
         }`}
         style={{
           width: s.wrapWidth,

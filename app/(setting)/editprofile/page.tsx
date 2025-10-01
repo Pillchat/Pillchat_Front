@@ -1,13 +1,18 @@
 "use client";
 
 import { useAtom } from "jotai";
-import { profileImgAtom, idAtom, updateProfileAtom, nicknameAtom } from "@/store/profile";
+import {
+  profileImgAtom,
+  idAtom,
+  updateProfileAtom,
+  nicknameAtom,
+} from "@/store/profile";
 
 import { useState, useRef, ChangeEvent } from "react";
 import { CustomHeader, IconInputField } from "@/components/molecules";
 import { ProfileImg, SolidButton, Toast } from "@/components/atoms";
 import { useUpload } from "./_hooks/useUpload";
-import { accessTokenAtom } from '@/store/S3auth';
+import { accessTokenAtom } from "@/store/S3auth";
 import { useRouter } from "next/navigation";
 import { useUpdate } from "./_hooks/useUpdate";
 
@@ -17,7 +22,9 @@ const EditProfile = () => {
   const [userId] = useAtom(idAtom);
   const [accessToken] = useAtom(accessTokenAtom);
 
-  const [tempProfileImg, setTempProfileImg] = useState<string | null>(serverProfileImg);
+  const [tempProfileImg, setTempProfileImg] = useState<string | null>(
+    serverProfileImg,
+  );
   const [tempNickname, setTempNickname] = useState(serverNickname || "");
   const [, updateProfile] = useAtom(updateProfileAtom);
   const [open, setOpen] = useState(false);
@@ -26,7 +33,7 @@ const EditProfile = () => {
   const router = useRouter();
 
   const { onUpload } = useUpload();
-  const { onUpdate } = useUpdate()
+  const { onUpdate } = useUpdate();
 
   const handleProfileImgClick = () => fileInputRef.current?.click();
 
@@ -39,7 +46,8 @@ const EditProfile = () => {
   };
 
   const handleSave = async () => {
-    if (tempNickname.trim().length < 2) return alert("닉네임은 최소 2자리 이상이어야 합니다.");
+    if (tempNickname.trim().length < 2)
+      return alert("닉네임은 최소 2자리 이상이어야 합니다.");
     if (!userId) return alert("유저 ID를 확인할 수 없습니다.");
 
     try {
@@ -52,7 +60,7 @@ const EditProfile = () => {
           userId,
           file,
           type: "profile",
-          access_token: `Bearer ${accessToken}`, 
+          access_token: `Bearer ${accessToken}`,
         });
 
         if (!result?.success) return alert("이미지 업로드 실패");
@@ -66,8 +74,8 @@ const EditProfile = () => {
       onUpdate({
         accessToken,
         tempNickname,
-        keys
-      })
+        keys,
+      });
 
       // Jotai로 로컬에 값을 저장
       updateProfile({
@@ -75,10 +83,10 @@ const EditProfile = () => {
         profileImg: tempProfileImg ?? serverProfileImg ?? undefined,
         keys: keys,
       });
-      
+
       setOpen(true);
       setTimeout(() => {
-        router.push("/mypage")
+        router.push("/mypage");
       }, 1000);
     } catch (err: any) {
       alert(err.message || "프로필 저장 실패");
@@ -91,21 +99,41 @@ const EditProfile = () => {
 
       <div className="mt-7 flex w-full flex-col items-center gap-4">
         <ProfileImg src={tempProfileImg} />
-        <div onClick={handleProfileImgClick} className="cursor-pointer rounded-3xl bg-muted px-5 py-3 hover:bg-muted/80 transition-colors">
+        <div
+          onClick={handleProfileImgClick}
+          className="cursor-pointer rounded-3xl bg-muted px-5 py-3 transition-colors hover:bg-muted/80"
+        >
           프로필 이미지 변경
         </div>
-        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+        <input
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+        />
       </div>
 
       <div className="mt-5 flex w-[90%] flex-col gap-[5px]">
-        <IconInputField content="닉네임" inputValue={tempNickname} onChange={(e) => setTempNickname(e.target.value)} onIconClick={() => setTempNickname("")} placeholder="닉네임을 적어주세요" />
+        <IconInputField
+          content="닉네임"
+          inputValue={tempNickname}
+          onChange={(e) => setTempNickname(e.target.value)}
+          onIconClick={() => setTempNickname("")}
+          placeholder="닉네임을 적어주세요"
+        />
       </div>
 
       <div className="fixed bottom-8 w-[90%]">
         <SolidButton content="변경" onClick={handleSave} />
       </div>
 
-      <Toast open={open} onClose={() => setOpen(false)} message="변경이 완료되었습니다." duration={2500} />
+      <Toast
+        open={open}
+        onClose={() => setOpen(false)}
+        message="변경이 완료되었습니다."
+        duration={2500}
+      />
     </div>
   );
 };

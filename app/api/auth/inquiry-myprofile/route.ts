@@ -1,39 +1,42 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { serverFetch } from '@/lib/functions';
+import { NextRequest, NextResponse } from "next/server";
+import { serverFetch } from "@/lib/functions";
 
 export const GET = async (request: NextRequest) => {
-  try {    
-    const data = await serverFetch('/api/profile/me', { 
-      method: 'GET', 
-      request 
+  try {
+    const data = await serverFetch("/api/profile/me", {
+      method: "GET",
+      request,
     });
-    
+
     return NextResponse.json({ success: true, data }, { status: 200 });
   } catch (error: any) {
-    console.error('inquiry-myprofile API 라우트 에러:', error);
-    
+    console.error("inquiry-myprofile API 라우트 에러:", error);
+
     let parsedError;
     try {
       parsedError = JSON.parse(error.message);
     } catch {
-      parsedError = { status: 500, message: error.message || '서버 오류가 발생했습니다.' };
+      parsedError = {
+        status: 500,
+        message: error.message || "서버 오류가 발생했습니다.",
+      };
     }
-    
+
     const status = parsedError?.status || 500;
-    let message = parsedError?.message || '서버 오류가 발생했습니다.';
-    
+    let message = parsedError?.message || "서버 오류가 발생했습니다.";
+
     switch (status) {
       case 401:
-        message = '로그인이 필요합니다.';
+        message = "로그인이 필요합니다.";
         break;
       case 403:
-        message = '접근 권한이 없습니다.';
+        message = "접근 권한이 없습니다.";
         break;
       case 404:
-        message = '사용자 정보를 찾을 수 없습니다.';
+        message = "사용자 정보를 찾을 수 없습니다.";
         break;
       case 500:
-        message = '서버 오류가 발생했습니다.';
+        message = "서버 오류가 발생했습니다.";
         break;
     }
 

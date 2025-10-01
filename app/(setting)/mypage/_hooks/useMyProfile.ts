@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useAtom } from "jotai";
-import {  
-  schoolAtom, 
+import {
+  schoolAtom,
   gradeAtom,
   profileLoadingAtom,
   profileErrorAtom,
@@ -11,7 +11,7 @@ import {
   idAtom,
   nicknameAtom,
   keysAtom,
-  profileImgAtom
+  profileImgAtom,
 } from "@/store/profile";
 import { fetchAPI } from "@/lib/functions";
 import { accessTokenAtom } from "@/store/S3auth";
@@ -19,7 +19,7 @@ import { accessTokenAtom } from "@/store/S3auth";
 export const useMyProfile = () => {
   const [isLoading, setIsLoading] = useAtom(profileLoadingAtom);
   const [error, setError] = useAtom(profileErrorAtom);
-  
+
   const [, updateProfile] = useAtom(updateProfileAtom);
   const [, clearProfile] = useAtom(clearProfileAtom);
 
@@ -37,12 +37,13 @@ export const useMyProfile = () => {
     setError(null);
 
     try {
-      const result = await fetchAPI('/api/auth/inquiry-myprofile', 'GET');
-      if (!result.success) throw new Error(result.message || '프로필 조회 실패');
+      const result = await fetchAPI("/api/auth/inquiry-myprofile", "GET");
+      if (!result.success)
+        throw new Error(result.message || "프로필 조회 실패");
 
       const payload = result.data ?? {};
       const fetchedKeys: string[] = Array.isArray(payload.images)
-        ? payload.images.map(img => img.urlKey).filter(Boolean)
+        ? payload.images.map((img) => img.urlKey).filter(Boolean)
         : [];
 
       updateProfile({
@@ -51,7 +52,7 @@ export const useMyProfile = () => {
         grade: payload.grade?.grade ?? null,
         studentGrade: payload.studentGrade ?? null,
         id: payload.id ?? null,
-        keys: fetchedKeys
+        keys: fetchedKeys,
       });
       setKeys(fetchedKeys);
 
@@ -62,7 +63,7 @@ export const useMyProfile = () => {
         const res = await fetch(`/api/profile/image-view?${query.toString()}`, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         });
 
@@ -74,20 +75,35 @@ export const useMyProfile = () => {
             setProfileImg(data.preSignedUrl);
           }
         } else {
-          console.warn("S3 pre-signed URL 조회 실패:", res.status, await res.text());
+          console.warn(
+            "S3 pre-signed URL 조회 실패:",
+            res.status,
+            await res.text(),
+          );
         }
       }
-
     } catch (err: any) {
-      console.error('프로필 조회 실패:', err);
-      setError(err?.message || '프로필 조회 실패');
-      if (err?.message?.includes('로그인') || err?.message?.includes('인증') || err?.message?.includes('401')) {
+      console.error("프로필 조회 실패:", err);
+      setError(err?.message || "프로필 조회 실패");
+      if (
+        err?.message?.includes("로그인") ||
+        err?.message?.includes("인증") ||
+        err?.message?.includes("401")
+      ) {
         clearProfile();
       }
     } finally {
       setIsLoading(false);
     }
-  }, [setIsLoading, setError, updateProfile, clearProfile, setKeys, accessToken, setProfileImg]);
+  }, [
+    setIsLoading,
+    setError,
+    updateProfile,
+    clearProfile,
+    setKeys,
+    accessToken,
+    setProfileImg,
+  ]);
 
   const resetProfile = useCallback(() => {
     clearProfile();
@@ -99,6 +115,6 @@ export const useMyProfile = () => {
     resetProfile,
     isLoading,
     error,
-    profile: { nickname, school, grade, studentGrade, id, profileImg }
+    profile: { nickname, school, grade, studentGrade, id, profileImg },
   };
 };
