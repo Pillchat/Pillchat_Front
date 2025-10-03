@@ -1,13 +1,12 @@
-import React from "react";
 import { useAtom } from "jotai";
-import { profileImgAtom } from "@/store/profile";
+import { profileImgAtom } from "@/store";
 
 const ranks = [
-  { id: "saessak", label: "새싹", color: "#4CAF50" },
-  { id: "hanal", label: "한알", color: "#00BCD4" },
-  { id: "dual", label: "두알", color: "#FFCC00" },
-  { id: "gosu", label: "고수", color: "#FF412E" },
-  { id: "myungyak", label: "명약", color: "#C71200" },
+  { id: "새싹", label: "새싹", color: "#4CAF50" },
+  { id: "한알", label: "한알", color: "#00BCD4" },
+  { id: "두알", label: "두알", color: "#FFCC00" },
+  { id: "고수", label: "고수", color: "#FF412E" },
+  { id: "명약", label: "명약", color: "#C71200" },
 ];
 
 interface RankIndicatorProps {
@@ -18,57 +17,39 @@ export const RankIndicator: React.FC<RankIndicatorProps> = ({
   currentRank,
 }) => {
   const [profileImg] = useAtom(profileImgAtom);
-  const currentIndex = ranks.findIndex((r) => r.id === currentRank);
+  const currentIndex = ranks.findIndex(
+    (r) => r.id.toLowerCase() === currentRank.toLowerCase(),
+  );
 
   const visibleRanks = [
-    ranks[currentIndex - 1] || null,
+    ranks[currentIndex - 1],
     ranks[currentIndex],
-    ranks[currentIndex + 1] || null,
+    ranks[currentIndex + 1],
   ];
 
   return (
     <div className="flex items-center gap-10">
       {visibleRanks.map((rank, idx) => {
         if (!rank) return <div key={idx} className="h-20 w-20" />;
-        const isActive = rank.id === currentRank;
+        const isActive = rank.id.toLowerCase() === currentRank.toLowerCase();
 
         return (
           <div
             key={rank.id}
-            className="flex flex-col items-center transition-transform duration-300"
-            style={{
-              transform: isActive ? "scale(1.1)" : "scale(0.9)",
-              opacity: isActive ? 1 : 0.4,
-            }}
+            className={`relative flex h-20 w-20 items-center justify-center rounded-full border-4 transition-all duration-300 ${
+              isActive ? "border-white shadow-lg" : "border-gray-400 opacity-60"
+            }`}
+            style={{ backgroundColor: rank.color }}
           >
-            {/* 프로필 이미지 */}
-            <div
-              className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gray-200"
-              style={{
-                border: `4px solid ${rank.color}`,
-              }}
-            >
-              {profileImg ? (
-                <img
-                  src={profileImg}
-                  alt="user profile"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <span className="text-xs text-gray-500">No Img</span>
-              )}
-            </div>
-
-            {/* 레이블 (등급 배지) */}
-            <div
-              className="mt-2 rounded-full px-4 py-1 text-lg"
-              style={{
-                backgroundColor: isActive ? rank.color : `${rank.color}33`,
-                color: isActive ? "white" : rank.color,
-              }}
-            >
-              {rank.label}
-            </div>
+            {isActive && profileImg ? (
+              <img
+                src={profileImg || "/defaultProfile.svg"}
+                alt="Profile"
+                className="h-16 w-16 rounded-full object-cover"
+              />
+            ) : (
+              <span className="text-lg font-bold text-white">{rank.label}</span>
+            )}
           </div>
         );
       })}

@@ -7,9 +7,9 @@ export const useLocalStorage = () => {
     if (!item) return null;
 
     try {
-      return JSON.parse(item);
+      return JSON.parse(item); // JSON이면 객체로 반환
     } catch {
-      return item;
+      return item; // JSON이 아니면 그냥 문자열 반환
     }
   };
 

@@ -1,38 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "@/lib/functions";
+import { serverFetch } from "@/lib/functions";
 
 export const GET = async (request: NextRequest) => {
-  const token = getToken();
-
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}/api/profile/me`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Berear: ${token}`,
-        },
-      },
-    );
+    const data = await serverFetch("/api/profile/me", {
+      method: "GET",
+      request,
+    });
 
-    const data = await response?.json();
+    return NextResponse.json({ success: true, data }, { status: 200 });
+  } catch (error: any) {
+    console.error("inquiry-myprofile API 라우트 에러:", error);
 
-    if (!response.ok) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: data.message || "token을 불러오지 못했습니다.",
-        },
-        { status: response.status },
-      );
+    let parsedError;
+    try {
+      parsedError = JSON.parse(error.message);
+    } catch {
+      parsedError = {
+        status: 500,
+        message: error.message || "서버 오류가 발생했습니다.",
+      };
     }
-  } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: "서버 오류가 발생했습니다.",
-      },
-      { status: 500 },
-    );
+
+    const status = parsedError?.status || 500;
+    let message = parsedError?.message || "서버 오류가 발생했습니다.";
+
+    switch (status) {
+      case 401:
+        message = "로그인이 필요합니다.";
+        break;
+      case 403:
+        message = "접근 권한이 없습니다.";
+        break;
+      case 404:
+        message = "사용자 정보를 찾을 수 없습니다.";
+        break;
+      case 500:
+        message = "서버 오류가 발생했습니다.";
+        break;
+    }
+
+    return NextResponse.json({ success: false, message }, { status });
   }
 };
