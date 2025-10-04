@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (request: NextRequest) => {
   try {
-    const data = await serverFetch(`/api/subjects`, {
+    const data = await serverFetch(`/api/subjects/ui`, {
       method: "GET",
       request,
     });
