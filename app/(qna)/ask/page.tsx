@@ -2,10 +2,10 @@
 
 import { ImageButton, TextInput, TextareaWithLabel } from "@/components/atoms";
 import { CustomHeader, SectionWithChips } from "@/components/molecules";
-import { SubjectMap } from "@/constants";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { useQuestionForm } from "./_hooks";
 import { Controller } from "react-hook-form";
+import { useSubjects } from "@/hooks";
 
 const QuestionPage = () => {
   const {
@@ -21,6 +21,8 @@ const QuestionPage = () => {
     error,
     isValid,
   } = useQuestionForm();
+
+  const { getSubjectMapForChips } = useSubjects();
 
   return (
     <div className="flex min-h-screen flex-col gap-7">
@@ -78,7 +80,7 @@ const QuestionPage = () => {
             <div className="flex flex-col gap-1">
               <SectionWithChips
                 data={{
-                  과목: Object.values(SubjectMap).flat(),
+                  과목: Object.values(getSubjectMapForChips()).flat(),
                 }}
                 selectedItems={selectedSubject ? [selectedSubject] : []}
                 onItemToggle={handleSubjectToggle}
@@ -87,7 +89,7 @@ const QuestionPage = () => {
                 selectionMode="single"
                 showDropdown={true}
                 maxVisibleChips={4}
-                expandedData={SubjectMap}
+                expandedData={getSubjectMapForChips()}
                 showDropdownButton={true}
               />
               {errors.subject && (
