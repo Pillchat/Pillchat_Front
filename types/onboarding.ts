@@ -6,9 +6,9 @@ export type OnboardingStudent = {
   weakSubjects: string[]; // subject codes (e.g., ["BIO-BIOCHEM", "IND-ANAL"])
   strongSubjects: string[]; // subject codes
   courses: {
-    year: string;
+    year: number;
     subjects: string[]; // subject codes
-    semester: string;
+    customSubjects: string[];
   }[];
 };
 

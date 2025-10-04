@@ -21,3 +21,4 @@ export * from "./Toast";
 export * from "./Toggle";
 export * from "./RankIndicator";
 export * from "./LikeButton";
+export * from "./RoundedInput";

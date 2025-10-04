@@ -13,16 +13,19 @@ export const useOnboardingSubjects = (role: string, currentStep: number) => {
     getSubjectMapForChips,
   } = useSubjects();
 
-  console.log(studentInfo);
-
   // 현재 선택된 과목 코드들 가져오기
   const getSelectedSubjectCodes = (): string[] => {
     if (role === "professional") {
       return professionalInfo.strongSubjects;
     } else {
-      return currentStep === 2
-        ? studentInfo.weakSubjects
-        : studentInfo.strongSubjects;
+      if (currentStep === 2) {
+        return studentInfo.weakSubjects;
+      } else if (currentStep === 4) {
+        // Step 4에서는 모든 courses의 subjects를 합쳐서 반환
+        return studentInfo.courses.flatMap((course) => course.subjects);
+      } else {
+        return studentInfo.strongSubjects;
+      }
     }
   };
 
