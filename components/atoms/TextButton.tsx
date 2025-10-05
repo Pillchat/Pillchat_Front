@@ -10,6 +10,7 @@ export const TextButton = ({
   variant = "default",
   className,
   supportIcon,
+  afterIcon,
 }: {
   label: string;
   onClick?: () => void;
@@ -17,6 +18,7 @@ export const TextButton = ({
   size?: ButtonSize;
   className?: string;
   supportIcon?: ReactNode;
+  afterIcon?: ReactNode;
 }) => {
   return (
     <Button
@@ -27,6 +29,7 @@ export const TextButton = ({
     >
       {supportIcon && supportIcon}
       {label}
+      {afterIcon && afterIcon}
     </Button>
   );
 };

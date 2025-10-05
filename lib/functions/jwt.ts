@@ -32,9 +32,15 @@ export const decodeJWT = (token: string): JWTPayload | null => {
     const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
     const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
 
-    // base64 디코딩 후 JSON 파싱
-    const decoded = JSON.parse(atob(padded));
-    return decoded;
+    // ✅ UTF-8로 정확하게 디코딩
+    const jsonString = decodeURIComponent(
+      atob(padded)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(""),
+    );
+
+    return JSON.parse(jsonString);
   } catch (error) {
     console.error("JWT decode error:", error);
     return null;

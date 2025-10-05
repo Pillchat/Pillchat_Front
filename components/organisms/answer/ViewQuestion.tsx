@@ -15,7 +15,7 @@ import { IconWithCount } from "@/components/atoms";
 export const ViewQuestion: FC<{ question: QuestionResponse }> = ({
   question,
 }) => {
-  const { title, content, reward, createdAt, images } = question;
+  const { title, content, reward, createdAt, keys } = question;
 
   return (
     <div className="mx-6 my-5">
@@ -42,9 +42,9 @@ export const ViewQuestion: FC<{ question: QuestionResponse }> = ({
           </DialogHeader>
           <div>
             <div className="whitespace-pre-wrap text-foreground">{content}</div>
-            {map(images, (image) => (
+            {map(keys, (imageKey) => (
               <div
-                key={image}
+                key={imageKey}
                 className="mt-4 flex h-48 w-full animate-pulse items-center justify-center rounded-lg bg-brandSecondary"
               />
             ))}

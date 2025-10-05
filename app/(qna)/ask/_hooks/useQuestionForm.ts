@@ -5,13 +5,14 @@ import { QuestionCreateRequest, QuestionFormData } from "@/types/question";
 import { fetchAPI } from "@/lib/functions";
 import { useState, useRef } from "react";
 import { ImageButtonRef } from "@/components/atoms/ImageButton";
+import { useSubjects } from "@/hooks";
 
 const DEFAULT_VALUES: QuestionFormData = {
   title: "",
   content: "",
   subject: "",
-  subjectId: "1",
-  images: [],
+  subjectId: "",
+  keys: [],
 };
 
 export const useQuestionForm = () => {
@@ -20,6 +21,8 @@ export const useQuestionForm = () => {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [questionId] = useState(() => `temp-${Date.now()}`);
   const imageButtonRef = useRef<ImageButtonRef>(null);
+
+  const { getSubjectCodeByLabel } = useSubjects();
 
   const {
     control,
@@ -60,6 +63,12 @@ export const useQuestionForm = () => {
 
   const handleSubjectToggle = (subject: string) => {
     setValue("subject", subject, { shouldValidate: true });
+
+    // subject 라벨로 subjectId 찾아서 설정
+    const subjectCode = getSubjectCodeByLabel(subject);
+    if (subjectCode) {
+      setValue("subjectId", subjectCode, { shouldValidate: true });
+    }
   };
 
   const onSubmit = (data: QuestionFormData) => {
@@ -67,7 +76,7 @@ export const useQuestionForm = () => {
       title: data.title,
       content: data.content,
       subjectId: data.subjectId,
-      images: uploadedImages,
+      keys: uploadedImages,
     };
 
     mutation.mutate(submitData);

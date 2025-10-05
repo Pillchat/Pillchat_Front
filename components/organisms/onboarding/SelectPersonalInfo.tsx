@@ -8,48 +8,96 @@ import {
   REGISTRATION_STATUS,
   TIMELIST,
 } from "@/constants";
+import { studentInfoAtom, professionalInfoAtom } from "@/lib/atoms/onboarding";
 import { filter, includes } from "lodash";
-import { useState } from "react";
+import { useAtom } from "jotai";
 
-export const SelectPersonalInfo = ({ role }: { role: string }) => {
-  const [selectedRegistrationStatus, setSelectedRegistrationStatus] = useState<
-    string[]
-  >([]);
-  const [age, setAge] = useState<string>("");
-  const [workplace, setWorkplace] = useState<string>("");
-  const [selectedDay, setSelectedDay] = useState<string[]>([]);
-  const [selectedTime, setSelectedTime] = useState<string[]>([]);
+export const SelectPersonalInfo = ({
+  role,
+  username,
+}: {
+  role: string;
+  username: string;
+}) => {
+  const [studentInfo, setStudentInfo] = useAtom(studentInfoAtom);
+  const [professionalInfo, setProfessionalInfo] = useAtom(professionalInfoAtom);
 
+  const isStudent = role === "student";
+
+  // 공통 유틸리티 함수들
+  const getTimeOnly = (time: string) => time.split(" ")[0];
+
+  const getCurrentTimes = () =>
+    isStudent ? studentInfo.studyTimes : professionalInfo.availableTimes;
+
+  const getCurrentDays = () =>
+    isStudent ? studentInfo.studyDays : professionalInfo.availableDays;
+
+  // 공통 atom 업데이트 함수
+  const updateAtom = (
+    updates: Partial<typeof studentInfo> | Partial<typeof professionalInfo>,
+  ) => {
+    if (isStudent) {
+      setStudentInfo({ ...studentInfo, ...updates });
+    } else {
+      setProfessionalInfo({ ...professionalInfo, ...updates });
+    }
+  };
+
+  // 공통 배열 토글 로직
+  const createArrayToggleHandler =
+    <T,>(
+      getCurrentArray: () => T[],
+      maxLength: number,
+      updateKey: string,
+      transformValue?: (value: string) => T,
+    ) =>
+    (value: string) => {
+      const transformedValue = transformValue
+        ? transformValue(value)
+        : (value as T);
+      const currentArray = getCurrentArray();
+      let newArray: T[];
+
+      if (includes(currentArray, transformedValue)) {
+        newArray = filter(currentArray, (item) => item !== transformedValue);
+      } else if (currentArray.length < maxLength) {
+        newArray = [...currentArray, transformedValue];
+      } else {
+        return;
+      }
+
+      updateAtom({ [updateKey]: newArray } as any);
+    };
+
+  // 핸들러들
   const handleRegistrationStatusToggle = (status: string) => {
-    setSelectedRegistrationStatus([status]);
+    updateAtom(isStudent ? { grade: status } : { job: status });
   };
 
-  const handleStudyDayToggle = (day: string) => {
-    setSelectedDay((prev) => {
-      if (includes(prev, day)) {
-        return filter(prev, (d) => d !== day);
-      } else if (prev.length < 7) {
-        return [...prev, day];
-      }
-      return prev;
-    });
+  const handleAgeOrWorkplaceChange = (value: string) => {
+    updateAtom(
+      isStudent ? { age: parseInt(value) || 0 } : { workplace: value },
+    );
   };
 
-  const handleStudyTimeToggle = (time: string) => {
-    setSelectedTime((prev) => {
-      if (includes(prev, time)) {
-        return filter(prev, (t) => t !== time);
-      } else if (prev.length < 4) {
-        return [...prev, time];
-      }
-      return prev;
-    });
-  };
+  const handleStudyDayToggle = createArrayToggleHandler(
+    getCurrentDays,
+    7,
+    isStudent ? "studyDays" : "availableDays",
+  );
+
+  const handleStudyTimeToggle = createArrayToggleHandler(
+    getCurrentTimes,
+    4,
+    isStudent ? "studyTimes" : "availableTimes",
+    getTimeOnly,
+  );
 
   return (
     <>
       <p className="my-5 text-xl font-semibold">
-        {"name"}님의
+        {username}님의
         <br />
         맞춤형 서비스를 위한 정보를 입력해주세요.
       </p>
@@ -64,55 +112,49 @@ export const SelectPersonalInfo = ({ role }: { role: string }) => {
                   직업: PROFESSIONAL_ROLE,
                 }
           }
-          selectedItems={selectedRegistrationStatus}
+          selectedItems={
+            isStudent ? [studentInfo.grade] : [professionalInfo.job]
+          }
           onItemToggle={handleRegistrationStatusToggle}
           selectionMode="single"
         />
-        {role === "student" ? (
+        {isStudent ? (
           <TextInput
             label="나이"
             placeholder="나이를 입력해주세요."
-            value={age}
-            onChange={(e) => {
-              setAge(e.target.value);
-            }}
+            value={studentInfo.age.toString()}
+            onChange={(e) => handleAgeOrWorkplaceChange(e.target.value)}
           />
         ) : (
           <TextInput
             label="근무지명"
             placeholder="근무지명을 입력해주세요."
-            value={workplace}
-            onChange={(e) => {
-              setWorkplace(e.target.value);
-            }}
+            value={professionalInfo.workplace || ""}
+            onChange={(e) => handleAgeOrWorkplaceChange(e.target.value)}
           />
         )}
         <SectionWithChips
           data={
-            role === "student"
-              ? {
-                  "주로 공부하는 요일": DAYLIST,
-                }
-              : {
-                  "주로 사용하는 요일": DAYLIST,
-                }
+            isStudent
+              ? { "주로 공부하는 요일": DAYLIST }
+              : { "주로 사용하는 요일": DAYLIST }
           }
-          selectedItems={selectedDay}
+          selectedItems={
+            isStudent ? studentInfo.studyDays : professionalInfo.availableDays
+          }
           onItemToggle={handleStudyDayToggle}
           maxSelection={7}
           buttonSize="square"
         />
         <SectionWithChips
           data={
-            role === "student"
-              ? {
-                  "주로 공부하는 시간": TIMELIST,
-                }
-              : {
-                  "주로 답변할 시간": TIMELIST,
-                }
+            isStudent
+              ? { "주로 공부하는 시간": TIMELIST }
+              : { "주로 답변할 시간": TIMELIST }
           }
-          selectedItems={selectedTime}
+          selectedItems={filter(TIMELIST, (time) =>
+            includes(getCurrentTimes(), getTimeOnly(time)),
+          )}
           onItemToggle={handleStudyTimeToggle}
           maxSelection={4}
           buttonSize="long"

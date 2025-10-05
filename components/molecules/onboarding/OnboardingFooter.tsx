@@ -4,56 +4,97 @@ import { useAtom } from "jotai";
 import {
   buttonLabelAtom,
   currentStepAtom,
-  selectedSubjectsAtom,
+  studentInfoAtom,
+  professionalInfoAtom,
 } from "@/lib/atoms/onboarding";
 import { Button } from "@/components/ui/button";
 import { FC, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import { fetchAPI } from "@/lib/functions";
 
-const TOTAL_STEPS = 4;
+type OnboardingFooterProps = {
+  role?: string;
+};
 
-export const OnboardingFooter: FC = () => {
+export const OnboardingFooter: FC<OnboardingFooterProps> = ({ role }) => {
   const router = useRouter();
+  const params = useParams();
+  const currentRole = role || params.role;
 
   const [label, setLabel] = useAtom(buttonLabelAtom);
-  const [selectedSubjects] = useAtom(selectedSubjectsAtom);
   const [currentStep, setCurrentStep] = useAtom(currentStepAtom);
+  const [studentInfo] = useAtom(studentInfoAtom);
+  const [professionalInfo] = useAtom(professionalInfoAtom);
 
-  // const isDisabled = currentStep === 1 && selectedSubjects.length < 5;
-  // console.log(isDisabled);
+  // API 호출을 위한 mutation
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (onboardingData: any) => {
+      const endpoint = `/api/onboarding/${currentRole}`;
+      const response = await fetchAPI(endpoint, "PUT", onboardingData);
+
+      return response.data;
+    },
+    onSuccess: () => {
+      router.push("/login");
+    },
+    onError: (error) => {
+      console.error("온보딩 API 에러:", error);
+    },
+  });
+
+  // role별 최종 단계 정의
+  const getFinalStep = () => (currentRole === "student" ? 4 : 3);
 
   const handleClick = () => {
-    // API 테스트 호출
-    // mutate();
+    console.log("handleClick called - currentStep:", currentStep);
 
-    if (currentStep < TOTAL_STEPS) {
+    const finalStep = getFinalStep();
+
+    // 최종 단계에서 API 호출
+    if (currentStep === finalStep) {
+      console.log(`Final step (${finalStep}) reached - calling API`);
+      const onboardingData = prepareOnboardingData();
+      console.log("Onboarding data:", onboardingData);
+      mutate(onboardingData);
+      return;
+    }
+
+    // 다음 단계로 이동
+    if (currentStep < finalStep) {
       setCurrentStep((prev) => prev + 1);
       return;
     }
-    router.push("/login");
+  };
+
+  // role에 따라 온보딩 데이터 준비
+  const prepareOnboardingData = () => {
+    if (currentRole === "student") {
+      return studentInfo;
+    } else {
+      return professionalInfo;
+    }
   };
 
   useEffect(() => {
-    setLabel(currentStep < TOTAL_STEPS ? "다음" : "로그인 화면으로 가기");
-  }, [currentStep, setLabel]);
+    const finalStep = getFinalStep();
+    setLabel(currentStep === finalStep ? "로그인 화면으로 가기" : "다음");
+  }, [currentStep, setLabel, currentRole]);
 
   return (
     <footer className="flex flex-col gap-2 p-4">
-      {currentStep < TOTAL_STEPS && (
+      {currentStep < getFinalStep() && (
         <p className="text-center text-xs text-muted-foreground">
           선택한 항목은 마이페이지에서 변경 가능합니다.
         </p>
       )}
       <Button
-        // variant={isDisabled ? "disabled" : "default"}
         size="lg"
         className="h-14 w-full"
-        // disabled={isDisabled}
+        disabled={isPending}
         onClick={handleClick}
       >
-        {label}
+        {isPending ? "처리 중..." : label}
       </Button>
     </footer>
   );
