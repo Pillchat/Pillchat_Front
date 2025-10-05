@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
-import { cn } from "@/lib/utils";
+import { map } from "lodash";
 
 type TabItem = {
   value: string;
@@ -21,14 +21,17 @@ export const TabsWithUnderline: FC<TabsWithUnderlineProps> = ({
   onValueChange,
 }) => {
   return (
-    <Tabs defaultValue={defaultValue}>
+    <Tabs
+      className={className}
+      defaultValue={defaultValue}
+      onValueChange={onValueChange}
+    >
       <TabsList
-        className={cn(
-          "inline-flex h-auto min-h-9 w-full flex-wrap items-center justify-start overflow-hidden rounded-none bg-transparent p-0 text-muted-foreground",
-          className,
-        )}
+        className={
+          "inline-flex h-auto min-h-9 w-full flex-wrap items-center justify-start overflow-hidden rounded-none bg-transparent p-0 text-muted-foreground"
+        }
       >
-        {tabs.map((tab) => (
+        {map(tabs, (tab) => (
           <TabsTrigger
             key={tab.value}
             value={tab.value}

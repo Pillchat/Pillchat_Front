@@ -9,6 +9,7 @@ export * from "./GeneralHeader";
 export * from "./TabsWithUnderline";
 export * from "./BottomNavbar";
 export * from "./ListCard";
+export * from "./QuestionListCard";
 export * from "./InfoHeader";
 export * from "./MeaninglessHeader";
 export * from "./UserInfoField";

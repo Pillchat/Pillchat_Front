@@ -1,34 +1,42 @@
 import { FC } from "react";
 import { IconWithCount, PharmMoney } from "../atoms";
+import { fetchAPI } from "@/lib/functions";
 
 export const ListCard: FC<{
   onClick: () => void;
   title: string;
   content: string;
-  reward: string;
   createdAt: string;
   viewCount: number;
   answerCount: number;
   commentCount: number;
+  image?: string;
 }> = ({
-  onClick,
   title,
   content,
-  reward,
   createdAt,
   viewCount,
   answerCount,
   commentCount,
+  onClick,
+  image,
 }) => {
   return (
-    <div>
+    <div onClick={onClick}>
+      {image && image.length > 0 && (
+        <div className="flex flex-row items-center justify-between gap-3">
+          <div className="flex flex-row items-center gap-3 align-middle">
+            <img src={image} alt="image" />
+          </div>
+        </div>
+      )}
       <div className="flex flex-row items-center justify-between gap-3">
         <div className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-base font-semibold">
           Q. {title}
         </div>
-        <div className="flex-shrink-0">
+        {/* <div className="flex-shrink-0">
           <PharmMoney reward={reward} />
-        </div>
+        </div> */}
       </div>
       <div className="overflow-hidden text-ellipsis whitespace-nowrap pt-2 text-xs text-muted-foreground">
         <span>{content}</span>
