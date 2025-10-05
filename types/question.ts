@@ -2,7 +2,7 @@ export type QuestionFormData = {
   title: string;
   content: string;
   subject: string;
-  images?: string[];
+  keys: string[];
   subjectId: string;
 };
 
@@ -11,7 +11,7 @@ export type QuestionCreateRequest = {
   content: string;
   subjectId: string;
   reward?: string;
-  images?: string[];
+  keys?: string[];
 };
 
 export type QuestionResponse = {
@@ -20,7 +20,7 @@ export type QuestionResponse = {
   content: string;
   subject: string;
   reward: string;
-  images: string[];
+  keys: string[];
   createdAt: string;
   updatedAt: string;
 };
