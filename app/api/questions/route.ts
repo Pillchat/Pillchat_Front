@@ -6,7 +6,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST;
 
 export async function POST(request: NextRequest) {
   try {
-    const { title, content, subjectId, images }: QuestionCreateRequest =
+    const { title, content, subjectId, keys }: QuestionCreateRequest =
       await request.json();
 
     const headers: Record<string, string> = {};
@@ -17,9 +17,9 @@ export async function POST(request: NextRequest) {
     formData.append("subjectId", subjectId);
 
     // Append each image individually
-    if (images && images.length > 0) {
-      images.forEach((image) => {
-        formData.append("images", image);
+    if (keys && keys.length > 0) {
+      keys.forEach((key) => {
+        formData.append("keys", key);
       });
     }
 
