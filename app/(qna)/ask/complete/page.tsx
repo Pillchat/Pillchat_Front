@@ -36,7 +36,7 @@ const CompletePage: FC = () => {
           label="질문 광장으로 이동하기"
           variant="outline"
           onClick={() => {
-            router.push("/");
+            router.push("/qna");
           }}
         />
       </div>
