@@ -23,4 +23,5 @@ export type QuestionResponse = {
   keys: string[];
   createdAt: string;
   updatedAt: string;
+  answerCount: number;
 };

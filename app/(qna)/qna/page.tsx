@@ -3,7 +3,7 @@
 import {
   BottomNavbar,
   GeneralHeader,
-  ListCard,
+  QuestionListCard,
   TabsWithUnderline,
 } from "@/components/molecules";
 import { fetchAPI, formatDiffDate } from "@/lib/functions";
@@ -34,12 +34,12 @@ const QnaPage: FC = () => {
     <div className="flex h-screen flex-col">
       <div className="flex-shrink-0">
         <GeneralHeader />
-        {/* <TabsWithUnderline
+        <TabsWithUnderline
           className="mx-6"
           tabs={TABS}
           defaultValue={currentStatus}
           onValueChange={handleTabChange}
-        /> */}
+        />
       </div>
       <div className="relative flex-1 overflow-y-auto">
         {isLoading ? (
@@ -51,18 +51,15 @@ const QnaPage: FC = () => {
             <div className="flex flex-col gap-5">
               {map(data, (question) => (
                 <Fragment key={question.id}>
-                  {/* <ListCard
+                  <QuestionListCard
+                    question={{
+                      ...question,
+                      createdAt: formatDiffDate(question.createdAt),
+                    }}
                     onClick={() => {
                       router.push(`/question/${question.id}`);
                     }}
-                    title={question.title}
-                    content={question.content}
-                    reward={question.reward}
-                    createdAt={formatDiffDate(question.createdAt)}
-                    viewCount={question.viewCount || 0}
-                    answerCount={question.answerCount || 0}
-                    commentCount={question.commentCount || 0}
-                  /> */}
+                  />
                   <Separator className="last:hidden" />
                 </Fragment>
               ))}

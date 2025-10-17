@@ -4,9 +4,10 @@ import { LikeButton } from "@/components/atoms";
 import { CustomHeader } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
 import { fetchAPI } from "@/lib/functions";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { FC } from "react";
+import { useLikeStatus } from "@/hooks/useLikeStatus";
 import { QuestionTitleSection } from "./QuestionTitleSection";
 import { QuestionContents } from "./QuestionContents";
 
@@ -19,8 +20,13 @@ export const QuestionDetailPage: FC<{
   questionId: string;
 }> = ({ questionId }) => {
   const router = useRouter();
+  const { isLiked, toggleLike } = useLikeStatus(questionId);
 
-  const { data: questionData, isLoading: questionLoading } = useQuery({
+  const {
+    data: questionData,
+    isLoading: questionLoading,
+    refetch: refetchQuestion,
+  } = useQuery({
     queryKey: ["question", questionId],
     queryFn: () => fetchAPI(`/api/questions/${questionId}`, "GET"),
     enabled: !!questionId,
@@ -34,6 +40,14 @@ export const QuestionDetailPage: FC<{
       }),
     enabled: !!questionData?.id,
   });
+
+  const handleLikeClick = async () => {
+    const success = await toggleLike();
+    if (success) {
+      // 좋아요 성공 시 질문 데이터 새로고침 (likeCount 업데이트)
+      refetchQuestion();
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -58,9 +72,7 @@ export const QuestionDetailPage: FC<{
           </div>
           <div>
             <LikeButton
-              onClick={() => {
-                console.log("like");
-              }}
+              onClick={handleLikeClick}
               likeCount={questionData.likeCount}
             />
           </div>

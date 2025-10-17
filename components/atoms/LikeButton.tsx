@@ -2,10 +2,10 @@ import { FC } from "react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 
-export const LikeButton: FC<{ onClick: () => void; likeCount: number }> = ({
-  onClick,
-  likeCount,
-}) => {
+export const LikeButton: FC<{
+  onClick: () => void;
+  likeCount: number;
+}> = ({ onClick, likeCount }) => {
   return (
     <Button
       variant="outline"

@@ -43,5 +43,16 @@ export const serverFetch = async (
     );
   }
 
-  return response.json();
+  // 응답이 비어있으면 빈 객체 반환
+  const text = await response.text();
+  if (!text) {
+    return {};
+  }
+
+  // JSON 파싱 시도, 실패하면 성공 메시지 반환
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { message: "Success" };
+  }
 };
