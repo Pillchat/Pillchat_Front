@@ -27,7 +27,7 @@ export const useLikeStatus = (questionId: string) => {
           setIsLiked(JSON.parse(cachedStatus));
         }
 
-        // 2. 서버에서 정확한 상태 확인 (v1 API 활용)
+        // 2. 서버에서 정확한 상태 확인
         try {
           const response = await fetchAPI(
             `/api/questions/${questionId}/likeCount`,
