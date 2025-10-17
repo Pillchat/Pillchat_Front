@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { QuestionCreateRequest } from "@/types/question";
+import { QuestionCreateRequest, QuestionResponse } from "@/types/question";
 import { serverFetch } from "@/lib/functions";
+import { filter } from "lodash";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST;
 
@@ -59,6 +60,23 @@ export async function GET(request: NextRequest) {
       method: "GET",
       request,
     });
+
+    const status = request.nextUrl.searchParams.get("status");
+
+    if (status === "pending") {
+      const pendingData = filter(
+        data,
+        (question: QuestionResponse) => question.answerCount === 0,
+      );
+
+      return NextResponse.json(pendingData);
+    } else if (status === "completed") {
+      const completedData = filter(
+        data,
+        (question: QuestionResponse) => question.answerCount > 0,
+      );
+      return NextResponse.json(completedData);
+    }
 
     return NextResponse.json(data);
   } catch (error: any) {

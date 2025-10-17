@@ -9,7 +9,8 @@ interface QuestionListCardProps {
     title: string;
     content: string;
     createdAt: string;
-    viewCount?: number;
+    viewCount: number;
+    likeCount: number;
     answerCount?: number;
     commentCount?: number;
     images?: Array<{ urlKey: string }>;
@@ -51,9 +52,10 @@ export const QuestionListCard: FC<QuestionListCardProps> = ({
       title={question.title}
       content={question.content}
       createdAt={question.createdAt}
-      viewCount={question.viewCount || 0}
-      answerCount={question.answerCount || 0}
-      commentCount={question.commentCount || 0}
+      viewCount={question.viewCount}
+      likeCount={question.likeCount}
+      answerCount={question.answerCount ?? 0}
+      commentCount={question.commentCount ?? 0}
       image={imageData?.[0].preSignedUrl}
     />
   );

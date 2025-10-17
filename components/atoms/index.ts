@@ -22,3 +22,4 @@ export * from "./Toggle";
 export * from "./RankIndicator";
 export * from "./LikeButton";
 export * from "./RoundedInput";
+export * from "./Image";

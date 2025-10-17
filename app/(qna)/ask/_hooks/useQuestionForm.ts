@@ -1,9 +1,9 @@
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { QuestionCreateRequest, QuestionFormData } from "@/types/question";
 import { fetchAPI } from "@/lib/functions";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ImageButtonRef } from "@/components/atoms/ImageButton";
 import { useSubjects } from "@/hooks";
 
@@ -37,6 +37,23 @@ export const useQuestionForm = () => {
 
   const selectedSubject = watch("subject");
 
+  const { data } = useQuery({
+    queryKey: ["subjects", selectedSubject],
+    queryFn: () =>
+      fetchAPI(
+        `/api/subjects/${getSubjectCodeByLabel(selectedSubject)}`,
+        "GET",
+      ),
+    enabled: !!selectedSubject,
+  });
+
+  // data가 변경될 때마다 subjectId를 자동으로 업데이트
+  useEffect(() => {
+    if (data?.id) {
+      setValue("subjectId", data.id, { shouldValidate: true });
+    }
+  }, [data, setValue]);
+
   const mutation = useMutation({
     mutationFn: (data: QuestionCreateRequest) =>
       fetchAPI("/api/questions", "POST", data),
@@ -63,12 +80,6 @@ export const useQuestionForm = () => {
 
   const handleSubjectToggle = (subject: string) => {
     setValue("subject", subject, { shouldValidate: true });
-
-    // subject 라벨로 subjectId 찾아서 설정
-    const subjectCode = getSubjectCodeByLabel(subject);
-    if (subjectCode) {
-      setValue("subjectId", subjectCode, { shouldValidate: true });
-    }
   };
 
   const onSubmit = (data: QuestionFormData) => {

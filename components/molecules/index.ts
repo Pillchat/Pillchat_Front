@@ -13,6 +13,7 @@ export * from "./QuestionListCard";
 export * from "./InfoHeader";
 export * from "./MeaninglessHeader";
 export * from "./UserInfoField";
+export * from "./ActionMenu";
 export * from "./SelectModal";
 export * from "./GeneralModal";
 export * from "./ImageCarousel";

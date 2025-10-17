@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { type, userId, files, questionId } = await request.json();
+    const { type, userId, files, questionId, answerId } = await request.json();
 
     if (!type || !userId || !files || !questionId) {
       return NextResponse.json(
@@ -12,12 +12,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const _userId =
+      type === "question" ? questionId : type === "answer" ? answerId : userId;
+
     const data = await serverFetch(
       `/api/files?${buildQueryParams({
         type,
-        userId,
+        userId: _userId,
         files,
-        questionId,
       })}`,
       {
         method: "POST",
