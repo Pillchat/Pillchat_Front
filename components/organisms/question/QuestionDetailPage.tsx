@@ -1,26 +1,29 @@
 "use client";
 
 import { LikeButton } from "@/components/atoms";
-import { CustomHeader } from "@/components/molecules";
+import {
+  ActionMenu,
+  ActionMenuItem,
+  CustomHeader,
+  SelectModal,
+} from "@/components/molecules";
 import { Button } from "@/components/ui/button";
-import { fetchAPI } from "@/lib/functions";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { fetchAPI, getCurrentUserId } from "@/lib/functions";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { FC } from "react";
+import { FC, useState } from "react";
 import { useLikeStatus } from "@/hooks/useLikeStatus";
 import { QuestionTitleSection } from "./QuestionTitleSection";
 import { QuestionContents } from "./QuestionContents";
-
-const TEST = [
-  "https://pbs.twimg.com/media/Gz6qPr6bkAAsUCa?format=jpg&name=4096x4096",
-  "https://pbs.twimg.com/media/GziRNGKbEAAhOC3?format=jpg&name=4096x4096",
-];
 
 export const QuestionDetailPage: FC<{
   questionId: string;
 }> = ({ questionId }) => {
   const router = useRouter();
-  const { isLiked, toggleLike } = useLikeStatus(questionId);
+  const queryClient = useQueryClient();
+  const { toggleLike } = useLikeStatus(questionId);
+  const currentUserId = getCurrentUserId();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const {
     data: questionData,
@@ -33,12 +36,20 @@ export const QuestionDetailPage: FC<{
   });
 
   const { data: filesData, isLoading: filesLoading } = useQuery({
-    queryKey: ["files", questionData?.id],
-    queryFn: () =>
-      fetchAPI("/api/files", "GET", {
-        keys: [`question/${questionData?.id}`],
-      }),
-    enabled: !!questionData?.id,
+    queryKey: ["files", questionData?.id, questionData?.images],
+    queryFn: async () => {
+      if (!questionData?.images || questionData.images.length === 0) {
+        return [];
+      }
+
+      // questionData.images 배열의 urlKey를 바탕으로 keys 배열 생성
+      const keys = questionData.images.map(
+        (image) => `question/${questionData.id}/${image.urlKey}`,
+      );
+
+      return fetchAPI("/api/files", "GET", { keys });
+    },
+    enabled: !!questionData?.id && !!questionData?.images,
   });
 
   const handleLikeClick = async () => {
@@ -49,9 +60,76 @@ export const QuestionDetailPage: FC<{
     }
   };
 
+  // 현재 사용자가 질문 작성자인지 확인
+  const isAuthor =
+    questionData &&
+    currentUserId &&
+    (questionData.userId ? questionData.userId === currentUserId : false);
+
+  const deleteMutation = useMutation({
+    mutationFn: () => fetchAPI(`/api/questions/${questionId}`, "DELETE"),
+    onSuccess: () => {
+      // 질문 목록 쿼리들을 무효화하여 새로고침
+      queryClient.invalidateQueries({ queryKey: ["questions"] });
+      // 개별 질문 쿼리도 무효화
+      queryClient.invalidateQueries({ queryKey: ["question", questionId] });
+      router.push("/qna");
+    },
+    onError: (error) => {
+      console.error("질문 삭제 실패:", error);
+    },
+  });
+
+  const handleEdit = () => {
+    // 질문 수정 페이지로 이동
+    router.push(`/ask?edit=${questionId}`);
+  };
+
+  const handleDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    deleteMutation.mutate();
+    setShowDeleteConfirm(false);
+  };
+
+  const menuItems: ActionMenuItem[] = isAuthor
+    ? [
+        {
+          id: "edit",
+          label: "수정",
+          onClick: handleEdit,
+        },
+        {
+          id: "delete",
+          label: "삭제",
+          onClick: handleDelete,
+          variant: "destructive",
+        },
+      ]
+    : [
+        {
+          id: "report",
+          label: "신고",
+          onClick: () => {
+            console.log("신고");
+          },
+        },
+      ];
+
   return (
     <div className="flex min-h-screen flex-col">
-      <CustomHeader title="질문광장" showIcon />
+      <CustomHeader
+        title="질문광장"
+        showIcon
+        rightButtonLabel={isAuthor ? "수정" : undefined}
+        onRightButtonClick={
+          isAuthor
+            ? () => router.push(`/question/${questionId}/edit`)
+            : undefined
+        }
+      />
       {questionLoading && (
         <div className="mx-6 my-5 h-96 animate-pulse rounded bg-gray-100" />
       )}
@@ -66,15 +144,29 @@ export const QuestionDetailPage: FC<{
             />
             <QuestionContents
               content={questionData.content}
-              images={TEST}
+              images={filesData?.map((file) => file.preSignedUrl) ?? []}
               filesLoading={filesLoading}
             />
           </div>
-          <div>
+          <div className="flex items-center justify-between">
             <LikeButton
               onClick={handleLikeClick}
               likeCount={questionData.likeCount}
             />
+            <ActionMenu
+              trigger={
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <img src="/Ellipsis.svg" alt="더보기" className="h-5 w-5" />
+                </Button>
+              }
+              items={menuItems}
+              align="end"
+              side="top"
+              showBackdrop={true}
+            />
+          </div>
+          <div className="flex items-center justify-center border-t-[12px] border-t-[#F4F4F4] py-10">
+            <p className="text-border">아직 답변이 없습니다.</p>
           </div>
         </div>
       )}
@@ -90,6 +182,15 @@ export const QuestionDetailPage: FC<{
           답변하기
         </Button>
       </div>
+
+      {/* 삭제 확인 모달 */}
+      <SelectModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDelete}
+        title="질문 삭제"
+        message="정말로 이 질문을 삭제하시겠습니까? 삭제된 질문은 복구할 수 없습니다."
+      />
     </div>
   );
 };
