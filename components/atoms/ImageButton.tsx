@@ -2,7 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useRef, useState, forwardRef, useImperativeHandle } from "react";
+import {
+  useRef,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+  useEffect,
+} from "react";
 import { fetchAPI, getCurrentUserId } from "@/lib/functions";
 
 interface UploadedImage {
@@ -18,6 +24,7 @@ interface ImageButtonProps {
   questionId?: string;
   onImagesChange?: (images: UploadedImage[]) => void;
   maxImages?: number;
+  initialImages?: Array<{ url: string; key: string; name?: string }>;
 }
 
 export interface ImageButtonRef {
@@ -25,10 +32,33 @@ export interface ImageButtonRef {
 }
 
 export const ImageButton = forwardRef<ImageButtonRef, ImageButtonProps>(
-  ({ className, questionId, onImagesChange, maxImages = 10 }, ref) => {
+  (
+    { className, questionId, onImagesChange, maxImages = 10, initialImages },
+    ref,
+  ) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [images, setImages] = useState<UploadedImage[]>([]);
     const userId = getCurrentUserId();
+
+    // 초기 이미지 로드
+    useEffect(() => {
+      if (initialImages && initialImages.length > 0 && images.length === 0) {
+        const existingImages: UploadedImage[] = initialImages.map(
+          (img, index) => ({
+            id: `existing-${index}`,
+            file: new File([], img.name || `image-${index}`, {
+              type: "image/jpeg",
+            }), // 더미 파일
+            preview: img.url,
+            s3Key: img.key,
+            uploadStatus: "success" as const,
+          }),
+        );
+
+        setImages(existingImages);
+        onImagesChange?.(existingImages);
+      }
+    }, [initialImages]); // onImagesChange 의존성 제거하여 무한 루프 방지
 
     const handleFileSelect = async (
       event: React.ChangeEvent<HTMLInputElement>,
