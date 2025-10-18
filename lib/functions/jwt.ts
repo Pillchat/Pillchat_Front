@@ -53,6 +53,11 @@ export const decodeJWT = (token: string): JWTPayload | null => {
  */
 export const getCurrentUserId = (): string | null => {
   try {
+    // 서버 사이드에서는 localStorage가 없으므로 null 반환
+    if (typeof window === "undefined") {
+      return null;
+    }
+
     const token = localStorage.getItem("access_token");
     if (!token) {
       return null;
@@ -95,6 +100,11 @@ export const isTokenExpired = (token: string): boolean => {
  */
 export const getCurrentUserInfo = (): JWTPayload | null => {
   try {
+    // 서버 사이드에서는 localStorage가 없으므로 null 반환
+    if (typeof window === "undefined") {
+      return null;
+    }
+
     const token = localStorage.getItem("access_token");
     if (!token) {
       return null;

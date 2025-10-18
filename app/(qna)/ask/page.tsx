@@ -20,6 +20,8 @@ const QuestionPage = () => {
     isLoading,
     error,
     isValid,
+    isEditMode,
+    initialImages,
   } = useQuestionForm();
 
   const { getSubjectMapForChips } = useSubjects();
@@ -27,8 +29,16 @@ const QuestionPage = () => {
   return (
     <div className="flex min-h-screen flex-col gap-7">
       <CustomHeader
-        title="질문하기"
-        rightButtonLabel={isLoading ? "등록 중..." : "등록하기"}
+        title={isEditMode ? "질문 수정" : "질문하기"}
+        rightButtonLabel={
+          isLoading
+            ? isEditMode
+              ? "수정 중..."
+              : "등록 중..."
+            : isEditMode
+              ? "수정 완료"
+              : "등록하기"
+        }
         onRightButtonClick={isLoading ? () => {} : handleRightButtonClick}
         isActive={isValid}
       />
@@ -45,6 +55,7 @@ const QuestionPage = () => {
           ref={imageButtonRef}
           onImagesChange={handleImagesChange}
           questionId={questionId}
+          initialImages={initialImages}
         />
         <Controller
           name="title"
