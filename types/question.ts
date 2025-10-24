@@ -19,9 +19,16 @@ export type QuestionResponse = {
   title: string;
   content: string;
   subject: string;
+  subjectId?: string;
+  subjectName?: string;
   reward: string;
   keys: string[];
   createdAt: string;
   updatedAt: string;
   answerCount: number;
+  userName: string;
+  userId?: string;
+  viewCount: number;
+  likeCount: number;
+  images?: Array<{ urlKey: string; [key: string]: any }>;
 };
