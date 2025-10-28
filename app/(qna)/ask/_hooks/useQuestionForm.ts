@@ -122,7 +122,7 @@ export const useQuestionForm = () => {
         setValue("content", existingQuestion.content);
         setValue(
           "subject",
-          existingQuestion.subjectName || existingQuestion.subjectIdId,
+          existingQuestion.subjectName || existingQuestion.subjectId,
         );
         setValue("subjectId", existingQuestion.subjectId || "");
       }
