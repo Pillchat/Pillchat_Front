@@ -24,6 +24,7 @@ interface ImageButtonProps {
   questionId?: string;
   onImagesChange?: (images: UploadedImage[]) => void;
   maxImages?: number;
+  type: string;
   initialImages?: Array<{ url: string; key: string; name?: string }>;
 }
 
@@ -33,7 +34,14 @@ export interface ImageButtonRef {
 
 export const ImageButton = forwardRef<ImageButtonRef, ImageButtonProps>(
   (
-    { className, questionId, onImagesChange, maxImages = 10, initialImages },
+    {
+      className,
+      questionId,
+      onImagesChange,
+      maxImages = 10,
+      initialImages,
+      type,
+    },
     ref,
   ) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -102,7 +110,7 @@ export const ImageButton = forwardRef<ImageButtonRef, ImageButtonProps>(
         const fileNames = imagesToUpload.map((img) => img.file.name);
 
         const response = await fetchAPI(`/api/files`, "POST", {
-          type: "question",
+          type,
           userId: userId,
           files: fileNames,
           questionId: targetQuestionId,
