@@ -33,6 +33,7 @@ export const useAnswerSteps = () => {
 
   return {
     steps,
+    setSteps,
     addStep,
     updateStep,
     removeStep,

@@ -11,11 +11,19 @@ import { QuestionResponse } from "@/types/question";
 import { format } from "date-fns";
 import { map } from "lodash";
 import { IconWithCount } from "@/components/atoms";
+import { Image } from "@/components/atoms";
+import { useFetchImage } from "@/hooks";
 
 export const ViewQuestion: FC<{ question: QuestionResponse }> = ({
   question,
 }) => {
-  const { title, content, reward, createdAt, keys } = question;
+  const { title, content, nickname, createdAt } = question;
+
+  const { imageData, imageLoading } = useFetchImage({
+    type: "question",
+    sourceId: question.id,
+    images: question.images,
+  });
 
   return (
     <div className="mx-6 my-5">
@@ -32,24 +40,23 @@ export const ViewQuestion: FC<{ question: QuestionResponse }> = ({
             <DialogTitle className="text-left">Q. {title}</DialogTitle>
             <div className="flex flex-row justify-between text-sm text-muted-foreground">
               <div className="flex flex-row items-center gap-3 align-middle">
-                {/* TODO: 작성자 정보 추가 */}
-                <span className="text-foreground">{"작성자"}</span>
+                <span className="text-foreground">{nickname}</span>
                 <IconWithCount src="/Eye.svg" count={100} />
                 <span>{format(createdAt, "yyyy-MM-dd HH:mm:ss")}</span>
               </div>
-              <PharmMoney reward={reward} />
             </div>
           </DialogHeader>
           <div>
             <div className="whitespace-pre-wrap text-foreground">{content}</div>
-            {map(keys, (imageKey) => (
-              <div
-                key={imageKey}
-                className="mt-4 flex h-48 w-full animate-pulse items-center justify-center rounded-lg bg-brandSecondary"
-              />
+            {map(imageData, (image) => (
+              <div key={image.id} className="mt-4 flex h-48 w-full">
+                <Image
+                  src={image.preSignedUrl}
+                  alt={image.name}
+                  className="h-full w-full rounded-lg object-contain"
+                />
+              </div>
             ))}
-            {/* 이미지 Fallback */}
-            <div className="mt-4 flex h-48 w-full animate-pulse items-center justify-center rounded-lg bg-brandSecondary" />
           </div>
         </DialogContent>
       </Dialog>
