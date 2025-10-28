@@ -6,6 +6,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "../ui/carousel";
+import { Image } from "../atoms";
 
 export const ImageCarousel: FC<{
   images: string[];
@@ -18,10 +19,10 @@ export const ImageCarousel: FC<{
         {images.map((image, index) => (
           <CarouselItem key={index} className="pl-2 md:pl-4">
             <div className="flex aspect-video items-center justify-center rounded-lg bg-gray-50 p-1">
-              <img
+              <Image
                 src={image}
                 alt={`Image ${index + 1}`}
-                className="max-h-[25rem] w-full rounded-lg object-contain"
+                className="h-full w-full rounded-lg object-contain"
               />
             </div>
           </CarouselItem>
