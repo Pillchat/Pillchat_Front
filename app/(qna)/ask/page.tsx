@@ -56,6 +56,7 @@ const QuestionPage = () => {
           onImagesChange={handleImagesChange}
           questionId={questionId}
           initialImages={initialImages}
+          type="question"
         />
         <Controller
           name="title"

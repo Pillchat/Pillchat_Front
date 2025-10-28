@@ -1,11 +1,13 @@
 "use client";
 
 import { TextButton } from "@/components/atoms";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { FC } from "react";
 
 const CompletePage: FC = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -36,6 +38,9 @@ const CompletePage: FC = () => {
           label="질문 광장으로 이동하기"
           variant="outline"
           onClick={() => {
+            queryClient.invalidateQueries({
+              queryKey: ["questions", "pending"],
+            });
             router.push("/qna");
           }}
         />

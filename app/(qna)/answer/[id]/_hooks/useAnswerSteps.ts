@@ -1,21 +1,22 @@
+import { format } from "date-fns";
 import { useState, useCallback } from "react";
 
 export type AnswerStep = {
   id: string;
   content: string;
-  images?: string[];
+  keys?: string[];
 };
 
 export const useAnswerSteps = () => {
   const [steps, setSteps] = useState<AnswerStep[]>([
-    { id: "1", content: "", images: [] },
+    { id: "1", content: "", keys: [] },
   ]);
 
   const addStep = useCallback(() => {
     const newStep: AnswerStep = {
-      id: new Date().toString(),
+      id: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
       content: "",
-      images: [],
+      keys: [],
     };
     setSteps((prev) => [...prev, newStep]);
   }, []);
