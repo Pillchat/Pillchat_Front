@@ -1,24 +1,15 @@
 "use client";
 
-import { fetchAPI } from "@/lib/functions";
 import { ImageButton, TextButton } from "@/components/atoms";
 import { CustomCard, CustomHeader } from "@/components/molecules";
 import { Textarea } from "@/components/ui/textarea";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { useAnswerSteps } from "@/app/(qna)/answer/[id]/_hooks";
+import { useAnswerForm } from "@/app/(qna)/answer/[id]/_hooks";
 import { ViewQuestion } from "./ViewQuestion";
-import { QuestionResponse } from "@/types";
 import { map, some } from "lodash";
 
 export interface AnswerFormData {
-  title: string;
-  content: string;
-  subject: string;
-  reward: string;
-  images?: string[];
-  subjectId: string;
+  questionId: string;
+  steps: { id: string; content: string; keys: string[] }[];
 }
 
 interface AnswerFormProps {
@@ -26,61 +17,37 @@ interface AnswerFormProps {
 }
 
 export const AnswerForm = ({ questionId }: AnswerFormProps) => {
-  const { steps, addStep, updateStep, removeStep } = useAnswerSteps();
-
-  const { handleSubmit } = useForm<AnswerFormData>({
-    mode: "onChange",
-    defaultValues: {
-      title: "",
-      content: "",
-      subject: "",
-    },
-  });
-
-  const router = useRouter();
-  const queryClient = useQueryClient();
-
-  //TODO: hook으로 분리
-  const mutation = useMutation({
-    mutationFn: (formData: AnswerFormData) => {
-      return fetchAPI("/api/answers", "POST", {
-        ...formData,
-        questionId,
-        steps,
-      });
-    },
-    onSuccess: (data) => {
-      console.log("Answer posted:", data);
-      queryClient.invalidateQueries({ queryKey: ["questionsList"] });
-      router.push("/");
-    },
-    onError: (error: any) => {
-      console.error("답변 등록 실패:", error);
-    },
-  });
-
-  //TODO: hook으로 분리
-  const { data: question, isLoading } = useQuery<QuestionResponse>({
-    queryKey: ["question", questionId],
-    queryFn: () => fetchAPI(`/api/questions/${questionId}`, "GET"),
-    enabled: !!questionId,
-  });
-
-  const onSubmit = (data: AnswerFormData) => {
-    mutation.mutate(data);
-  };
-
-  const handleRightButtonClick = () => {
-    handleSubmit(onSubmit)();
-  };
+  const {
+    steps,
+    addStep,
+    updateStep,
+    removeStep,
+    imageButtonRefs,
+    initialImages,
+    question,
+    isLoading,
+    isEditMode,
+    handleImagesChange,
+    handleRightButtonClick,
+    mutation,
+  } = useAnswerForm({ questionId });
 
   return (
     <div className="flex min-h-screen flex-col">
       <CustomHeader
-        title="답변하기"
-        rightButtonLabel="작성 완료"
-        onRightButtonClick={handleRightButtonClick}
-        //TODO: 조건 수정 필요할수도?
+        title={isEditMode ? "답변 수정" : "답변하기"}
+        rightButtonLabel={
+          mutation.isPending
+            ? isEditMode
+              ? "수정 중..."
+              : "등록 중..."
+            : isEditMode
+              ? "수정 완료"
+              : "작성 완료"
+        }
+        onRightButtonClick={
+          mutation.isPending ? () => {} : handleRightButtonClick
+        }
         isActive={some(steps, (step) => step.content.length > 0)}
       />
 
@@ -97,7 +64,15 @@ export const AnswerForm = ({ questionId }: AnswerFormProps) => {
             onDelete={() => removeStep(step.id)}
             showDeleteButton={index > 0 && steps.length > 1}
           >
-            <ImageButton />
+            <ImageButton
+              ref={(ref) => {
+                imageButtonRefs.current[step.id] = ref;
+              }}
+              questionId={`answer-${questionId}-step-${step.id}`}
+              onImagesChange={(images) => handleImagesChange(step.id, images)}
+              initialImages={initialImages[step.id] || []}
+              type="question"
+            />
             <Textarea
               placeholder="탭하여 답변을 작성해주세요."
               className="border-none bg-secondary text-sm placeholder:text-border"

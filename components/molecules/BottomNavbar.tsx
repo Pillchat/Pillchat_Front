@@ -26,13 +26,13 @@ const NAV_ITEMS = [
     icon: QnaIcon,
     label: "질문광장",
   },
+  // {
+  //   href: "#",
+  //   icon: ArchiveIcon,
+  //   label: "아카이브",
+  // },
   {
-    href: "#",
-    icon: ArchiveIcon,
-    label: "아카이브",
-  },
-  {
-    href: "#",
+    href: "/mypage",
     icon: MyPageIcon,
     label: "마이 페이지",
   },

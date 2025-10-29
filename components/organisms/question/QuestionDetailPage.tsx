@@ -15,6 +15,7 @@ import { FC, useState } from "react";
 import { useLikeStatus } from "@/hooks/useLikeStatus";
 import { QuestionTitleSection } from "./QuestionTitleSection";
 import { QuestionContents } from "./QuestionContents";
+import { AnswerDetailPage } from "../answer";
 
 export const QuestionDetailPage: FC<{
   questionId: string;
@@ -134,47 +135,63 @@ export const QuestionDetailPage: FC<{
         <div className="mx-6 my-5 h-96 animate-pulse rounded bg-gray-100" />
       )}
       {questionData && (
-        <div className="mx-6 flex flex-1 flex-col gap-8 pb-5 pt-5">
-          <div className="flex flex-col gap-6">
-            <QuestionTitleSection
-              title={questionData.title}
-              userName={questionData.userName}
-              viewCount={questionData.viewCount}
-              createdAt={questionData.createdAt}
-            />
-            <QuestionContents
-              content={questionData.content}
-              images={filesData?.map((file) => file.preSignedUrl) ?? []}
-              filesLoading={filesLoading}
-            />
+        <>
+          <div className="mx-6 flex flex-col gap-8 pb-10 pt-5">
+            <div className="flex flex-col gap-6">
+              <QuestionTitleSection
+                title={questionData.title}
+                userName={questionData.nickname}
+                viewCount={questionData.viewCount}
+                createdAt={questionData.createdAt}
+              />
+              <QuestionContents
+                content={questionData.content}
+                images={filesData?.map((file) => file.preSignedUrl) ?? []}
+                filesLoading={filesLoading}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <LikeButton
+                onClick={handleLikeClick}
+                likeCount={questionData.likeCount}
+              />
+              <ActionMenu
+                trigger={
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <img src="/Ellipsis.svg" alt="더보기" className="h-5 w-5" />
+                  </Button>
+                }
+                items={menuItems}
+                align="end"
+                side="top"
+                showBackdrop={true}
+              />
+            </div>
           </div>
-          <div className="flex items-center justify-between">
-            <LikeButton
-              onClick={handleLikeClick}
-              likeCount={questionData.likeCount}
-            />
-            <ActionMenu
-              trigger={
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <img src="/Ellipsis.svg" alt="더보기" className="h-5 w-5" />
-                </Button>
-              }
-              items={menuItems}
-              align="end"
-              side="top"
-              showBackdrop={true}
-            />
+          <div className="border-t-[12px] border-t-[#F4F4F4] py-5" />
+          <div className="mx-6 flex flex-1 flex-col gap-5 pb-10">
+            {questionData.answerCount > 0 ? (
+              <>
+                <div className="flex items-start">
+                  <p className="text-sm">
+                    총 {questionData.answerCount}개의 답변
+                  </p>
+                </div>
+                <AnswerDetailPage questionId={questionId} isAuthor={isAuthor} />
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-border">아직 답변이 없습니다.</p>
+              </div>
+            )}
           </div>
-          <div className="flex items-center justify-center border-t-[12px] border-t-[#F4F4F4] py-10">
-            <p className="text-border">아직 답변이 없습니다.</p>
-          </div>
-        </div>
+        </>
       )}
       <div className="sticky bottom-0 mx-6 mb-6">
         <Button
           size="long"
           variant="brand"
-          className="w-full"
+          className="h-14 w-full text-lg font-medium"
           onClick={() => {
             router.push(`/answer/${questionId}`);
           }}

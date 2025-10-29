@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { ImageIcon } from "lucide-react";
-import clsx from "clsx";
+import { FC, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface ImageProps {
@@ -12,7 +10,7 @@ interface ImageProps {
   boxClassName?: string;
 }
 
-export const Image = ({ src, alt, className }: ImageProps) => {
+export const Image: FC<ImageProps> = ({ src, alt, className }) => {
   const [error, setError] = useState(false);
 
   if (error) {

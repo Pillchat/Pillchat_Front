@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useMemo } from "react";
 import { useAtom } from "jotai";
 import { studentInfoAtom } from "@/lib/atoms/onboarding";

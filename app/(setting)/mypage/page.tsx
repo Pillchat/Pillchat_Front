@@ -7,6 +7,7 @@ import {
   MeaninglessHeader,
   UserInfoField,
   SelectModal,
+  BottomNavbar,
 } from "@/components/molecules";
 import { useDelete, useLogout, useMyProfile } from "./_hooks";
 
@@ -137,6 +138,8 @@ const mypage: FC = () => {
         title="계정탈퇴"
         message="정말로 계정을 탈퇴하시겠습니까? \n모든 정보가 사라지게 됩니다."
       />
+
+      <BottomNavbar />
     </div>
   );
 };
