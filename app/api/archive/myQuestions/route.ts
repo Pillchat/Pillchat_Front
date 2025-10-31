@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       { message: "내 질문 목록을 불러오는 데 실패했습니다." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

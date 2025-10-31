@@ -249,9 +249,10 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
     refetch: refetchQuestion,
   } = useQuery({
     queryKey: ["question", questionId],
-    queryFn: () => fetchAPI(`/api/questions/${questionId}`, "GET", {
-      headers: { Authorization: token ? `Bearer ${token}` : "" },
-    }),
+    queryFn: () =>
+      fetchAPI(`/api/questions/${questionId}`, "GET", {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      }),
     enabled: !!questionId,
   });
 
@@ -260,9 +261,12 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
     queryFn: async () => {
       if (!questionData?.images || questionData.images.length === 0) return [];
       const keys = questionData.images.map(
-        (image) => `question/${questionData.id}/${image.urlKey}`
+        (image) => `question/${questionData.id}/${image.urlKey}`,
       );
-      return fetchAPI("/api/files", "GET", { keys, headers: { Authorization: token ? `Bearer ${token}` : "" } });
+      return fetchAPI("/api/files", "GET", {
+        keys,
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
     },
     enabled: !!questionData?.id && !!questionData?.images,
   });
@@ -304,7 +308,12 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
   const menuItems: ActionMenuItem[] = isAuthor
     ? [
         { id: "edit", label: "수정", onClick: handleEdit },
-        { id: "delete", label: "삭제", onClick: handleDelete, variant: "destructive" },
+        {
+          id: "delete",
+          label: "삭제",
+          onClick: handleDelete,
+          variant: "destructive",
+        },
       ]
     : [{ id: "report", label: "신고", onClick: () => console.log("신고") }];
 
@@ -314,10 +323,16 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
         title="질문광장"
         showIcon
         rightButtonLabel={isAuthor ? "수정" : undefined}
-        onRightButtonClick={isAuthor ? () => router.push(`/question/${questionId}/edit`) : undefined}
+        onRightButtonClick={
+          isAuthor
+            ? () => router.push(`/question/${questionId}/edit`)
+            : undefined
+        }
       />
 
-      {questionLoading && <div className="mx-6 my-5 h-96 animate-pulse rounded bg-gray-100" />}
+      {questionLoading && (
+        <div className="mx-6 my-5 h-96 animate-pulse rounded bg-gray-100" />
+      )}
 
       {questionData && (
         <>
@@ -337,7 +352,10 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
             </div>
 
             <div className="flex items-center justify-between">
-              <LikeButton onClick={handleLikeClick} likeCount={questionData.likeCount} />
+              <LikeButton
+                onClick={handleLikeClick}
+                likeCount={questionData.likeCount}
+              />
               <ActionMenu
                 trigger={
                   <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -358,7 +376,9 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
             {questionData.answerCount > 0 ? (
               <>
                 <div className="flex items-start">
-                  <p className="text-sm">총 {questionData.answerCount}개의 답변</p>
+                  <p className="text-sm">
+                    총 {questionData.answerCount}개의 답변
+                  </p>
                 </div>
                 <AnswerDetailPage questionId={questionId} isAuthor={isAuthor} />
               </>

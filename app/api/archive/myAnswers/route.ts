@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     if (!accessToken) {
       return NextResponse.json(
         { message: "인증 토큰이 필요합니다." },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     console.error("내 답변 목록 조회 API 에러:", error);
     return NextResponse.json(
       { message: "내 답변 목록을 불러오는 데 실패했습니다." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -41,7 +41,6 @@
 //   console.log("🟡 myAnswers raw data:", myAnswers);
 // }, [myAnswers]);
 
-
 //   // ---------- 디버그: 데이터 형태 콘솔 출력 ----------
 //   useEffect(() => {
 //     if (myQuestions) {
@@ -315,15 +314,10 @@ const ArchivePage: FC = () => {
               subjectName: item?.subjectName ?? item?.question?.subjectName,
               viewCount: item?.viewCount ?? 0,
               userNickname:
-                item?.userNickname ??
-                item?.question?.userNickname ??
-                "익명",
+                item?.userNickname ?? item?.question?.userNickname ?? "익명",
 
               // ✅ 추가: 이미지 필드 매핑
-              images:
-                item?.images ??
-                item?.question?.images ??
-                [],
+              images: item?.images ?? item?.question?.images ?? [],
             };
 
             return (
@@ -385,14 +379,12 @@ const ArchivePage: FC = () => {
       </div>
 
       {/* ✅ 새로고침 버튼 */}
-      <div className="text-center mt-4">
+      <div className="mt-4 text-center">
         <button
           onClick={
-            currentStatus === "my-questions"
-              ? refetchQuestions
-              : refetchAnswers
+            currentStatus === "my-questions" ? refetchQuestions : refetchAnswers
           }
-          className="px-4 py-2 text-sm border rounded-lg hover:bg-gray-100 transition"
+          className="rounded-lg border px-4 py-2 text-sm transition hover:bg-gray-100"
         >
           새로고침
         </button>

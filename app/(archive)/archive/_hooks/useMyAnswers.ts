@@ -40,7 +40,8 @@ export function useMyAnswers(token?: string): UseMyAnswersReturn {
         headers: { Authorization: token },
       });
 
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
 
       const result = await response.json();
       setData(result);

@@ -338,7 +338,10 @@ const AnswerItem: FC<{
       <UserInfoField author={authorWithImage} />
       <div className="flex flex-col gap-3">
         {answer.steps.map((step, index) => (
-          <div className="flex flex-col gap-3 rounded-xl border p-4" key={step.stepId}>
+          <div
+            className="flex flex-col gap-3 rounded-xl border p-4"
+            key={step.stepId}
+          >
             <p className="text-xl font-semibold">STEP {index + 1}</p>
             <div className="rounded-xl bg-secondary px-3 py-4 text-foreground">
               <p className="whitespace-pre-wrap break-words">{step.content}</p>
@@ -397,14 +400,16 @@ export const AnswerDetailPage: FC<{
   const [allAnswers, setAllAnswers] = useState<Answer[]>([]);
   const pageSize = 5;
 
-  const { data: answerData, isLoading: answerLoading, isFetching } = useQuery<
-    AnswerListResponse
-  >({
+  const {
+    data: answerData,
+    isLoading: answerLoading,
+    isFetching,
+  } = useQuery<AnswerListResponse>({
     queryKey: ["answers", questionId, page],
     queryFn: () =>
       fetchAPI(
         `/api/answers/cards?questionId=${questionId}&page=${page}&size=${pageSize}`,
-        "GET"
+        "GET",
       ),
     enabled: !!questionId,
   });
@@ -431,7 +436,11 @@ export const AnswerDetailPage: FC<{
     <div>
       {allAnswers.map((answer, index) => (
         <div key={answer.id}>
-          <AnswerItem answer={answer} isAuthor={isAuthor} questionId={questionId} />
+          <AnswerItem
+            answer={answer}
+            isAuthor={isAuthor}
+            questionId={questionId}
+          />
           {index < allAnswers.length - 1 && (
             <div className="-mx-6 border-t-[12px] border-t-[#F4F4F4] py-5" />
           )}
