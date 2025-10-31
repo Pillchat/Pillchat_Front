@@ -26,7 +26,7 @@ const SignupPage: FC = () => {
   const [route, setRoute] = useState("");
   const [valueBadge, setValueBadge] = useState("");
   const [roleImg, setRoleImg] = useState("");
-  const [checked, seChecked] = useState(false);
+  const [checked, seChecked] = useState(false); 
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordRe, setShowPasswordRe] = useState(false);
   const [ocrData, setOcrData] = useState<any>(null);
