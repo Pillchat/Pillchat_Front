@@ -9,6 +9,7 @@ export * from "./TextareaWithLabel";
 export * from "./IconInput";
 export * from "./Input";
 export * from "./RoleCard";
+export * from "./SelectBox";
 export * from "./SolidButton";
 export * from "./StrokeButton";
 export * from "./PharmMoney";
