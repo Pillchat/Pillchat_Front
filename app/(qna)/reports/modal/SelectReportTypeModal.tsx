@@ -12,7 +12,7 @@ type SelectReportTypeModalProps = {
 
 const REPORT_TYPE_MAP: Record<string, { label: string; value: string }> = RTM;
 
-export function SelectReportTypeModal({
+function SelectReportTypeModal({
   closeClick,
   onSelect,
   setReportTypes,
@@ -78,3 +78,5 @@ export function SelectReportTypeModal({
     </>
   );
 }
+
+export default SelectReportTypeModal;

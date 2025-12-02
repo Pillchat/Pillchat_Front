@@ -31,6 +31,6 @@
     ".next/types/**/*.ts",
     "src",
     "src/types/global.d.ts"
-  ],
+, "app/(qna)/reports/modal/S.tsxSelectReportTypeModal"  ],
   "exclude": ["node_modules"]
 }

@@ -3,7 +3,7 @@
 import { TextareaWithLabel, SelectBox } from "@/components/atoms";
 import { CustomHeader, SubmitModal } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
-import { SelectReportTypeModal } from "./modal/page";
+import SelectReportTypeModal from "./modal/SelectReportTypeModal";
 
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { Controller } from "react-hook-form";
