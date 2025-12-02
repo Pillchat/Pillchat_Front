@@ -6,13 +6,13 @@ interface IOption {
 }
 
 interface ISelectBoxProps {
-    label?: string
-    options: IOption[];
-    selectedValue: string;
-    placeholder?: string;
-    disabled: boolean;
-    handleChange: (e: ChangeEvent<HTMLSelectElement>) => void;
-    onClick?: () => void;
+  label?: string;
+  options: IOption[];
+  selectedValue: string;
+  placeholder?: string;
+  disabled: boolean;
+  handleChange: (e: ChangeEvent<HTMLSelectElement>) => void;
+  onClick?: () => void;
 }
 
 export function SelectBox({
@@ -25,12 +25,11 @@ export function SelectBox({
   onClick,
 }: ISelectBoxProps) {
   return (
-    
     <div className="relative">
       {label && <label className="text-xs">{label}</label>}
       <div>
         <select
-          className="appearance-none h-12 w-full rounded-lg bg-none border border-[] py-3 px-3"
+          className="h-12 w-full appearance-none rounded-lg border border-[] bg-none px-3 py-3"
           value={selectedValue}
           disabled
           // onMouseDown={(e) => e.preventDefault()}
@@ -48,12 +47,15 @@ export function SelectBox({
             </option>
           ))}
         </select>
-        <div
-          className="absolute inset-0 cursor-pointer"
-          onClick={onClick}
-        />
-        <span className="absolute right-4 bottom-4 ...">
-          <img src="/ArrowIcon.svg" alt="arrow-left" width={16} height={16} className="rotate-90"/>
+        <div className="absolute inset-0 cursor-pointer" onClick={onClick} />
+        <span className="absolute bottom-4 right-4 ...">
+          <img
+            src="/ArrowIcon.svg"
+            alt="arrow-left"
+            width={16}
+            height={16}
+            className="rotate-90"
+          />
         </span>
       </div>
     </div>

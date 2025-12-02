@@ -35,7 +35,7 @@ export default function ReportPage() {
       <div className="flex min-h-screen flex-col">
         <CustomHeader title="신고하기" showIcon />
 
-        <div className="flex flex-col sticky bottom-0 mx-6 mb-6 gap-5">
+        <div className="sticky bottom-0 mx-6 mb-6 flex flex-col gap-5">
           <SelectBox
             label="신고 유형"
             options={reportTypes.map((type) => ({ key: type, value: type }))}
@@ -60,7 +60,7 @@ export default function ReportPage() {
             )}
           />
 
-          <ul className="flex flex-col gap-2 list-disc pl-5 text-[#999999]">
+          <ul className="flex list-disc flex-col gap-2 pl-5 text-[#999999]">
             <li>
               신고 접수 후 패널티 조치까지 영업일 기준 최소 3일에서 최대 5일까지
               소요될 수 있습니다.
@@ -71,13 +71,13 @@ export default function ReportPage() {
             </li>
             <li>
               분쟁을 조정하는 과정에서 신고자와 신고 대상자의 의견이 달라 협의가
-              어려운 경우, 필챗 고객경험팀은 중재를 포기하고 회원관리정책에 명시한
-              바와 같이 사용자의 활동을 제한할 수 있습니다.
+              어려운 경우, 필챗 고객경험팀은 중재를 포기하고 회원관리정책에
+              명시한 바와 같이 사용자의 활동을 제한할 수 있습니다.
             </li>
           </ul>
         </div>
 
-        <div className="sticky bottom-0 mt-auto mx-6 mb-6">
+        <div className="sticky bottom-0 mx-6 mb-6 mt-auto">
           <Button
             size="long"
             variant="brand"

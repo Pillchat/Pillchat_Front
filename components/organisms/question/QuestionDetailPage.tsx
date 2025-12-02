@@ -86,7 +86,8 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
 
   const handleEdit = () => router.push(`/ask?edit=${questionId}`);
   const handleDelete = () => setShowDeleteConfirm(true);
-  const handleReport = () => router.push(`/reports?type=QUESTION&id=${questionId}`);
+  const handleReport = () =>
+    router.push(`/reports?type=QUESTION&id=${questionId}`);
   const confirmDelete = () => {
     deleteMutation.mutate();
     setShowDeleteConfirm(false);

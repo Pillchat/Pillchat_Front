@@ -2,7 +2,7 @@ export interface ReportCreateRequest {
   targetType: TargetType;
   targetId: number;
   reasonType?: ReportReasonType;
-  reasonDetail?: string
+  reasonDetail?: string;
 }
 export type ReportReasonType =
   | "ABUSE"
@@ -14,9 +14,6 @@ export type ReportReasonType =
   | "IMPERSONATION"
   | "MEDICAL_ADVICE"
   | "OTHER";
- "ETC";
+("ETC");
 
- export type TargetType =
-  | "QUESTION"
-  | "ANSWER"
-  | "USER"
+export type TargetType = "QUESTION" | "ANSWER" | "USER";

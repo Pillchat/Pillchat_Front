@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     if (!targetType || !reasonType) {
       return NextResponse.json(
         { message: "targetType, targetId, reasonType은 필수입니다." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -40,20 +40,16 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const backendError = await response.json().catch(() => ({}));
-      return NextResponse.json(
-        backendError,
-        { status: response.status }
-      );
+      return NextResponse.json(backendError, { status: response.status });
     }
 
     const result = await response.json();
     return NextResponse.json(result, { status: 200 });
-
   } catch (error: any) {
     console.error("신고 API 에러:", error);
     return NextResponse.json(
       { message: error.message || "서버 오류" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

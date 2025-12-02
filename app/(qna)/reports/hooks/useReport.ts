@@ -3,7 +3,11 @@
 import { useState, ChangeEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuestionForm } from "../../ask/_hooks";
-import { ReportCreateRequest, ReportReasonType, TargetType } from "@/types/report";
+import {
+  ReportCreateRequest,
+  ReportReasonType,
+  TargetType,
+} from "@/types/report";
 import { fetchAPI } from "@/lib/functions";
 
 const useReportModalState = () => {
@@ -43,7 +47,7 @@ const useReportModalState = () => {
 const useReportFormState = (
   openSubmitReport: () => void,
   openSubmitDuplication: () => void,
-  openSubmitError: () => void
+  openSubmitError: () => void,
 ) => {
   const { control } = useQuestionForm();
   const params = useSearchParams();
@@ -60,7 +64,7 @@ const useReportFormState = (
 
   const handleTextareaChange = (
     event: ChangeEvent<HTMLTextAreaElement>,
-    onChange: (value: any) => void
+    onChange: (value: any) => void,
   ) => {
     onChange(event);
     setContent(event.target.value);
@@ -142,7 +146,7 @@ export const useReportPage = () => {
   const formState = useReportFormState(
     modalState.openSubmitReport,
     modalState.openSubmitDuplication,
-    modalState.openSubmitError
+    modalState.openSubmitError,
   );
 
   return {
