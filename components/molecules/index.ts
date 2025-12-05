@@ -17,3 +17,4 @@ export * from "./ActionMenu";
 export * from "./SelectModal";
 export * from "./GeneralModal";
 export * from "./ImageCarousel";
+export * from "./SubmitModal";

@@ -321,7 +321,7 @@ const AnswerItem: FC<{
         {
           id: "report",
           label: "신고",
-          onClick: () => console.log("신고"),
+          onClick: () => router.push(`/reports?type=ANSWER&id=${answer.id}`),
         },
       ];
 
