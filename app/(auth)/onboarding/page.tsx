@@ -34,10 +34,7 @@ const OnboardingPage: FC = () => {
         </p>
       </div>
       <div className="mb-10 flex flex-col gap-3">
-        <TextButton
-          label="추가 정보 입력하기"
-          onClick={goOnboarding}
-        />
+        <TextButton label="추가 정보 입력하기" onClick={goOnboarding} />
         <TextButton
           label="로그인 화면으로 가기"
           variant="teritary"
