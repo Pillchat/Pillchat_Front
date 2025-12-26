@@ -87,7 +87,7 @@ const LoginPage: FC = () => {
                 iconSrc={eye ? "/ClosedEye.svg" : "/OpenEye.svg"}
                 iconSize="20"
                 iconAsButton={true}
-                onIconClick={() => setEye(prev => !prev)}
+                onIconClick={() => setEye((prev) => !prev)}
                 placeholder="비밀번호를 입력해주세요"
                 type={eye ? "text" : "password"}
               />
