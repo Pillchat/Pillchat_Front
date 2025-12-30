@@ -8,6 +8,8 @@ import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSubmit } from "./_hooks";
+import { IconInputField } from "@/components/molecules";
+import { useState } from "react";
 
 export type LoginFormData = {
   email: string;
@@ -18,6 +20,7 @@ export type LoginFormData = {
 const LoginPage: FC = () => {
   const router = useRouter();
   const { onSubmit, isLoading, error: loginError } = useSubmit();
+  const [eye, setEye] = useState(false);
 
   const {
     control,
@@ -71,12 +74,22 @@ const LoginPage: FC = () => {
             //   },
             // }}
             render={({ field }) => (
-              <TextInput
-                label="비밀번호"
+              // <TextInput
+              //   label="비밀번호"
+              //   placeholder="비밀번호를 입력해주세요"
+              //   type="password"
+              //   errorMessage={errors.password?.message}
+              //   {...field}
+              // />
+              <IconInputField
+                content="비밀번호"
+                iconPosition="right"
+                iconSrc={eye ? "/ClosedEye.svg" : "/OpenEye.svg"}
+                iconSize="20"
+                iconAsButton={true}
+                onIconClick={() => setEye((prev) => !prev)}
                 placeholder="비밀번호를 입력해주세요"
-                type="password"
-                errorMessage={errors.password?.message}
-                {...field}
+                type={eye ? "text" : "password"}
               />
             )}
           />
