@@ -322,7 +322,7 @@ const SignupPage: FC = () => {
             <IconInputField
               content="이메일"
               iconAsButton={true}
-              inputValue={email}
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
               onIconClick={() => setEmail("")}
               type="email"
@@ -382,7 +382,7 @@ const SignupPage: FC = () => {
               <IconInputField
                 content="비밀번호"
                 iconAsButton={true}
-                inputValue={password}
+                value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onIconClick={() => setShowPassword(!showPassword)}
                 iconPosition="right"
@@ -405,7 +405,7 @@ const SignupPage: FC = () => {
                 <IconInputField
                   content="비밀번호 확인"
                   iconAsButton={true}
-                  inputValue={passwordRe}
+                  value={passwordRe}
                   onChange={(e) => setPasswordRe(e.target.value)}
                   onIconClick={() => setShowPasswordRe(!showPasswordRe)}
                   iconPosition="right"
@@ -450,7 +450,7 @@ const SignupPage: FC = () => {
               <IconInputField
                 content="닉네임"
                 iconAsButton={true}
-                inputValue={nickname}
+                value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 onIconClick={() => setNickname("")}
                 iconPosition="right"
