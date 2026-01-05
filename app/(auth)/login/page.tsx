@@ -8,7 +8,6 @@ import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSubmit } from "./_hooks";
-import { IconInputField } from "@/components/molecules";
 import { useState } from "react";
 
 export type LoginFormData = {
@@ -81,15 +80,12 @@ const LoginPage: FC = () => {
               //   errorMessage={errors.password?.message}
               //   {...field}
               // />
-              <IconInputField
-                content="비밀번호"
-                iconPosition="right"
-                iconSrc={eye ? "/ClosedEye.svg" : "/OpenEye.svg"}
-                iconSize="20"
-                iconAsButton={true}
-                onIconClick={() => setEye((prev) => !prev)}
+              <TextInput
+                label="비밀번호"
                 placeholder="비밀번호를 입력해주세요"
-                type={eye ? "text" : "password"}
+                type="password"
+                errorMessage={errors.password?.message}
+                {...field}
               />
             )}
           />
