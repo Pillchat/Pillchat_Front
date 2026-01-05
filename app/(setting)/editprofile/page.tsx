@@ -117,7 +117,7 @@ const EditProfile = () => {
       <div className="mt-5 flex w-[90%] flex-col gap-[5px]">
         <IconInputField
           content="닉네임"
-          inputValue={tempNickname}
+          value={tempNickname}
           onChange={(e) => setTempNickname(e.target.value)}
           onIconClick={() => setTempNickname("")}
           placeholder="닉네임을 적어주세요"

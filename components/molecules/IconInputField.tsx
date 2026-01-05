@@ -4,7 +4,7 @@ import { IconInput } from "../atoms/IconInput";
 interface InputFieldProps {
   content: string;
   disabled?: boolean;
-  inputValue?: string;
+  value?: string;
   iconSrc?: string;
   iconAlt?: string;
   iconPosition?: "left" | "right";
@@ -22,7 +22,7 @@ interface InputFieldProps {
 export function IconInputField({
   content,
   disabled,
-  inputValue,
+  value,
   iconSrc,
   iconAlt,
   iconSize,
@@ -41,7 +41,7 @@ export function IconInputField({
       <p className="font-regular font-[pretendard] text-[14px]">{content}</p>
       <IconInput
         disabled={disabled}
-        value={inputValue}
+        value={value}
         iconSrc={iconSrc}
         iconAlt={iconAlt}
         iconSize={iconSize}
