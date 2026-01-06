@@ -1,6 +1,6 @@
 "use client";
 
-import { Logo, TextInput } from "@/components/atoms";
+import { Logo } from "@/components/atoms";
 import { Button } from "@/components/ui/button";
 import { Label } from "@radix-ui/react-label";
 import { FC } from "react";
@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSubmit } from "./_hooks";
 import { useState } from "react";
+import { IconInputField } from "@/components/molecules";
+import { emailRules, passwordRules } from "@/validations";
 
 export type LoginFormData = {
   email: string;
@@ -45,16 +47,10 @@ const LoginPage: FC = () => {
           <Controller
             name="email"
             control={control}
-            // rules={{
-            //   required: "이메일을 입력해주세요.",
-            //   pattern: {
-            //     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-            //     message: "올바른 이메일 형식을 입력해주세요.",
-            //   },
-            // }}
+            rules={emailRules}
             render={({ field }) => (
-              <TextInput
-                label="이메일"
+              <IconInputField
+                content="이메일"
                 placeholder="이메일을 입력해주세요"
                 errorMessage={errors.email?.message}
                 {...field}
@@ -65,25 +61,17 @@ const LoginPage: FC = () => {
           <Controller
             name="password"
             control={control}
-            // rules={{
-            //   required: "비밀번호를 입력해주세요.",
-            //   minLength: {
-            //     value: 6,
-            //     message: "비밀번호는 6글자 이상 입력해주세요.",
-            //   },
-            // }}
+            rules={passwordRules}
             render={({ field }) => (
-              // <TextInput
-              //   label="비밀번호"
-              //   placeholder="비밀번호를 입력해주세요"
-              //   type="password"
-              //   errorMessage={errors.password?.message}
-              //   {...field}
-              // />
-              <TextInput
-                label="비밀번호"
+              <IconInputField
+                content="비밀번호"
                 placeholder="비밀번호를 입력해주세요"
-                type="password"
+                type={eye ? "text" : "password"}
+                iconSrc={eye ? "/ClosedEye.svg" : "/Eye.svg"}
+                iconAlt="비밀번호 보기"
+                iconAsButton
+                iconSize={20}
+                onIconClick={() => setEye((prev) => !prev)}
                 errorMessage={errors.password?.message}
                 {...field}
               />

@@ -328,7 +328,7 @@ const SignupPage: FC = () => {
               type="email"
               iconPosition="right"
               iconSrc="/Cancel.svg"
-              iconSize="20"
+              iconSize={20}
               placeholder="이메일을 적어주세요"
               autoFocus={true}
             />
@@ -387,7 +387,7 @@ const SignupPage: FC = () => {
                 onIconClick={() => setShowPassword(!showPassword)}
                 iconPosition="right"
                 iconSrc={showPassword ? "/ClosedEye.svg" : "/OpenEye.svg"}
-                iconSize="20"
+                iconSize={20}
                 placeholder="비밀번호를 적어주세요"
                 autoFocus={true}
                 type={showPassword ? "text" : "password"}
@@ -410,7 +410,7 @@ const SignupPage: FC = () => {
                   onIconClick={() => setShowPasswordRe(!showPasswordRe)}
                   iconPosition="right"
                   iconSrc={showPasswordRe ? "/ClosedEye.svg" : "/OpenEye.svg"}
-                  iconSize="20"
+                  iconSize={20}
                   placeholder="비밀번호를 적어주세요"
                   type={showPasswordRe ? "text" : "password"}
                   minLength={8}
@@ -455,7 +455,7 @@ const SignupPage: FC = () => {
                 onIconClick={() => setNickname("")}
                 iconPosition="right"
                 iconSrc="Cancel.svg"
-                iconSize="20"
+                iconSize={20}
                 placeholder="닉네임을 적어주세요"
                 autoFocus={true}
               />
