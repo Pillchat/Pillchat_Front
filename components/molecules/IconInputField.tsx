@@ -24,57 +24,56 @@ interface IconInputFieldProps {
   onBlur?: () => void;
 }
 
-export const IconInputField = forwardRef<
-  HTMLInputElement,
-  IconInputFieldProps
->(function IconInputField(
-  {
-    content,
-    value,
-    disabled,
-    iconSrc,
-    iconAlt,
-    iconSize,
-    iconAsButton,
-    iconPosition = "right",
-    onIconClick,
-    placeholder,
-    autoFocus,
-    type = "text",
-    maxLength,
-    minLength,
-    errorMessage,
-    onChange,
-    onBlur,
+export const IconInputField = forwardRef<HTMLInputElement, IconInputFieldProps>(
+  function IconInputField(
+    {
+      content,
+      value,
+      disabled,
+      iconSrc,
+      iconAlt,
+      iconSize,
+      iconAsButton,
+      iconPosition = "right",
+      onIconClick,
+      placeholder,
+      autoFocus,
+      type = "text",
+      maxLength,
+      minLength,
+      errorMessage,
+      onChange,
+      onBlur,
+    },
+    ref,
+  ) {
+    return (
+      <div className="flex flex-col gap-[4px]">
+        <p className="text-sm">{content}</p>
+
+        <IconInput
+          ref={ref}
+          value={value ?? ""}
+          disabled={disabled}
+          type={type}
+          iconSrc={iconSrc}
+          iconAlt={iconAlt}
+          iconSize={iconSize}
+          iconAsButton={iconAsButton}
+          iconPosition={iconPosition}
+          onIconClick={onIconClick}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={placeholder}
+          autoFocus={autoFocus}
+          maxLength={maxLength}
+          minLength={minLength}
+        />
+
+        {errorMessage && (
+          <p className="text-xs text-destructive">{errorMessage}</p>
+        )}
+      </div>
+    );
   },
-  ref
-) {
-  return (
-    <div className="flex flex-col gap-[4px]">
-      <p className="text-sm">{content}</p>
-
-      <IconInput
-        ref={ref}
-        value={value ?? ""}
-        disabled={disabled}
-        type={type}
-        iconSrc={iconSrc}
-        iconAlt={iconAlt}
-        iconSize={iconSize}
-        iconAsButton={iconAsButton}
-        iconPosition={iconPosition}
-        onIconClick={onIconClick}
-        onChange={onChange}
-        onBlur={onBlur}
-        placeholder={placeholder}
-        autoFocus={autoFocus}
-        maxLength={maxLength}
-        minLength={minLength}
-      />
-
-      {errorMessage && (
-        <p className="text-xs text-destructive">{errorMessage}</p>
-      )}
-    </div>
-  );
-});
+);
