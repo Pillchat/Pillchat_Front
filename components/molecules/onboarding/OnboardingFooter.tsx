@@ -8,32 +8,79 @@ import {
   professionalInfoAtom,
 } from "@/lib/atoms/onboarding";
 import { Button } from "@/components/ui/button";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { fetchAPI } from "@/lib/functions";
 
 type OnboardingFooterProps = {
   role?: string;
+  professionalPrefill?: any;
 };
 
-export const OnboardingFooter: FC<OnboardingFooterProps> = ({ role }) => {
+const norm = (s?: string) => (s ?? "").replace(/\s+/g, "");
+const isStr = (v: any): v is string => typeof v === "string" && v.length > 0;
+
+export const OnboardingFooter: FC<OnboardingFooterProps> = ({
+  role,
+  professionalPrefill,
+}) => {
   const router = useRouter();
   const params = useParams();
-  const currentRole = role || params.role;
+  const currentRole = String(role ?? (params as any)?.role ?? "");
 
   const [label, setLabel] = useAtom(buttonLabelAtom);
   const [currentStep, setCurrentStep] = useAtom(currentStepAtom);
   const [studentInfo] = useAtom(studentInfoAtom);
   const [professionalInfo] = useAtom(professionalInfoAtom);
 
-  // API 호출을 위한 mutation
+  const { labelToValue, labelToValueNorm } = useMemo(() => {
+    const pairs: Array<[string, string]> = [];
+
+    const pushCategories = (cats: any) => {
+      if (!Array.isArray(cats)) return;
+      for (const c of cats) {
+        const subs = c?.subjects;
+        if (!Array.isArray(subs)) continue;
+        for (const s of subs) {
+          const l = s?.label;
+          const v = s?.value;
+          if (isStr(l) && isStr(v)) pairs.push([l, v]);
+        }
+      }
+    };
+
+    pushCategories(professionalPrefill?.page1?.categories);
+    pushCategories(professionalPrefill?.page2?.categories);
+    pushCategories(professionalPrefill?.page3?.categories);
+
+    const courses = professionalPrefill?.page4?.courses;
+    if (Array.isArray(courses)) {
+      for (const course of courses) {
+        pushCategories(course?.categories);
+      }
+    }
+
+    const m1 = new Map<string, string>(pairs);
+    const m2 = new Map<string, string>(pairs.map(([l, v]) => [norm(l), v]));
+
+    return { labelToValue: m1, labelToValueNorm: m2 };
+  }, [professionalPrefill]);
+
+  const toValues = (arr: any, limit?: number) => {
+    const raw = Array.isArray(arr) ? arr : [];
+    const converted = raw
+      .filter(isStr)
+      .map((v) => labelToValue.get(v) ?? labelToValueNorm.get(norm(v)) ?? v);
+    const uniq = Array.from(new Set(converted));
+    return typeof limit === "number" ? uniq.slice(0, limit) : uniq;
+  };
+
   const { mutate, isPending } = useMutation({
     mutationFn: async (onboardingData: any) => {
       const endpoint = `/api/onboarding/${currentRole}`;
       const response = await fetchAPI(endpoint, "PUT", onboardingData);
-
-      return response.data;
+      return (response as any)?.data ?? response;
     },
     onSuccess: () => {
       router.push("/login");
@@ -43,36 +90,55 @@ export const OnboardingFooter: FC<OnboardingFooterProps> = ({ role }) => {
     },
   });
 
-  // role별 최종 단계 정의
   const getFinalStep = () => (currentRole === "student" ? 4 : 3);
 
-  const handleClick = () => {
-    console.log("handleClick called - currentStep:", currentStep);
+  const prepareOnboardingData = () => {
+  if (currentRole === "professional") {
+    const raw =
+      (professionalInfo as any).strongSubjects ??
+      (professionalInfo as any).selectedSubjectLabels ??
+      (professionalInfo as any).subjects ??
+      [];
 
+    const strongSubjects = toValues(raw, 5);
+
+    return {
+      ...professionalInfo,
+      job: norm((professionalInfo as any).job),
+      strongSubjects,
+    };
+  }
+
+  const next: any = { ...studentInfo };
+
+  const strong = "strongSubjects" in next ? toValues(next.strongSubjects, 5) : [];
+  const weak = "weakSubjects" in next ? toValues(next.weakSubjects, 5) : [];
+
+  if ("strongSubjects" in next) next.strongSubjects = weak;
+  if ("weakSubjects" in next) next.weakSubjects = strong;
+
+  if (Array.isArray(next.courses)) {
+    next.courses = next.courses.map((c: any) => ({
+      ...c,
+      subjects: toValues(c?.subjects),
+    }));
+  }
+
+  return next;
+};
+
+
+  const handleClick = () => {
     const finalStep = getFinalStep();
 
-    // 최종 단계에서 API 호출
     if (currentStep === finalStep) {
-      console.log(`Final step (${finalStep}) reached - calling API`);
-      const onboardingData = prepareOnboardingData();
-      console.log("Onboarding data:", onboardingData);
-      mutate(onboardingData);
+      mutate(prepareOnboardingData());
       return;
     }
 
-    // 다음 단계로 이동
     if (currentStep < finalStep) {
       setCurrentStep((prev) => prev + 1);
       return;
-    }
-  };
-
-  // role에 따라 온보딩 데이터 준비
-  const prepareOnboardingData = () => {
-    if (currentRole === "student") {
-      return studentInfo;
-    } else {
-      return professionalInfo;
     }
   };
 

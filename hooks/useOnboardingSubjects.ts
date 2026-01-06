@@ -18,13 +18,12 @@ export const useOnboardingSubjects = (role: string, currentStep: number) => {
     if (role === "professional") {
       return professionalInfo.strongSubjects;
     } else {
-      if (currentStep === 2) {
-        return studentInfo.weakSubjects;
+      if (currentStep === 3) {
+        return studentInfo.weakSubjects; // ✅ Step 3이 어려운 과목
       } else if (currentStep === 4) {
-        // Step 4에서는 모든 courses의 subjects를 합쳐서 반환
         return studentInfo.courses.flatMap((course) => course.subjects);
       } else {
-        return studentInfo.strongSubjects;
+        return studentInfo.strongSubjects; // ✅ Step 2(또는 그 외)는 자신있는 과목
       }
     }
   };
@@ -40,7 +39,7 @@ export const useOnboardingSubjects = (role: string, currentStep: number) => {
     if (role === "professional") {
       setProfessionalInfo({ ...professionalInfo, strongSubjects: codes });
     } else {
-      if (currentStep === 2) {
+      if (currentStep === 3) {
         setStudentInfo({ ...studentInfo, weakSubjects: codes });
       } else {
         setStudentInfo({ ...studentInfo, strongSubjects: codes });

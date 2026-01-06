@@ -5,7 +5,6 @@ interface IconInputFieldProps {
   content: string;
   value?: string;
   disabled?: boolean;
-
   iconSrc?: string;
   iconAlt?: string;
   iconPosition?: "left" | "right";
