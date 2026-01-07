@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { OnboardingFooter, OnboardingHeader } from "@/components/molecules";
 import {
