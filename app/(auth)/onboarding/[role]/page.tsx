@@ -177,7 +177,10 @@ const OnboardingForRolePage: FC = () => {
       >
         {renderContent(role)}
       </div>
-      <OnboardingFooter role={role as string} professionalPrefill={professionalPrefill} />
+      <OnboardingFooter
+        role={role as string}
+        professionalPrefill={professionalPrefill}
+      />
     </div>
   );
 };

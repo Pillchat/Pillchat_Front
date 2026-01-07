@@ -102,12 +102,8 @@ export const SelectPersonalInfo = ({
       (x: Opt) => x.selected,
     );
     const grade =
-      professionalPrefill?.page1?.grades
-        ?.find((x: Opt) => x.selected)
-        ?.value ??
-      professionalPrefill?.page1?.grades
-        ?.find((x: Opt) => x.selected)
-        ?.label;
+      professionalPrefill?.page1?.grades?.find((x: Opt) => x.selected)?.value ??
+      professionalPrefill?.page1?.grades?.find((x: Opt) => x.selected)?.label;
 
     const age =
       typeof professionalPrefill?.page1?.age === "number"

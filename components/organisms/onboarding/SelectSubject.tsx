@@ -132,7 +132,10 @@ export const SelectSubject = ({
     }
 
     if (isStudent) {
-      const merged = Array.from(new Set([...selectedFromServerValues])).slice(0, 5);
+      const merged = Array.from(new Set([...selectedFromServerValues])).slice(
+        0,
+        5,
+      );
 
       if (merged.length) {
         setStudentInfo((prev: any) => ({
@@ -170,7 +173,10 @@ export const SelectSubject = ({
       }
 
       if (cur.length >= 5) return;
-      setProfessionalInfo((prev: any) => ({ ...prev, strongSubjects: [...cur, value] }));
+      setProfessionalInfo((prev: any) => ({
+        ...prev,
+        strongSubjects: [...cur, value],
+      }));
       return;
     }
 
@@ -185,7 +191,10 @@ export const SelectSubject = ({
       }
 
       if (cur.length >= 5) return;
-      setStudentInfo((prev: any) => ({ ...prev, [studentKey]: [...cur, value] }));
+      setStudentInfo((prev: any) => ({
+        ...prev,
+        [studentKey]: [...cur, value],
+      }));
       return;
     }
   };
@@ -209,7 +218,9 @@ export const SelectSubject = ({
 
       <SectionWithChips
         data={subjectMapForChipsFromForm}
-        selectedItems={isProfessional ? selectedLabelsProfessional : selectedLabelsStudent}
+        selectedItems={
+          isProfessional ? selectedLabelsProfessional : selectedLabelsStudent
+        }
         onItemToggle={toggleByLabel}
         maxSelection={5}
       />

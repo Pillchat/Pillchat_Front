@@ -93,40 +93,40 @@ export const OnboardingFooter: FC<OnboardingFooterProps> = ({
   const getFinalStep = () => (currentRole === "student" ? 4 : 3);
 
   const prepareOnboardingData = () => {
-  if (currentRole === "professional") {
-    const raw =
-      (professionalInfo as any).strongSubjects ??
-      (professionalInfo as any).selectedSubjectLabels ??
-      (professionalInfo as any).subjects ??
-      [];
+    if (currentRole === "professional") {
+      const raw =
+        (professionalInfo as any).strongSubjects ??
+        (professionalInfo as any).selectedSubjectLabels ??
+        (professionalInfo as any).subjects ??
+        [];
 
-    const strongSubjects = toValues(raw, 5);
+      const strongSubjects = toValues(raw, 5);
 
-    return {
-      ...professionalInfo,
-      job: norm((professionalInfo as any).job),
-      strongSubjects,
-    };
-  }
+      return {
+        ...professionalInfo,
+        job: norm((professionalInfo as any).job),
+        strongSubjects,
+      };
+    }
 
-  const next: any = { ...studentInfo };
+    const next: any = { ...studentInfo };
 
-  const strong = "strongSubjects" in next ? toValues(next.strongSubjects, 5) : [];
-  const weak = "weakSubjects" in next ? toValues(next.weakSubjects, 5) : [];
+    const strong =
+      "strongSubjects" in next ? toValues(next.strongSubjects, 5) : [];
+    const weak = "weakSubjects" in next ? toValues(next.weakSubjects, 5) : [];
 
-  if ("strongSubjects" in next) next.strongSubjects = weak;
-  if ("weakSubjects" in next) next.weakSubjects = strong;
+    if ("strongSubjects" in next) next.strongSubjects = weak;
+    if ("weakSubjects" in next) next.weakSubjects = strong;
 
-  if (Array.isArray(next.courses)) {
-    next.courses = next.courses.map((c: any) => ({
-      ...c,
-      subjects: toValues(c?.subjects),
-    }));
-  }
+    if (Array.isArray(next.courses)) {
+      next.courses = next.courses.map((c: any) => ({
+        ...c,
+        subjects: toValues(c?.subjects),
+      }));
+    }
 
-  return next;
-};
-
+    return next;
+  };
 
   const handleClick = () => {
     const finalStep = getFinalStep();

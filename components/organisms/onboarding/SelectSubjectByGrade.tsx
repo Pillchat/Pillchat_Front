@@ -68,7 +68,9 @@ export const SelectSubjectByGrade = ({
   const getCourseDataForYear = (year: string) => {
     const yearNumber = convertYearToNumber(year);
     return (
-      (studentInfo.courses ?? []).find((course: any) => course.year === yearNumber) || {
+      (studentInfo.courses ?? []).find(
+        (course: any) => course.year === yearNumber,
+      ) || {
         year: yearNumber,
         subjects: [],
         customSubjects: [],
@@ -77,70 +79,74 @@ export const SelectSubjectByGrade = ({
   };
 
   const handleSubjectToggle = (year: string, subjectValue: string) => {
-  const yearNumber = convertYearToNumber(year);
+    const yearNumber = convertYearToNumber(year);
 
-  const updatedCourses = (studentInfo.courses ?? []).map((course: any) => {
-    if (course.year === yearNumber) {
-      const isSelected = (course.subjects ?? []).includes(subjectValue);
-      return {
-        ...course,
-        subjects: isSelected
-          ? (course.subjects ?? []).filter((v: string) => v !== subjectValue)
-          : [...(course.subjects ?? []), subjectValue],
-      };
-    }
-    return course;
-  });
-
-  if (!(studentInfo.courses ?? []).find((course: any) => course.year === yearNumber)) {
-    updatedCourses.push({
-      year: yearNumber,
-      subjects: [subjectValue],
-      customSubjects: [],
+    const updatedCourses = (studentInfo.courses ?? []).map((course: any) => {
+      if (course.year === yearNumber) {
+        const isSelected = (course.subjects ?? []).includes(subjectValue);
+        return {
+          ...course,
+          subjects: isSelected
+            ? (course.subjects ?? []).filter((v: string) => v !== subjectValue)
+            : [...(course.subjects ?? []), subjectValue],
+        };
+      }
+      return course;
     });
-  }
 
-  setStudentInfo({ ...studentInfo, courses: updatedCourses });
-};
+    if (
+      !(studentInfo.courses ?? []).find(
+        (course: any) => course.year === yearNumber,
+      )
+    ) {
+      updatedCourses.push({
+        year: yearNumber,
+        subjects: [subjectValue],
+        customSubjects: [],
+      });
+    }
 
+    setStudentInfo({ ...studentInfo, courses: updatedCourses });
+  };
 
   const subjectMapForChips = getSubjectMapForChips();
 
   const courseSubjectsFromServer = useMemo(() => {
-  const raw =
-    professionalPrefill?.page4?.courses ??
-    professionalPrefill?.courses ??
-    professionalPrefill?.page4?.selectedCourses;
+    const raw =
+      professionalPrefill?.page4?.courses ??
+      professionalPrefill?.courses ??
+      professionalPrefill?.page4?.selectedCourses;
 
-  if (!Array.isArray(raw)) return [];
+    if (!Array.isArray(raw)) return [];
 
-  return raw.flatMap((c: any) =>
-    Array.isArray(c?.categories)
-      ? c.categories.flatMap((cat: any) => (Array.isArray(cat?.subjects) ? cat.subjects : []))
-      : [],
-  );
-}, [professionalPrefill]);
+    return raw.flatMap((c: any) =>
+      Array.isArray(c?.categories)
+        ? c.categories.flatMap((cat: any) =>
+            Array.isArray(cat?.subjects) ? cat.subjects : [],
+          )
+        : [],
+    );
+  }, [professionalPrefill]);
 
-const labelToValue = useMemo(() => {
-  const pairs: Array<[string, string]> = [];
-  for (const s of courseSubjectsFromServer) {
-    const l = String(s?.label ?? "");
-    const v = String(s?.value ?? "");
-    if (l && v) pairs.push([l, v]);
-  }
-  return new Map(pairs);
-}, [courseSubjectsFromServer]);
+  const labelToValue = useMemo(() => {
+    const pairs: Array<[string, string]> = [];
+    for (const s of courseSubjectsFromServer) {
+      const l = String(s?.label ?? "");
+      const v = String(s?.value ?? "");
+      if (l && v) pairs.push([l, v]);
+    }
+    return new Map(pairs);
+  }, [courseSubjectsFromServer]);
 
-const valueToLabel = useMemo(() => {
-  const pairs: Array<[string, string]> = [];
-  for (const s of courseSubjectsFromServer) {
-    const l = String(s?.label ?? "");
-    const v = String(s?.value ?? "");
-    if (l && v) pairs.push([v, l]);
-  }
-  return new Map(pairs);
-}, [courseSubjectsFromServer]);
-
+  const valueToLabel = useMemo(() => {
+    const pairs: Array<[string, string]> = [];
+    for (const s of courseSubjectsFromServer) {
+      const l = String(s?.label ?? "");
+      const v = String(s?.value ?? "");
+      if (l && v) pairs.push([v, l]);
+    }
+    return new Map(pairs);
+  }, [courseSubjectsFromServer]);
 
   const extractPrefillCourses = () => {
     const raw =
@@ -164,12 +170,16 @@ const valueToLabel = useMemo(() => {
 
         const picked = Array.isArray(c?.categories)
           ? (c.categories as any[])
-              .flatMap((cat) => (Array.isArray(cat?.subjects) ? cat.subjects : []))
+              .flatMap((cat) =>
+                Array.isArray(cat?.subjects) ? cat.subjects : [],
+              )
               .filter((s: any) => s?.selected)
               .map((s: any) => String(s?.value ?? s?.code ?? s?.label))
           : [];
 
-        const merged = [...direct, ...picked].filter((v) => typeof v === "string" && v.length > 0);
+        const merged = [...direct, ...picked].filter(
+          (v) => typeof v === "string" && v.length > 0,
+        );
 
         return {
           year,
@@ -177,7 +187,11 @@ const valueToLabel = useMemo(() => {
           customSubjects: [],
         };
       })
-      .filter(Boolean) as Array<{ year: number; subjects: string[]; customSubjects: any[] }>;
+      .filter(Boolean) as Array<{
+      year: number;
+      subjects: string[];
+      customSubjects: any[];
+    }>;
   };
 
   useEffect(() => {
@@ -194,7 +208,11 @@ const valueToLabel = useMemo(() => {
       for (const pc of prefillCourses) {
         const idx = next.findIndex((x: any) => x.year === pc.year);
         if (idx === -1) {
-          next.push({ year: pc.year, subjects: pc.subjects, customSubjects: [] });
+          next.push({
+            year: pc.year,
+            subjects: pc.subjects,
+            customSubjects: [],
+          });
         } else {
           const merged = Array.from(
             new Set([...(next[idx].subjects ?? []), ...(pc.subjects ?? [])]),
@@ -250,7 +268,9 @@ const valueToLabel = useMemo(() => {
                 />
 
                 <div className="flex flex-col gap-2">
-                  <p className="text-xl font-semibold">교양과목을 추가하세요.</p>
+                  <p className="text-xl font-semibold">
+                    교양과목을 추가하세요.
+                  </p>
                   <div className="flex items-center gap-2">
                     {customSubjects.general.length > 0 && (
                       <div className="flex flex-wrap gap-2">
