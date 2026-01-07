@@ -226,8 +226,8 @@ const valueToLabel = useMemo(() => {
           const courseData = getCourseDataForYear(year);
 
           const selectedSubjectLabels = (courseData.subjects ?? [])
-  .map((v: string) => valueToLabel.get(v) ?? null)
-  .filter(Boolean) as string[];
+            .map((v: string) => valueToLabel.get(v) ?? null)
+            .filter(Boolean) as string[];
 
           const customSubjects = getCustomSubjectsForYear(year);
           const generalInputState = getInputState(year, "general");
@@ -244,9 +244,9 @@ const valueToLabel = useMemo(() => {
                   data={subjectMapForChips}
                   selectedItems={selectedSubjectLabels}
                   onItemToggle={(subjectLabel: string) => {
-  const subjectValue = labelToValue.get(subjectLabel);
-  if (subjectValue) handleSubjectToggle(year, subjectValue);
-}}
+                    const subjectValue = labelToValue.get(subjectLabel);
+                    if (subjectValue) handleSubjectToggle(year, subjectValue);
+                  }}
                 />
 
                 <div className="flex flex-col gap-2">
