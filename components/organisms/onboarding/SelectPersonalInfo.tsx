@@ -11,20 +11,35 @@ import {
 import { studentInfoAtom, professionalInfoAtom } from "@/lib/atoms/onboarding";
 import { filter, includes } from "lodash";
 import { useAtom } from "jotai";
+import { useEffect, useRef } from "react";
+
+type Opt = { label?: string; value?: string; selected?: boolean };
+
+const norm = (s?: string) => (s ?? "").replace(/\s+/g, "");
+
+const jobFromServerToLabel = (serverJob?: string) => {
+  if (!serverJob) return "";
+  const found = (PROFESSIONAL_ROLE as readonly string[]).find(
+    (x) => norm(x) === norm(serverJob),
+  );
+  return found ?? serverJob;
+};
 
 export const SelectPersonalInfo = ({
   role,
   username,
+  professionalPrefill,
 }: {
   role: string;
   username: string;
+  professionalPrefill?: any;
 }) => {
   const [studentInfo, setStudentInfo] = useAtom(studentInfoAtom);
   const [professionalInfo, setProfessionalInfo] = useAtom(professionalInfoAtom);
 
   const isStudent = role === "student";
+  const didPrefill = useRef(false);
 
-  // 공통 유틸리티 함수들
   const getTimeOnly = (time: string) => time.split(" ")[0];
 
   const getCurrentTimes = () =>
@@ -33,18 +48,93 @@ export const SelectPersonalInfo = ({
   const getCurrentDays = () =>
     isStudent ? studentInfo.studyDays : professionalInfo.availableDays;
 
-  // 공통 atom 업데이트 함수
   const updateAtom = (
     updates: Partial<typeof studentInfo> | Partial<typeof professionalInfo>,
   ) => {
-    if (isStudent) {
-      setStudentInfo({ ...studentInfo, ...updates });
-    } else {
-      setProfessionalInfo({ ...professionalInfo, ...updates });
-    }
+    if (isStudent) setStudentInfo({ ...studentInfo, ...updates });
+    else setProfessionalInfo({ ...professionalInfo, ...updates });
   };
 
-  // 공통 배열 토글 로직
+  useEffect(() => {
+    didPrefill.current = false;
+  }, [role]);
+
+  useEffect(() => {
+    if (didPrefill.current) return;
+    if (!professionalPrefill) return;
+
+    if (!isStudent) {
+      const pickedJob = professionalPrefill?.page4?.jobs?.find(
+        (j: Opt) => j.selected,
+      );
+      const jobRaw = pickedJob?.value ?? pickedJob?.label;
+      const jobLabel = jobFromServerToLabel(jobRaw);
+
+      const workplace = professionalPrefill?.page4?.workplace;
+
+      const days =
+        (professionalPrefill?.page2?.availableDays ?? [])
+          .filter((d: Opt) => d.selected)
+          .map((d: Opt) => d.value ?? d.label)
+          .filter(Boolean)
+          .slice(0, 7) ?? [];
+
+      const times =
+        (professionalPrefill?.page2?.availableTimes ?? [])
+          .filter((t: Opt) => t.selected)
+          .map((t: Opt) => t.value ?? t.label)
+          .filter(Boolean)
+          .slice(0, 4) ?? [];
+
+      setProfessionalInfo((prev) => ({
+        ...prev,
+        ...(jobLabel ? { job: jobLabel } : {}),
+        ...(workplace !== undefined ? { workplace } : {}),
+        ...(days.length ? { availableDays: days } : {}),
+        ...(times.length ? { availableTimes: times } : {}),
+      }));
+
+      didPrefill.current = true;
+      return;
+    }
+
+    const pickedGrade = professionalPrefill?.page1?.registrationStatuses?.find(
+      (x: Opt) => x.selected,
+    );
+    const grade =
+      professionalPrefill?.page1?.grades?.find((x: Opt) => x.selected)?.value ??
+      professionalPrefill?.page1?.grades?.find((x: Opt) => x.selected)?.label;
+
+    const age =
+      typeof professionalPrefill?.page1?.age === "number"
+        ? professionalPrefill.page1.age
+        : undefined;
+
+    const days =
+      (professionalPrefill?.page1?.studyDays ?? [])
+        .filter((d: Opt) => d.selected)
+        .map((d: Opt) => d.value ?? d.label)
+        .filter(Boolean)
+        .slice(0, 7) ?? [];
+
+    const times =
+      (professionalPrefill?.page1?.studyTimes ?? [])
+        .filter((t: Opt) => t.selected)
+        .map((t: Opt) => t.value ?? t.label)
+        .filter(Boolean)
+        .slice(0, 4) ?? [];
+
+    setStudentInfo((prev) => ({
+      ...prev,
+      ...(grade ? { grade } : {}),
+      ...(age !== undefined ? { age } : {}),
+      ...(days.length ? { studyDays: days } : {}),
+      ...(times.length ? { studyTimes: times } : {}),
+    }));
+
+    didPrefill.current = true;
+  }, [professionalPrefill, isStudent, setProfessionalInfo, setStudentInfo]);
+
   const createArrayToggleHandler =
     <T,>(
       getCurrentArray: () => T[],
@@ -56,6 +146,7 @@ export const SelectPersonalInfo = ({
       const transformedValue = transformValue
         ? transformValue(value)
         : (value as T);
+
       const currentArray = getCurrentArray();
       let newArray: T[];
 
@@ -70,7 +161,6 @@ export const SelectPersonalInfo = ({
       updateAtom({ [updateKey]: newArray } as any);
     };
 
-  // 핸들러들
   const handleRegistrationStatusToggle = (status: string) => {
     updateAtom(isStudent ? { grade: status } : { job: status });
   };
@@ -101,23 +191,27 @@ export const SelectPersonalInfo = ({
         <br />
         맞춤형 서비스를 위한 정보를 입력해주세요.
       </p>
+
       <div className="flex flex-col gap-8">
         <SectionWithChips
           data={
             role === "student"
-              ? {
-                  "재적 상태": REGISTRATION_STATUS,
-                }
-              : {
-                  직업: PROFESSIONAL_ROLE,
-                }
+              ? { "재적 상태": REGISTRATION_STATUS }
+              : { 직업: PROFESSIONAL_ROLE as unknown as string[] }
           }
           selectedItems={
-            isStudent ? [studentInfo.grade] : [professionalInfo.job]
+            isStudent
+              ? studentInfo.grade
+                ? [studentInfo.grade]
+                : []
+              : professionalInfo.job
+                ? [professionalInfo.job]
+                : []
           }
           onItemToggle={handleRegistrationStatusToggle}
           selectionMode="single"
         />
+
         {isStudent ? (
           <TextInput
             label="나이"
@@ -133,6 +227,7 @@ export const SelectPersonalInfo = ({
             onChange={(e) => handleAgeOrWorkplaceChange(e.target.value)}
           />
         )}
+
         <SectionWithChips
           data={
             isStudent
@@ -146,6 +241,7 @@ export const SelectPersonalInfo = ({
           maxSelection={7}
           buttonSize="square"
         />
+
         <SectionWithChips
           data={
             isStudent
