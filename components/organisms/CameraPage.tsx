@@ -204,11 +204,7 @@ interface CameraPageProps {
   setOcrData: (data: any) => void;
 }
 
-export const CameraPage = ({
-  setStep,
-  route,
-  setOcrData,
-}: CameraPageProps) => {
+export const CameraPage = ({ setStep, route, setOcrData }: CameraPageProps) => {
   const { onUpload, isLoading, error } = useUpload();
   const setTempToken = useSetAtom(tempTokenAtom);
 
@@ -220,7 +216,7 @@ export const CameraPage = ({
 
       const result = await onUpload(
         file,
-        route === "학생" ? "student" : "professional"
+        route === "학생" ? "student" : "professional",
       );
 
       if (result?.success) {
@@ -236,7 +232,7 @@ export const CameraPage = ({
   const openNativeCamera = () => {
     if ((window as any).ReactNativeWebView) {
       (window as any).ReactNativeWebView.postMessage(
-        JSON.stringify({ type: "OPEN_CAMERA" })
+        JSON.stringify({ type: "OPEN_CAMERA" }),
       );
     } else {
       alert("모바일 앱에서만 사용 가능합니다.");
