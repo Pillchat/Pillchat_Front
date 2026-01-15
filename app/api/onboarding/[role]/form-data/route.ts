@@ -15,9 +15,7 @@ export const GET = async (
 
     return NextResponse.json(data);
   } catch (error) {
-    const errorInfo = JSON.parse(
-      error instanceof Error ? error.message : "{}",
-    );
+    const errorInfo = JSON.parse(error instanceof Error ? error.message : "{}");
 
     return NextResponse.json(
       { message: errorInfo.message || "Onboarding API 에러" },
@@ -42,9 +40,7 @@ export const PUT = async (
 
     return NextResponse.json(data);
   } catch (error) {
-    const errorInfo = JSON.parse(
-      error instanceof Error ? error.message : "{}",
-    );
+    const errorInfo = JSON.parse(error instanceof Error ? error.message : "{}");
 
     return NextResponse.json(
       { message: errorInfo.message || "Onboarding API 에러" },
