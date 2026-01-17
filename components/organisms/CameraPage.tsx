@@ -16,7 +16,7 @@ export const CameraPage = ({ setStep, route, setOcrData }: CameraPageProps) => {
   const setTempToken = useSetAtom(tempTokenAtom);
 
   useEffect(() => {
-    // RN에서 보낸 data URI (base64) 받는 핸들러
+    // RN에서 보낸 data URI (base64) 받는 핸들러.
     (window as any).onNativeCameraResult = async (base64: string) => {
       try {
         const res = await fetch(base64); // data URI를 fetch하면 blob 얻음
