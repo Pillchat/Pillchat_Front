@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { serverFetch } from "@/lib/functions";
 
-type RouteContext = {
-  params: {
-    role: string;
-  };
-};
-
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ role: string }> },
+) {
   try {
-    const { role } = context.params;
+    const { role } = await params;
 
     const data = await serverFetch(`/api/onboarding/${role}/form-data`, {
       method: "GET",
@@ -21,7 +18,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
     let errorInfo: { message?: string; status?: number } = {};
 
     try {
-      errorInfo = JSON.parse(error instanceof Error ? error.message : "{}");
+      errorInfo = JSON.parse(
+        error instanceof Error ? error.message : "{}",
+      );
     } catch {
       errorInfo = {};
     }
@@ -33,9 +32,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 }
 
-export async function PUT(request: NextRequest, context: RouteContext) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ role: string }> },
+) {
   try {
-    const { role } = context.params;
+    const { role } = await params;
     const body = await request.json();
 
     const data = await serverFetch(`/api/onboarding/${role}`, {
@@ -49,7 +51,9 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     let errorInfo: { message?: string; status?: number } = {};
 
     try {
-      errorInfo = JSON.parse(error instanceof Error ? error.message : "{}");
+      errorInfo = JSON.parse(
+        error instanceof Error ? error.message : "{}",
+      );
     } catch {
       errorInfo = {};
     }
