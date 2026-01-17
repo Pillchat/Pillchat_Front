@@ -18,9 +18,7 @@ export async function GET(
     let errorInfo: { message?: string; status?: number } = {};
 
     try {
-      errorInfo = JSON.parse(
-        error instanceof Error ? error.message : "{}",
-      );
+      errorInfo = JSON.parse(error instanceof Error ? error.message : "{}");
     } catch {
       errorInfo = {};
     }
@@ -51,9 +49,7 @@ export async function PUT(
     let errorInfo: { message?: string; status?: number } = {};
 
     try {
-      errorInfo = JSON.parse(
-        error instanceof Error ? error.message : "{}",
-      );
+      errorInfo = JSON.parse(error instanceof Error ? error.message : "{}");
     } catch {
       errorInfo = {};
     }
