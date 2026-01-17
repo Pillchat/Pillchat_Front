@@ -7,10 +7,7 @@ type RouteContext = {
   };
 };
 
-export async function GET(
-  request: NextRequest,
-  context: RouteContext,
-) {
+export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const { role } = context.params;
 
@@ -24,9 +21,7 @@ export async function GET(
     let errorInfo: { message?: string; status?: number } = {};
 
     try {
-      errorInfo = JSON.parse(
-        error instanceof Error ? error.message : "{}",
-      );
+      errorInfo = JSON.parse(error instanceof Error ? error.message : "{}");
     } catch {
       errorInfo = {};
     }
@@ -38,10 +33,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  context: RouteContext,
-) {
+export async function PUT(request: NextRequest, context: RouteContext) {
   try {
     const { role } = context.params;
     const body = await request.json();
@@ -57,9 +49,7 @@ export async function PUT(
     let errorInfo: { message?: string; status?: number } = {};
 
     try {
-      errorInfo = JSON.parse(
-        error instanceof Error ? error.message : "{}",
-      );
+      errorInfo = JSON.parse(error instanceof Error ? error.message : "{}");
     } catch {
       errorInfo = {};
     }
