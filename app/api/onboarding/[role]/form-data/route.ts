@@ -1,32 +1,41 @@
-import { serverFetch } from "@/lib/functions";
 import { NextRequest, NextResponse } from "next/server";
+import { serverFetch } from "@/lib/functions";
 
-export const GET = async (
+export async function GET(
   request: NextRequest,
-  context: { params: { role: string } },
-) => {
+  { params }: { params: Promise<{ role: string }> },
+) {
   try {
-    const { role } = context.params;
+    const { role } = await params;
+
     const data = await serverFetch(`/api/onboarding/${role}/form-data`, {
       method: "GET",
       request,
     });
+
     return NextResponse.json(data);
   } catch (error) {
-    const errorInfo = JSON.parse(error instanceof Error ? error.message : "{}");
+    let errorInfo: { message?: string; status?: number } = {};
+
+    try {
+      errorInfo = JSON.parse(error instanceof Error ? error.message : "{}");
+    } catch {
+      errorInfo = {};
+    }
+
     return NextResponse.json(
       { message: errorInfo.message || "Onboarding API 에러" },
       { status: errorInfo.status || 500 },
     );
   }
-};
+}
 
-export const PUT = async (
+export async function PUT(
   request: NextRequest,
-  context: { params: { role: string } },
-) => {
+  { params }: { params: Promise<{ role: string }> },
+) {
   try {
-    const { role } = context.params;
+    const { role } = await params;
     const body = await request.json();
 
     const data = await serverFetch(`/api/onboarding/${role}`, {
@@ -37,10 +46,17 @@ export const PUT = async (
 
     return NextResponse.json(data);
   } catch (error) {
-    const errorInfo = JSON.parse(error instanceof Error ? error.message : "{}");
+    let errorInfo: { message?: string; status?: number } = {};
+
+    try {
+      errorInfo = JSON.parse(error instanceof Error ? error.message : "{}");
+    } catch {
+      errorInfo = {};
+    }
+
     return NextResponse.json(
       { message: errorInfo.message || "Onboarding API 에러" },
       { status: errorInfo.status || 500 },
     );
   }
-};
+}
