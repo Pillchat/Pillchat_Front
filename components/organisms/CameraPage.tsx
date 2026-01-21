@@ -101,38 +101,43 @@ export const CameraPage = ({ setStep, route, setOcrData }: CameraPageProps) => {
   const { onUpload, isLoading, error: uploadError } = useUpload();
   const setTempToken = useSetAtom(tempTokenAtom);
 
-  const handleNativeResult = useCallback(async (base64: string) => {
-    if (!base64) return;
-    
-    try {
-      const file = dataURLtoFile(base64, "capture.png");
-      const result = await onUpload(
-        file,
-        route === "학생" ? "student" : "professional"
-      );
+  const handleNativeResult = useCallback(
+    async (base64: string) => {
+      if (!base64) return;
 
-      if (result && (result.success || result.fields)) {
-        setTempToken(result.tempToken);
-        setOcrData(result);
-        setStep(4); // Step.DepartMent 단계로 이동
-      } else {
-        alert("OCR 인식에 실패했습니다. 다시 촬영해주세요.");
+      try {
+        const file = dataURLtoFile(base64, "capture.png");
+        const result = await onUpload(
+          file,
+          route === "학생" ? "student" : "professional",
+        );
+
+        if (result && (result.success || result.fields)) {
+          setTempToken(result.tempToken);
+          setOcrData(result);
+          setStep(4); // Step.DepartMent 단계로 이동
+        } else {
+          alert("OCR 인식에 실패했습니다. 다시 촬영해주세요.");
+        }
+      } catch (err) {
+        console.error("Process Error:", err);
+        alert("이미지 처리 중 오류가 발생했습니다.");
       }
-    } catch (err) {
-      console.error("Process Error:", err);
-      alert("이미지 처리 중 오류가 발생했습니다.");
-    }
-  }, [onUpload, route, setStep, setOcrData, setTempToken]);
+    },
+    [onUpload, route, setStep, setOcrData, setTempToken],
+  );
 
   useEffect(() => {
     (window as any).onNativeCameraResult = handleNativeResult;
-    return () => { delete (window as any).onNativeCameraResult; };
+    return () => {
+      delete (window as any).onNativeCameraResult;
+    };
   }, [handleNativeResult]);
 
   const openNativeCamera = () => {
     if ((window as any).ReactNativeWebView) {
       (window as any).ReactNativeWebView.postMessage(
-        JSON.stringify({ type: "OPEN_CAMERA" })
+        JSON.stringify({ type: "OPEN_CAMERA" }),
       );
     } else {
       alert("앱 환경에서만 가능합니다.");

@@ -73,7 +73,7 @@ export const POST = async (request: NextRequest) => {
     const forward = new FormData();
     const buffer = Buffer.from(await file.arrayBuffer());
     const blob = new Blob([buffer], { type: file.type });
-    
+
     forward.append("file", blob, (file as any).name || "capture.png");
     forward.append("type", docType);
 
