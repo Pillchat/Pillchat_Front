@@ -87,14 +87,26 @@ interface CameraPageProps {
   setOcrData: (data: any) => void;
 }
 
+// Base64 -> File 변환 유틸리티
 const dataURLtoFile = (dataurl: string, filename: string) => {
-  const arr = dataurl.split(",");
-  const mime = arr[0].match(/:(.*?);/)?.[1] || "image/png";
-  const bstr = atob(arr[1]);
-  let n = bstr.length;
-  const u8arr = new Uint8Array(n);
-  while (n--) u8arr[n] = bstr.charCodeAt(n);
-  return new File([u8arr], filename, { type: mime });
+  try {
+    const arr = dataurl.split(",");
+    // data:image/jpeg;base64,... 형태인지 확인
+    if (arr.length < 2) return null;
+    
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : "image/jpeg";
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  } catch (e) {
+    console.error("File conversion error:", e);
+    return null;
+  }
 };
 
 export const CameraPage = ({ setStep, route, setOcrData }: CameraPageProps) => {
@@ -103,41 +115,68 @@ export const CameraPage = ({ setStep, route, setOcrData }: CameraPageProps) => {
 
   const handleNativeResult = useCallback(
     async (base64: string) => {
-      if (!base64) return;
+      console.log("Received data from Native:", base64.substring(0, 50) + "..."); // 로그 확인용
+
+      if (!base64) {
+        alert("이미지 데이터가 비어있습니다.");
+        return;
+      }
 
       try {
-        const file = dataURLtoFile(base64, "capture.png");
+        const file = dataURLtoFile(base64, "capture.jpg");
+        if (!file) {
+          alert("이미지 파일 변환에 실패했습니다.");
+          return;
+        }
+
+        // 바로 업로드 로직 실행
         const result = await onUpload(
           file,
-          route === "학생" ? "student" : "professional",
+          route === "학생" ? "student" : "professional"
         );
 
         if (result && (result.success || result.fields)) {
           setTempToken(result.tempToken);
           setOcrData(result);
-          setStep(4); // Step.DepartMent 단계로 이동
+          setStep(4);
         } else {
-          alert("OCR 인식에 실패했습니다. 다시 촬영해주세요.");
+          alert("OCR 인식에 실패했습니다. (서버 응답 확인 필요)");
         }
       } catch (err) {
         console.error("Process Error:", err);
         alert("이미지 처리 중 오류가 발생했습니다.");
       }
     },
-    [onUpload, route, setStep, setOcrData, setTempToken],
+    [onUpload, route, setStep, setOcrData, setTempToken]
   );
 
   useEffect(() => {
+    // 1. 함수 바인딩
     (window as any).onNativeCameraResult = handleNativeResult;
+    
+    // 2. EventListener 바인딩 (백업용)
+    const messageListener = (event: MessageEvent) => {
+      try {
+        if (typeof event.data === 'string') {
+          const data = JSON.parse(event.data);
+          if (data.type === 'CAMERA_RESULT') {
+            handleNativeResult(data.payload);
+          }
+        }
+      } catch(e) {}
+    };
+    window.addEventListener("message", messageListener);
+
     return () => {
       delete (window as any).onNativeCameraResult;
+      window.removeEventListener("message", messageListener);
     };
   }, [handleNativeResult]);
 
   const openNativeCamera = () => {
     if ((window as any).ReactNativeWebView) {
       (window as any).ReactNativeWebView.postMessage(
-        JSON.stringify({ type: "OPEN_CAMERA" }),
+        JSON.stringify({ type: "OPEN_CAMERA" })
       );
     } else {
       alert("앱 환경에서만 가능합니다.");

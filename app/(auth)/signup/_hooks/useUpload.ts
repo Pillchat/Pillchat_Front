@@ -61,13 +61,14 @@ export const useUpload = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "이미지 업로드 실패");
+        setError(data.error || "이미지 업로드 실패");
+        return null;
       }
 
-      return data; // { success: true, fields: { ... }, tempToken: "..." }
+      return data;
     } catch (err: any) {
-      console.error("Upload Hook Error:", err);
-      setError(err.message);
+      console.error("이미지 업로드 실패:", err);
+      setError(err.message || "이미지 업로드 실패");
       return null;
     } finally {
       setIsLoading(false);
