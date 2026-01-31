@@ -93,7 +93,7 @@ const dataURLtoFile = (dataurl: string, filename: string) => {
     const arr = dataurl.split(",");
     // data:image/jpeg;base64,... 형태인지 확인
     if (arr.length < 2) return null;
-    
+
     const mimeMatch = arr[0].match(/:(.*?);/);
     const mime = mimeMatch ? mimeMatch[1] : "image/jpeg";
     const bstr = atob(arr[1]);
@@ -115,7 +115,10 @@ export const CameraPage = ({ setStep, route, setOcrData }: CameraPageProps) => {
 
   const handleNativeResult = useCallback(
     async (base64: string) => {
-      console.log("Received data from Native:", base64.substring(0, 50) + "..."); // 로그 확인용
+      console.log(
+        "Received data from Native:",
+        base64.substring(0, 50) + "...",
+      ); // 로그 확인용
 
       if (!base64) {
         alert("이미지 데이터가 비어있습니다.");
@@ -132,7 +135,7 @@ export const CameraPage = ({ setStep, route, setOcrData }: CameraPageProps) => {
         // 바로 업로드 로직 실행
         const result = await onUpload(
           file,
-          route === "학생" ? "student" : "professional"
+          route === "학생" ? "student" : "professional",
         );
 
         if (result && (result.success || result.fields)) {
@@ -147,23 +150,23 @@ export const CameraPage = ({ setStep, route, setOcrData }: CameraPageProps) => {
         alert("이미지 처리 중 오류가 발생했습니다.");
       }
     },
-    [onUpload, route, setStep, setOcrData, setTempToken]
+    [onUpload, route, setStep, setOcrData, setTempToken],
   );
 
   useEffect(() => {
     // 1. 함수 바인딩
     (window as any).onNativeCameraResult = handleNativeResult;
-    
+
     // 2. EventListener 바인딩 (백업용)
     const messageListener = (event: MessageEvent) => {
       try {
-        if (typeof event.data === 'string') {
+        if (typeof event.data === "string") {
           const data = JSON.parse(event.data);
-          if (data.type === 'CAMERA_RESULT') {
+          if (data.type === "CAMERA_RESULT") {
             handleNativeResult(data.payload);
           }
         }
-      } catch(e) {}
+      } catch (e) {}
     };
     window.addEventListener("message", messageListener);
 
@@ -176,7 +179,7 @@ export const CameraPage = ({ setStep, route, setOcrData }: CameraPageProps) => {
   const openNativeCamera = () => {
     if ((window as any).ReactNativeWebView) {
       (window as any).ReactNativeWebView.postMessage(
-        JSON.stringify({ type: "OPEN_CAMERA" })
+        JSON.stringify({ type: "OPEN_CAMERA" }),
       );
     } else {
       alert("앱 환경에서만 가능합니다.");
