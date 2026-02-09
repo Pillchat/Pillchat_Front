@@ -485,7 +485,7 @@ export type SignupFormData = {
 
 // export default SignupPage;
 
-"use client"
+'use client';
 
 import { FC, useState } from "react";
 import { useRouter } from "next/navigation";
