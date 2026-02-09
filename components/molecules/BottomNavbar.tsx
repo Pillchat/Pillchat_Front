@@ -5,6 +5,7 @@ import { FC } from "react";
 import HomeIcon from "@/public/Home.svg";
 import CommunityIcon from "@/public/Community.svg";
 import QnaIcon from "@/public/Qna.svg";
+import QuestionBankIcon from "@/public/Questionbank.svg";
 import ArchiveIcon from "@/public/Archive.svg";
 import MyPageIcon from "@/public/Mypage.svg";
 import { usePathname } from "next/navigation";
@@ -25,6 +26,11 @@ const NAV_ITEMS = [
     href: "/qna",
     icon: QnaIcon,
     label: "질문광장",
+  },
+  {
+    href: "/questionbank",
+    icon: QuestionBankIcon,
+    label: "문제은행",
   },
   {
     href: "/archive",

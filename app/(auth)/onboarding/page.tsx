@@ -33,9 +33,10 @@ const OnboardingPage: FC = () => {
           필챗을 더 잘 활용하기위한 추가 정보도 입력해보세요!
         </p>
       </div>
-      <div className="mb-10 flex flex-col gap-3">
+      <div className="mx-6 mb-10 flex flex-col gap-3">
         <TextButton label="추가 정보 입력하기" onClick={goOnboarding} />
         <TextButton
+          className="border border-[#666666]"
           label="로그인 화면으로 가기"
           variant="teritary"
           onClick={() => {

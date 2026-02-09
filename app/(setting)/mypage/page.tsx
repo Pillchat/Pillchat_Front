@@ -69,12 +69,12 @@ const mypage: FC = () => {
             onClick={() => router.push("/grade")}
           />
 
-          {/* <SystemField
+          <SystemField
             iconSrc="BellColor.svg"
             title="알림 설정"
             description="원하는 알림만 받도록 설정해보세요."
             onClick={() => router.push("/bellSetting")}
-          /> */}
+          />
 
           <SystemField
             iconSrc="userInfo.svg"
@@ -90,7 +90,11 @@ const mypage: FC = () => {
       <div className="mt-5 w-[90%]">
         <p className="text-sm text-muted-foreground">문의 및 건의</p>
         <div className="mt-4 flex flex-col gap-6">
-          <SystemField iconSrc="HeadPhone.svg" title="고객 센터" />
+          <SystemField
+            iconSrc="HeadPhone.svg"
+            title="고객 센터"
+            onClick={() => (location.href = "https://pf.kakao.com/_axcExbn")}
+          />
         </div>
 
         <div id="line" className="mt-8 h-[1px] w-full bg-muted" />
