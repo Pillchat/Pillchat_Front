@@ -15,9 +15,9 @@ export const GeneralHeader: FC = () => {
           <img src="/search.svg" alt="search" width={32} height={32} />
         </div>
         {/* TODO: 알림 기능 추가 */}
-        <div className="flex h-[3.625rem] items-center">
+        {/* <div className="flex h-[3.625rem] items-center">
           <img src="/Bell.svg" alt="notification" width={32} height={32} />
-        </div>
+        </div> */}
       </div>
     </header>
   );
