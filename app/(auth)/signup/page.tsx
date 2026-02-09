@@ -485,16 +485,15 @@ export type SignupFormData = {
 
 // export default SignupPage;
 
-("use client");
+"use client"
 
 import { FC, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Step, useStep, useVerify, useCheckVerify } from "./_hooks";
-// useSubmit 대신 useManualSubmit import (경로는 실제 파일 위치에 맞게 수정 필요)
 import { useManualSubmit } from "./_hooks/useManualSubmit";
 
 import { RoleCard, SolidButton, StrokeButton } from "@/components/atoms";
-import { StepHeader, IconInputField } from "@/components/molecules"; // InputField는 읽기 전용일 가능성이 높아 IconInputField 사용
+import { StepHeader, IconInputField } from "@/components/molecules";
 import { VerifyInputField } from "@/components/organisms";
 
 const SignupPage: FC = () => {
@@ -511,7 +510,6 @@ const SignupPage: FC = () => {
   const [showPasswordRe, setShowPasswordRe] = useState(false);
   const router = useRouter();
 
-  // --- 입력 State ---
   // 공통
   const [realName, setRealName] = useState("");
   const [email, setEmail] = useState("");
