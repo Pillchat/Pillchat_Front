@@ -1,4 +1,4 @@
-// "use client";
+"use client";
 
 // import { FC } from "react";
 // import { useState } from "react";
@@ -484,8 +484,6 @@ export type SignupFormData = {
 // };
 
 // export default SignupPage;
-
-'use client';
 
 import { FC, useState } from "react";
 import { useRouter } from "next/navigation";
