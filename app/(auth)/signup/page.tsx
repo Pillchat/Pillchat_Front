@@ -487,7 +487,14 @@ export type SignupFormData = {
 
 import { FC, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Step, useStep, useVerify, useCheckVerify, TERMS_TEXT, PRIVACY_TEXT } from "./_hooks";
+import {
+  Step,
+  useStep,
+  useVerify,
+  useCheckVerify,
+  TERMS_TEXT,
+  PRIVACY_TEXT,
+} from "./_hooks";
 import { useManualSubmit } from "./_hooks/useManualSubmit";
 
 import { RoleCard, SolidButton, StrokeButton } from "@/components/atoms";
