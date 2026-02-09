@@ -6,6 +6,7 @@ export enum Step {
   Ocr,
   DepartMent,
   ServiceRule,
+  PrivacyPolicy,
   Email,
   Password,
   Nickname,

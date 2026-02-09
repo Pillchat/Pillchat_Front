@@ -487,7 +487,14 @@ export type SignupFormData = {
 
 import { FC, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Step, useStep, useVerify, useCheckVerify } from "./_hooks";
+import {
+  Step,
+  useStep,
+  useVerify,
+  useCheckVerify,
+  TERMS_TEXT,
+  PRIVACY_TEXT,
+} from "./_hooks";
 import { useManualSubmit } from "./_hooks/useManualSubmit";
 
 import { RoleCard, SolidButton, StrokeButton } from "@/components/atoms";
@@ -503,7 +510,8 @@ const SignupPage: FC = () => {
   const { onSubmit, isLoading: isSubmitLoading } = useManualSubmit();
 
   const [route, setRoute] = useState<"student" | "professional" | "">("");
-  const [checked, setChecked] = useState(false);
+  const [checkedTerms, setCheckedTerms] = useState(false);
+  const [checkedPrivacy, setCheckedPrivacy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordRe, setShowPasswordRe] = useState(false);
   const router = useRouter();
@@ -740,26 +748,26 @@ const SignupPage: FC = () => {
         </>
       )}
 
-      {/* 약관 동의 (ServiceRule) */}
+      {/* 서비스 이용약관 동의 (ServiceRule) */}
       {step === Step.ServiceRule && (
-        <>
+        <div className="flex w-full flex-1 flex-col">
           <StepHeader content="서비스 이용약관" onIconClick={prevStep} />
 
-          <div className="mt-8 flex w-[90%] flex-col items-center">
+          <div className="mx-auto flex min-h-0 w-[90%] flex-1 flex-col">
             <textarea
-              className="scrollbar-hide h-[550px] w-full resize-none gap-[2rem] overflow-y-auto whitespace-pre-wrap bg-white text-[13px] font-medium focus:outline-none"
+              className="scrollbar-hide min-h-0 w-full flex-1 overflow-y-auto whitespace-pre-wrap bg-white text-[13px] font-medium"
               readOnly
               disabled
-              value={`제 1 조 (목적)  본 약관은 필챗 (이하 '필챗')의 이용과 관련하여 사용자와 서비스 제공자 간의 권리, 의무 및 책임사항을 규정하는 것을 목적으로 합니다.\n\n(중략... 기존 약관 내용)`}
+              value={TERMS_TEXT}
             />
           </div>
 
-          <div className="z-[1] flex w-full flex-col items-center bg-[linear-gradient(to_top,_#FFFFFF_0%,_#FFFFFF_24%,_transparent_100%)] shadow-[0_-22px_24px_rgba(255,255,255,0.3),_0_-50px_40px_rgba(255,255,255,0.6)]">
-            <div className="mt-[2rem] flex flex-row items-center justify-center gap-[0.15rem]">
+          <div className="z-[1] mb-14 mt-auto flex w-full flex-col items-center bg-[linear-gradient(to_top,_#FFFFFF_0%,_#FFFFFF_24%,_transparent_100%)] shadow-[0_-22px_24px_rgba(255,255,255,0.3),_0_-50px_40px_rgba(255,255,255,0.6)]">
+            <div className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]">
               <img
-                className="h-[26px] w-[26px] cursor-pointer"
-                src={checked ? "/CheckedIcon.svg" : "/UncheckIcon.svg"}
-                onClick={() => setChecked(!checked)}
+                className="h-[26px] w-[26px]"
+                src={checkedTerms ? "/CheckedIcon.svg" : "/UncheckIcon.svg"}
+                onClick={() => setCheckedTerms(!checkedTerms)}
                 alt="icon"
               />
               <div className="flex flex-row text-sm font-medium">
@@ -773,15 +781,55 @@ const SignupPage: FC = () => {
             <div className="font-regular mt-[1rem] w-[90%]">
               <SolidButton
                 content="다음"
-                variant={checked ? "brand" : "disabled"}
-                disabled={!checked}
-                onClick={() => {
-                  nextStep();
-                }}
+                variant={checkedTerms ? "brand" : "disabled"}
+                disabled={!checkedTerms}
+                onClick={() => nextStep()}
               />
             </div>
           </div>
-        </>
+        </div>
+      )}
+
+      {/* 개인정보 처리방침 동의 (PrivacyPolicy) */}
+      {step === Step.PrivacyPolicy && (
+        <div className="flex w-full flex-1 flex-col">
+          <StepHeader content="개인정보 처리방침" onIconClick={prevStep} />
+
+          <div className="mx-auto flex min-h-0 w-[90%] flex-1 flex-col">
+            <textarea
+              className="scrollbar-hide min-h-0 w-full flex-1 overflow-y-auto whitespace-pre-wrap bg-white text-[13px] font-medium"
+              readOnly
+              disabled
+              value={PRIVACY_TEXT}
+            />
+          </div>
+
+          <div className="z-[1] mb-14 mt-auto flex w-full flex-col items-center bg-[linear-gradient(to_top,_#FFFFFF_0%,_#FFFFFF_24%,_transparent_100%)] shadow-[0_-22px_24px_rgba(255,255,255,0.3),_0_-50px_40px_rgba(255,255,255,0.6)]">
+            <div className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]">
+              <img
+                className="h-[26px] w-[26px]"
+                src={checkedPrivacy ? "/CheckedIcon.svg" : "/UncheckIcon.svg"}
+                onClick={() => setCheckedPrivacy(!checkedPrivacy)}
+                alt="icon"
+              />
+              <div className="flex flex-row text-sm font-medium">
+                <p className="text-brand underline underline-offset-2">
+                  개인정보 처리방침
+                </p>
+                <p>에 동의합니다.</p>
+              </div>
+            </div>
+
+            <div className="font-regular mt-[1rem] w-[90%]">
+              <SolidButton
+                content="다음"
+                variant={checkedPrivacy ? "brand" : "disabled"}
+                disabled={!checkedPrivacy}
+                onClick={() => nextStep()}
+              />
+            </div>
+          </div>
+        </div>
       )}
 
       {/* 이메일 인증 (Email) */}
