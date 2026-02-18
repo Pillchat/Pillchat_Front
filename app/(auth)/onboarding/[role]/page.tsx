@@ -56,7 +56,7 @@ type OnboardingFormData = ProfessionalFormData | StudentFormData;
 const OnboardingForRolePage: FC = () => {
   const router = useRouter();
   const { role } = useParams<{ role: string }>();
-  const [currentStep] = useAtom(currentStepAtom);
+  const [currentStep, setCurrentStep] = useAtom(currentStepAtom);
   const [username, setUsername] = useState<string>("회원");
   const [professionalPrefill, setProfessionalPrefill] =
     useState<OnboardingFormData | null>(null);
@@ -79,6 +79,14 @@ const OnboardingForRolePage: FC = () => {
 
     if (role === "student" || role === "professional") run();
   }, [role]);
+
+  const onBack = () => {
+    if (currentStep === 1) {
+      router.replace("/");
+      return;
+    }
+    setCurrentStep((s) => Math.max(1, s - 1));
+  };
 
   const professionalData =
     role === "professional"
@@ -170,6 +178,7 @@ const OnboardingForRolePage: FC = () => {
           step={currentStep}
           totalSteps={TOTAL_STEPS}
           onSkip={() => router.push("/login")}
+          onBack={onBack}
         />
       )}
       <div
