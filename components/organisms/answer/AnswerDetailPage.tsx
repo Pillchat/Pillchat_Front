@@ -244,6 +244,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FC, useState, useEffect } from "react";
 import { AnswerListResponse, Answer } from "@/types/question";
 import { useFetchImage, useAnswerAccept } from "@/hooks";
+import { useLikeStatus } from "@/hooks/useLikeStatus";
 import { Image, LikeButton, TextButton } from "@/components/atoms";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -257,8 +258,10 @@ const AnswerItem: FC<{
   questionId: string;
 }> = ({ answer, isAuthor, questionId }) => {
   const router = useRouter();
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const { isLiked, likeCount, toggleLike } = useLikeStatus(
+    answer.id.toString(),
+    "answers",
+  );
 
   const { imageData } = useFetchImage({
     sourceKey: answer.author.avatarUrl,
@@ -278,10 +281,7 @@ const AnswerItem: FC<{
   // 답변 삭제 mutation
   const queryClient = useQueryClient();
   const deleteMutation = useMutation({
-    mutationFn: () =>
-      fetchAPI(`/api/answers/${answer.id}`, "DELETE", {
-        headers: { Authorization: token ? `Bearer ${token}` : "" },
-      }),
+    mutationFn: () => fetchAPI(`/api/answers/${answer.id}`, "DELETE"),
     onSuccess: () => {
       alert("답변이 삭제되었습니다.");
       queryClient.invalidateQueries({ queryKey: ["answers", questionId] });
@@ -355,7 +355,7 @@ const AnswerItem: FC<{
         ))}
       </div>
       <div className="flex items-center justify-between">
-        <LikeButton onClick={() => {}} likeCount={answer.likeCount} />
+        <LikeButton onClick={toggleLike} likeCount={likeCount} isLiked={isLiked} />
         <ActionMenu
           trigger={
             <Button variant="ghost" size="icon" className="h-8 w-8">
