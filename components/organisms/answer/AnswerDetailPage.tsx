@@ -355,7 +355,11 @@ const AnswerItem: FC<{
         ))}
       </div>
       <div className="flex items-center justify-between">
-        <LikeButton onClick={toggleLike} likeCount={likeCount} isLiked={isLiked} />
+        <LikeButton
+          onClick={toggleLike}
+          likeCount={likeCount}
+          isLiked={isLiked}
+        />
         <ActionMenu
           trigger={
             <Button variant="ghost" size="icon" className="h-8 w-8">

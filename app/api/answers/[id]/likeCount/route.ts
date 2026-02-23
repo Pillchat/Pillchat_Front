@@ -19,7 +19,10 @@ export async function GET(
     const errorMessage = error instanceof Error ? error.message : "{}";
     const errorInfo = JSON.parse(errorMessage);
     return NextResponse.json(
-      { message: errorInfo.message || "답변 좋아요 수를 불러오는데 실패했습니다." },
+      {
+        message:
+          errorInfo.message || "답변 좋아요 수를 불러오는데 실패했습니다.",
+      },
       { status: errorInfo.status || 500 },
     );
   }
