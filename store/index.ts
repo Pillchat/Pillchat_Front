@@ -1,3 +1,4 @@
+export * from "./notification";
 export * from "./notificationSetting";
 export * from "./ocrVerifyAtom";
 export * from "./profile";
