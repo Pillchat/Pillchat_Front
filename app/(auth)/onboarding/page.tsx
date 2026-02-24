@@ -44,7 +44,7 @@ const OnboardingPage: FC = () => {
           label="로그인 화면으로 가기"
           variant="teritary"
           onClick={() => {
-            setOpenModal("logout")
+            setOpenModal("logout");
           }}
         />
       </div>
