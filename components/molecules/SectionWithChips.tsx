@@ -40,7 +40,9 @@ export const SectionWithChips: FC<SectionWithChipsProps> = ({
   showDropdownButton = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [pendingSelectedItems, setPendingSelectedItems] = useState<string[]>([]);
+  const [pendingSelectedItems, setPendingSelectedItems] = useState<string[]>(
+    [],
+  );
 
   const hasPendingSelection = pendingSelectedItems.length > 0;
 
@@ -86,9 +88,7 @@ export const SectionWithChips: FC<SectionWithChipsProps> = ({
 
   const handlePendingItemClick = (item: string) => {
     if (selectionMode === "single") {
-      setPendingSelectedItems((prev) =>
-        prev.includes(item) ? [] : [item],
-      );
+      setPendingSelectedItems((prev) => (prev.includes(item) ? [] : [item]));
       return;
     }
 
@@ -234,7 +234,10 @@ export const SectionWithChips: FC<SectionWithChipsProps> = ({
                       map(
                         Object.entries(expandedData),
                         ([subCategory, subItems]) => (
-                          <div key={subCategory} className="flex flex-col gap-2">
+                          <div
+                            key={subCategory}
+                            className="flex flex-col gap-2"
+                          >
                             <p className="text-sm font-medium text-gray-700">
                               {subCategory}
                             </p>
