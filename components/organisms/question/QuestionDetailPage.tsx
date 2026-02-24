@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { fetchAPI, getCurrentUserId } from "@/lib/functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useLikeStatus } from "@/hooks/useLikeStatus";
 import { QuestionTitleSection } from "./QuestionTitleSection";
 import { QuestionContents } from "./QuestionContents";
@@ -22,25 +22,22 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
 }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { toggleLike } = useLikeStatus(questionId);
+  const { isLiked, likeCount, toggleLike } = useLikeStatus(questionId);
   const currentUserId = getCurrentUserId();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-
-  const {
-    data: questionData,
-    isLoading: questionLoading,
-    refetch: refetchQuestion,
-  } = useQuery({
+  const { data: questionData, isLoading: questionLoading } = useQuery({
     queryKey: ["question", questionId],
-    queryFn: () =>
-      fetchAPI(`/api/questions/${questionId}`, "GET", {
-        headers: { Authorization: token ? `Bearer ${token}` : "" },
-      }),
+    queryFn: () => fetchAPI(`/api/questions/${questionId}`, "GET"),
     enabled: !!questionId,
   });
+
+  useEffect(() => {
+    if (questionData) {
+      queryClient.invalidateQueries({ queryKey: ["questions"] });
+      queryClient.invalidateQueries({ queryKey: ["home-questions"] });
+    }
+  }, [questionData, queryClient]);
 
   const { data: filesData, isLoading: filesLoading } = useQuery({
     queryKey: ["files", questionData?.id, questionData?.images],
@@ -49,17 +46,13 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
       const keys = questionData.images.map(
         (image) => `question/${questionData.id}/${image.urlKey}`,
       );
-      return fetchAPI("/api/files", "GET", {
-        keys,
-        headers: { Authorization: token ? `Bearer ${token}` : "" },
-      });
+      return fetchAPI("/api/files", "GET", { keys });
     },
     enabled: !!questionData?.id && !!questionData?.images,
   });
 
   const handleLikeClick = async () => {
-    const success = await toggleLike();
-    if (success) refetchQuestion();
+    await toggleLike();
   };
 
   const isAuthor =
@@ -67,12 +60,8 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
     currentUserId &&
     (questionData.userId ? questionData.userId === currentUserId : false);
 
-  // ✅ 수정 포인트: 토큰을 전달하여 인증 통과
   const deleteMutation = useMutation({
-    mutationFn: () =>
-      fetchAPI(`/api/questions/${questionId}`, "DELETE", {
-        headers: { Authorization: token ? `Bearer ${token}` : "" },
-      }),
+    mutationFn: () => fetchAPI(`/api/questions/${questionId}`, "DELETE"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["questions"] });
       queryClient.invalidateQueries({ queryKey: ["question", questionId] });
@@ -142,7 +131,8 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
             <div className="flex items-center justify-between">
               <LikeButton
                 onClick={handleLikeClick}
-                likeCount={questionData.likeCount}
+                likeCount={likeCount}
+                isLiked={isLiked}
               />
               <ActionMenu
                 trigger={

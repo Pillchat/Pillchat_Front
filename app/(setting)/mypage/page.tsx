@@ -69,12 +69,12 @@ const mypage: FC = () => {
             onClick={() => router.push("/grade")}
           />
 
-          {/* <SystemField
+          <SystemField
             iconSrc="BellColor.svg"
             title="알림 설정"
             description="원하는 알림만 받도록 설정해보세요."
             onClick={() => router.push("/bellSetting")}
-          /> */}
+          />
 
           <SystemField
             iconSrc="userInfo.svg"
