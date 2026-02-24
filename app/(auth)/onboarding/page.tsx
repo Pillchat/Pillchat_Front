@@ -2,12 +2,16 @@
 
 import { useAtom } from "jotai";
 import { TextButton } from "@/components/atoms";
-import { FC } from "react";
+import { FC, useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchAPI } from "@/lib/functions";
+import { SelectModal } from "@/components/molecules";
+import { useLogout } from "@/app/(setting)/mypage/_hooks/useLogout";
 
 const OnboardingPage: FC = () => {
   const router = useRouter();
+  const [openModal, setOpenModal] = useState<"logout" | null>(null);
+  const { onLogout } = useLogout();
   //   const [name] = useAtom(nameAtom);
 
   const goOnboarding = async () => {
@@ -40,10 +44,21 @@ const OnboardingPage: FC = () => {
           label="로그인 화면으로 가기"
           variant="teritary"
           onClick={() => {
-            router.push("/login");
+            setOpenModal("logout")
           }}
         />
       </div>
+
+      <SelectModal
+        isOpen={openModal === "logout"}
+        onClose={() => setOpenModal(null)}
+        onConfirm={() => {
+          onLogout();
+          setOpenModal(null);
+        }}
+        title="로그인 화면으로 가기"
+        message="로그인 화면으로 가기 선택 시 로그아웃됩니다."
+      />
     </div>
   );
 };

@@ -82,7 +82,7 @@ const OnboardingForRolePage: FC = () => {
 
   const onBack = () => {
     if (currentStep === 1) {
-      router.replace("/");
+      router.replace("/mypage");
       return;
     }
     setCurrentStep((s) => Math.max(1, s - 1));
