@@ -121,6 +121,8 @@ const mypage: FC = () => {
         </div>
       </div>
 
+      <BottomNavbar />
+
       <SelectModal
         isOpen={openModal === "logout"}
         onClose={() => setOpenModal(null)}
@@ -140,10 +142,10 @@ const mypage: FC = () => {
           setOpenModal(null);
         }}
         title="계정탈퇴"
-        message="정말로 계정을 탈퇴하시겠습니까? \n모든 정보가 사라지게 됩니다."
+        message={
+          "정말로 계정을 탈퇴하시겠습니까?\n모든 정보가 사라지게 됩니다."
+        }
       />
-
-      <BottomNavbar />
     </div>
   );
 };

@@ -26,7 +26,9 @@ export const SelectModal: FC<ModalProps> = ({
       <div className="relative w-80 max-w-[90%] overflow-hidden rounded-lg bg-white shadow-lg">
         <div className="p-6 text-center">
           {title && <h2 className="mb-2 text-lg font-semibold">{title}</h2>}
-          {message && <p className="text-gray-600">{message}</p>}
+          {message && (
+            <p className="whitespace-pre-line text-gray-600">{message}</p>
+          )}
         </div>
 
         <div className="flex border-t border-gray-200">
