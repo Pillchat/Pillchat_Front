@@ -8,10 +8,12 @@ import {
   professionalInfoAtom,
 } from "@/lib/atoms/onboarding";
 import { Button } from "@/components/ui/button";
-import { FC, useEffect, useMemo } from "react";
+import { SelectModal } from "../SelectModal";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { fetchAPI } from "@/lib/functions";
+import { useLogout } from "@/app/(setting)/mypage/_hooks/useLogout";
 
 type OnboardingFooterProps = {
   role?: string;
@@ -33,6 +35,8 @@ export const OnboardingFooter: FC<OnboardingFooterProps> = ({
   const [currentStep, setCurrentStep] = useAtom(currentStepAtom);
   const [studentInfo] = useAtom(studentInfoAtom);
   const [professionalInfo] = useAtom(professionalInfoAtom);
+  const [openModal, setOpenModal] = useState<"logout" | null>(null);
+  const { onLogout } = useLogout();
 
   const { labelToValue, labelToValueNorm } = useMemo(() => {
     const pairs: Array<[string, string]> = [];
@@ -83,7 +87,8 @@ export const OnboardingFooter: FC<OnboardingFooterProps> = ({
       return (response as any)?.data ?? response;
     },
     onSuccess: () => {
-      router.push("/login");
+      setOpenModal(null);
+      onLogout();
     },
     onError: (error) => {
       console.error("온보딩 API 에러:", error);
@@ -132,7 +137,7 @@ export const OnboardingFooter: FC<OnboardingFooterProps> = ({
     const finalStep = getFinalStep();
 
     if (currentStep === finalStep) {
-      mutate(prepareOnboardingData());
+      setOpenModal("logout");
       return;
     }
 
@@ -148,20 +153,33 @@ export const OnboardingFooter: FC<OnboardingFooterProps> = ({
   }, [currentStep, setLabel, currentRole]);
 
   return (
-    <footer className="flex flex-col gap-2 p-4">
-      {currentStep < getFinalStep() && (
-        <p className="text-center text-xs text-muted-foreground">
-          선택한 항목은 마이페이지에서 변경 가능합니다.
-        </p>
-      )}
-      <Button
-        size="lg"
-        className="h-14 w-full"
-        disabled={isPending}
-        onClick={handleClick}
-      >
-        {isPending ? "처리 중..." : label}
-      </Button>
-    </footer>
+    <>
+      <footer className="flex flex-col gap-2 p-4">
+        {currentStep < getFinalStep() && (
+          <p className="text-center text-xs text-muted-foreground">
+            선택한 항목은 마이페이지에서 변경 가능합니다.
+          </p>
+        )}
+        <Button
+          size="lg"
+          className="h-14 w-full"
+          disabled={isPending}
+          onClick={handleClick}
+        >
+          {isPending ? "처리 중..." : label}
+        </Button>
+      </footer>
+
+      <SelectModal
+        isOpen={openModal === "logout"}
+        onClose={() => setOpenModal(null)}
+        onConfirm={() => {
+          if (isPending) return;
+          mutate(prepareOnboardingData());
+        }}
+        title="로그인 화면으로 가기"
+        message="로그인 화면으로 가기 선택 시 로그아웃됩니다."
+      />
+    </>
   );
 };
