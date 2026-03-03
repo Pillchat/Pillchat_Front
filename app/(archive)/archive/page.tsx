@@ -266,12 +266,6 @@ const ArchivePage: FC = () => {
     refetch: refetchAnswers,
   } = useMyAnswers(token || undefined);
 
-  // ✅ 데이터 확인용 로그
-  useEffect(() => {
-    console.log("🟡 myQuestions:", myQuestions);
-    console.log("🟡 myAnswers:", myAnswers);
-  }, [myQuestions, myAnswers]);
-
   // ✅ 안전한 questionId 추출 헬퍼
   const pickQuestionId = (item: any): number | null => {
     return item?.question?.id ?? item?.questionId ?? item?.id ?? null;
