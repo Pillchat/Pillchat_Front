@@ -72,7 +72,10 @@ export const GeneralHeader: FC = () => {
         </div>
       ) : (
         <>
-          <Link href="/" className="flex h-[3.625rem] cursor-pointer items-center">
+          <Link
+            href="/"
+            className="flex h-[3.625rem] cursor-pointer items-center"
+          >
             <img src="/PillChat.svg" alt="logo" width={82} height={32} />
           </Link>
 

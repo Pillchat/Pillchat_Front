@@ -36,10 +36,14 @@ const QnaPage: FC = () => {
     if (!Array.isArray(data)) return [];
     if (!q) return data;
 
-    const terms = q.split(/\s+/).filter(Boolean).map((t) => t.toLowerCase());
-    
+    const terms = q
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((t) => t.toLowerCase());
+
     return data.filter((item: any) => {
-      const searchable = `${item.title ?? ""} ${item.content ?? ""} ${item.body ?? ""} ${item.question ?? ""}`.toLowerCase();
+      const searchable =
+        `${item.title ?? ""} ${item.content ?? ""} ${item.body ?? ""} ${item.question ?? ""}`.toLowerCase();
       return terms.every((t) => searchable.includes(t));
     });
   }, [data, q]);
