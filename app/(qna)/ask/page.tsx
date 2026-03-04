@@ -34,7 +34,10 @@ const QuestionPage = () => {
 
     const onKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
-      if ((e.ctrlKey || e.metaKey) && (key === "+" || key === "-" || key === "=" || key === "0")) {
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        (key === "+" || key === "-" || key === "=" || key === "0")
+      ) {
         e.preventDefault();
       }
     };
@@ -49,9 +52,21 @@ const QuestionPage = () => {
     window.addEventListener("keydown", onKeyDown);
     document.addEventListener("touchmove", onTouchMove, { passive: false });
 
-    document.addEventListener("gesturestart", block as any, { passive: false } as any);
-    document.addEventListener("gesturechange", block as any, { passive: false } as any);
-    document.addEventListener("gestureend", block as any, { passive: false } as any);
+    document.addEventListener(
+      "gesturestart",
+      block as any,
+      { passive: false } as any,
+    );
+    document.addEventListener(
+      "gesturechange",
+      block as any,
+      { passive: false } as any,
+    );
+    document.addEventListener(
+      "gestureend",
+      block as any,
+      { passive: false } as any,
+    );
 
     return () => {
       window.removeEventListener("wheel", onWheel as any);
