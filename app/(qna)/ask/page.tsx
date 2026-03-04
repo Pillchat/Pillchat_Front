@@ -6,6 +6,7 @@ import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { useQuestionForm } from "./_hooks";
 import { Controller } from "react-hook-form";
 import { useSubjects } from "@/hooks";
+import { useEffect } from "react";
 
 const QuestionPage = () => {
   const {
@@ -25,6 +26,43 @@ const QuestionPage = () => {
   } = useQuestionForm();
 
   const { getSubjectMapForChips } = useSubjects();
+
+  useEffect(() => {
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) e.preventDefault();
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && (key === "+" || key === "-" || key === "=" || key === "0")) {
+        e.preventDefault();
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length >= 2) e.preventDefault();
+    };
+
+    const block = (e: Event) => e.preventDefault();
+
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("keydown", onKeyDown);
+    document.addEventListener("touchmove", onTouchMove, { passive: false });
+
+    document.addEventListener("gesturestart", block as any, { passive: false } as any);
+    document.addEventListener("gesturechange", block as any, { passive: false } as any);
+    document.addEventListener("gestureend", block as any, { passive: false } as any);
+
+    return () => {
+      window.removeEventListener("wheel", onWheel as any);
+      window.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("touchmove", onTouchMove as any);
+
+      document.removeEventListener("gesturestart", block as any);
+      document.removeEventListener("gesturechange", block as any);
+      document.removeEventListener("gestureend", block as any);
+    };
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col gap-7">
