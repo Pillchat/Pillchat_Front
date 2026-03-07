@@ -14,3 +14,16 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
 }
+
+export type PushSendType = "all" | "personal" | "topic";
+
+export interface PushHistory {
+  id: string;
+  sendType: PushSendType;
+  title: string;
+  content: string;
+  linkURL?: string;
+  targetUserIds?: string[];
+  topicName?: string;
+  sentAt: string;
+}

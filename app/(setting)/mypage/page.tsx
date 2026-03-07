@@ -10,6 +10,7 @@ import {
   BottomNavbar,
 } from "@/components/molecules";
 import { useDelete, useLogout, useMyProfile } from "./_hooks";
+import { isCurrentUserAdmin, getCurrentUserInfo } from "@/lib/functions";
 
 const mypage: FC = () => {
   const router = useRouter();
@@ -19,6 +20,14 @@ const mypage: FC = () => {
   const { onDelete } = useDelete();
   const { onLogout } = useLogout();
   const { onMyProfile, isLoading, error } = useMyProfile();
+  const isAdmin = isCurrentUserAdmin();
+
+  useEffect(() => {
+    // TODO: 디버그용 - 확인 후 삭제
+    const userInfo = getCurrentUserInfo();
+    console.log("JWT payload:", userInfo);
+    console.log("isAdmin:", isAdmin);
+  }, [isAdmin]);
 
   useEffect(() => {
     onMyProfile();
@@ -86,6 +95,21 @@ const mypage: FC = () => {
 
         <div id="line" className="mt-8 h-[1px] w-full bg-muted" />
       </div>
+
+      {isAdmin && (
+        <div className="mt-5 w-[90%]">
+          <p className="text-sm text-muted-foreground">관리자</p>
+          <div className="mt-4 flex flex-col gap-6">
+            <SystemField
+              iconSrc="BellColor.svg"
+              title="푸시 알림 관리"
+              description="푸시 알림 발송 및 이력을 관리할 수 있어요."
+              onClick={() => router.push("/admin")}
+            />
+          </div>
+          <div id="line" className="mt-8 h-[1px] w-full bg-muted" />
+        </div>
+      )}
 
       <div className="mt-5 w-[90%]">
         <p className="text-sm text-muted-foreground">문의 및 건의</p>
