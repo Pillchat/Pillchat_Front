@@ -126,7 +126,10 @@ export const isCurrentUserAdmin = (): boolean => {
   }
 
   // 쉼표 구분 문자열인 경우 (auth: "ROLE_USER,ROLE_ADMIN")
-  if (typeof userInfo.auth === "string" && userInfo.auth.includes(ADMIN_VALUE)) {
+  if (
+    typeof userInfo.auth === "string" &&
+    userInfo.auth.includes(ADMIN_VALUE)
+  ) {
     return true;
   }
 

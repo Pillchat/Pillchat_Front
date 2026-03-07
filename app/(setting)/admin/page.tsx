@@ -257,9 +257,7 @@ const HistorySection: FC<{
   return (
     <div className="px-6 py-5">
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          총 {history.length}건
-        </p>
+        <p className="text-sm text-muted-foreground">총 {history.length}건</p>
         <button
           onClick={onClear}
           className="text-xs text-muted-foreground hover:text-foreground"
@@ -287,14 +285,10 @@ const HistorySection: FC<{
                 </p>
               )}
               {item.topicName && (
-                <p className="text-xs text-border">
-                  토픽: {item.topicName}
-                </p>
+                <p className="text-xs text-border">토픽: {item.topicName}</p>
               )}
               {item.linkURL && (
-                <p className="truncate text-xs text-blue-500">
-                  {item.linkURL}
-                </p>
+                <p className="truncate text-xs text-blue-500">{item.linkURL}</p>
               )}
             </div>
             <Separator className="mt-4" />
@@ -343,10 +337,7 @@ const AdminPage: FC = () => {
         {currentTab === "send" ? (
           <SendPushSection onSent={handlePushSent} />
         ) : (
-          <HistorySection
-            history={pushHistory}
-            onClear={handleClearHistory}
-          />
+          <HistorySection history={pushHistory} onClear={handleClearHistory} />
         )}
       </div>
     </div>
