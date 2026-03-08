@@ -95,6 +95,48 @@ export const isTokenExpired = (token: string): boolean => {
 };
 
 /**
+ * 현재 사용자가 관리자인지 확인
+ * Spring Security JWT의 다양한 필드명 패턴을 지원
+ * @returns 관리자 여부
+ */
+export const isCurrentUserAdmin = (): boolean => {
+  const userInfo = getCurrentUserInfo();
+  if (!userInfo) return false;
+
+  const ADMIN_VALUE = "ROLE_ADMIN";
+
+  // 단일 값 필드 체크 (role, auth)
+  if (userInfo.role === ADMIN_VALUE || userInfo.auth === ADMIN_VALUE) {
+    return true;
+  }
+
+  // 배열 필드 체크 (roles, authorities)
+  const arrayFields = [userInfo.roles, userInfo.authorities];
+  for (const field of arrayFields) {
+    if (Array.isArray(field) && field.includes(ADMIN_VALUE)) {
+      return true;
+    }
+  }
+
+  // authorities가 객체 배열인 경우 (Spring Security 기본 형태)
+  if (Array.isArray(userInfo.authorities)) {
+    for (const auth of userInfo.authorities) {
+      if (auth?.authority === ADMIN_VALUE) return true;
+    }
+  }
+
+  // 쉼표 구분 문자열인 경우 (auth: "ROLE_USER,ROLE_ADMIN")
+  if (
+    typeof userInfo.auth === "string" &&
+    userInfo.auth.includes(ADMIN_VALUE)
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+/**
  * 현재 사용자 정보 (토큰에서 추출 가능한 모든 정보)
  * @returns 사용자 정보 또는 null
  */

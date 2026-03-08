@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CustomHeader } from "@/components/molecules";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -20,11 +20,17 @@ const NotificationItem: FC<{
   onRead: (id: string) => void;
   onNavigate: (link?: string) => void;
 }> = ({ notification, onRead, onNavigate }) => {
+  const [expanded, setExpanded] = useState(false);
+
   const handleClick = () => {
     onRead(notification.id);
-    if (notification.link) {
+
+    if (expanded && notification.link) {
       onNavigate(notification.link);
+      return;
     }
+
+    setExpanded((prev) => !prev);
   };
 
   return (
@@ -47,9 +53,14 @@ const NotificationItem: FC<{
         >
           {notification.title}
         </p>
-        <p className="mt-1 truncate text-xs text-muted-foreground">
+        <p
+          className={`mt-1 text-xs text-muted-foreground ${expanded ? "whitespace-pre-wrap" : "truncate"}`}
+        >
           {notification.content}
         </p>
+        {expanded && notification.link && (
+          <p className="mt-1 text-xs text-brand">자세히 보기</p>
+        )}
         <p className="mt-1 text-xs text-border">
           {formatDiffDate(notification.createdAt)}
         </p>
