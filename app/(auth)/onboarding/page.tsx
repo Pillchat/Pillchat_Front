@@ -4,7 +4,7 @@ import { useAtom } from "jotai";
 import { TextButton } from "@/components/atoms";
 import { FC, useState } from "react";
 import { useRouter } from "next/navigation";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI, getCurrentUserInfo } from "@/lib/functions";
 import { SelectModal } from "@/components/molecules";
 import { useLogout } from "@/app/(setting)/mypage/_hooks/useLogout";
 
@@ -12,6 +12,7 @@ const OnboardingPage: FC = () => {
   const router = useRouter();
   const [openModal, setOpenModal] = useState<"logout" | null>(null);
   const { onLogout } = useLogout();
+  const userInfo = getCurrentUserInfo();
   //   const [name] = useAtom(nameAtom);
 
   const goOnboarding = async () => {
@@ -28,7 +29,7 @@ const OnboardingPage: FC = () => {
         <div className="text-center">
           <p className="text-[48px]">🙌</p>
           <p className="text-2xl font-semibold">
-            환영해요. {"name"}님!
+            환영해요. {userInfo?.username}님!
             <br />
             회원가입이 완료되었어요!
           </p>

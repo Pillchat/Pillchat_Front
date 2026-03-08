@@ -5,6 +5,7 @@ import { FC } from "react";
 import HomeIcon from "@/public/Home.svg";
 import CommunityIcon from "@/public/Community.svg";
 import QnaIcon from "@/public/Qna.svg";
+import board from "@/public/board.svg";
 import QuestionBankIcon from "@/public/Questionbank.svg";
 import ArchiveIcon from "@/public/Archive.svg";
 import MyPageIcon from "@/public/Mypage.svg";
@@ -22,10 +23,15 @@ const NAV_ITEMS = [
   //   icon: CommunityIcon,
   //   label: "커뮤니티",
   // },
+  // {
+  //   href: "/qna",
+  //   icon: QnaIcon,
+  //   label: "질문광장",
+  // },
   {
-    href: "/qna",
-    icon: QnaIcon,
-    label: "질문광장",
+    href: "/board",
+    icon: board,
+    label: "게시판",
   },
   {
     href: "/questionbank",

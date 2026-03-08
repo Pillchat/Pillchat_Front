@@ -225,7 +225,7 @@
 import { FC, Fragment, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  GeneralHeader,
+  AlarmHeader,
   BottomNavbar,
   TabsWithUnderline,
   QuestionListCard,
@@ -336,7 +336,7 @@ const ArchivePage: FC = () => {
     <div className="flex h-screen flex-col">
       {/* ✅ 상단 헤더 */}
       <div className="flex-shrink-0">
-        <GeneralHeader />
+        <AlarmHeader />
         <TabsWithUnderline
           className="mx-6"
           tabs={TABS}
