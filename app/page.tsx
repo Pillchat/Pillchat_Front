@@ -3,7 +3,7 @@
 import { FC, useEffect, useState } from "react";
 import {
   BottomNavbar,
-  GeneralHeader,
+  AlarmHeader,
   QuestionListCard,
 } from "@/components/molecules";
 import { useRouter } from "next/navigation";
@@ -63,7 +63,7 @@ const Home: FC = () => {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <GeneralHeader />
+      <AlarmHeader />
 
       <main className="flex-1 px-6 pb-24 pt-4">
         {/* 메인 배너 카드 캐러셀 */}

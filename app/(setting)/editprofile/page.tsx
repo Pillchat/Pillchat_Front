@@ -46,16 +46,27 @@ const EditProfile = () => {
   };
 
   const handleSave = async () => {
-    if (tempNickname.trim().length < 2)
-      return alert("닉네임은 최소 2자리 이상이어야 합니다.");
-    if (!userId) return alert("유저 ID를 확인할 수 없습니다.");
+    if (tempNickname.trim().length < 2) {
+      alert("닉네임은 최소 2자리 이상이어야 합니다.");
+      return;
+    }
+
+    if (!userId) {
+      alert("유저 ID를 확인할 수 없습니다.");
+      return;
+    }
+
+    if (!accessToken) {
+      alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+      return;
+    }
 
     try {
-      let profileImgKey: string | null = null;
       let keys: string[] = [];
 
       if (fileInputRef.current?.files?.[0]) {
         const file = fileInputRef.current.files[0];
+
         const result = await onUpload({
           userId,
           file,
@@ -63,25 +74,23 @@ const EditProfile = () => {
           access_token: `Bearer ${accessToken}`,
         });
 
-        if (!result?.success) return alert("이미지 업로드 실패");
-        profileImgKey = result.key;
+        if (!result?.success || !result?.key) {
+          throw new Error("이미지 업로드 실패");
+        }
+
+        keys = [result.key];
       }
 
-      if (profileImgKey) {
-        keys.push(profileImgKey);
-      }
-
-      onUpdate({
+      await onUpdate({
         accessToken,
-        tempNickname,
+        tempNickname: tempNickname.trim(),
         keys,
       });
 
-      // Jotai로 로컬에 값을 저장
       updateProfile({
         nickname: tempNickname.trim(),
         profileImg: tempProfileImg ?? serverProfileImg ?? undefined,
-        keys: keys,
+        keys,
       });
 
       setOpen(true);

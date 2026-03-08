@@ -169,6 +169,8 @@ const mypage: FC = () => {
         message={
           "정말로 계정을 탈퇴하시겠습니까?\n모든 정보가 사라지게 됩니다."
         }
+        checkBox
+        checkMessage={"위 내용을 충분히 이해하였으며,\n계정 탈퇴에 동의합니다."}
       />
     </div>
   );

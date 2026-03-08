@@ -564,14 +564,18 @@ const SignupPage: FC = () => {
 
   // 정보 입력 단계 유효성 검사
   const isValidManualInfo = () => {
-    if (!realName) return false;
+    if (!realName.trim()) return false;
+
     if (route === "student") {
-      return !!(university && studentId); // 학번, 학교명 필수
+      return !!(university && studentId);
     } else if (route === "professional") {
-      return !!licenseNumber; // 면허번호 필수
+      return !!licenseNumber;
     }
     return false;
   };
+
+  const isValidNickname = (nickname: string) =>
+  /^[A-Za-z0-9]{2,}$/.test(nickname.trim());
 
   const handleSubmit = async () => {
     if (!nickname || !email || !password || !route) {
@@ -579,22 +583,24 @@ const SignupPage: FC = () => {
       return;
     }
 
-    // 수동 회원가입 데이터 구성
+    if (!isValidNickname(nickname)) {
+      alert("닉네임은 영문과 숫자만 사용해 2자 이상 입력해주세요.");
+      return;
+    }
+
     await onSubmit({
       email,
       password,
-      nickname,
+      nickname: nickname.trim(),
       agreeToTerms: true,
-      realName,
+      realName: realName.trim(),
       documentType: route as "student" | "professional",
-      // 학생 데이터
       ...(route === "student" && {
         university,
         department,
         studentId,
         grade,
       }),
-      // 전문가 데이터
       ...(route === "professional" && {
         licenseNumber,
         issueDate,
@@ -645,19 +651,18 @@ const SignupPage: FC = () => {
         <>
           <StepHeader
             content={`${route === "student" ? "학생" : "전문가"} 정보 입력`}
-            onIconClick={prevStep}
+            onIconClick={() => setStep(Step.Role)}
           />
 
           <div className="mt-[1rem] flex w-[90%] flex-col gap-[20px]">
             <div className="flex flex-col gap-[20px]">
-              {/* 공통 필드: 실명 */}
               <IconInputField
                 content="성명 (실명)"
                 value={realName}
                 onChange={(e) => setRealName(e.target.value)}
                 onIconClick={() => setRealName("")}
                 placeholder="홍길동"
-                iconSrc="/Cancel.svg" // 아이콘은 적절한 것으로 교체하거나 숨김 처리
+                iconSrc="/Cancel.svg"
                 iconAsButton={true}
                 iconSize={20}
               />
@@ -986,7 +991,7 @@ const SignupPage: FC = () => {
               />
 
               <p className="font-regular text-sm text-border">
-                영어, 숫자를 조합한 최소 2자리
+                영문, 숫자만 사용한 2자 이상
               </p>
             </div>
 
@@ -994,11 +999,13 @@ const SignupPage: FC = () => {
               <SolidButton
                 content={isSubmitLoading ? "가입 중..." : "완료"}
                 variant={
-                  nickname && email && !isSubmitLoading ? "brand" : "disabled"
+                  isValidNickname(nickname) && email && !isSubmitLoading
+                    ? "brand"
+                    : "disabled"
                 }
-                disabled={!(nickname && email) || isSubmitLoading}
-                onClick={() => {
-                  handleSubmit();
+                disabled={!isValidNickname(nickname) || !email || isSubmitLoading}
+                onClick={async () => {
+                  await handleSubmit();
                   router.push("/login");
                 }}
               />

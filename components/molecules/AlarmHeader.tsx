@@ -6,34 +6,25 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { unreadCountAtom } from "@/store/notification";
 
-export const GeneralHeader: FC = () => {
+export const AlarmHeader: FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const unreadCount = useAtomValue(unreadCountAtom);
 
-  const currentQ = useMemo(() => searchParams.get("q") ?? "", [searchParams]);
-
   const currentStatus = useMemo(() => {
-    const status = searchParams.get("status");
+    const s = searchParams.get("status");
+    return s === "pending" || s === "completed" ? s : "pending";
+  }, [searchParams]);
 
-    if (pathname.startsWith("/qna")) {
-      return status ?? "pending";
-    }
-
-    if (pathname.startsWith("/board")) {
-      return status ?? "best";
-    }
-
-    return status ?? "";
-  }, [pathname, searchParams]);
+  const currentQ = useMemo(() => searchParams.get("q") ?? "", [searchParams]);
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (pathname.startsWith("/qna") || pathname.startsWith("/board")) {
+    if (pathname.startsWith("/qna")) {
       setValue(currentQ);
     }
   }, [pathname, currentQ]);
@@ -42,29 +33,16 @@ export const GeneralHeader: FC = () => {
     if (open) inputRef.current?.focus();
   }, [open]);
 
-  const getSearchBasePath = () => {
-    if (pathname.startsWith("/board")) return "/board";
-    return "/qna";
-  };
-
-  const goWithQuery = (q: string) => {
+  const goQnaWithQuery = (q: string) => {
     const params = new URLSearchParams();
+    params.set("status", currentStatus);
     const trimmed = q.trim();
-    const basePath = getSearchBasePath();
-
-    if (currentStatus) {
-      params.set("status", currentStatus);
-    }
-
-    if (trimmed) {
-      params.set("q", trimmed);
-    }
-
-    router.push(`${basePath}?${params.toString()}`);
+    if (trimmed) params.set("q", trimmed);
+    router.push(`/qna?${params.toString()}`);
   };
 
   const onSubmit = () => {
-    goWithQuery(value);
+    goQnaWithQuery(value);
   };
 
   return (
@@ -87,7 +65,7 @@ export const GeneralHeader: FC = () => {
             type="button"
             className="relative z-30 flex items-center"
             onMouseDown={(e) => e.preventDefault()}
-            onClick={onSubmit}
+            onClick={() => onSubmit()}
           >
             <img src="/search.svg" alt="search" width={32} height={32} />
           </button>
@@ -102,14 +80,6 @@ export const GeneralHeader: FC = () => {
           </Link>
 
           <div className="flex items-center gap-4">
-            <button
-              type="button"
-              className="flex h-[3.625rem] items-center"
-              onClick={() => setOpen(true)}
-            >
-              <img src="/search.svg" alt="search" width={32} height={32} />
-            </button>
-
             <div
               className="relative flex h-[3.625rem] cursor-pointer items-center"
               onClick={() => router.push("/notifications")}
