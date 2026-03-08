@@ -1,6 +1,12 @@
 "use client";
 
-import { ArrayList, BottomNavbar, CircleButton, GeneralHeader, QuestionListCard } from "@/components/molecules";
+import {
+  ArrayList,
+  BottomNavbar,
+  CircleButton,
+  GeneralHeader,
+  QuestionListCard,
+} from "@/components/molecules";
 import { fetchAPI, formatDiffDate } from "@/lib/functions";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, Fragment } from "react";
@@ -16,34 +22,34 @@ const board = () => {
   const q = (searchParams.get("q") ?? "").trim();
 
   const { data, isLoading } = useQuery({
-      queryKey: ["questions", currentStatus],
-      queryFn: () => fetchAPI(`/api/questions?status=${currentStatus}`, "GET"),
+    queryKey: ["questions", currentStatus],
+    queryFn: () => fetchAPI(`/api/questions?status=${currentStatus}`, "GET"),
+  });
+
+  const list = useMemo(() => {
+    if (!Array.isArray(data)) return [];
+    if (!q) return data;
+
+    const terms = q
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((t) => t.toLowerCase());
+
+    return data.filter((item: any) => {
+      const searchable =
+        `${item.title ?? ""} ${item.content ?? ""} ${item.body ?? ""} ${item.question ?? ""}`.toLowerCase();
+      return terms.every((t) => searchable.includes(t));
     });
-  
-    const list = useMemo(() => {
-        if (!Array.isArray(data)) return [];
-        if (!q) return data;
+  }, [data, q]);
 
-        const terms = q
-        .split(/\s+/)
-        .filter(Boolean)
-        .map((t) => t.toLowerCase());
-
-        return data.filter((item: any) => {
-        const searchable =
-            `${item.title ?? ""} ${item.content ?? ""} ${item.body ?? ""} ${item.question ?? ""}`.toLowerCase();
-        return terms.every((t) => searchable.includes(t));
-        });
-    }, [data, q]);
-
-    const emptyText = q
-        ? `"${q}" 검색 결과가 없습니다.`
-        : `아직 ${currentStatus === "best" ? "등록된" : "답변이 달린"} 질문이 없습니다.`;
+  const emptyText = q
+    ? `"${q}" 검색 결과가 없습니다.`
+    : `아직 ${currentStatus === "best" ? "등록된" : "답변이 달린"} 질문이 없습니다.`;
 
   return (
     <div className="flex min-h-screen flex-col">
-      <GeneralHeader/>
-      <div className="-mt-[1px] z-20 h-[1px] w-full bg-white" />
+      <GeneralHeader />
+      <div className="z-20 -mt-[1px] h-[1px] w-full bg-white" />
       <ArrayList value={currentStatus} onChange={handleTabChange} />
 
       <CircleButton />

@@ -8,7 +8,14 @@ export type BoardStatus = "best" | "latest" | "study" | "column" | "promo";
 const DEFAULT_STATUS: BoardStatus = "best";
 
 const normalizeStatus = (s: string | null): BoardStatus => {
-  if (s === "best" || s === "latest" || s === "study" || s === "column" || s === "promo") return s;
+  if (
+    s === "best" ||
+    s === "latest" ||
+    s === "study" ||
+    s === "column" ||
+    s === "promo"
+  )
+    return s;
   return DEFAULT_STATUS;
 };
 
@@ -18,7 +25,7 @@ export const useBoardTabState = () => {
 
   const currentStatus = useMemo(
     () => normalizeStatus(searchParams.get("status")),
-    [searchParams]
+    [searchParams],
   );
 
   useEffect(() => {

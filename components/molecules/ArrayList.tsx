@@ -41,14 +41,13 @@ export const ArrayList = ({
 
   return (
     <div
-      className={[
-        "relative h-[34px] w-full bg-transparent",
-        className,
-      ].join(" ")}
+      className={["relative h-[34px] w-full bg-transparent", className].join(
+        " ",
+      )}
     >
       <div className="h-full pl-6">
         <div className="h-full overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex h-full min-w-[437px] w-max items-center gap-5">
+          <div className="flex h-full w-max min-w-[437px] items-center gap-5">
             {items.map((t) => {
               const active = selected === t.key;
 
@@ -59,7 +58,7 @@ export const ArrayList = ({
                   onClick={() => select(t.key)}
                   className={[
                     "relative inline-flex h-full items-start whitespace-nowrap px-0",
-                    "font-['Pretendard'] font-semibold text-[18px]",
+                    "font-['Pretendard'] text-[18px] font-semibold",
                     active ? "text-primary" : "text-gray-600",
                     "after:absolute after:bottom-0 after:left-0 after:w-full after:content-['']",
                     active
@@ -78,4 +77,4 @@ export const ArrayList = ({
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gray-200" />
     </div>
   );
-}
+};

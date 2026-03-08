@@ -575,7 +575,7 @@ const SignupPage: FC = () => {
   };
 
   const isValidNickname = (nickname: string) =>
-  /^[A-Za-z0-9]{2,}$/.test(nickname.trim());
+    /^[A-Za-z0-9]{2,}$/.test(nickname.trim());
 
   const handleSubmit = async () => {
     if (!nickname || !email || !password || !route) {
@@ -1003,7 +1003,9 @@ const SignupPage: FC = () => {
                     ? "brand"
                     : "disabled"
                 }
-                disabled={!isValidNickname(nickname) || !email || isSubmitLoading}
+                disabled={
+                  !isValidNickname(nickname) || !email || isSubmitLoading
+                }
                 onClick={async () => {
                   await handleSubmit();
                   router.push("/login");
