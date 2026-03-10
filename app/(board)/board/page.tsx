@@ -53,7 +53,7 @@ const BoardPage = () => {
       <ArrayList value={currentStatus} onChange={handleTabChange} />
 
       <CircleButton
-        onUploadPost={() => router.push("/post")}
+        onUploadPost={() => router.push("/upload")}
         onUploadStudy={() => router.push("/upload")}
       />
 
