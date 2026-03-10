@@ -15,7 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { map } from "lodash";
 import { Separator } from "@/components/ui/separator";
 
-const boardPage = () => {
+const BoardPage = () => {
   const { currentStatus, handleTabChange } = useBoardTabState();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -91,4 +91,4 @@ const boardPage = () => {
   );
 };
 
-export default boardPage;
+export default BoardPage;
