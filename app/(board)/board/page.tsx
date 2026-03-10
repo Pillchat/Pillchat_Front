@@ -52,7 +52,7 @@ const boardPage = () => {
       <div className="z-20 -mt-[1px] h-[1px] w-full bg-white" />
       <ArrayList value={currentStatus} onChange={handleTabChange} />
 
-      <CircleButton 
+      <CircleButton
         onUploadPost={() => router.push("/post")}
         onUploadStudy={() => router.push("/upload")}
       />

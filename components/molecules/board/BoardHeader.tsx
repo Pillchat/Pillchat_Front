@@ -51,7 +51,7 @@ export const BoardHeader: FC<BoardHeaderProps> = ({
             variant="textOnly"
             onClick={isActive ? onRightButtonClick : undefined}
             className={`text-md p-0 ${
-                isActive ? "text-primary" : "text-[#666666]"
+              isActive ? "text-primary" : "text-[#666666]"
             }`}
           />
         )}

@@ -36,7 +36,9 @@ export const useUploadFiles = () => {
 
   const revokeObjectUrl = (url: string) => {
     URL.revokeObjectURL(url);
-    objectUrlsRef.current = objectUrlsRef.current.filter((item) => item !== url);
+    objectUrlsRef.current = objectUrlsRef.current.filter(
+      (item) => item !== url,
+    );
   };
 
   const openImagePicker = () => {
