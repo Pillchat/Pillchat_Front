@@ -17,7 +17,7 @@ import { useSubjects } from "@/hooks";
 import { useUploadForm } from "./_hooks/useUploadForm";
 import { useUploadFiles } from "./_hooks/useUploadFiles";
 
-export enum Step {
+enum Step {
   Guide = 1,
   Upload,
   Complete,
