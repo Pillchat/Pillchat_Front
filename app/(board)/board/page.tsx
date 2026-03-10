@@ -3,10 +3,10 @@
 import {
   ArrayList,
   BottomNavbar,
-  CircleButton,
   GeneralHeader,
   QuestionListCard,
 } from "@/components/molecules";
+import { CircleButton } from "@/components/molecules/board";
 import { fetchAPI, formatDiffDate } from "@/lib/functions";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, Fragment } from "react";
@@ -15,7 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { map } from "lodash";
 import { Separator } from "@/components/ui/separator";
 
-const board = () => {
+const boardPage = () => {
   const { currentStatus, handleTabChange } = useBoardTabState();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -52,7 +52,10 @@ const board = () => {
       <div className="z-20 -mt-[1px] h-[1px] w-full bg-white" />
       <ArrayList value={currentStatus} onChange={handleTabChange} />
 
-      <CircleButton />
+      <CircleButton 
+        onUploadPost={() => router.push("/post")}
+        onUploadStudy={() => router.push("/upload")}
+      />
 
       <div className="relative flex-1 overflow-y-auto">
         {isLoading ? (
@@ -88,4 +91,4 @@ const board = () => {
   );
 };
 
-export default board;
+export default boardPage;

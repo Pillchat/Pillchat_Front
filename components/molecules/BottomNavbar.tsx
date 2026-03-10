@@ -5,7 +5,7 @@ import { FC } from "react";
 import HomeIcon from "@/public/Home.svg";
 import CommunityIcon from "@/public/Community.svg";
 import QnaIcon from "@/public/Qna.svg";
-import board from "@/public/board.svg";
+import board from "@/public/Board.svg";
 import QuestionBankIcon from "@/public/Questionbank.svg";
 import ArchiveIcon from "@/public/Archive.svg";
 import MyPageIcon from "@/public/Mypage.svg";

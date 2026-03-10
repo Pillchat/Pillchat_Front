@@ -33,7 +33,7 @@ export const CircleButton = ({
               className="absolute right-0 top-0 h-[56px] w-[148px] rounded-[12px] bg-primary"
             >
               <div className="flex items-center px-5 py-3 font-['Pretendard'] text-[14px] font-medium text-white">
-                <img src="/circle+.svg" alt="게시물 올리기" />
+                <img src="/Circle+.svg" alt="게시물 올리기" />
                 <span>게시물 올리기</span>
               </div>
             </button>
@@ -44,7 +44,7 @@ export const CircleButton = ({
               className="absolute bottom-0 right-0 h-[56px] w-[160px] rounded-[12px] bg-primary"
             >
               <div className="flex items-center px-5 py-3 font-['Pretendard'] text-[14px] font-medium text-white">
-                <img src="/data.svg" alt="학습자료 올리기" />
+                <img src="/Data.svg" alt="학습자료 올리기" />
                 <span>학습자료 올리기</span>
               </div>
             </button>
