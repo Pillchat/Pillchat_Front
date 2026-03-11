@@ -40,7 +40,9 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
   showDropdownButton = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [pendingSelectedItems, setPendingSelectedItems] = useState<string[]>([]);
+  const [pendingSelectedItems, setPendingSelectedItems] = useState<string[]>(
+    [],
+  );
 
   const isPendingChanged = useMemo(() => {
     if (pendingSelectedItems.length !== selectedItems.length) return true;
@@ -155,7 +157,9 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
             onClick={() => handleItemClick(item)}
             variant="outline"
             label={item}
-            className={cn(selectedItems.includes(item) && selectedChipClassName)}
+            className={cn(
+              selectedItems.includes(item) && selectedChipClassName,
+            )}
             size={buttonSize}
           />
         ))}
@@ -218,28 +222,34 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
                 <div className="flex-1 overflow-y-auto pb-4">
                   <div className="flex flex-col gap-4">
                     {expandedData ? (
-                      map(Object.entries(expandedData), ([subCategory, subItems]) => (
-                        <div key={subCategory} className="flex flex-col gap-2">
-                          <p className="text-sm font-medium text-gray-700">
-                            {subCategory}
-                          </p>
-                          <div className="flex flex-wrap gap-1">
-                            {map(subItems, (item) => (
-                              <TextButton
-                                key={item}
-                                onClick={() => handlePendingItemClick(item)}
-                                variant="outline"
-                                label={item}
-                                className={cn(
-                                  pendingSelectedItems.includes(item) &&
-                                    selectedChipClassName,
-                                )}
-                                size={buttonSize}
-                              />
-                            ))}
+                      map(
+                        Object.entries(expandedData),
+                        ([subCategory, subItems]) => (
+                          <div
+                            key={subCategory}
+                            className="flex flex-col gap-2"
+                          >
+                            <p className="text-sm font-medium text-gray-700">
+                              {subCategory}
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {map(subItems, (item) => (
+                                <TextButton
+                                  key={item}
+                                  onClick={() => handlePendingItemClick(item)}
+                                  variant="outline"
+                                  label={item}
+                                  className={cn(
+                                    pendingSelectedItems.includes(item) &&
+                                      selectedChipClassName,
+                                  )}
+                                  size={buttonSize}
+                                />
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      ))
+                        ),
+                      )
                     ) : (
                       <div className="flex flex-wrap gap-1">
                         {map(items, (item) => (
@@ -273,53 +283,60 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
               </div>
             </>
           ) : (
-            <div className={showDropdownButton ? "flex items-center gap-2" : chipContainerClassName}>
-                {showDropdownButton ? (
-                    <>
-                    <div className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 min-w-0 flex-1 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                        <div className="flex w-max items-center gap-1">
-                        {map(items, (item) => (
-                            <TextButton
-                            key={item}
-                            onClick={() => handleItemClick(item)}
-                            variant="outline"
-                            label={item}
-                            className={cn(
-                                "flex-shrink-0",
-                                selectedItems.includes(item) && selectedChipClassName,
-                            )}
-                            size={buttonSize}
-                            />
-                        ))}
-                        </div>
+            <div
+              className={
+                showDropdownButton
+                  ? "flex items-center gap-2"
+                  : chipContainerClassName
+              }
+            >
+              {showDropdownButton ? (
+                <>
+                  <div className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 min-w-0 flex-1 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="flex w-max items-center gap-1">
+                      {map(items, (item) => (
+                        <TextButton
+                          key={item}
+                          onClick={() => handleItemClick(item)}
+                          variant="outline"
+                          label={item}
+                          className={cn(
+                            "flex-shrink-0",
+                            selectedItems.includes(item) &&
+                              selectedChipClassName,
+                          )}
+                          size={buttonSize}
+                        />
+                      ))}
                     </div>
+                  </div>
 
-                    <TextButton
-                        onClick={openModal}
-                        variant="outline"
-                        label={
-                        <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                            />
-                        </svg>
-                        }
-                        className="shrink-0 rounded-full px-3 -translate-y-[4px]"
-                        size={buttonSize}
-                    />
-                    </>
-                ) : (
-                    renderChips(items, false)
-                )}
-                </div>
+                  <TextButton
+                    onClick={openModal}
+                    variant="outline"
+                    label={
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    }
+                    className="shrink-0 -translate-y-[4px] rounded-full px-3"
+                    size={buttonSize}
+                  />
+                </>
+              ) : (
+                renderChips(items, false)
+              )}
+            </div>
           )}
         </div>
       ))}

@@ -73,15 +73,11 @@ export const usePostForm = ({ onSubmit }: UseUploadFormParams = {}) => {
   };
 
   const handleContentChange = (value: string) => {
-    setValue(
-      "content",
-      value.replace(/^\s+/, "").replace(/\s{2,}/g, " "),
-      {
-        shouldValidate: true,
-        shouldDirty: true,
-        shouldTouch: true,
-      },
-    );
+    setValue("content", value.replace(/^\s+/, "").replace(/\s{2,}/g, " "), {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true,
+    });
   };
 
   const handleUpload = handleSubmit(async (formData) => {

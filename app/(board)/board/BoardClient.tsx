@@ -28,7 +28,10 @@ const BoardClient = () => {
 
   const { getSubjectMapForChips } = useSubjects();
 
-  const rawSubjectMap = useMemo(() => getSubjectMapForChips(), [getSubjectMapForChips]);
+  const rawSubjectMap = useMemo(
+    () => getSubjectMapForChips(),
+    [getSubjectMapForChips],
+  );
 
   const subjectData = useMemo(
     () => ({

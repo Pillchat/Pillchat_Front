@@ -65,10 +65,7 @@ const UploadPage = () => {
   });
 
   const canSubmit =
-    !!title?.trim() &&
-    !!selectedSubject?.trim() &&
-    hasFiles &&
-    !isSubmitting;
+    !!title?.trim() && !!selectedSubject?.trim() && hasFiles && !isSubmitting;
 
   const openConfirmModal = () => {
     if (!canSubmit) return;

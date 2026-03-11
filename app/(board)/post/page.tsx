@@ -8,7 +8,14 @@ import {
 } from "@/components/molecules";
 import { BoardHeader, BoardButton } from "@/components/molecules/board";
 import { Controller } from "react-hook-form";
-import { Step, useStep, usePostForm, usePostFiles, CATEGORY_MAP, useCategoryType } from "./_hooks";
+import {
+  Step,
+  useStep,
+  usePostForm,
+  usePostFiles,
+  CATEGORY_MAP,
+  useCategoryType,
+} from "./_hooks";
 import { useRouter } from "next/navigation";
 import { useState, ChangeEvent } from "react";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
@@ -116,7 +123,7 @@ const PostPage = () => {
             onLeftButtonClick={() => router.push("/board")}
           />
 
-          <div className="px-6 mb-5">
+          <div className="mb-5 px-6">
             <SelectBox
               label="카테고리"
               options={categories.map((type) => ({ key: type, value: type }))}
@@ -299,10 +306,7 @@ const PostPage = () => {
               variant="teritary"
               onClick={() => router.push("/archive")}
             />
-            <TextButton
-              label="다른 게시글 올리기"
-              onClick={resetPostPage}
-            />
+            <TextButton label="다른 게시글 올리기" onClick={resetPostPage} />
           </div>
         </div>
       )}
