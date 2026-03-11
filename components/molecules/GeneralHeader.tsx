@@ -2,35 +2,34 @@
 
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { unreadCountAtom } from "@/store/notification";
 
-export const GeneralHeader: FC = () => {
+interface GeneralHeaderProps {
+  currentQ?: string;
+  currentStatus?: string;
+  searchBasePath?: string;
+}
+
+export const GeneralHeader: FC<GeneralHeaderProps> = ({
+  currentQ = "",
+  currentStatus = "",
+  searchBasePath,
+}) => {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const unreadCount = useAtomValue(unreadCountAtom);
-
-  const currentQ = useMemo(() => searchParams.get("q") ?? "", [searchParams]);
-
-  const currentStatus = useMemo(() => {
-    const status = searchParams.get("status");
-
-    if (pathname.startsWith("/qna")) {
-      return status ?? "pending";
-    }
-
-    if (pathname.startsWith("/board")) {
-      return status ?? "best";
-    }
-
-    return status ?? "";
-  }, [pathname, searchParams]);
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const resolvedBasePath = useMemo(() => {
+    if (searchBasePath) return searchBasePath;
+    if (pathname.startsWith("/board")) return "/board";
+    return "/qna";
+  }, [pathname, searchBasePath]);
 
   useEffect(() => {
     if (pathname.startsWith("/qna") || pathname.startsWith("/board")) {
@@ -42,15 +41,9 @@ export const GeneralHeader: FC = () => {
     if (open) inputRef.current?.focus();
   }, [open]);
 
-  const getSearchBasePath = () => {
-    if (pathname.startsWith("/board")) return "/board";
-    return "/qna";
-  };
-
   const goWithQuery = (q: string) => {
     const params = new URLSearchParams();
     const trimmed = q.trim();
-    const basePath = getSearchBasePath();
 
     if (currentStatus) {
       params.set("status", currentStatus);
@@ -60,7 +53,7 @@ export const GeneralHeader: FC = () => {
       params.set("q", trimmed);
     }
 
-    router.push(`${basePath}?${params.toString()}`);
+    router.push(`${resolvedBasePath}?${params.toString()}`);
   };
 
   const onSubmit = () => {
