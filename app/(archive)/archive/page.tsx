@@ -222,7 +222,7 @@
 
 "use client";
 
-import { FC, Fragment, useEffect } from "react";
+import { FC, Fragment } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlarmHeader,
