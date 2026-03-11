@@ -20,3 +20,4 @@ export * from "./ImageCarousel";
 export * from "./SubmitModal";
 export * from "./ArrayList";
 export * from "./AlarmHeader";
+export * from "./ExpandableChipSection";

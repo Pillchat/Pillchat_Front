@@ -1,6 +1,6 @@
 "use client";
 
-import { SolidButton, TextButton } from "@/components/atoms";
+import { TextButton, SelectBox, TextareaWithLabel } from "@/components/atoms";
 import {
   IconInputField,
   ExpandableChipSection,
@@ -8,27 +8,22 @@ import {
 } from "@/components/molecules";
 import { BoardHeader, BoardButton } from "@/components/molecules/board";
 import { Controller } from "react-hook-form";
-import { useStep } from "./_hooks";
+import { Step, useStep, usePostForm, usePostFiles, CATEGORY_MAP, useCategoryType } from "./_hooks";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import CheckCircle from "@/public/CheckCircle.svg";
+import { useState, ChangeEvent } from "react";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { useSubjects } from "@/hooks";
-import { useUploadForm } from "./_hooks/useUploadForm";
-import { useUploadFiles } from "./_hooks/useUploadFiles";
+import { SelectCategoryModal } from "./SelectCategoryModal";
 
-enum Step {
-  Guide = 1,
-  Upload,
-  Complete,
-}
-
-const UploadPage = () => {
+const PostPage = () => {
   const { getSubjectMapForChips } = useSubjects();
   const router = useRouter();
-  const { step, nextStep, prevStep, setStep } = useStep();
-  const [checked, setChecked] = useState(false);
+  const { step, nextStep, setStep } = useStep();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectValue, setSelectValue] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
   const {
     imageInputRef,
@@ -43,18 +38,18 @@ const UploadPage = () => {
     imageFiles,
     pdfFile,
     hasFiles,
-  } = useUploadFiles();
+  } = usePostFiles();
 
   const {
     control,
     errors,
-    selectedSubject,
     title,
-    handleSubjectToggle,
+    content,
+    handleContentChange,
     handleUpload,
     resetForm,
     isSubmitting,
-  } = useUploadForm({
+  } = usePostForm({
     onSubmit: async (data) => {
       console.log({
         ...data,
@@ -65,8 +60,9 @@ const UploadPage = () => {
   });
 
   const canSubmit =
+    !!selectedCategory &&
     !!title?.trim() &&
-    !!selectedSubject?.trim() &&
+    !!content?.trim() &&
     hasFiles &&
     !isSubmitting;
 
@@ -81,100 +77,62 @@ const UploadPage = () => {
     nextStep();
   };
 
-  const resetUploadPage = () => {
+  const resetPostPage = () => {
     resetForm();
     clearFiles();
-    setChecked(false);
-    setStep(Step.Guide);
+    setStep(Step.Upload);
+  };
+
+  const openCategory = () => {
+    setIsCategoryOpen(true);
+  };
+
+  const closeCategory = () => {
+    setIsCategoryOpen(false);
+  };
+
+  const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setSelectValue(value);
+    const mapped = CATEGORY_MAP[value as keyof typeof CATEGORY_MAP];
+    setSelectedCategory(mapped?.value || value);
+  };
+
+  const handleCategorySelect = (label: string, value: string) => {
+    setSelectValue(label);
+    setSelectedCategory(value);
+    setIsCategoryOpen(false);
   };
 
   return (
     <>
-      {step === Step.Guide && (
-        <div className="flex h-full w-full flex-1 flex-col">
-          <BoardHeader
-            title="학습자료 업로드"
-            showIcon
-            onRightButtonClick={() => router.push("/")}
-            onLeftButtonClick={() => router.push("/board")}
-          />
-          <div>
-            <div className="mb-10 mt-5">
-              <p className="font-Pretendard px-7 text-2xl font-semibold">
-                학습자료 업로드 전, 다음 안내사항을 반드시 읽고 확인해주세요.
-              </p>
-            </div>
-            <div className="h-[366px] px-6">
-              <div className="mb-6">
-                <p className="font-Pretendard mb-3 text-lg font-semibold">
-                  1. 저작권 관련 책임 안내
-                </p>
-                <ul className="font-Pretendard list-disc pl-5 text-sm font-medium">
-                  <li className="mb-2">
-                    사용자가 업로드하는 모든 자료는 대한민국 「저작권법」 제2조
-                    및 제4조에 따라 보호받는 저작물에 해당할 수 있습니다.
-                  </li>
-                  <li className="mb-2">
-                    특히 출시 문제, 국가고시(약사국시) 문제, 학원 또는 대학 족보
-                    등 저작권자가 따로 있는 자료를 무단으로 업로드하는 경우,
-                    저작권 침해로 간주되며 법적 책임이 따를 수 있습니다.
-                  </li>
-                  <li>
-                    본 플랫폼은 사용자가 업로드한 자료에 대한 저작권 침해 여부를
-                    사전 심사하지 않으며, 모든 법적 책임은 자료를 업로드한
-                    사용자 본인에게 있습니다.
-                  </li>
-                </ul>
-              </div>
-
-              <div className="mb-20">
-                <p className="font-Pretendard mb-3 text-lg font-semibold">
-                  2. 책임 동의 안내
-                </p>
-                <ul className="font-Pretendard list-disc pl-5 text-sm font-medium">
-                  <li className="mb-2">
-                    본인은 자료를 직접 작성했거나, 저작권 문제가 없는 자료임을
-                    확인합니다.
-                  </li>
-                  <li>
-                    위 사항을 충분히 인지하였으며, 이를 위반하여 발생하는
-                    민형사상 법적 책임은 전적으로 본인에게 있음에 동의합니다.
-                  </li>
-                </ul>
-              </div>
-
-              <div
-                className="mb-3 mt-6 flex cursor-pointer items-center justify-center gap-2"
-                onClick={() => setChecked((prev) => !prev)}
-              >
-                <CheckCircle
-                  className="h-[22px] w-[22px]"
-                  style={{ color: checked ? "#FF412E" : "#C4C4C4" }}
-                />
-                <p className="font-Pretendard text-sm font-medium">
-                  위 내용에 동의합니다.
-                </p>
-              </div>
-
-              <SolidButton
-                className="mt-6 w-full"
-                disabled={!checked}
-                onClick={nextStep}
-                content="다음"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
       {step === Step.Upload && (
         <div className="flex h-full w-full flex-1 flex-col">
           <BoardHeader
-            title="학습자료 업로드"
-            rightButtonLabel={isSubmitting ? "업로드 중..." : "업로드"}
+            title="게시글 업로드"
+            rightButtonLabel={isSubmitting ? "등록하는 중..." : "등록하기"}
             onRightButtonClick={openConfirmModal}
             isActive={canSubmit}
-            onLeftButtonClick={prevStep}
+            onLeftButtonClick={() => router.push("/board")}
+          />
+
+          <div className="px-6 mb-5">
+            <SelectBox
+              label="카테고리"
+              options={categories.map((type) => ({ key: type, value: type }))}
+              selectedValue={selectValue || ""}
+              placeholder="카테고리를 선택해주세요."
+              disabled={false}
+              handleChange={handleSelectChange}
+              onClick={openCategory}
+            />
+          </div>
+
+          <SelectCategoryModal
+            isOpen={isCategoryOpen}
+            closeClick={closeCategory}
+            onSelect={handleCategorySelect}
+            setCategories={setCategories}
           />
 
           <div className="mb-5 w-full px-6">
@@ -205,34 +163,23 @@ const UploadPage = () => {
             />
           </div>
 
-          <Controller
-            name="subject"
-            control={control}
-            rules={QUESTION_FORM_RULES.subject}
-            render={() => (
-              <div className="mb-5 flex flex-col gap-1 px-6">
-                <ExpandableChipSection
-                  data={{
-                    과목: Object.values(getSubjectMapForChips()).flat(),
-                  }}
-                  selectedItems={selectedSubject ? [selectedSubject] : []}
-                  onItemToggle={handleSubjectToggle}
-                  chipContainerClassName="flex gap-1"
-                  selectedChipClassName="border-primary bg-accent text-primary"
-                  selectionMode="single"
-                  showDropdown={true}
-                  maxVisibleChips={4}
-                  expandedData={getSubjectMapForChips()}
-                  showDropdownButton={true}
+          <div className="mb-5 w-full px-6">
+            <Controller
+              name="content"
+              control={control}
+              rules={QUESTION_FORM_RULES.content}
+              render={({ field }) => (
+                <TextareaWithLabel
+                  label="본문"
+                  placeholder="본문을 입력해주세요."
+                  value={field.value ?? ""}
+                  onChange={(e) => handleContentChange(e.target.value)}
+                  onBlur={field.onBlur}
+                  errorMessage={errors.content?.message}
                 />
-                {errors.subject && (
-                  <p className="text-sm text-destructive">
-                    {errors.subject.message}
-                  </p>
-                )}
-              </div>
-            )}
-          />
+              )}
+            />
+          </div>
 
           <div className="px-6">
             <p className="mb-3 font-[Pretendard] text-xs">업로드 할 파일</p>
@@ -323,7 +270,7 @@ const UploadPage = () => {
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleConfirmUpload}
         title="업로드 최종 확인"
-        message={`‘${title ?? ""}’ 학습자료를 업로드 하시겠습니까?`}
+        message={`‘${title ?? ""}’ 게시글을 업로드 하시겠습니까?`}
       />
 
       {step === Step.Complete && (
@@ -337,23 +284,24 @@ const UploadPage = () => {
                 className="mb-2"
               />
               <p className="text-2xl font-semibold">
-                학습자료가 업로드되었습니다!
+                게시글이 업로드되었습니다!
               </p>
             </div>
             <p className="text-sm">
-              내가 올린 학습자료는 마이페이지에서 확인할 수 있어요.
+              업로드한 게시글은 게시판에서 바로 확인할 수 있어요.
             </p>
           </div>
+
           <div className="mx-6 mb-10 flex flex-col gap-3">
             <TextButton
               className="border border-primary text-primary"
-              label="내 학습자료 보기"
+              label="내 게시물 보기"
               variant="teritary"
               onClick={() => router.push("/archive")}
             />
             <TextButton
-              label="다른 학습자료 올리기"
-              onClick={() => resetUploadPage()}
+              label="다른 게시글 올리기"
+              onClick={resetPostPage}
             />
           </div>
         </div>
@@ -362,4 +310,4 @@ const UploadPage = () => {
   );
 };
 
-export default UploadPage;
+export default PostPage;

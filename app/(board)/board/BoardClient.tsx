@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { map } from "lodash";
@@ -15,6 +15,8 @@ import { CircleButton } from "@/components/molecules/board";
 import { Separator } from "@/components/ui/separator";
 import { fetchAPI, formatDiffDate } from "@/lib/functions";
 import { useBoardTabState } from "./_hooks";
+import { ExpandableChipSection } from "@/components/molecules/ExpandableChipSection";
+import { useSubjects } from "@/hooks";
 
 const BoardClient = () => {
   const { currentStatus, handleTabChange } = useBoardTabState();
@@ -22,26 +24,50 @@ const BoardClient = () => {
   const searchParams = useSearchParams();
   const q = (searchParams.get("q") ?? "").trim();
 
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+
+  const { getSubjectMapForChips } = useSubjects();
+
+  const rawSubjectMap = useMemo(() => getSubjectMapForChips(), [getSubjectMapForChips]);
+
+  const subjectData = useMemo(
+    () => ({
+      "과목별로 보기": [...new Set(Object.values(rawSubjectMap).flat())],
+    }),
+    [rawSubjectMap],
+  );
+
+  const handleSubjectToggle = (item: string) => {
+    setSelectedSubjects((prev) =>
+      prev.includes(item) ? prev.filter((v) => v !== item) : [...prev, item],
+    );
+  };
+
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["questions", currentStatus],
-    queryFn: () => fetchAPI(`/api/questions?status=${currentStatus}`, "GET"),
+    queryKey: ["boards", currentStatus],
+    queryFn: () => fetchAPI(`/api/boards`, "GET"),
   });
 
   const list = useMemo(() => {
     if (!Array.isArray(data)) return [];
-    if (!q) return data;
 
-    const terms = q
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((t) => t.toLowerCase());
+    let filtered = data;
 
-    return data.filter((item: any) => {
-      const searchable =
-        `${item.title ?? ""} ${item.content ?? ""} ${item.body ?? ""} ${item.question ?? ""}`.toLowerCase();
+    if (q) {
+      const terms = q
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((t) => t.toLowerCase());
 
-      return terms.every((t) => searchable.includes(t));
-    });
+      filtered = filtered.filter((item: any) => {
+        const searchable =
+          `${item.title ?? ""} ${item.content ?? ""} ${item.body ?? ""} ${item.question ?? ""}`.toLowerCase();
+
+        return terms.every((t) => searchable.includes(t));
+      });
+    }
+
+    return filtered;
   }, [data, q]);
 
   const emptyText = q
@@ -57,6 +83,21 @@ const BoardClient = () => {
       />
       <div className="z-20 -mt-[1px] h-[1px] w-full bg-white" />
       <ArrayList value={currentStatus} onChange={handleTabChange} />
+
+      {currentStatus === "study" && (
+        <div className="px-6 pt-4">
+          <ExpandableChipSection
+            data={subjectData}
+            selectedItems={selectedSubjects}
+            onItemToggle={handleSubjectToggle}
+            showDropdown
+            showDropdownButton
+            categoryTitleClassName="text-sm font-medium text-pretendard text-[#111]"
+            buttonSize="sm"
+            className="gap-0"
+          />
+        </div>
+      )}
 
       <CircleButton
         onUploadPost={() => router.push("/upload")}
