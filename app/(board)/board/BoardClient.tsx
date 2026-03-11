@@ -47,8 +47,8 @@ const BoardClient = () => {
   };
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["boards", currentStatus],
-    queryFn: () => fetchAPI(`/api/boards`, "GET"),
+    queryKey: ["questions", currentStatus],
+    queryFn: () => fetchAPI(`/api/questions?status=${currentStatus}`, "GET"),
   });
 
   const list = useMemo(() => {
@@ -103,7 +103,7 @@ const BoardClient = () => {
       )}
 
       <CircleButton
-        onUploadPost={() => router.push("/upload")}
+        onUploadPost={() => router.push("/post")}
         onUploadStudy={() => router.push("/upload")}
       />
 
