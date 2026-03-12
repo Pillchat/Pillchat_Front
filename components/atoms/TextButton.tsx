@@ -12,7 +12,7 @@ export const TextButton = ({
   supportIcon,
   afterIcon,
 }: {
-  label: string;
+  label: ReactNode;
   onClick?: () => void;
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -27,9 +27,9 @@ export const TextButton = ({
       onClick={onClick}
       className={cn(className)}
     >
-      {supportIcon && supportIcon}
+      {supportIcon}
       {label}
-      {afterIcon && afterIcon}
+      {afterIcon}
     </Button>
   );
 };
