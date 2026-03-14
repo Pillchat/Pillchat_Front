@@ -56,6 +56,11 @@ interface BottomNavbarProps {
 
 export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
   const pathname = usePathname();
+  const [activeHref, setActiveHref] = useState(pathname);
+
+  useEffect(() => {
+    setActiveHref(pathname);
+  }, [pathname]);
 
   return (
     <nav
@@ -66,12 +71,13 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
     >
       {NAV_ITEMS.map((item) => {
         const IconComponent = item.icon;
-        const isActive = pathname === item.href;
+        const isActive = activeHref === item.href;
 
         return (
           <Link
             key={`${item.href}-${item.label}`}
             href={item.href}
+            onClick={() => setActiveHref(item.href)}
             className={cn(
               "flex h-[3.125rem] w-[3.125rem] flex-col items-center justify-center text-border transition-colors hover:text-brand focus:text-brand",
               isActive && "text-brand",
