@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import HomeIcon from "@/public/Home.svg";
 import CommunityIcon from "@/public/Community.svg";
 import QnaIcon from "@/public/Qna.svg";
@@ -50,28 +50,36 @@ const NAV_ITEMS = [
   },
 ];
 
-export const BottomNavbar: FC = () => {
+interface BottomNavbarProps {
+  className?: string;
+}
+
+export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
   const pathname = usePathname();
 
   return (
-    <nav className="shadow-t dark:shadow-t-gray-800 fixed bottom-0 left-1/2 z-50 flex h-[5.625rem] w-full max-w-screen-sm -translate-x-1/2 items-center justify-between border-t-[1px] border-[#E2E2E2] bg-background px-3 sm:px-6">
+    <nav
+      className={cn(
+        "shadow-t dark:shadow-t-gray-800 fixed bottom-0 left-1/2 z-50 flex h-[5.625rem] w-full max-w-screen-sm -translate-x-1/2 items-center justify-between border-t-[1px] border-[#E2E2E2] bg-background px-3 transition-all duration-200 sm:px-6",
+        className,
+      )}
+    >
       {NAV_ITEMS.map((item) => {
         const IconComponent = item.icon;
+        const isActive = pathname === item.href;
+
         return (
           <Link
             key={`${item.href}-${item.label}`}
             href={item.href}
             className={cn(
               "flex h-[3.125rem] w-[3.125rem] flex-col items-center justify-center text-border transition-colors hover:text-brand focus:text-brand",
-              pathname === item.href && "text-brand",
+              isActive && "text-brand",
             )}
             prefetch={false}
           >
             <IconComponent
-              className={cn(
-                "h-8 w-8 focus:text-brand",
-                pathname === item.href && "text-brand",
-              )}
+              className={cn("h-8 w-8 focus:text-brand", isActive && "text-brand")}
             />
             <span className="text-[0.625rem]">{item.label}</span>
           </Link>
