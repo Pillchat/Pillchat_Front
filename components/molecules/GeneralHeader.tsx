@@ -5,17 +5,22 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { unreadCountAtom } from "@/store/notification";
+import { cn } from "@/lib/utils";
 
 interface GeneralHeaderProps {
   currentQ?: string;
   currentStatus?: string;
   searchBasePath?: string;
+  hideBottomBorder?: boolean;
+  onSearchOpenChange?: (open: boolean) => void;
 }
 
 export const GeneralHeader: FC<GeneralHeaderProps> = ({
   currentQ = "",
   currentStatus = "",
   searchBasePath,
+  hideBottomBorder = false,
+  onSearchOpenChange,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -41,6 +46,10 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
     if (open) inputRef.current?.focus();
   }, [open]);
 
+  useEffect(() => {
+    onSearchOpenChange?.(open);
+  }, [open, onSearchOpenChange]);
+
   const goWithQuery = (q: string) => {
     const params = new URLSearchParams();
     const trimmed = q.trim();
@@ -58,10 +67,16 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
 
   const onSubmit = () => {
     goWithQuery(value);
+    setOpen(false);
   };
 
   return (
-    <header className="sticky top-0 z-10 flex w-full items-center justify-between border-b border-border/40 bg-background/95 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header
+      className={cn(
+        "sticky top-0 z-10 flex w-full items-center justify-between bg-background/95 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+        !hideBottomBorder && "border-b border-border/40",
+      )}
+    >
       {open ? (
         <div className="flex w-full items-center gap-3">
           <input

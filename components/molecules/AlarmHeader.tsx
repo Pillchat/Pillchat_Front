@@ -6,7 +6,13 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { unreadCountAtom } from "@/store/notification";
 
-export const AlarmHeader: FC = () => {
+interface AlarmHeaderProps {
+  hideBottomBorder?: boolean;
+}
+
+export const AlarmHeader: FC<AlarmHeaderProps> = ({
+  hideBottomBorder = false,
+}) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -46,7 +52,11 @@ export const AlarmHeader: FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-10 flex w-full items-center justify-between border-b border-border/40 bg-background/95 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header
+      className={`sticky top-0 z-10 flex w-full items-center justify-between bg-background/95 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 ${
+        hideBottomBorder ? "" : "border-b border-border/40"
+      }`}
+    >
       {open ? (
         <div className="flex w-full items-center gap-3">
           <input
@@ -65,7 +75,7 @@ export const AlarmHeader: FC = () => {
             type="button"
             className="relative z-30 flex items-center"
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() => onSubmit()}
+            onClick={onSubmit}
           >
             <img src="/search.svg" alt="search" width={32} height={32} />
           </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 type Props = {
   onUploadStudy?: () => void;
@@ -19,13 +20,18 @@ export const CircleButton = ({
     <>
       {open && (
         <div
-          className="fixed inset-0 z-[60] bg-black/60"
+          className={cn("fixed inset-0 z-[60] bg-black/60", className)}
           onClick={() => setOpen(false)}
         />
       )}
 
       {open && (
-        <div className="fixed bottom-[215px] right-6 z-[70] h-[120px] w-[164px]">
+        <div
+          className={cn(
+            "fixed bottom-[215px] right-6 z-[70] h-[120px] w-[164px]",
+            className,
+          )}
+        >
           <div className="relative h-full w-full">
             <button
               type="button"
@@ -56,7 +62,7 @@ export const CircleButton = ({
         type="button"
         aria-label="circle action"
         onClick={() => setOpen((v) => !v)}
-        className={[
+        className={cn(
           "fixed bottom-[132px] right-6 z-[70]",
           "h-[64px] w-[64px] rounded-full",
           "grid place-items-center",
@@ -65,7 +71,7 @@ export const CircleButton = ({
             : "rotate-0 bg-primary text-white",
           "transition-transform duration-200",
           className,
-        ].join(" ")}
+        )}
       >
         <svg
           width="24"

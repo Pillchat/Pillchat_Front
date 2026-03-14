@@ -17,6 +17,7 @@ import { fetchAPI, formatDiffDate } from "@/lib/functions";
 import { useBoardTabState } from "./_hooks";
 import { ExpandableChipSection } from "@/components/molecules/ExpandableChipSection";
 import { useSubjects } from "@/hooks";
+import { cn } from "@/lib/utils";
 
 const BoardClient = () => {
   const { currentStatus, handleTabChange } = useBoardTabState();
@@ -25,6 +26,7 @@ const BoardClient = () => {
   const q = (searchParams.get("q") ?? "").trim();
 
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const { getSubjectMapForChips } = useSubjects();
 
@@ -77,14 +79,20 @@ const BoardClient = () => {
     ? `"${q}" 검색 결과가 없습니다.`
     : `아직 ${currentStatus === "best" ? "등록된" : "답변이 달린"} 질문이 없습니다.`;
 
+  const mobileFixedHidden = isSearchOpen
+    ? "translate-y-[140%] opacity-0 pointer-events-none"
+    : "translate-y-0 opacity-100";
+
   return (
     <div className="flex min-h-screen flex-col">
       <GeneralHeader
         currentQ={q}
         currentStatus={currentStatus}
         searchBasePath="/board"
+        hideBottomBorder
+        onSearchOpenChange={setIsSearchOpen}
       />
-      <div className="z-20 -mt-[1px] h-[1px] w-full bg-white" />
+
       <ArrayList value={currentStatus} onChange={handleTabChange} />
 
       {currentStatus === "study" && (
@@ -105,12 +113,18 @@ const BoardClient = () => {
       <CircleButton
         onUploadPost={() => router.push("/post")}
         onUploadStudy={() => router.push("/upload")}
+        className={mobileFixedHidden}
       />
 
-      <div className="relative flex-1 overflow-y-auto">
+      <div
+        className={cn(
+          "relative flex-1",
+          isSearchOpen ? "overflow-hidden" : "overflow-y-auto",
+        )}
+      >
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
-            <div className="text-border">Loading...</div>
+            <div className="text-border">불러오는 중...</div>
           </div>
         ) : isError ? (
           <div className="flex h-full items-center justify-center">
@@ -144,7 +158,7 @@ const BoardClient = () => {
         )}
       </div>
 
-      <BottomNavbar />
+      <BottomNavbar className={mobileFixedHidden} />
     </div>
   );
 };
