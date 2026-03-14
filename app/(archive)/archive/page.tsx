@@ -336,9 +336,7 @@ const ArchivePage: FC = () => {
     <div className="flex h-screen flex-col">
       {/* ✅ 상단 헤더 */}
       <div className="flex-shrink-0">
-        <AlarmHeader 
-          hideBottomBorder
-        />
+        <AlarmHeader hideBottomBorder />
         <TabsWithUnderline
           className="mx-6"
           tabs={TABS}

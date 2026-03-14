@@ -79,7 +79,10 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
             prefetch={false}
           >
             <IconComponent
-              className={cn("h-8 w-8 focus:text-brand", isActive && "text-brand")}
+              className={cn(
+                "h-8 w-8 focus:text-brand",
+                isActive && "text-brand",
+              )}
             />
             <span className="text-[0.625rem]">{item.label}</span>
           </Link>
