@@ -4,6 +4,7 @@ import { ReactNode, Suspense } from "react";
 import Script from "next/script";
 import "./styles/globals.css";
 import Providers from "./providers";
+import { TopRouteProgress } from "@/components/molecules";
 
 const pretendard = localFont({
   src: "../public/fonts/PretendardVariable.woff2",
@@ -76,6 +77,9 @@ export default function RootLayout({
           src="https://developers.kakao.com/sdk/js/kakao.min.js"
           strategy="afterInteractive"
         />
+        <Suspense fallback={null}>
+          <TopRouteProgress />
+        </Suspense>
         <div className="container mx-auto max-w-screen-sm">
           <Providers>
             <Suspense>{children}</Suspense>
