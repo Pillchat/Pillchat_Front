@@ -77,7 +77,9 @@ export default function RootLayout({
           src="https://developers.kakao.com/sdk/js/kakao.min.js"
           strategy="afterInteractive"
         />
-        <TopRouteProgress />
+        <Suspense fallback={null}>
+          <TopRouteProgress />
+        </Suspense>
         <div className="container mx-auto max-w-screen-sm">
           <Providers>
             <Suspense>{children}</Suspense>
