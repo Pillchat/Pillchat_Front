@@ -60,7 +60,8 @@ const GeneratePage = () => {
       const uploadData: PdfUploadResponse = uploadRaw.data ?? uploadRaw;
 
       const fileId = uploadData.fileId;
-      if (!fileId) throw new Error("PDF 업로드 응답에서 fileId를 받지 못했습니다.");
+      if (!fileId)
+        throw new Error("PDF 업로드 응답에서 fileId를 받지 못했습니다.");
 
       // 2) 단일 폴링: PDF 추출(status "DONE") → 문제 생성(taskStatus "COMPLETED")
       let extractResult: PdfExtractResponse | null = null;
@@ -93,11 +94,10 @@ const GeneratePage = () => {
       if (!extractResult) throw new Error("문제 생성 결과를 받지 못했습니다.");
 
       // 3) 퀴즈 세션 시작
-      const quizRaw = await fetchAPI(
-        "/api/questionbank/quiz",
-        "POST",
-        { type: "PDF", taskId: extractResult.taskId },
-      );
+      const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", {
+        type: "PDF",
+        taskId: extractResult.taskId,
+      });
       const quizData: QuizStartResponse = quizRaw.data ?? quizRaw;
 
       // 4) 세션 초기화 → 풀이 화면 이동
@@ -130,7 +130,16 @@ const GeneratePage = () => {
 
       <div className="flex flex-1 flex-col items-center justify-center px-6">
         <label className="flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-16 transition-colors hover:border-brand hover:bg-brandSecondary">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FF412E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#FF412E"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <polyline points="14 2 14 8 20 8" />
             <line x1="12" y1="18" x2="12" y2="12" />
@@ -139,8 +148,15 @@ const GeneratePage = () => {
           <p className="mt-4 text-base font-medium text-foreground">
             {file ? file.name : "PDF 파일을 업로드 해주세요."}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">클릭하여 파일 선택</p>
-          <input type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
+          <p className="mt-1 text-sm text-muted-foreground">
+            클릭하여 파일 선택
+          </p>
+          <input
+            type="file"
+            accept=".pdf"
+            className="hidden"
+            onChange={handleFileChange}
+          />
         </label>
         {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
 

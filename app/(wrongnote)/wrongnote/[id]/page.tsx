@@ -94,9 +94,7 @@ const WrongNoteDetailPage = () => {
           <h1 className="text-xl font-bold text-foreground">{note.title}</h1>
           <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
             <span>{note.userNickname}</span>
-            <span>
-              {new Date(note.createdAt).toLocaleDateString("ko-KR")}
-            </span>
+            <span>{new Date(note.createdAt).toLocaleDateString("ko-KR")}</span>
           </div>
         </div>
 
@@ -177,7 +175,11 @@ const WrongNoteDetailPage = () => {
           >
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </svg>
-          <span className={note.isLiked ? "font-medium text-brand" : "text-muted-foreground"}>
+          <span
+            className={
+              note.isLiked ? "font-medium text-brand" : "text-muted-foreground"
+            }
+          >
             {note.likesCount}
           </span>
         </button>
@@ -193,10 +195,7 @@ const WrongNoteDetailPage = () => {
             >
               수정
             </button>
-            <button
-              className="text-sm text-red-500"
-              onClick={handleDelete}
-            >
+            <button className="text-sm text-red-500" onClick={handleDelete}>
               삭제
             </button>
           </div>

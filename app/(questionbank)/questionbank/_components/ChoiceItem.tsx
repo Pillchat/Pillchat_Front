@@ -37,7 +37,10 @@ const ChoiceItem: FC<ChoiceItemProps> = ({
           isSelected &&
           "border-2 border-red-500 bg-red-50",
         // 채점 후 — 선택하지 않은 오답 선지
-        isGraded && !isCorrectChoice && !isSelected && "border-gray-100 opacity-50",
+        isGraded &&
+          !isCorrectChoice &&
+          !isSelected &&
+          "border-gray-100 opacity-50",
       )}
       onClick={onClick}
       disabled={isGraded}
@@ -47,8 +50,13 @@ const ChoiceItem: FC<ChoiceItemProps> = ({
         className={cn(
           "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border text-sm font-semibold",
           !isGraded && isSelected && "border-brand text-brand",
-          isGraded && isCorrectChoice && "border-green-500 bg-green-500 text-white",
-          isGraded && !isCorrectChoice && isSelected && "border-red-500 bg-red-500 text-white",
+          isGraded &&
+            isCorrectChoice &&
+            "border-green-500 bg-green-500 text-white",
+          isGraded &&
+            !isCorrectChoice &&
+            isSelected &&
+            "border-red-500 bg-red-500 text-white",
         )}
       >
         {choice.id}

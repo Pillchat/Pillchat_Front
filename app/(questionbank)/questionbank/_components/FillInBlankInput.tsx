@@ -56,9 +56,7 @@ const FillInBlankInput: FC = () => {
           )}
         />
         {isGraded && !result?.isCorrect && result?.correctAnswer && (
-          <p className="text-sm text-green-600">
-            정답: {result.correctAnswer}
-          </p>
+          <p className="text-sm text-green-600">정답: {result.correctAnswer}</p>
         )}
       </div>
     );
@@ -80,8 +78,12 @@ const FillInBlankInput: FC = () => {
                 className={cn(
                   "mx-1 inline-block w-32 border-b-2 bg-transparent px-1 py-0.5 text-center text-base outline-none transition-colors",
                   !isGraded && "border-gray-300 focus:border-brand",
-                  isGraded && result?.isCorrect && "border-green-500 text-green-600",
-                  isGraded && !result?.isCorrect && "border-red-500 text-red-600",
+                  isGraded &&
+                    result?.isCorrect &&
+                    "border-green-500 text-green-600",
+                  isGraded &&
+                    !result?.isCorrect &&
+                    "border-red-500 text-red-600",
                 )}
               />
             )}

@@ -20,7 +20,10 @@ const NewWrongNotePage = () => {
   const [error, setError] = useState<string | null>(null);
 
   const { getSubjectMapForChips } = useSubjects();
-  const subjectMap = useMemo(() => getSubjectMapForChips(), [getSubjectMapForChips]);
+  const subjectMap = useMemo(
+    () => getSubjectMapForChips(),
+    [getSubjectMapForChips],
+  );
 
   const handleSubjectToggle = (label: string) => {
     setSubjectCategory(subjectCategory === label ? "" : label);

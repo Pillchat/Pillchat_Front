@@ -16,7 +16,7 @@ const ExamListPage = () => {
       try {
         const raw = await fetchAPI("/api/wrong-notes/exams", "GET");
         const data = raw.data ?? raw;
-        setExams(Array.isArray(data) ? data : data.content ?? []);
+        setExams(Array.isArray(data) ? data : (data.content ?? []));
       } catch {
         // 에러 처리
       } finally {

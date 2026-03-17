@@ -14,9 +14,7 @@ const StepEditor: FC<StepEditorProps> = ({ steps, onChange }) => {
   };
 
   const updateStep = (index: number, content: string) => {
-    const updated = steps.map((s, i) =>
-      i === index ? { ...s, content } : s,
-    );
+    const updated = steps.map((s, i) => (i === index ? { ...s, content } : s));
     onChange(updated);
   };
 

@@ -86,19 +86,16 @@ export const selectChoiceAtom = atom(
 );
 
 /** 텍스트 답안 입력 (단답형 / 빈칸채우기용) */
-export const setTextAnswerAtom = atom(
-  null,
-  (get, set, text: string) => {
-    const session = get(quizSessionAtom);
-    if (!session) return;
-    set(quizSessionAtom, {
-      ...session,
-      selectedChoiceId: null,
-      textAnswer: text,
-      gradingState: text.trim() ? "answered" : "unanswered",
-    });
-  },
-);
+export const setTextAnswerAtom = atom(null, (get, set, text: string) => {
+  const session = get(quizSessionAtom);
+  if (!session) return;
+  set(quizSessionAtom, {
+    ...session,
+    selectedChoiceId: null,
+    textAnswer: text,
+    gradingState: text.trim() ? "answered" : "unanswered",
+  });
+});
 
 /**
  * 채점 결과 반영 — 서버 응답(SubmitAnswerResponse)을 받아 로컬 상태 업데이트
@@ -125,7 +122,11 @@ export const applyGradeResultAtom = atom(
     // 문제에 정답/해설 정보 업데이트
     const updatedQuestions = session.questions.map((q) =>
       q.id === payload.questionId
-        ? { ...q, correctAnswer: payload.correctAnswer, explanation: payload.explanation }
+        ? {
+            ...q,
+            correctAnswer: payload.correctAnswer,
+            explanation: payload.explanation,
+          }
         : q,
     );
 

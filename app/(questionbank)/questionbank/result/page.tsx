@@ -4,10 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAtomValue, useSetAtom } from "jotai";
 import { fetchAPI } from "@/lib/functions";
-import {
-  quizSessionAtom,
-  clearQuizSessionAtom,
-} from "@/store/quizSession";
+import { quizSessionAtom, clearQuizSessionAtom } from "@/store/quizSession";
 import { CustomHeader } from "@/components/molecules";
 import DonutChart from "../_components/DonutChart";
 import StatsCard from "../_components/StatsCard";

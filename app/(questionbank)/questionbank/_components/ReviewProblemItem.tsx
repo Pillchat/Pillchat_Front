@@ -9,7 +9,10 @@ interface ReviewProblemItemProps {
   onClick?: () => void;
 }
 
-const ReviewProblemItem: FC<ReviewProblemItemProps> = ({ problem, onClick }) => {
+const ReviewProblemItem: FC<ReviewProblemItemProps> = ({
+  problem,
+  onClick,
+}) => {
   return (
     <div
       className="flex cursor-pointer items-center gap-3 border-b px-6 py-4 active:bg-gray-50"

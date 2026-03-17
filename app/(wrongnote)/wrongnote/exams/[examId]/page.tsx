@@ -87,9 +87,7 @@ const ExamDetailPage = () => {
           <h1 className="text-xl font-bold text-foreground">{exam.title}</h1>
           <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
             <span>{exam.questionCount}문제</span>
-            <span>
-              {new Date(exam.createdAt).toLocaleDateString("ko-KR")}
-            </span>
+            <span>{new Date(exam.createdAt).toLocaleDateString("ko-KR")}</span>
           </div>
           <div className="mt-3 flex items-center gap-2">
             <button

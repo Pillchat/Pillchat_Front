@@ -53,7 +53,7 @@ const BookmarkCard: FC<BookmarkCardProps> = ({ item, onToggle }) => {
             </span>
           </div>
 
-          <p className="text-sm leading-relaxed text-foreground line-clamp-2">
+          <p className="line-clamp-2 text-sm leading-relaxed text-foreground">
             {item.content}
           </p>
 
