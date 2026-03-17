@@ -2,7 +2,7 @@
 
 type ArchiveTabKey = "my-questions" | "my-study" | "my-note" | "my-post";
 
-import { FC, Fragment, useMemo, useState } from "react";
+import { FC, Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlarmHeader,
@@ -16,9 +16,17 @@ import {
   useMyQuestions,
 } from "@/app/(archive)/archive/_hooks/";
 import { Separator } from "@/components/ui/separator";
-import { formatDiffDate } from "@/lib/functions";
+import { fetchAPI, formatDiffDate } from "@/lib/functions";
 import { map } from "lodash";
 import { useSubjects } from "@/hooks";
+import { FloatingActionButton } from "@/components/atoms";
+import WrongNoteCard from "@/app/(wrongnote)/wrongnote/_components/WrongNoteCard";
+import BookmarkCard from "./_components/BookmarkCard";
+import type {
+  WrongNoteListItem,
+  WrongNoteListResponse,
+} from "@/types/wrongnote";
+import type { BookmarkListItem } from "@/types/questionbank";
 
 const TABS: { key: ArchiveTabKey; label: string }[] = [
   { key: "my-questions", label: "내 질문" },
@@ -42,6 +50,67 @@ const ArchivePage: FC = () => {
     error: questionsError,
     refetch: refetchQuestions,
   } = useMyQuestions(token || undefined);
+
+  const [bookmarks, setBookmarks] = useState<BookmarkListItem[]>([]);
+  const [bookmarksLoading, setBookmarksLoading] = useState(false);
+
+  const [wrongNotes, setWrongNotes] = useState<WrongNoteListItem[]>([]);
+  const [notesLoading, setNotesLoading] = useState(false);
+
+  useEffect(() => {
+    if (currentStatus !== "my-study") return;
+    const fetchBookmarks = async () => {
+      setBookmarksLoading(true);
+      try {
+        const raw = await fetchAPI("/api/questionbank/bookmarks", "GET");
+        const data = raw.data ?? raw;
+        setBookmarks(Array.isArray(data) ? data : []);
+      } catch {
+        setBookmarks([]);
+      } finally {
+        setBookmarksLoading(false);
+      }
+    };
+    fetchBookmarks();
+  }, [currentStatus]);
+
+  useEffect(() => {
+    if (currentStatus !== "my-note") return;
+    const fetchNotes = async () => {
+      setNotesLoading(true);
+      try {
+        const raw = await fetchAPI(
+          "/api/wrong-notes?sort=createdAt,desc&page=0&size=20",
+          "GET",
+        );
+        const data: WrongNoteListResponse = raw.data ?? raw;
+        setWrongNotes(Array.isArray(data.content) ? data.content : []);
+      } catch {
+        setWrongNotes([]);
+      } finally {
+        setNotesLoading(false);
+      }
+    };
+    fetchNotes();
+  }, [currentStatus]);
+
+  const filteredBookmarks = useMemo(() => {
+    if (selectedSubjects.length === 0) return bookmarks;
+    return bookmarks.filter(
+      (b) => b.subject && selectedSubjects.includes(b.subject),
+    );
+  }, [bookmarks, selectedSubjects]);
+
+  const handleBookmarkToggle = (questionId: number) => {
+    setBookmarks((prev) => prev.filter((b) => b.questionId !== questionId));
+  };
+
+  const filteredNotes = useMemo(() => {
+    if (selectedSubjects.length === 0) return wrongNotes;
+    return wrongNotes.filter(
+      (n) => n.subjectCategory && selectedSubjects.includes(n.subjectCategory),
+    );
+  }, [wrongNotes, selectedSubjects]);
 
   const rawSubjectMap = useMemo(
     () => getSubjectMapForChips(),
@@ -162,9 +231,72 @@ const ArchivePage: FC = () => {
             renderQuestionList(myQuestions)
           )
         ) : currentStatus === "my-study" ? (
-          renderPreparingText("학습자료 목록은 준비 중입니다.")
+          bookmarksLoading ? (
+            <div className="flex h-full items-center justify-center">
+              <div className="text-border">불러오는 중...</div>
+            </div>
+          ) : filteredBookmarks.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center gap-2 pb-[5.625rem]">
+              <div className="text-border">
+                {bookmarks.length === 0
+                  ? "아직 북마크된 문제가 없습니다."
+                  : "해당 과목의 북마크가 없습니다."}
+              </div>
+              {bookmarks.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  문제 풀이 중 북마크하거나, 틀린 문제는 자동 저장됩니다.
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="pb-[5.625rem]">
+              {filteredBookmarks.map((item) => (
+                <BookmarkCard
+                  key={item.bookmarkId}
+                  item={item}
+                  onToggle={handleBookmarkToggle}
+                />
+              ))}
+            </div>
+          )
         ) : currentStatus === "my-note" ? (
-          renderPreparingText("오답노트 목록은 준비 중입니다.")
+          notesLoading ? (
+            <div className="flex h-full items-center justify-center">
+              <div className="text-border">불러오는 중...</div>
+            </div>
+          ) : filteredNotes.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center gap-3 pb-[5.625rem]">
+              <div className="text-border">
+                {wrongNotes.length === 0
+                  ? "아직 작성된 오답노트가 없습니다."
+                  : "해당 과목의 오답노트가 없습니다."}
+              </div>
+              {wrongNotes.length === 0 && (
+                <button
+                  className="rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-white"
+                  onClick={() => router.push("/wrongnote/new")}
+                >
+                  오답노트 작성하기
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="pb-[5.625rem]">
+              {filteredNotes.map((note) => (
+                <WrongNoteCard
+                  key={note.id}
+                  note={note}
+                  onClick={() => router.push(`/wrongnote/${note.id}`)}
+                />
+              ))}
+              <button
+                className="w-full py-4 text-center text-sm font-medium text-brand"
+                onClick={() => router.push("/wrongnote")}
+              >
+                전체 보기
+              </button>
+            </div>
+          )
         ) : (
           renderPreparingText("게시물 목록은 준비 중입니다.")
         )}
@@ -179,6 +311,72 @@ const ArchivePage: FC = () => {
             새로고침
           </button>
         </div>
+      )}
+
+      {currentStatus === "my-note" && (
+        <FloatingActionButton
+          mainIcon={
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          }
+          size="md"
+          bottom={100}
+          right={24}
+          expandDirection="up"
+          actions={[
+            {
+              id: "new-note",
+              label: "오답노트 작성",
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              ),
+              onClick: () => router.push("/wrongnote/new"),
+            },
+            // TODO: AI 시험지 기능 추가 예정
+            // {
+            //   id: "generate-exam",
+            //   label: "AI 시험지 생성",
+            //   icon: (
+            //     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            //       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            //       <polyline points="14 2 14 8 20 8" />
+            //       <line x1="16" y1="13" x2="8" y2="13" />
+            //       <line x1="16" y1="17" x2="8" y2="17" />
+            //     </svg>
+            //   ),
+            //   onClick: () => router.push("/wrongnote/exams/generate"),
+            // },
+            // {
+            //   id: "exam-list",
+            //   label: "시험지 목록",
+            //   icon: (
+            //     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            //       <line x1="8" y1="6" x2="21" y2="6" />
+            //       <line x1="8" y1="12" x2="21" y2="12" />
+            //       <line x1="8" y1="18" x2="21" y2="18" />
+            //       <line x1="3" y1="6" x2="3.01" y2="6" />
+            //       <line x1="3" y1="12" x2="3.01" y2="12" />
+            //       <line x1="3" y1="18" x2="3.01" y2="18" />
+            //     </svg>
+            //   ),
+            //   onClick: () => router.push("/wrongnote/exams"),
+            // },
+          ]}
+        />
       )}
 
       <div className="flex-shrink-0">
