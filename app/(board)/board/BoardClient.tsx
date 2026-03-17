@@ -10,12 +10,12 @@ import {
   BottomNavbar,
   GeneralHeader,
   QuestionListCard,
+  ExpandableChipSection,
 } from "@/components/molecules";
 import { CircleButton } from "@/components/molecules/board";
 import { Separator } from "@/components/ui/separator";
 import { fetchAPI, formatDiffDate } from "@/lib/functions";
 import { useBoardTabState } from "./_hooks";
-import { ExpandableChipSection } from "@/components/molecules/ExpandableChipSection";
 import { useSubjects } from "@/hooks";
 import { cn } from "@/lib/utils";
 
@@ -49,14 +49,18 @@ const BoardClient = () => {
   };
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["questions", currentStatus],
-    queryFn: () => fetchAPI(`/api/questions?status=${currentStatus}`, "GET"),
+    queryKey: ["boards", currentStatus],
+    queryFn: () => fetchAPI(`/api/boards?status=${currentStatus}`, "GET"),
   });
 
   const list = useMemo(() => {
-    if (!Array.isArray(data)) return [];
+    const raw = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.data)
+        ? data.data
+        : [];
 
-    let filtered = data;
+    let filtered = raw;
 
     if (q) {
       const terms = q
@@ -66,7 +70,7 @@ const BoardClient = () => {
 
       filtered = filtered.filter((item: any) => {
         const searchable =
-          `${item.title ?? ""} ${item.content ?? ""} ${item.body ?? ""} ${item.question ?? ""}`.toLowerCase();
+          `${item.title ?? ""} ${item.content ?? ""} ${item.categoryName ?? ""} ${item.nickname ?? ""}`.toLowerCase();
 
         return terms.every((t) => searchable.includes(t));
       });
@@ -77,7 +81,7 @@ const BoardClient = () => {
 
   const emptyText = q
     ? `"${q}" 검색 결과가 없습니다.`
-    : `아직 ${currentStatus === "best" ? "등록된" : "답변이 달린"} 질문이 없습니다.`;
+    : "아직 등록된 게시글이 없습니다.";
 
   const mobileFixedHidden = isSearchOpen
     ? "translate-y-[140%] opacity-0 pointer-events-none"
@@ -131,20 +135,23 @@ const BoardClient = () => {
             <div className="text-red-500">
               {error instanceof Error
                 ? error.message
-                : "질문을 불러오지 못했습니다."}
+                : "게시글을 불러오지 못했습니다."}
             </div>
           </div>
         ) : list.length > 0 ? (
           <div className="mx-6 py-5 pb-[5.625rem]">
             <div className="flex flex-col gap-5">
-              {map(list, (question: any) => (
-                <Fragment key={question.id}>
+              {map(list, (board: any) => (
+                <Fragment key={board.id}>
                   <QuestionListCard
                     question={{
-                      ...question,
-                      createdAt: formatDiffDate(question.createdAt),
+                      ...board,
+                      userNickname: board.userNickname ?? board.nickname ?? "익명",
+                      subjectName: board.subjectName ?? board.categoryName ?? "",
+                      answerCount: board.answerCount ?? 0,
+                      createdAt: formatDiffDate(board.createdAt),
                     }}
-                    onClick={() => router.push(`/question/${question.id}`)}
+                    onClick={() => router.push(`/board/${board.id}`)}
                   />
                   <Separator className="last:hidden" />
                 </Fragment>

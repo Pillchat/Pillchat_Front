@@ -1,9 +1,9 @@
 import { useCallback, useState } from "react";
 
 export const CATEGORY_MAP = {
-  자유게시판: { label: "자유게시판", value: "free" },
-  홍보게시판: { label: "홍보게시판", value: "promo" },
-  칼럼: { label: "칼럼", value: "column" },
+  자유게시판: { label: "자유게시판", value: "FREE" },
+  홍보게시판: { label: "홍보게시판", value: "PROMOTION" },
+  칼럼: { label: "칼럼", value: "COLUMN" },
 } as const;
 
 export const useCategoryType = () => {

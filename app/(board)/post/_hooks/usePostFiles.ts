@@ -1,13 +1,15 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState, useCallback } from "react";
 
 export type UploadPreviewItem = {
   id: string;
   type: "image" | "pdf";
-  file: File;
+  file?: File;
   name: string;
   previewUrl: string;
+  source: "new" | "existing";
+  urlKey?: string;
 };
 
 const MAX_IMAGE_COUNT = 10;
@@ -21,6 +23,7 @@ export const usePostFiles = () => {
 
   const [imageItems, setImageItems] = useState<UploadPreviewItem[]>([]);
   const [pdfItem, setPdfItem] = useState<UploadPreviewItem | null>(null);
+  const [existingItems, setExistingItems] = useState<UploadPreviewItem[]>([]);
 
   useEffect(() => {
     return () => {
@@ -50,7 +53,7 @@ export const usePostFiles = () => {
   };
 
   const openPdfPicker = () => {
-    if (imageItems.length > 0) {
+    if (imageItems.length > 0 || existingItems.length > 0) {
       alert("이미지가 선택된 상태에서는 PDF를 업로드할 수 없습니다.");
       return;
     }
@@ -73,7 +76,7 @@ export const usePostFiles = () => {
       return;
     }
 
-    const remainCount = MAX_IMAGE_COUNT - imageItems.length;
+    const remainCount = MAX_IMAGE_COUNT - (existingItems.length + imageItems.length);
 
     if (remainCount <= 0) {
       alert("이미지는 최대 10장까지 업로드할 수 있습니다.");
@@ -93,6 +96,7 @@ export const usePostFiles = () => {
       file,
       name: file.name,
       previewUrl: registerObjectUrl(file),
+      source: "new" as const,
     }));
 
     setImageItems((prev) => [...prev, ...nextItems]);
@@ -104,7 +108,7 @@ export const usePostFiles = () => {
       (item) => item.type === "application/pdf",
     );
 
-    if (imageItems.length > 0) {
+    if (imageItems.length > 0 || existingItems.length > 0) {
       alert("이미지가 선택된 상태에서는 PDF를 업로드할 수 없습니다.");
       e.target.value = "";
       return;
@@ -125,6 +129,7 @@ export const usePostFiles = () => {
       file,
       name: file.name,
       previewUrl: registerObjectUrl(file),
+      source: "new",
     };
 
     setPdfItem(nextPdfItem);
@@ -138,6 +143,11 @@ export const usePostFiles = () => {
       return;
     }
 
+    if (existingItems.some((item) => item.id === id)) {
+      setExistingItems((prev) => prev.filter((item) => item.id !== id));
+      return;
+    }
+
     setImageItems((prev) => {
       const target = prev.find((item) => item.id === id);
       if (target) {
@@ -147,20 +157,27 @@ export const usePostFiles = () => {
     });
   };
 
-  const clearFiles = () => {
+  const clearFiles = useCallback(() => {
     objectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
     objectUrlsRef.current = [];
     setImageItems([]);
     setPdfItem(null);
+    setExistingItems([]);
     if (imageInputRef.current) imageInputRef.current.value = "";
     if (pdfInputRef.current) pdfInputRef.current.value = "";
-  };
+  }, []);
+
+  const setExistingPreviewItems = useCallback((items: UploadPreviewItem[]) => {
+    setExistingItems(items);
+  }, []);
 
   const previewItems = useMemo(() => {
-    if (imageItems.length > 0) return imageItems;
+    if (existingItems.length > 0 || imageItems.length > 0) {
+      return [...existingItems, ...imageItems];
+    }
     if (pdfItem) return [pdfItem];
     return [];
-  }, [imageItems, pdfItem]);
+  }, [existingItems, imageItems, pdfItem]);
 
   return {
     imageInputRef,
@@ -172,8 +189,14 @@ export const usePostFiles = () => {
     removeItem,
     clearFiles,
     previewItems,
-    imageFiles: imageItems.map((item) => item.file),
+    imageFiles: imageItems
+      .map((item) => item.file)
+      .filter((file): file is File => !!file),
     pdfFile: pdfItem?.file ?? null,
     hasFiles: previewItems.length > 0,
+    setExistingPreviewItems,
+    remainingExistingKeys: existingItems
+      .map((item) => item.urlKey)
+      .filter((key): key is string => !!key),
   };
 };

@@ -44,6 +44,10 @@ const useReportModalState = () => {
   };
 };
 
+const isValidTargetType = (value: string | null): value is TargetType => {
+  return value === "QUESTION" || value === "ANSWER" || value === "USER";
+};
+
 const useReportFormState = (
   openSubmitReport: () => void,
   openSubmitDuplication: () => void,
@@ -78,14 +82,18 @@ const useReportFormState = (
   const handleReportSubmit = async () => {
     try {
       const idParam = params.get("id");
+      const typeParam = params.get("type");
 
-      if (!selectValue) {
-        alert("신고 유형을 선택해주세요.");
+      if (!selectApiValue) {
         throw new Error("신고 유형을 선택해주세요.");
       }
 
       if (!idParam) {
         throw new Error("신고 대상 ID가 없습니다.");
+      }
+
+      if (!isValidTargetType(typeParam)) {
+        throw new Error("신고 대상 유형이 올바르지 않습니다.");
       }
 
       const targetId = Number(idParam);
@@ -95,22 +103,17 @@ const useReportFormState = (
       }
 
       const requestBody: ReportCreateRequest = {
-        targetType: params.get("type") as TargetType,
+        targetType: typeParam,
         targetId,
         reasonType: selectApiValue as ReportReasonType,
-        reasonDetail: content,
+        reasonDetail: content || undefined,
       };
 
-      const response = await fetchAPI("/api/report", "POST", requestBody);
+      const response = await fetchAPI("/api/reports", "POST", requestBody);
       const result = response.data;
 
       if (result?.success === false) {
         throw new Error(result?.message || "신고 처리에 실패했습니다.");
-      }
-
-      if (result?.status === "PENDING") {
-        openSubmitReport();
-        return;
       }
 
       openSubmitReport();
