@@ -2,7 +2,10 @@
 
 import { FC, useState, useEffect, useCallback } from "react";
 import { fetchAPI } from "@/lib/functions";
-import type { WrongNoteListItem, WrongNoteListResponse } from "@/types/wrongnote";
+import type {
+  WrongNoteListItem,
+  WrongNoteListResponse,
+} from "@/types/wrongnote";
 
 interface NoteSelectModalProps {
   isOpen: boolean;
@@ -109,9 +112,7 @@ const NoteSelectModal: FC<NoteSelectModalProps> = ({
                   >
                     <div
                       className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border ${
-                        isSelected
-                          ? "border-brand bg-brand"
-                          : "border-gray-300"
+                        isSelected ? "border-brand bg-brand" : "border-gray-300"
                       }`}
                     >
                       {isSelected && (

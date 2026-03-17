@@ -35,9 +35,7 @@ const ShortAnswerInput: FC = () => {
         )}
       />
       {isGraded && !result?.isCorrect && result?.correctAnswer && (
-        <p className="text-sm text-green-600">
-          정답: {result.correctAnswer}
-        </p>
+        <p className="text-sm text-green-600">정답: {result.correctAnswer}</p>
       )}
     </div>
   );

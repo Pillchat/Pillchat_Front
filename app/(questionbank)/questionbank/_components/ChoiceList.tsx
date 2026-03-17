@@ -24,7 +24,10 @@ const ChoiceList: FC = () => {
           choice={choice}
           isSelected={session.selectedChoiceId === choice.id}
           gradingState={session.gradingState}
-          isCorrectChoice={session.gradingState === "graded" && choice.text === currentQuestion.correctAnswer}
+          isCorrectChoice={
+            session.gradingState === "graded" &&
+            choice.text === currentQuestion.correctAnswer
+          }
           onClick={() => selectChoice(choice.id)}
         />
       ))}

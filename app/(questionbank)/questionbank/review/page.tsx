@@ -34,11 +34,7 @@ const ReviewListPage = () => {
   const fetchQuestions = useCallback(async (source: string) => {
     setLoading(true);
     try {
-      const raw = await fetchAPI(
-        "/api/questionbank/review",
-        "GET",
-        { source },
-      );
+      const raw = await fetchAPI("/api/questionbank/review", "GET", { source });
       const data: ReviewQuestionResponse[] = raw.data ?? raw;
       setQuestions(Array.isArray(data) ? data : []);
     } catch {
@@ -79,14 +75,10 @@ const ReviewListPage = () => {
 
     try {
       // REVIEW 타입 퀴즈 시작
-      const quizRaw = await fetchAPI(
-        "/api/questionbank/quiz",
-        "POST",
-        {
-          type: "REVIEW",
-          questionIds: filtered.map((q) => q.questionId),
-        },
-      );
+      const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", {
+        type: "REVIEW",
+        questionIds: filtered.map((q) => q.questionId),
+      });
       const quizData: QuizStartResponse = quizRaw.data ?? quizRaw;
 
       initSession({

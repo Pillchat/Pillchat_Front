@@ -20,7 +20,7 @@ const WrongNoteCard: FC<WrongNoteCardProps> = ({ note, onClick }) => {
       onClick={onClick}
     >
       <div className="flex items-start justify-between gap-3">
-        <h3 className="flex-1 text-base font-semibold text-foreground line-clamp-1">
+        <h3 className="line-clamp-1 flex-1 text-base font-semibold text-foreground">
           {note.title}
         </h3>
         {note.subjectCategory && (
@@ -30,7 +30,7 @@ const WrongNoteCard: FC<WrongNoteCardProps> = ({ note, onClick }) => {
         )}
       </div>
 
-      <p className="text-sm leading-relaxed text-muted-foreground line-clamp-2">
+      <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
         {note.content}
       </p>
 

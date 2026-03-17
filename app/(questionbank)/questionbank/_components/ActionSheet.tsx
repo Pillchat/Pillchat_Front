@@ -38,7 +38,7 @@ const ActionSheet: FC<ActionSheetProps> = ({
       <div className="fixed inset-0 z-40 bg-black/40" onClick={onClose} />
 
       {/* 바텀 시트 */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-screen-sm animate-slide-up rounded-t-2xl bg-white px-6 pb-8 pt-4 shadow-lg">
+      <div className="animate-slide-up fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-screen-sm rounded-t-2xl bg-white px-6 pb-8 pt-4 shadow-lg">
         {/* 드래그 핸들 */}
         <div className="mb-4 flex justify-center">
           <div className="h-1 w-10 rounded-full bg-gray-300" />
@@ -108,9 +108,7 @@ const ActionSheet: FC<ActionSheetProps> = ({
                 )}
                 <span className="text-base font-medium">{label}</span>
               </div>
-              <span className="text-sm text-muted-foreground">
-                {count}문제
-              </span>
+              <span className="text-sm text-muted-foreground">{count}문제</span>
             </button>
           ))}
         </div>

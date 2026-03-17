@@ -44,7 +44,10 @@ const TrueFalseButtons: FC = () => {
               // 채점 후 — 오답으로 선택
               isWrongSelected && "border-red-500 bg-red-50 text-red-500",
               // 채점 후 — 선택하지 않은 오답
-              isGraded && !isCorrectOption && !isSelected && "border-gray-100 text-gray-200 opacity-50",
+              isGraded &&
+                !isCorrectOption &&
+                !isSelected &&
+                "border-gray-100 text-gray-200 opacity-50",
             )}
             onClick={() => selectChoice(opt.id)}
             disabled={isGraded}

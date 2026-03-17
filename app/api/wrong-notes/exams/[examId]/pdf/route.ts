@@ -11,15 +11,12 @@ export async function GET(
     const { examId } = await params;
     const token = request.headers.get("authorization");
 
-    const res = await fetch(
-      `${BASE_URL}/api/wrong-notes/exams/${examId}/pdf`,
-      {
-        method: "GET",
-        headers: {
-          ...(token ? { Authorization: token } : {}),
-        },
+    const res = await fetch(`${BASE_URL}/api/wrong-notes/exams/${examId}/pdf`, {
+      method: "GET",
+      headers: {
+        ...(token ? { Authorization: token } : {}),
       },
-    );
+    });
 
     if (!res.ok) {
       return NextResponse.json(

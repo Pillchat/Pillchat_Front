@@ -29,9 +29,9 @@ const QUESTION_TYPES: { value: QuestionType; label: string }[] = [
 
 const PremiumPage = () => {
   const router = useRouter();
-  const [subjects, setSubjects] = useState<
-    Record<string, PremiumSubject[]>
-  >({});
+  const [subjects, setSubjects] = useState<Record<string, PremiumSubject[]>>(
+    {},
+  );
   const [selectedSubject, setSelectedSubject] = useState<PremiumSubject | null>(
     null,
   );
@@ -137,7 +137,10 @@ const PremiumPage = () => {
 
   const parsedCount = Number(questionCount);
   const isFormValid =
-    selectedSubject && selectedQuestionType && parsedCount >= 1 && parsedCount <= 20;
+    selectedSubject &&
+    selectedQuestionType &&
+    parsedCount >= 1 &&
+    parsedCount <= 20;
 
   /** 생성 상태 폴링 */
   const pollStatus = useCallback(
@@ -180,20 +183,22 @@ const PremiumPage = () => {
       const generateData = generateRaw.data ?? generateRaw;
 
       const taskId = generateData.taskId;
-      if (!taskId) throw new Error("문제 생성 요청에서 taskId를 받지 못했습니다.");
+      if (!taskId)
+        throw new Error("문제 생성 요청에서 taskId를 받지 못했습니다.");
 
       // 2) 생성 완료까지 폴링
       const finalStatus = await pollStatus(taskId);
       if (finalStatus.status === "FAILED") {
-        throw new Error(finalStatus.errorMessage || "문제 생성에 실패했습니다.");
+        throw new Error(
+          finalStatus.errorMessage || "문제 생성에 실패했습니다.",
+        );
       }
 
       // 3) 퀴즈 세션 시작
-      const quizRaw = await fetchAPI(
-        "/api/questionbank/quiz",
-        "POST",
-        { type: "PREMIUM", taskId },
-      );
+      const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", {
+        type: "PREMIUM",
+        taskId,
+      });
       const quizData: QuizStartResponse = quizRaw.data ?? quizRaw;
 
       // 4) 세션 초기화 → 풀이 화면 이동
@@ -238,45 +243,48 @@ const PremiumPage = () => {
               <div className="flex flex-wrap gap-2">
                 {subs.map((subject) => (
                   <React.Fragment key={subject.subjectId}>
-                  <button
-                    className={cn(
-                      "inline-flex items-center gap-1 rounded-full border px-4 py-2 text-sm transition-colors",
-                      selectedSubject?.subjectId === subject.subjectId
-                        ? "border-brand bg-brandSecondary font-medium text-brand"
-                        : "border-gray-200 text-muted-foreground",
-                    )}
-                    onClick={() => handleSubjectClick(subject)}
-                  >
-                    {subject.name}
-                    {/* 토픽이 있는 과목에 셰브론 표시 */}
-                    {topicCacheRef.current[subject.subjectId]?.length > 0 && (
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="6 9 12 15 18 9" />
-                      </svg>
-                    )}
-                  </button>
-                  {/* 해당 과목이 선택되었고 토픽이 있으면 칩 옆에 표시 */}
-                  {selectedSubject?.subjectId === subject.subjectId && selectedTopic && (
-                    <span className="rounded-full border border-brand bg-brandSecondary px-3 py-2 text-sm font-medium text-brand">
-                      {selectedTopic.name.replace(/\s*\(.*?\)\s*/g, "")}
-                    </span>
-                  )}
-                </React.Fragment>
+                    <button
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-full border px-4 py-2 text-sm transition-colors",
+                        selectedSubject?.subjectId === subject.subjectId
+                          ? "border-brand bg-brandSecondary font-medium text-brand"
+                          : "border-gray-200 text-muted-foreground",
+                      )}
+                      onClick={() => handleSubjectClick(subject)}
+                    >
+                      {subject.name}
+                      {/* 토픽이 있는 과목에 셰브론 표시 */}
+                      {topicCacheRef.current[subject.subjectId]?.length > 0 && (
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      )}
+                    </button>
+                    {/* 해당 과목이 선택되었고 토픽이 있으면 칩 옆에 표시 */}
+                    {selectedSubject?.subjectId === subject.subjectId &&
+                      selectedTopic && (
+                        <span className="rounded-full border border-brand bg-brandSecondary px-3 py-2 text-sm font-medium text-brand">
+                          {selectedTopic.name.replace(/\s*\(.*?\)\s*/g, "")}
+                        </span>
+                      )}
+                  </React.Fragment>
                 ))}
               </div>
             </div>
           ))}
           {Object.keys(subjects).length === 0 && !error && (
-            <p className="text-sm text-muted-foreground">과목 목록 로딩 중...</p>
+            <p className="text-sm text-muted-foreground">
+              과목 목록 로딩 중...
+            </p>
           )}
         </div>
 

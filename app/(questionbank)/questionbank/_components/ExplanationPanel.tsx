@@ -44,7 +44,9 @@ const ExplanationPanel: FC = () => {
       {/* 해설 */}
       {(result?.explanation || question.explanation) && (
         <div className="rounded-lg bg-gray-50 p-4">
-          <p className="mb-1 text-xs font-semibold text-muted-foreground">해설</p>
+          <p className="mb-1 text-xs font-semibold text-muted-foreground">
+            해설
+          </p>
           <p className="text-sm leading-relaxed text-foreground">
             {result?.explanation || question.explanation}
           </p>

@@ -68,7 +68,11 @@ const GenerateExamPage = () => {
       };
       if (title.trim()) body.title = title.trim();
 
-      const raw = await fetchAPI("/api/wrong-notes/generate-exam", "POST", body);
+      const raw = await fetchAPI(
+        "/api/wrong-notes/generate-exam",
+        "POST",
+        body,
+      );
       const data: WrongNoteExam = raw.data ?? raw;
       router.replace(`/wrongnote/exams/${data.examId}`);
     } catch {
@@ -129,10 +133,7 @@ const GenerateExamPage = () => {
                 ({selectedIds.size}개 선택)
               </span>
             </label>
-            <button
-              className="text-xs text-brand"
-              onClick={toggleAll}
-            >
+            <button className="text-xs text-brand" onClick={toggleAll}>
               {selectedIds.size === notes.length ? "전체 해제" : "전체 선택"}
             </button>
           </div>

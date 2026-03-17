@@ -98,14 +98,10 @@ const ReviewDetailPage = () => {
     setGenerating(true);
 
     try {
-      const quizRaw = await fetchAPI(
-        "/api/questionbank/quiz",
-        "POST",
-        {
-          type: "REVIEW",
-          questionIds: filteredIds,
-        },
-      );
+      const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", {
+        type: "REVIEW",
+        questionIds: filteredIds,
+      });
 
       const quizData: QuizStartResponse = quizRaw.data ?? quizRaw;
 

@@ -8,7 +8,11 @@ export type GradingState = "unanswered" | "answered" | "graded";
 export type ResolveModeType = "all" | "wrong" | "bookmarked";
 
 /** 문제 유형 */
-export type QuestionType = "MULTIPLE_CHOICE" | "TRUE_FALSE" | "SHORT_ANSWER" | "FILL_IN_BLANK";
+export type QuestionType =
+  | "MULTIPLE_CHOICE"
+  | "TRUE_FALSE"
+  | "SHORT_ANSWER"
+  | "FILL_IN_BLANK";
 
 /** AI 문제 생성 상태 */
 export type GenerateStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
