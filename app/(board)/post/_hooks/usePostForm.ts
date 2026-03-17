@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { useSubjects } from "@/hooks";
@@ -60,25 +60,61 @@ export const usePostForm = ({ onSubmit }: UseUploadFormParams = {}) => {
     }
   }, [data, setValue]);
 
-  const handleSubjectToggle = (subject: string) => {
-    setValue("subject", subject, {
-      shouldValidate: true,
-      shouldDirty: true,
-      shouldTouch: true,
-    });
-    setValue("subjectId", "", {
-      shouldValidate: true,
-      shouldDirty: true,
-    });
-  };
+  const handleSubjectToggle = useCallback(
+    (subject: string) => {
+      setValue("subject", subject, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+      setValue("subjectId", "", {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    },
+    [setValue],
+  );
 
-  const handleContentChange = (value: string) => {
-    setValue("content", value.replace(/^\s+/, "").replace(/\s{2,}/g, " "), {
-      shouldValidate: true,
-      shouldDirty: true,
-      shouldTouch: true,
-    });
-  };
+  const handleContentChange = useCallback(
+    (value: string) => {
+      setValue("content", value.replace(/^\s+/, "").replace(/\s{2,}/g, " "), {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+    },
+    [setValue],
+  );
+
+  const setFormValues = useCallback(
+    (values: Partial<UploadFormData>) => {
+      if (values.title !== undefined) {
+        setValue("title", values.title, {
+          shouldValidate: true,
+          shouldDirty: false,
+        });
+      }
+      if (values.subject !== undefined) {
+        setValue("subject", values.subject, {
+          shouldValidate: true,
+          shouldDirty: false,
+        });
+      }
+      if (values.subjectId !== undefined) {
+        setValue("subjectId", values.subjectId, {
+          shouldValidate: true,
+          shouldDirty: false,
+        });
+      }
+      if (values.content !== undefined) {
+        setValue("content", values.content, {
+          shouldValidate: true,
+          shouldDirty: false,
+        });
+      }
+    },
+    [setValue],
+  );
 
   const handleUpload = handleSubmit(async (formData) => {
     try {
@@ -94,9 +130,9 @@ export const usePostForm = ({ onSubmit }: UseUploadFormParams = {}) => {
     }
   });
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     reset(DEFAULT_VALUES);
-  };
+  }, [reset]);
 
   return {
     control,
@@ -110,5 +146,6 @@ export const usePostForm = ({ onSubmit }: UseUploadFormParams = {}) => {
     resetForm,
     isValid,
     isSubmitting,
+    setFormValues,
   };
 };

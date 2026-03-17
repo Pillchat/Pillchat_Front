@@ -1,11 +1,7 @@
 "use client";
 
 import { TextButton, SelectBox, TextareaWithLabel } from "@/components/atoms";
-import {
-  IconInputField,
-  ExpandableChipSection,
-  SelectModal,
-} from "@/components/molecules";
+import { IconInputField, SelectModal } from "@/components/molecules";
 import { BoardHeader, BoardButton } from "@/components/molecules/board";
 import { Controller } from "react-hook-form";
 import {
@@ -14,17 +10,20 @@ import {
   usePostForm,
   usePostFiles,
   CATEGORY_MAP,
-  useCategoryType,
 } from "./_hooks";
-import { useRouter } from "next/navigation";
-import { useState, ChangeEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, ChangeEvent, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
-import { useSubjects } from "@/hooks";
 import { SelectCategoryModal } from "./SelectCategoryModal";
+import { fetchAPI } from "@/lib/functions";
 
 const PostPage = () => {
-  const { getSubjectMapForChips } = useSubjects();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+  const isEditMode = !!editId;
+
   const { step, nextStep, setStep } = useStep();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
@@ -45,6 +44,8 @@ const PostPage = () => {
     imageFiles,
     pdfFile,
     hasFiles,
+    setExistingPreviewItems,
+    remainingExistingKeys,
   } = usePostFiles();
 
   const {
@@ -56,22 +57,88 @@ const PostPage = () => {
     handleUpload,
     resetForm,
     isSubmitting,
+    setFormValues,
   } = usePostForm({
     onSubmit: async (data) => {
-      console.log({
-        ...data,
-        imageFiles,
-        pdfFile,
+      const newKeys = [
+        ...imageFiles.map((file) => file.name),
+        ...(pdfFile ? [pdfFile.name] : []),
+      ];
+
+      if (isEditMode) {
+        await fetchAPI(`/api/boards/${editId}`, "PUT", {
+          title: data.title.trim(),
+          content: data.content.trim(),
+          category: selectedCategory,
+          keys: [...remainingExistingKeys, ...newKeys],
+        });
+        return;
+      }
+
+      await fetchAPI("/api/board", "POST", {
+        title: data.title.trim(),
+        content: data.content.trim(),
+        category: selectedCategory,
+        keys: newKeys,
       });
     },
   });
 
+  const { data: boardData } = useQuery({
+    queryKey: ["board-edit", editId],
+    queryFn: () => fetchAPI(`/api/boards/${editId}`, "GET"),
+    enabled: isEditMode,
+  });
+
+  const { data: filesData } = useQuery({
+    queryKey: ["board-edit-files", editId, boardData?.images],
+    queryFn: async () => {
+      if (!boardData?.images || boardData.images.length === 0) return [];
+      const keys = boardData.images.map(
+        (image: any) => `board/${boardData.id}/${image.urlKey}`,
+      );
+      return fetchAPI("/api/files", "GET", { keys });
+    },
+    enabled: !!boardData?.id && !!boardData?.images?.length,
+  });
+
+  useEffect(() => {
+    if (!isEditMode || !boardData) return;
+
+    const categoryLabel =
+      boardData.categoryName ??
+      Object.entries(CATEGORY_MAP).find(
+        ([, value]) => value.value === boardData.category,
+      )?.[0] ??
+      "";
+
+    setFormValues({
+      title: boardData.title ?? "",
+      content: boardData.content ?? "",
+    });
+    setSelectedCategory(boardData.category ?? "");
+    setSelectValue(categoryLabel);
+  }, [isEditMode, boardData, setFormValues]);
+
+  useEffect(() => {
+    if (!isEditMode || !boardData?.images || !Array.isArray(filesData)) return;
+
+    const items = boardData.images
+      .map((image: any, index: number) => ({
+        id: `existing-${image.id ?? image.urlKey ?? index}`,
+        type: "image" as const,
+        name: image.urlKey,
+        previewUrl: filesData[index]?.preSignedUrl ?? "",
+        source: "existing" as const,
+        urlKey: image.urlKey,
+      }))
+      .filter((item) => !!item.previewUrl);
+
+    setExistingPreviewItems(items);
+  }, [isEditMode, boardData, filesData, setExistingPreviewItems]);
+
   const canSubmit =
-    !!selectedCategory &&
-    !!title?.trim() &&
-    !!content?.trim() &&
-    hasFiles &&
-    !isSubmitting;
+    !!selectedCategory && !!title?.trim() && !!content?.trim() && !isSubmitting;
 
   const openConfirmModal = () => {
     if (!canSubmit) return;
@@ -79,14 +146,25 @@ const PostPage = () => {
   };
 
   const handleConfirmUpload = async () => {
-    setIsConfirmOpen(false);
-    await handleUpload();
-    nextStep();
+    try {
+      setIsConfirmOpen(false);
+      await handleUpload();
+      nextStep();
+    } catch (error) {
+      console.error("게시글 업로드 실패:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "게시글 업로드에 실패했습니다.",
+      );
+    }
   };
 
   const resetPostPage = () => {
     resetForm();
     clearFiles();
+    setSelectValue("");
+    setSelectedCategory("");
     setStep(Step.Upload);
   };
 
@@ -116,8 +194,16 @@ const PostPage = () => {
       {step === Step.Upload && (
         <div className="flex h-full w-full flex-1 flex-col">
           <BoardHeader
-            title="게시글 업로드"
-            rightButtonLabel={isSubmitting ? "등록하는 중..." : "등록하기"}
+            title={isEditMode ? "게시글 수정" : "게시글 업로드"}
+            rightButtonLabel={
+              isSubmitting
+                ? isEditMode
+                  ? "수정하는 중..."
+                  : "등록하는 중..."
+                : isEditMode
+                  ? "수정하기"
+                  : "등록하기"
+            }
             onRightButtonClick={openConfirmModal}
             isActive={canSubmit}
             onLeftButtonClick={() => router.push("/board")}
@@ -276,8 +362,12 @@ const PostPage = () => {
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleConfirmUpload}
-        title="업로드 최종 확인"
-        message={`‘${title ?? ""}’ 게시글을 업로드 하시겠습니까?`}
+        title={isEditMode ? "수정 최종 확인" : "업로드 최종 확인"}
+        message={
+          isEditMode
+            ? `‘${title ?? ""}’ 게시글을 수정하시겠습니까?`
+            : `‘${title ?? ""}’ 게시글을 업로드 하시겠습니까?`
+        }
       />
 
       {step === Step.Complete && (
@@ -291,7 +381,14 @@ const PostPage = () => {
                 className="mb-2"
               />
               <p className="text-2xl font-semibold">
-                게시글이 업로드되었습니다!
+                {isEditMode
+                  ? "게시글이 수정되었습니다!"
+                  : "게시글이 업로드되었습니다!"}
+              </p>
+              <p className="text-sm">
+                {isEditMode
+                  ? "수정한 게시글은 게시판에서 바로 확인할 수 있어요."
+                  : "업로드한 게시글은 게시판에서 바로 확인할 수 있어요."}
               </p>
             </div>
             <p className="text-sm">
