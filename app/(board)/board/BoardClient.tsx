@@ -146,8 +146,10 @@ const BoardClient = () => {
                   <QuestionListCard
                     question={{
                       ...board,
-                      userNickname: board.userNickname ?? board.nickname ?? "익명",
-                      subjectName: board.subjectName ?? board.categoryName ?? "",
+                      userNickname:
+                        board.userNickname ?? board.nickname ?? "익명",
+                      subjectName:
+                        board.subjectName ?? board.categoryName ?? "",
                       answerCount: board.answerCount ?? 0,
                       createdAt: formatDiffDate(board.createdAt),
                     }}

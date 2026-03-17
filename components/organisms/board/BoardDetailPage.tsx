@@ -1,7 +1,12 @@
 "use client";
 
 import { LikeButton } from "@/components/atoms";
-import { CustomHeader, ActionMenu, ActionMenuItem, SelectModal } from "@/components/molecules";
+import {
+  CustomHeader,
+  ActionMenu,
+  ActionMenuItem,
+  SelectModal,
+} from "@/components/molecules";
 import { Button } from "@/components/ui/button";
 import { fetchAPI, getCurrentUserId } from "@/lib/functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -60,8 +65,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
 
   const handleEdit = () => router.push(`/post?edit=${boardId}`);
   const handleDelete = () => setShowDeleteConfirm(true);
-  const handleReport = () =>
-    router.push(`/reports?type=BOARD&id=${boardId}`);
+  const handleReport = () => router.push(`/reports?type=BOARD&id=${boardId}`);
 
   const confirmDelete = () => {
     deleteMutation.mutate();
@@ -112,10 +116,10 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
 
             <div className="flex items-center justify-between">
               <LikeButton
-                    onClick={handleLikeClick}
-                    likeCount={likeCount}
-                    isLiked={isLiked}
-                />
+                onClick={handleLikeClick}
+                likeCount={likeCount}
+                isLiked={isLiked}
+              />
               <ActionMenu
                 trigger={
                   <Button variant="ghost" size="icon" className="h-8 w-8">

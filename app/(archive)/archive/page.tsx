@@ -1,10 +1,6 @@
 "use client";
 
-type ArchiveTabKey =
-  | "my-questions"
-  | "my-study"
-  | "my-note"
-  | "my-post";
+type ArchiveTabKey = "my-questions" | "my-study" | "my-note" | "my-post";
 
 import { FC, Fragment, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -15,7 +11,10 @@ import {
   QuestionListCard,
   ExpandableChipSection,
 } from "@/components/molecules";
-import { useArchiveTabState, useMyQuestions } from "@/app/(archive)/archive/_hooks/";
+import {
+  useArchiveTabState,
+  useMyQuestions,
+} from "@/app/(archive)/archive/_hooks/";
 import { Separator } from "@/components/ui/separator";
 import { formatDiffDate } from "@/lib/functions";
 import { map } from "lodash";
@@ -83,10 +82,7 @@ const ArchivePage: FC = () => {
             const question = {
               id: String(qid ?? ""),
               title: item?.title ?? item?.question?.title ?? "제목 없음",
-              content:
-                item?.content ??
-                item?.question?.content ??
-                "내용 없음",
+              content: item?.content ?? item?.question?.content ?? "내용 없음",
               createdAt: formatDiffDate(
                 item?.createdAt ??
                   item?.question?.createdAt ??

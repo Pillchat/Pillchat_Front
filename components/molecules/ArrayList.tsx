@@ -35,7 +35,8 @@ export const ArrayList = <T extends string>({
   const [internal, setInternal] = useState<T | undefined>(
     defaultValue ?? fallback,
   );
-  const selected = (isControlled ? value : internal) ?? defaultValue ?? fallback;
+  const selected =
+    (isControlled ? value : internal) ?? defaultValue ?? fallback;
 
   const items = useMemo(() => tabs.slice(0, 5), [tabs]);
 
@@ -66,7 +67,9 @@ export const ArrayList = <T extends string>({
             style={
               scrollable
                 ? undefined
-                : { gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }
+                : {
+                    gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))`,
+                  }
             }
           >
             {items.map((t) => {

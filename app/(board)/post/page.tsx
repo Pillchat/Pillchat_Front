@@ -138,10 +138,7 @@ const PostPage = () => {
   }, [isEditMode, boardData, filesData, setExistingPreviewItems]);
 
   const canSubmit =
-    !!selectedCategory &&
-    !!title?.trim() &&
-    !!content?.trim() &&
-    !isSubmitting;
+    !!selectedCategory && !!title?.trim() && !!content?.trim() && !isSubmitting;
 
   const openConfirmModal = () => {
     if (!canSubmit) return;
@@ -384,7 +381,9 @@ const PostPage = () => {
                 className="mb-2"
               />
               <p className="text-2xl font-semibold">
-                {isEditMode ? "게시글이 수정되었습니다!" : "게시글이 업로드되었습니다!"}
+                {isEditMode
+                  ? "게시글이 수정되었습니다!"
+                  : "게시글이 업로드되었습니다!"}
               </p>
               <p className="text-sm">
                 {isEditMode

@@ -1,6 +1,13 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useRef, useState, useCallback } from "react";
+import {
+  ChangeEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 
 export type UploadPreviewItem = {
   id: string;
@@ -76,7 +83,8 @@ export const usePostFiles = () => {
       return;
     }
 
-    const remainCount = MAX_IMAGE_COUNT - (existingItems.length + imageItems.length);
+    const remainCount =
+      MAX_IMAGE_COUNT - (existingItems.length + imageItems.length);
 
     if (remainCount <= 0) {
       alert("이미지는 최대 10장까지 업로드할 수 있습니다.");

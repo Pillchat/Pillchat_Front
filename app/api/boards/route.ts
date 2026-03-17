@@ -29,12 +29,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/boards?${params.toString()}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
+    const response = await fetch(
+      `${API_BASE_URL}/api/boards?${params.toString()}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       },
-    });
+    );
 
     const text = await response.text();
 
