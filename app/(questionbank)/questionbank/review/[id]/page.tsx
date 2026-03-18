@@ -12,7 +12,6 @@ import ActionSheet from "../../_components/ActionSheet";
 import LoadingOverlay from "../../_components/LoadingOverlay";
 import type {
   ReviewProblemItemData,
-  ResolveModeType,
   QuizResultResponse,
   QuizStartResponse,
 } from "@/types/questionbank";
@@ -70,44 +69,33 @@ const ReviewDetailPage = () => {
     passagePreview: a.content,
     answerPreview: a.correctAnswer,
     isCorrect: a.isCorrect,
-    isBookmarked: false, // 결과 조회에서는 북마크 정보 없음
+    isBookmarked: false,
   }));
 
   const totalCount = result.questionCount;
   const correctCount = result.correctCount;
   const wrongCount = totalCount - correctCount;
-  const bookmarkedCount = problems.filter((p) => p.isBookmarked).length;
 
-  const handleResolve = async (mode: ResolveModeType) => {
-    let filteredIds: number[] = [];
-
-    if (mode === "wrong") {
-      filteredIds = result.answers
-        .filter((a) => !a.isCorrect)
-        .map((a) => a.questionId);
-    } else if (mode === "bookmarked") {
-      filteredIds = problems
-        .filter((p) => p.isBookmarked)
-        .map((p) => p.questionId);
-    } else {
-      filteredIds = result.answers.map((a) => a.questionId);
-    }
-
-    if (filteredIds.length === 0) return;
+  const handleResolve = async (mode: "all" | "wrong" | "bookmarked") => {
     setShowActionSheet(false);
     setGenerating(true);
 
     try {
-      const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", {
-        type: "REVIEW",
-        questionIds: filteredIds,
-      });
+      const bodyMap = {
+        all: { type: "PDF" },
+        wrong: { type: "REVIEW" },
+        bookmarked: { type: "BOOKMARK" },
+      };
+      const body = bodyMap[mode];
 
+      const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", body);
       const quizData: QuizStartResponse = quizRaw.data ?? quizRaw;
 
       initQuiz({
         sessionId: quizData.sessionId,
-        sourceType: "REVIEW",
+        sourceType: (
+          { all: "PDF", wrong: "REVIEW", bookmarked: "BOOKMARK" } as const
+        )[mode],
         title: "복습 다시 풀기",
         questions: quizData.questions.map((q) => ({
           id: q.id,
@@ -181,7 +169,6 @@ const ReviewDetailPage = () => {
         onSelectMode={handleResolve}
         totalCount={totalCount}
         wrongCount={wrongCount}
-        bookmarkedCount={bookmarkedCount}
       />
       {generating && <LoadingOverlay message="복습 세션 준비 중..." />}
     </div>

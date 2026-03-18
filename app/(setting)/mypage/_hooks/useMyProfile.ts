@@ -14,7 +14,6 @@ import {
   profileImgAtom,
 } from "@/store/profile";
 import { fetchAPI } from "@/lib/functions";
-import { accessTokenAtom } from "@/store/S3auth";
 
 export const useMyProfile = () => {
   const [isLoading, setIsLoading] = useAtom(profileLoadingAtom);
@@ -30,7 +29,6 @@ export const useMyProfile = () => {
   const [id] = useAtom(idAtom);
   const [keys, setKeys] = useAtom(keysAtom);
   const [profileImg, setProfileImg] = useAtom(profileImgAtom);
-  const [accessToken] = useAtom(accessTokenAtom);
 
   const onMyProfile = useCallback(async () => {
     setIsLoading(true);
@@ -43,7 +41,9 @@ export const useMyProfile = () => {
 
       const payload = result.data ?? {};
       const fetchedKeys: string[] = Array.isArray(payload.images)
-        ? payload.images.map((img) => img.urlKey).filter(Boolean)
+        ? payload.images
+            .map((img: { urlKey: string }) => img.urlKey)
+            .filter(Boolean)
         : [];
 
       updateProfile({
@@ -56,30 +56,20 @@ export const useMyProfile = () => {
       });
       setKeys(fetchedKeys);
 
+      // 이전 유저 이미지 잔존 방지
+      setProfileImg(null);
+
       if (fetchedKeys.length > 0) {
-        const query = new URLSearchParams();
-        fetchedKeys.forEach((k) => query.append("keys", k));
-
-        const res = await fetch(`/api/profile/image-view?${query.toString()}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data)) {
-            setProfileImg(data[0]?.preSignedUrl ?? undefined);
-          } else if (data.preSignedUrl) {
-            setProfileImg(data.preSignedUrl);
+        try {
+          // fetchAPI: localStorage에서 항상 최신 토큰 사용 (stale accessTokenAtom 문제 해결)
+          const data = await fetchAPI("/api/files", "GET", {
+            keys: fetchedKeys,
+          });
+          if (Array.isArray(data) && data[0]?.preSignedUrl) {
+            setProfileImg(data[0].preSignedUrl);
           }
-        } else {
-          console.warn(
-            "S3 pre-signed URL 조회 실패:",
-            res.status,
-            await res.text(),
-          );
+        } catch {
+          console.warn("프로필 이미지 resolve 실패");
         }
       }
     } catch (err: any) {
@@ -101,7 +91,6 @@ export const useMyProfile = () => {
     updateProfile,
     clearProfile,
     setKeys,
-    accessToken,
     setProfileImg,
   ]);
 

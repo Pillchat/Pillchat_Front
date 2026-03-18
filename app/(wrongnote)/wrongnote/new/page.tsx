@@ -24,6 +24,10 @@ const NewWrongNotePage = () => {
     () => getSubjectMapForChips(),
     [getSubjectMapForChips],
   );
+  const allSubjects = useMemo(
+    () => ({ "과목 선택": [...new Set(Object.values(subjectMap).flat())] }),
+    [subjectMap],
+  );
 
   const handleSubjectToggle = (label: string) => {
     setSubjectCategory(subjectCategory === label ? "" : label);
@@ -83,7 +87,8 @@ const NewWrongNotePage = () => {
             과목
           </label>
           <ExpandableChipSection
-            data={subjectMap}
+            data={allSubjects}
+            expandedData={subjectMap}
             selectedItems={subjectCategory ? [subjectCategory] : []}
             onItemToggle={handleSubjectToggle}
             showDropdown

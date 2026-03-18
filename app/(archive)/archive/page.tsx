@@ -206,6 +206,7 @@ const ArchivePage: FC = () => {
         <div className="px-6 pt-4">
           <ExpandableChipSection
             data={subjectData}
+            expandedData={rawSubjectMap}
             selectedItems={selectedSubjects}
             onItemToggle={handleSubjectToggle}
             showDropdown

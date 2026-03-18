@@ -137,29 +137,51 @@ export const FloatingActionButton: FC<FloatingActionButtonProps> = ({
               </div>
             )}
 
-            {/* 액션 버튼 */}
-            <Button
-              size="icon"
-              variant="secondary"
-              className={cn(
-                sizeClasses[size],
-                "rounded-full border border-gray-200 shadow-lg transition-shadow hover:shadow-xl",
-                action.className,
-              )}
-              onClick={() => {
-                action.onClick();
-                setIsExpanded(false);
-              }}
-            >
-              <span className={iconSizes[size]}>{action.icon}</span>
-              {text && <span className="text-base">{text}</span>}
-            </Button>
-
-            {/* 라벨 (위쪽 확장시에만 표시) */}
-            {expandDirection === "up" && (
-              <div className="absolute -left-2 top-1/2 -translate-x-full -translate-y-1/2 whitespace-nowrap rounded-lg bg-gray-800 px-3 py-2 text-sm font-medium text-white shadow-lg">
-                {action.label}
-              </div>
+            {/* 액션 버튼 — pill 형태 (위쪽 확장) / 원형 (그 외) */}
+            {expandDirection === "up" ? (
+              <Button
+                variant="secondary"
+                className={cn(
+                  "h-12 rounded-full border border-gray-200 px-4 shadow-lg transition-shadow hover:shadow-xl",
+                  action.className,
+                )}
+                onClick={() => {
+                  action.onClick();
+                  setIsExpanded(false);
+                }}
+              >
+                <span className="flex items-center justify-center">
+                  {action.icon}
+                </span>
+                <span className="ml-2 whitespace-nowrap text-sm font-medium">
+                  {action.label}
+                </span>
+              </Button>
+            ) : (
+              <>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className={cn(
+                    sizeClasses[size],
+                    "rounded-full border border-gray-200 shadow-lg transition-shadow hover:shadow-xl",
+                    action.className,
+                  )}
+                  onClick={() => {
+                    action.onClick();
+                    setIsExpanded(false);
+                  }}
+                >
+                  <span
+                    className={cn(
+                      iconSizes[size],
+                      "flex items-center justify-center",
+                    )}
+                  >
+                    {action.icon}
+                  </span>
+                </Button>
+              </>
             )}
           </div>
         </div>
