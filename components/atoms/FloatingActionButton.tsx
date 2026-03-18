@@ -55,7 +55,7 @@ export const FloatingActionButton: FC<FloatingActionButtonProps> = ({
   const iconSizes = {
     sm: "w-6 h-6",
     md: "w-8 h-8",
-    lg: "w-10 h-10",
+    lg: "w-12 h-12",
   };
 
   const handleMainClick = () => {
@@ -194,16 +194,24 @@ export const FloatingActionButton: FC<FloatingActionButtonProps> = ({
         className={cn(
           text ? "h-14 w-auto py-3 pl-4 pr-5" : sizeClasses[size],
           text ? "rounded-[2rem]" : "rounded-full",
-          "shadow-lg transition-all duration-300 hover:shadow-xl",
-          isExpanded && actions.length > 0 && "rotate-45",
+          "grid place-items-center shadow-lg transition-all duration-200 hover:shadow-xl",
+          !text && "h-[64px] w-[64px]",
+          isExpanded && actions.length > 0
+            ? "rotate-45 bg-white text-primary"
+            : "rotate-0 bg-primary text-white",
         )}
         onClick={handleMainClick}
       >
-        <div className={cn("flex items-center")}>
+        <div className="flex items-center justify-center">
           {mainIcon ? (
             mainIcon
           ) : (
-            <span className={iconSizes[size]}>
+            <span
+              className={cn(
+                "flex items-center justify-center",
+                iconSizes[size],
+              )}
+            >
               {actions.length > 0 ? "+" : "?"}
             </span>
           )}

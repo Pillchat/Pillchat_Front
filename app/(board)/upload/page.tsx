@@ -8,14 +8,13 @@ import {
 } from "@/components/molecules";
 import { BoardHeader, BoardButton } from "@/components/molecules/board";
 import { Controller } from "react-hook-form";
-import { useStep } from "./_hooks";
+import { useStep, useUploadForm, useUploadFiles } from "./_hooks";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import CheckCircle from "@/public/CheckCircle.svg";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { useSubjects } from "@/hooks";
-import { useUploadForm } from "./_hooks/useUploadForm";
-import { useUploadFiles } from "./_hooks/useUploadFiles";
+import { fetchAPI } from "@/lib/functions";
 
 enum Step {
   Guide = 1,
@@ -49,6 +48,7 @@ const UploadPage = () => {
     control,
     errors,
     selectedSubject,
+    subjectId,
     title,
     handleSubjectToggle,
     handleUpload,
@@ -56,16 +56,34 @@ const UploadPage = () => {
     isSubmitting,
   } = useUploadForm({
     onSubmit: async (data) => {
-      console.log({
-        ...data,
-        imageFiles,
-        pdfFile,
-      });
+      if (!data.subjectId) {
+        throw new Error(
+          "과목 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.",
+        );
+      }
+
+      const imageKeys = imageFiles.map((file) => file.name);
+      const pdfKey = pdfFile ? pdfFile.name : null;
+
+      const payload = {
+        title: data.title.trim(),
+        subjectId: Number(data.subjectId),
+        urlKey: imageKeys,
+        pdfKey,
+      };
+
+      console.log("학습자료 업로드 payload:", payload);
+
+      await fetchAPI("/api/materials", "POST", payload);
     },
   });
 
   const canSubmit =
-    !!title?.trim() && !!selectedSubject?.trim() && hasFiles && !isSubmitting;
+    !!title?.trim() &&
+    !!selectedSubject?.trim() &&
+    !!subjectId &&
+    hasFiles &&
+    !isSubmitting;
 
   const openConfirmModal = () => {
     if (!canSubmit) return;
@@ -73,9 +91,18 @@ const UploadPage = () => {
   };
 
   const handleConfirmUpload = async () => {
-    setIsConfirmOpen(false);
-    await handleUpload();
-    nextStep();
+    try {
+      setIsConfirmOpen(false);
+      await handleUpload();
+      nextStep();
+    } catch (error) {
+      console.error("학습자료 업로드 실패:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "학습자료 업로드에 실패했습니다.",
+      );
+    }
   };
 
   const resetUploadPage = () => {
