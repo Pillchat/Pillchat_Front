@@ -38,11 +38,9 @@ const ReviewListPage = () => {
   const fetchCategories = useCallback(async (sourceType: string) => {
     setLoading(true);
     try {
-      const raw = await fetchAPI(
-        "/api/questionbank/review/categories",
-        "GET",
-        { sourceType },
-      );
+      const raw = await fetchAPI("/api/questionbank/review/categories", "GET", {
+        sourceType,
+      });
       const data: ReviewCategoryItem[] = raw.items ?? raw;
       setCategories(Array.isArray(data) ? data : []);
     } catch {

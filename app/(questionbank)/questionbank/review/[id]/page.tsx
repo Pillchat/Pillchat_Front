@@ -81,10 +81,7 @@ const ReviewDetailPage = () => {
     setGenerating(true);
 
     try {
-      const body =
-        mode === "wrong"
-          ? { type: "REVIEW" }
-          : { type: "BOOKMARK" };
+      const body = mode === "wrong" ? { type: "REVIEW" } : { type: "BOOKMARK" };
 
       const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", body);
       const quizData: QuizStartResponse = quizRaw.data ?? quizRaw;
