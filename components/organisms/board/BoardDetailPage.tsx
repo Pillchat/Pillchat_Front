@@ -32,7 +32,9 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const [commentSort, setCommentSort] = useState<CommentSortType>("latest");
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingCommentValue, setEditingCommentValue] = useState("");
-  const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
+  const [deletingCommentId, setDeletingCommentId] = useState<number | null>(
+    null,
+  );
 
   const { data: boardData, isLoading: boardLoading } = useQuery({
     queryKey: ["board", boardId],
@@ -301,8 +303,12 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                 ) : (
                   <div className="flex flex-col gap-5">
                     {comments.map((comment: any) => {
-                      const commentId = Number(comment?.id ?? comment?.commentId);
-                      const commentAuthorId = Number(comment?.userId ?? comment?.writerId);
+                      const commentId = Number(
+                        comment?.id ?? comment?.commentId,
+                      );
+                      const commentAuthorId = Number(
+                        comment?.userId ?? comment?.writerId,
+                      );
                       const isCommentAuthor =
                         Number(currentUserId) === commentAuthorId;
 

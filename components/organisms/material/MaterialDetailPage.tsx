@@ -80,7 +80,9 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
   const isAuthor =
     materialData &&
     currentUserId &&
-    (materialData.userId ? Number(materialData.userId) === Number(currentUserId) : false);
+    (materialData.userId
+      ? Number(materialData.userId) === Number(currentUserId)
+      : false);
 
   const deleteMutation = useMutation({
     mutationFn: () => fetchAPI(`/api/materials/${materialId}`, "DELETE"),
@@ -134,11 +136,11 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
             <div className="flex flex-col gap-6">
               <MaterialTitleSection
                 title={materialData.title}
-                userName={materialData.nickname ?? materialData.userNickname ?? "익명"}
+                userName={
+                  materialData.nickname ?? materialData.userNickname ?? "익명"
+                }
                 subjectName={
-                  materialData.subjectName ??
-                  materialData.subject?.name ??
-                  ""
+                  materialData.subjectName ?? materialData.subject?.name ?? ""
                 }
                 createdAt={materialData.createdAt}
               />
@@ -155,7 +157,11 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
                 <ActionMenu
                   trigger={
                     <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <img src="/Ellipsis.svg" alt="더보기" className="h-5 w-5" />
+                      <img
+                        src="/Ellipsis.svg"
+                        alt="더보기"
+                        className="h-5 w-5"
+                      />
                     </Button>
                   }
                   items={menuItems}

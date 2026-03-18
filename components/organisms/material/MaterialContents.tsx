@@ -25,9 +25,7 @@ export const MaterialContents: FC<{
 
       {pdfUrl && (
         <div className="flex flex-col gap-2 rounded-lg border border-[#E5E7EB] p-4">
-          <p className="text-sm font-medium text-foreground">
-            첨부된 PDF
-          </p>
+          <p className="text-sm font-medium text-foreground">첨부된 PDF</p>
           <a
             href={pdfUrl}
             target="_blank"

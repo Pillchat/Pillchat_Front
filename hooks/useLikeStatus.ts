@@ -21,12 +21,8 @@ export const useLikeStatus = (
         setIsLoading(true);
         const response = await fetchAPI(`/api/${type}/${id}/likeCount`, "GET");
 
-        setIsLiked(
-          Boolean(response?.likeWhether ?? response?.liked ?? false),
-        );
-        setLikeCount(
-          Number(response?.likeCount ?? response?.likes ?? 0),
-        );
+        setIsLiked(Boolean(response?.likeWhether ?? response?.liked ?? false));
+        setLikeCount(Number(response?.likeCount ?? response?.likes ?? 0));
       } catch (error) {
         console.error("좋아요 상태 로드 실패:", error);
       } finally {

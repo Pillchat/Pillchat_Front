@@ -57,7 +57,9 @@ const UploadPage = () => {
   } = useUploadForm({
     onSubmit: async (data) => {
       if (!data.subjectId) {
-        throw new Error("과목 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+        throw new Error(
+          "과목 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.",
+        );
       }
 
       const imageKeys = imageFiles.map((file) => file.name);

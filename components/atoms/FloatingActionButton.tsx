@@ -151,7 +151,12 @@ export const FloatingActionButton: FC<FloatingActionButtonProps> = ({
                 setIsExpanded(false);
               }}
             >
-              <span className={cn(iconSizes[size], "flex items-center justify-center")}>
+              <span
+                className={cn(
+                  iconSizes[size],
+                  "flex items-center justify-center",
+                )}
+              >
                 {action.icon}
               </span>
               {text && <span className="text-base">{text}</span>}
@@ -186,7 +191,12 @@ export const FloatingActionButton: FC<FloatingActionButtonProps> = ({
           {mainIcon ? (
             mainIcon
           ) : (
-            <span className={cn("flex items-center justify-center", iconSizes[size])}>
+            <span
+              className={cn(
+                "flex items-center justify-center",
+                iconSizes[size],
+              )}
+            >
               {actions.length > 0 ? "+" : "?"}
             </span>
           )}

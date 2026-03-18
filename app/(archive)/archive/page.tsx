@@ -237,7 +237,9 @@ const ArchivePage: FC = () => {
               id: String(boardId ?? ""),
               title: item?.title ?? "제목 없음",
               content: item?.content ?? "내용 없음",
-              createdAt: formatDiffDate(item?.createdAt ?? new Date().toISOString()),
+              createdAt: formatDiffDate(
+                item?.createdAt ?? new Date().toISOString(),
+              ),
               likeCount: item?.likeCount ?? 0,
               answerCount: 0,
               subjectName: item?.categoryName ?? "",
@@ -287,9 +289,7 @@ const ArchivePage: FC = () => {
                 : Array.isArray(item?.urlKey) && item.urlKey.length > 0
                   ? `이미지 ${item.urlKey.length}장 첨부`
                   : "첨부 파일 없음",
-              createdAt: item?.createdAt
-                ? formatDiffDate(item.createdAt)
-                : "",
+              createdAt: item?.createdAt ? formatDiffDate(item.createdAt) : "",
               likeCount: item?.likeCount ?? 0,
               answerCount: 0,
               subjectName: item?.subjectName ?? item?.subject?.name ?? "",
