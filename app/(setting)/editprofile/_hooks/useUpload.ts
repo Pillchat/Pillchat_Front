@@ -22,29 +22,35 @@ export const useUpload = () => {
     setError(null);
 
     try {
-      const formData = new FormData();
-      formData.append("userId", userId.toString());
-      formData.append("files", `profile_${userId}`);
-      formData.append("type", type);
-
+      // 1) Presigned URL 발급 요청
       const response = await fetch("/api/profile/uploadS3", {
         method: "POST",
-        body: formData,
         headers: {
+          "Content-Type": "application/json",
           Authorization: `${access_token}`,
         },
+        body: JSON.stringify({
+          filename: `profile_${userId}`,
+          type,
+        }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        setError(data.message || "이미지 업로드 실패");
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        setError(errData.message || "Presigned URL 발급 실패");
         return null;
       }
 
+      // 백엔드 응답: [{key, preSignedUrl}]
+      const data = await response.json();
       const { key, preSignedUrl } = data[0];
+
+      // 2) S3에 파일 업로드 (Content-Type 필수)
       const uploadResponse = await fetch(preSignedUrl, {
         method: "PUT",
+        headers: {
+          "Content-Type": file.type,
+        },
         body: file,
       });
 
