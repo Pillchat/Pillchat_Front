@@ -221,7 +221,7 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto pb-4">
+                <div className="flex-1 overflow-y-auto pb-6">
                   <div className="flex flex-col gap-4">
                     {expandedData ? (
                       map(
@@ -234,7 +234,7 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
                             <p className="text-sm font-medium text-gray-700">
                               {subCategory}
                             </p>
-                            <div className="flex flex-wrap gap-1">
+                            <div className="flex flex-wrap gap-2">
                               {map(subItems, (item) => (
                                 <TextButton
                                   key={item}
@@ -253,7 +253,7 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
                         ),
                       )
                     ) : (
-                      <div className="flex flex-wrap gap-1">
+                      <div className="flex flex-wrap gap-2">
                         {map(items, (item) => (
                           <TextButton
                             key={item}
@@ -272,7 +272,7 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
                   </div>
                 </div>
 
-                <div className="sticky bottom-0 -mx-6 px-6 py-4">
+                <div className="sticky bottom-0 -mx-6 px-6 py-5">
                   <button
                     type="button"
                     onClick={applyPendingSelection}
