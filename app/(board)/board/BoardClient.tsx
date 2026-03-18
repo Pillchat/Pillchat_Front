@@ -184,12 +184,11 @@ const BoardClient = () => {
                   ? {
                       id: String(item?.id ?? ""),
                       title: item?.title ?? "제목 없음",
-                      content:
-                        item?.pdfKey
-                          ? "PDF 첨부"
-                          : Array.isArray(item?.urlKey) && item.urlKey.length > 0
-                            ? `이미지 ${item.urlKey.length}장 첨부`
-                            : "첨부 파일 없음",
+                      content: item?.pdfKey
+                        ? "PDF 첨부"
+                        : Array.isArray(item?.urlKey) && item.urlKey.length > 0
+                          ? `이미지 ${item.urlKey.length}장 첨부`
+                          : "첨부 파일 없음",
                       userNickname:
                         item?.userNickname ?? item?.nickname ?? "익명",
                       subjectName:
