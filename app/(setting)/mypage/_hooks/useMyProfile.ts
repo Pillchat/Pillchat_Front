@@ -41,7 +41,9 @@ export const useMyProfile = () => {
 
       const payload = result.data ?? {};
       const fetchedKeys: string[] = Array.isArray(payload.images)
-        ? payload.images.map((img: { urlKey: string }) => img.urlKey).filter(Boolean)
+        ? payload.images
+            .map((img: { urlKey: string }) => img.urlKey)
+            .filter(Boolean)
         : [];
 
       updateProfile({
@@ -83,7 +85,14 @@ export const useMyProfile = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [setIsLoading, setError, updateProfile, clearProfile, setKeys, setProfileImg]);
+  }, [
+    setIsLoading,
+    setError,
+    updateProfile,
+    clearProfile,
+    setKeys,
+    setProfileImg,
+  ]);
 
   const resetProfile = useCallback(() => {
     clearProfile();
