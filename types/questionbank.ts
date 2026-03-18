@@ -1,5 +1,5 @@
 /** 문제 생성 출처 */
-export type QuizSourceType = "PDF" | "PREMIUM" | "REVIEW";
+export type QuizSourceType = "PDF" | "PREMIUM" | "REVIEW" | "BOOKMARK";
 
 /** 채점 상태 (프론트엔드 전용) */
 export type GradingState = "unanswered" | "answered" | "graded";
