@@ -76,19 +76,24 @@ const ReviewDetailPage = () => {
   const correctCount = result.correctCount;
   const wrongCount = totalCount - correctCount;
 
-  const handleResolve = async (mode: "wrong" | "bookmarked") => {
+  const handleResolve = async (mode: "all" | "wrong" | "bookmarked") => {
     setShowActionSheet(false);
     setGenerating(true);
 
     try {
-      const body = mode === "wrong" ? { type: "REVIEW" } : { type: "BOOKMARK" };
+      const bodyMap = {
+        all: { type: "PDF" },
+        wrong: { type: "REVIEW" },
+        bookmarked: { type: "BOOKMARK" },
+      };
+      const body = bodyMap[mode];
 
       const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", body);
       const quizData: QuizStartResponse = quizRaw.data ?? quizRaw;
 
       initQuiz({
         sessionId: quizData.sessionId,
-        sourceType: mode === "wrong" ? "REVIEW" : "BOOKMARK",
+        sourceType: ({ all: "PDF", wrong: "REVIEW", bookmarked: "BOOKMARK" } as const)[mode],
         title: "복습 다시 풀기",
         questions: quizData.questions.map((q) => ({
           id: q.id,
@@ -160,6 +165,7 @@ const ReviewDetailPage = () => {
         isOpen={showActionSheet}
         onClose={() => setShowActionSheet(false)}
         onSelectMode={handleResolve}
+        totalCount={totalCount}
         wrongCount={wrongCount}
       />
       {generating && <LoadingOverlay message="복습 세션 준비 중..." />}
