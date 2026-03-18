@@ -1,43 +1,33 @@
+import { buildQueryParams, serverFetch } from "@/lib/functions";
 import { NextRequest, NextResponse } from "next/server";
 
 export const POST = async (request: NextRequest) => {
   try {
-    const formData = await request.formData();
-    const userId = formData.get("userId");
-    const files = formData.get("files");
-    const type = formData.get("type");
+    const { filename, type } = await request.json();
 
-    if (!userId || !files || !type) {
+    if (!filename || !type) {
       return NextResponse.json(
-        { success: false, message: "file과 type 필드는 필수입니다." },
+        { message: "filename과 type은 필수입니다." },
         { status: 400 },
       );
     }
 
-    const accessToken = request.headers.get("authorization") || "";
-    const apiResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}/api/files`,
+    // serverFetch: Content-Type: application/json 자동 설정 + Auth 헤더 자동 전달
+    const data = await serverFetch(
+      `/api/files?${buildQueryParams({ files: filename, type })}`,
       {
         method: "POST",
-        body: formData,
-        headers: {
-          Authorization: accessToken,
-        },
+        request,
       },
     );
 
-    const data = await apiResponse.json();
-    return NextResponse.json(
-      {
-        success: true,
-        ...data,
-      },
-      { status: 200 },
-    );
+    return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
+    console.error("uploadS3 에러:", error);
+    const errorInfo = JSON.parse(error.message || "{}");
     return NextResponse.json(
-      { success: false, message: error.message || "서버 오류" },
-      { status: 500 },
+      { message: errorInfo.message || "Presigned URL 발급 실패" },
+      { status: errorInfo.status || 500 },
     );
   }
 };
