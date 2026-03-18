@@ -93,7 +93,9 @@ const ReviewDetailPage = () => {
 
       initQuiz({
         sessionId: quizData.sessionId,
-        sourceType: ({ all: "PDF", wrong: "REVIEW", bookmarked: "BOOKMARK" } as const)[mode],
+        sourceType: (
+          { all: "PDF", wrong: "REVIEW", bookmarked: "BOOKMARK" } as const
+        )[mode],
         title: "복습 다시 풀기",
         questions: quizData.questions.map((q) => ({
           id: q.id,
