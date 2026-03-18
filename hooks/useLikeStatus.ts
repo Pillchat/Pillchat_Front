@@ -20,8 +20,13 @@ export const useLikeStatus = (
       try {
         setIsLoading(true);
         const response = await fetchAPI(`/api/${type}/${id}/likeCount`, "GET");
-        setIsLiked(!!response.liked);
-        setLikeCount(response.likes ?? 0);
+
+        setIsLiked(
+          Boolean(response?.likeWhether ?? response?.liked ?? false),
+        );
+        setLikeCount(
+          Number(response?.likeCount ?? response?.likes ?? 0),
+        );
       } catch (error) {
         console.error("좋아요 상태 로드 실패:", error);
       } finally {
@@ -37,13 +42,13 @@ export const useLikeStatus = (
 
     const prevLiked = isLiked;
     const prevCount = likeCount;
-    const newLikedStatus = !prevLiked;
+    const nextLiked = !prevLiked;
 
     try {
-      setIsLiked(newLikedStatus);
-      setLikeCount(newLikedStatus ? prevCount + 1 : prevCount - 1);
+      setIsLiked(nextLiked);
+      setLikeCount(nextLiked ? prevCount + 1 : prevCount - 1);
 
-      const method = newLikedStatus ? "POST" : "DELETE";
+      const method = prevLiked ? "DELETE" : "POST";
       await fetchAPI(`/api/${type}/${id}/like`, method);
 
       return true;

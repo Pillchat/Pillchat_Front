@@ -39,6 +39,7 @@ export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
   });
 
   const selectedSubject = watch("subject");
+  const subjectId = watch("subjectId");
   const title = watch("title");
 
   const { data } = useQuery({
@@ -90,6 +91,7 @@ export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
     control,
     errors,
     selectedSubject,
+    subjectId,
     title,
     handleSubjectToggle,
     handleUpload,

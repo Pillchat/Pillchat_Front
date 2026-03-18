@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { code } = await context.params;
-    const data = await serverFetch(`/api/subjects/${code}`, {
+    const data = await serverFetch(`/api/subjects/BIO-BIOCHEM`, {
       method: "GET",
       request,
     });

@@ -48,9 +48,14 @@ const BoardClient = () => {
     );
   };
 
+  const isStudyTab = currentStatus === "study";
+
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["boards", currentStatus],
-    queryFn: () => fetchAPI(`/api/boards?status=${currentStatus}`, "GET"),
+    queryKey: isStudyTab ? ["materials", "all"] : ["boards", currentStatus],
+    queryFn: () =>
+      isStudyTab
+        ? fetchAPI("/api/materials/all", "GET")
+        : fetchAPI(`/api/boards?status=${currentStatus}`, "GET"),
   });
 
   const list = useMemo(() => {
@@ -60,7 +65,7 @@ const BoardClient = () => {
         ? data.data
         : [];
 
-    let filtered = raw;
+    let filtered = [...raw];
 
     if (q) {
       const terms = q
@@ -69,19 +74,50 @@ const BoardClient = () => {
         .map((t) => t.toLowerCase());
 
       filtered = filtered.filter((item: any) => {
-        const searchable =
-          `${item.title ?? ""} ${item.content ?? ""} ${item.categoryName ?? ""} ${item.nickname ?? ""}`.toLowerCase();
+        const searchable = isStudyTab
+          ? `${item.title ?? ""} ${item.subjectName ?? ""} ${item.subject?.name ?? ""} ${item.nickname ?? ""}`.toLowerCase()
+          : `${item.title ?? ""} ${item.content ?? ""} ${item.categoryName ?? ""} ${item.nickname ?? ""}`.toLowerCase();
 
         return terms.every((t) => searchable.includes(t));
       });
     }
 
+    if (isStudyTab && selectedSubjects.length > 0) {
+      filtered = filtered.filter((item: any) => {
+        const subjectName =
+          item?.subjectName ?? item?.subject?.name ?? item?.name ?? "";
+        return selectedSubjects.includes(subjectName);
+      });
+    }
+
+    if (!isStudyTab && currentStatus === "column") {
+      filtered = filtered.filter(
+        (item: any) =>
+          item?.category === "COLUMN" || item?.categoryName === "칼럼",
+      );
+    }
+
+    if (!isStudyTab && currentStatus === "promo") {
+      filtered = filtered.filter(
+        (item: any) =>
+          item?.category === "PROMOTION" || item?.categoryName === "홍보게시판",
+      );
+    }
+
+    if (!isStudyTab && currentStatus === "best") {
+      filtered.sort(
+        (a: any, b: any) => (b?.likeCount ?? 0) - (a?.likeCount ?? 0),
+      );
+    }
+
     return filtered;
-  }, [data, q]);
+  }, [data, q, currentStatus, isStudyTab, selectedSubjects]);
 
   const emptyText = q
     ? `"${q}" 검색 결과가 없습니다.`
-    : "아직 등록된 게시글이 없습니다.";
+    : isStudyTab
+      ? "아직 등록된 학습자료가 없습니다."
+      : "아직 등록된 게시글이 없습니다.";
 
   const mobileFixedHidden = isSearchOpen
     ? "translate-y-[140%] opacity-0 pointer-events-none"
@@ -105,6 +141,7 @@ const BoardClient = () => {
             data={subjectData}
             selectedItems={selectedSubjects}
             onItemToggle={handleSubjectToggle}
+            expandedData={rawSubjectMap}
             showDropdown
             showDropdownButton
             categoryTitleClassName="text-sm font-medium text-pretendard text-[#111]"
@@ -135,29 +172,61 @@ const BoardClient = () => {
             <div className="text-red-500">
               {error instanceof Error
                 ? error.message
-                : "게시글을 불러오지 못했습니다."}
+                : isStudyTab
+                  ? "학습자료를 불러오지 못했습니다."
+                  : "게시글을 불러오지 못했습니다."}
             </div>
           </div>
         ) : list.length > 0 ? (
           <div className="mx-6 py-5 pb-[5.625rem]">
             <div className="flex flex-col gap-5">
-              {map(list, (board: any) => (
-                <Fragment key={board.id}>
-                  <QuestionListCard
-                    question={{
-                      ...board,
+              {map(list, (item: any) => {
+                const cardData = isStudyTab
+                  ? {
+                      id: String(item?.id ?? ""),
+                      title: item?.title ?? "제목 없음",
+                      content:
+                        item?.pdfKey
+                          ? "PDF 첨부"
+                          : Array.isArray(item?.urlKey) && item.urlKey.length > 0
+                            ? `이미지 ${item.urlKey.length}장 첨부`
+                            : "첨부 파일 없음",
                       userNickname:
-                        board.userNickname ?? board.nickname ?? "익명",
+                        item?.userNickname ?? item?.nickname ?? "익명",
                       subjectName:
-                        board.subjectName ?? board.categoryName ?? "",
-                      answerCount: board.answerCount ?? 0,
-                      createdAt: formatDiffDate(board.createdAt),
-                    }}
-                    onClick={() => router.push(`/board/${board.id}`)}
-                  />
-                  <Separator className="last:hidden" />
-                </Fragment>
-              ))}
+                        item?.subjectName ?? item?.subject?.name ?? "",
+                      answerCount: 0,
+                      likeCount: item?.likeCount ?? 0,
+                      viewCount: item?.viewCount ?? 0,
+                      createdAt: formatDiffDate(item?.createdAt),
+                      images: item?.images ?? [],
+                    }
+                  : {
+                      ...item,
+                      userNickname:
+                        item?.userNickname ?? item?.nickname ?? "익명",
+                      subjectName:
+                        item?.subjectName ?? item?.categoryName ?? "",
+                      answerCount: item?.answerCount ?? 0,
+                      createdAt: formatDiffDate(item?.createdAt),
+                    };
+
+                return (
+                  <Fragment key={item?.id}>
+                    <QuestionListCard
+                      question={cardData}
+                      onClick={() =>
+                        router.push(
+                          isStudyTab
+                            ? `/materials/${item.id}`
+                            : `/board/${item.id}`,
+                        )
+                      }
+                    />
+                    <Separator className="last:hidden" />
+                  </Fragment>
+                );
+              })}
             </div>
           </div>
         ) : (

@@ -16,17 +16,15 @@ import {
   useMyQuestions,
 } from "@/app/(archive)/archive/_hooks/";
 import { Separator } from "@/components/ui/separator";
-import { fetchAPI, formatDiffDate } from "@/lib/functions";
+import { fetchAPI, formatDiffDate, getCurrentUserId } from "@/lib/functions";
 import { map } from "lodash";
 import { useSubjects } from "@/hooks";
 import { FloatingActionButton } from "@/components/atoms";
 import WrongNoteCard from "@/app/(wrongnote)/wrongnote/_components/WrongNoteCard";
-import BookmarkCard from "./_components/BookmarkCard";
 import type {
   WrongNoteListItem,
   WrongNoteListResponse,
 } from "@/types/wrongnote";
-import type { BookmarkListItem } from "@/types/questionbank";
 
 const TABS: { key: ArchiveTabKey; label: string }[] = [
   { key: "my-questions", label: "내 질문" },
@@ -40,6 +38,10 @@ const ArchivePage: FC = () => {
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const { getSubjectMapForChips } = useSubjects();
   const router = useRouter();
+  const currentUserId = getCurrentUserId();
+
+  const [myPosts, setMyPosts] = useState<any[]>([]);
+  const [postsLoading, setPostsLoading] = useState(false);
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
@@ -51,28 +53,36 @@ const ArchivePage: FC = () => {
     refetch: refetchQuestions,
   } = useMyQuestions(token || undefined);
 
-  const [bookmarks, setBookmarks] = useState<BookmarkListItem[]>([]);
-  const [bookmarksLoading, setBookmarksLoading] = useState(false);
+  const [myMaterials, setMyMaterials] = useState<any[]>([]);
+  const [materialsLoading, setMaterialsLoading] = useState(false);
 
   const [wrongNotes, setWrongNotes] = useState<WrongNoteListItem[]>([]);
   const [notesLoading, setNotesLoading] = useState(false);
 
   useEffect(() => {
     if (currentStatus !== "my-study") return;
-    const fetchBookmarks = async () => {
-      setBookmarksLoading(true);
+
+    const fetchMyMaterials = async () => {
+      setMaterialsLoading(true);
       try {
-        const raw = await fetchAPI("/api/questionbank/bookmarks", "GET");
+        const raw = await fetchAPI("/api/materials/all", "GET");
         const data = raw.data ?? raw;
-        setBookmarks(Array.isArray(data) ? data : []);
+
+        const materials = Array.isArray(data) ? data : [];
+        const filtered = materials.filter(
+          (item: any) => Number(item?.userId) === Number(currentUserId),
+        );
+
+        setMyMaterials(filtered);
       } catch {
-        setBookmarks([]);
+        setMyMaterials([]);
       } finally {
-        setBookmarksLoading(false);
+        setMaterialsLoading(false);
       }
     };
-    fetchBookmarks();
-  }, [currentStatus]);
+
+    fetchMyMaterials();
+  }, [currentStatus, currentUserId]);
 
   useEffect(() => {
     if (currentStatus !== "my-note") return;
@@ -94,16 +104,40 @@ const ArchivePage: FC = () => {
     fetchNotes();
   }, [currentStatus]);
 
-  const filteredBookmarks = useMemo(() => {
-    if (selectedSubjects.length === 0) return bookmarks;
-    return bookmarks.filter(
-      (b) => b.subject && selectedSubjects.includes(b.subject),
-    );
-  }, [bookmarks, selectedSubjects]);
+  useEffect(() => {
+    if (currentStatus !== "my-post") return;
 
-  const handleBookmarkToggle = (questionId: number) => {
-    setBookmarks((prev) => prev.filter((b) => b.questionId !== questionId));
-  };
+    const fetchMyPosts = async () => {
+      setPostsLoading(true);
+      try {
+        const raw = await fetchAPI("/api/boards", "GET");
+        const data = raw.data ?? raw;
+
+        const boards = Array.isArray(data) ? data : [];
+        const filtered = boards.filter(
+          (item: any) => Number(item?.userId) === Number(currentUserId),
+        );
+
+        setMyPosts(filtered);
+      } catch {
+        setMyPosts([]);
+      } finally {
+        setPostsLoading(false);
+      }
+    };
+
+    fetchMyPosts();
+  }, [currentStatus, currentUserId]);
+
+  const filteredMaterials = useMemo(() => {
+    if (selectedSubjects.length === 0) return myMaterials;
+
+    return myMaterials.filter((item) => {
+      const subjectName =
+        item?.subjectName ?? item?.subject?.name ?? item?.name ?? "";
+      return selectedSubjects.includes(subjectName);
+    });
+  }, [myMaterials, selectedSubjects]);
 
   const filteredNotes = useMemo(() => {
     if (selectedSubjects.length === 0) return wrongNotes;
@@ -184,6 +218,104 @@ const ArchivePage: FC = () => {
     );
   };
 
+  const renderBoardList = (list: any[] | undefined | null) => {
+    if (!list || list.length === 0) {
+      return (
+        <div className="flex h-full items-center justify-center pb-[5.625rem]">
+          <div className="text-border">아직 작성한 게시글이 없습니다.</div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="mx-6 py-5 pb-[5.625rem]">
+        <div className="flex flex-col gap-5">
+          {map(list, (item) => {
+            const boardId = item?.id;
+
+            const board = {
+              id: String(boardId ?? ""),
+              title: item?.title ?? "제목 없음",
+              content: item?.content ?? "내용 없음",
+              createdAt: formatDiffDate(item?.createdAt ?? new Date().toISOString()),
+              likeCount: item?.likeCount ?? 0,
+              answerCount: 0,
+              subjectName: item?.categoryName ?? "",
+              viewCount: item?.viewCount ?? 0,
+              userNickname: item?.nickname ?? item?.userNickname ?? "익명",
+              images: item?.images ?? [],
+            };
+
+            return (
+              <Fragment key={boardId ?? Math.random()}>
+                <QuestionListCard
+                  question={board}
+                  onClick={() => {
+                    if (boardId) router.push(`/board/${boardId}`);
+                    else alert("게시글 ID를 찾을 수 없습니다.");
+                  }}
+                />
+                <Separator className="last:hidden" />
+              </Fragment>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderMaterialList = (list: any[] | undefined | null) => {
+    if (!list || list.length === 0) {
+      return (
+        <div className="flex h-full items-center justify-center pb-[5.625rem]">
+          <div className="text-border">아직 작성한 학습자료가 없습니다.</div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="mx-6 py-5 pb-[5.625rem]">
+        <div className="flex flex-col gap-5">
+          {map(list, (item) => {
+            const materialId = item?.id;
+
+            const material = {
+              id: String(materialId ?? ""),
+              title: item?.title ?? "제목 없음",
+              content: item?.pdfKey
+                ? "PDF 첨부"
+                : Array.isArray(item?.urlKey) && item.urlKey.length > 0
+                  ? `이미지 ${item.urlKey.length}장 첨부`
+                  : "첨부 파일 없음",
+              createdAt: item?.createdAt
+                ? formatDiffDate(item.createdAt)
+                : "",
+              likeCount: item?.likeCount ?? 0,
+              answerCount: 0,
+              subjectName: item?.subjectName ?? item?.subject?.name ?? "",
+              viewCount: item?.viewCount ?? 0,
+              userNickname: item?.nickname ?? item?.userNickname ?? "익명",
+              images: item?.images ?? [],
+            };
+
+            return (
+              <Fragment key={materialId ?? Math.random()}>
+                <QuestionListCard
+                  question={material}
+                  onClick={() => {
+                    if (materialId) router.push(`/materials/${materialId}`);
+                    else alert("학습자료 ID를 찾을 수 없습니다.");
+                  }}
+                />
+                <Separator className="last:hidden" />
+              </Fragment>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   const renderPreparingText = (text: string) => (
     <div className="flex h-full items-center justify-center pb-[5.625rem]">
       <div className="text-border">{text}</div>
@@ -208,6 +340,7 @@ const ArchivePage: FC = () => {
             data={subjectData}
             selectedItems={selectedSubjects}
             onItemToggle={handleSubjectToggle}
+            expandedData={rawSubjectMap}
             showDropdown
             showDropdownButton
             categoryTitleClassName="text-sm font-medium text-pretendard text-[#111]"
@@ -231,33 +364,12 @@ const ArchivePage: FC = () => {
             renderQuestionList(myQuestions)
           )
         ) : currentStatus === "my-study" ? (
-          bookmarksLoading ? (
+          materialsLoading ? (
             <div className="flex h-full items-center justify-center">
               <div className="text-border">불러오는 중...</div>
             </div>
-          ) : filteredBookmarks.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center gap-2 pb-[5.625rem]">
-              <div className="text-border">
-                {bookmarks.length === 0
-                  ? "아직 북마크된 문제가 없습니다."
-                  : "해당 과목의 북마크가 없습니다."}
-              </div>
-              {bookmarks.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  문제 풀이 중 북마크하거나, 틀린 문제는 자동 저장됩니다.
-                </p>
-              )}
-            </div>
           ) : (
-            <div className="pb-[5.625rem]">
-              {filteredBookmarks.map((item) => (
-                <BookmarkCard
-                  key={item.bookmarkId}
-                  item={item}
-                  onToggle={handleBookmarkToggle}
-                />
-              ))}
-            </div>
+            renderMaterialList(filteredMaterials)
           )
         ) : currentStatus === "my-note" ? (
           notesLoading ? (
@@ -297,6 +409,14 @@ const ArchivePage: FC = () => {
               </button>
             </div>
           )
+        ) : currentStatus === "my-post" ? (
+          postsLoading ? (
+            <div className="flex h-full items-center justify-center">
+              <div className="text-border">불러오는 중...</div>
+            </div>
+          ) : (
+            renderBoardList(myPosts)
+          )
         ) : (
           renderPreparingText("게시물 목록은 준비 중입니다.")
         )}
@@ -317,21 +437,22 @@ const ArchivePage: FC = () => {
         <FloatingActionButton
           mainIcon={
             <svg
-              width="28"
-              height="28"
+              width="32"
+              height="32"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="white"
-              strokeWidth="2.5"
+              stroke="currentColor"
+              strokeWidth="2.4"
               strokeLinecap="round"
               strokeLinejoin="round"
+              className="block"
             >
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
           }
-          size="md"
-          bottom={100}
+          size="lg"
+          bottom={132}
           right={24}
           expandDirection="up"
           actions={[
