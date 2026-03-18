@@ -24,7 +24,7 @@ export const useUpload = () => {
     try {
       const formData = new FormData();
       formData.append("userId", userId.toString());
-      formData.append("files", "ImgName");
+      formData.append("files", `profile_${userId}`);
       formData.append("type", type);
 
       const response = await fetch("/api/profile/uploadS3", {
