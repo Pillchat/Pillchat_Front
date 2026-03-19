@@ -48,6 +48,14 @@ const BoardClient = () => {
     );
   };
 
+  const getCommentCount = (item: any) =>
+    item?.answerCount ??
+    item?.commentCount ??
+    item?.commentsCount ??
+    item?.replyCount ??
+    item?.repliesCount ??
+    0;
+
   const isStudyTab = currentStatus === "study";
 
   const { data, isLoading, isError, error } = useQuery({
@@ -58,14 +66,14 @@ const BoardClient = () => {
         : fetchAPI(`/api/boards?status=${currentStatus}`, "GET"),
   });
 
-  const list = useMemo(() => {
-    const raw = Array.isArray(data)
-      ? data
-      : Array.isArray(data?.data)
-        ? data.data
-        : [];
+  const rawList = useMemo(() => {
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
+  }, [data]);
 
-    let filtered = [...raw];
+  const list = useMemo(() => {
+    let filtered = [...rawList];
 
     if (q) {
       const terms = q
@@ -111,7 +119,50 @@ const BoardClient = () => {
     }
 
     return filtered;
-  }, [data, q, currentStatus, isStudyTab, selectedSubjects]);
+  }, [rawList, q, currentStatus, isStudyTab, selectedSubjects]);
+
+  const boardImageKeys = useMemo(() => {
+    if (isStudyTab) return [];
+
+    return [...new Set(
+      list.flatMap((item: any) =>
+        Array.isArray(item?.images)
+          ? item.images
+              .map((image: any) =>
+                typeof image === "string" ? image : image?.urlKey,
+              )
+              .filter(Boolean)
+          : [],
+      ),
+    )];
+  }, [isStudyTab, list]);
+
+  const { data: boardFilesData } = useQuery({
+    queryKey: ["board-list-files", boardImageKeys],
+    queryFn: async () => {
+      if (boardImageKeys.length === 0) return [];
+
+      const params = new URLSearchParams();
+      boardImageKeys.forEach((key) => {
+        params.append("keys", key);
+      });
+
+      return fetchAPI(`/api/files?${params.toString()}`, "GET");
+    },
+    enabled: !isStudyTab && boardImageKeys.length > 0,
+  });
+
+  const boardImageUrlMap = useMemo(() => {
+    if (!Array.isArray(boardFilesData)) return {};
+
+    return boardImageKeys.reduce<Record<string, string>>((acc, key, index) => {
+      const file = boardFilesData[index];
+      if (file?.preSignedUrl) {
+        acc[key] = file.preSignedUrl;
+      }
+      return acc;
+    }, {});
+  }, [boardFilesData, boardImageKeys]);
 
   const emptyText = q
     ? `"${q}" 검색 결과가 없습니다.`
@@ -180,6 +231,19 @@ const BoardClient = () => {
           <div className="mx-6 py-5 pb-[5.625rem]">
             <div className="flex flex-col gap-5">
               {map(list, (item: any) => {
+                const imageKeys =
+                  !isStudyTab && Array.isArray(item?.images)
+                    ? item.images
+                        .map((image: any) =>
+                          typeof image === "string" ? image : image?.urlKey,
+                        )
+                        .filter(Boolean)
+                    : [];
+
+                const imageUrls = imageKeys
+                  .map((key: string) => boardImageUrlMap[key])
+                  .filter(Boolean);
+
                 const cardData = isStudyTab
                   ? {
                       id: String(item?.id ?? ""),
@@ -193,7 +257,7 @@ const BoardClient = () => {
                         item?.userNickname ?? item?.nickname ?? "익명",
                       subjectName:
                         item?.subjectName ?? item?.subject?.name ?? "",
-                      answerCount: 0,
+                      answerCount: getCommentCount(item),
                       likeCount: item?.likeCount ?? 0,
                       viewCount: item?.viewCount ?? 0,
                       createdAt: formatDiffDate(item?.createdAt),
@@ -205,8 +269,9 @@ const BoardClient = () => {
                         item?.userNickname ?? item?.nickname ?? "익명",
                       subjectName:
                         item?.subjectName ?? item?.categoryName ?? "",
-                      answerCount: item?.answerCount ?? 0,
+                      answerCount: getCommentCount(item),
                       createdAt: formatDiffDate(item?.createdAt),
+                      images: imageUrls,
                     };
 
                 return (

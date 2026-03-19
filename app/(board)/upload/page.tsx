@@ -22,6 +22,106 @@ enum Step {
   Complete,
 }
 
+const buildQueryParams = (
+  params: Record<string, string | number | (string | number)[] | null | undefined>,
+) => {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") return;
+
+    if (Array.isArray(value)) {
+      value.forEach((item) => {
+        if (item === undefined || item === null || item === "") return;
+        searchParams.append(key, String(item));
+      });
+      return;
+    }
+
+    searchParams.append(key, String(value));
+  });
+
+  return searchParams.toString();
+};
+
+const getPresignedUrl = (value: any) =>
+  value?.preSignedUrl ?? value?.presignedUrl ?? value?.uploadUrl ?? "";
+
+const getUploadedKey = (value: any) =>
+  value?.key ?? value?.urlKey ?? value?.fileKey ?? "";
+
+const requestMaterialUploadTargets = async (files: File[]) => {
+  const queryString = buildQueryParams({
+    files: files.map((file) => file.name),
+    type: "material",
+  });
+
+  const response = await fetchAPI(`/api/files?${queryString}`, "POST");
+
+  const items = Array.isArray(response)
+    ? response
+    : Array.isArray(response?.data)
+      ? response.data
+      : response
+        ? [response]
+        : [];
+
+  if (!items.length) {
+    throw new Error("업로드용 URL 발급에 실패했습니다.");
+  }
+
+  return items;
+};
+
+const uploadFileToPresignedUrl = async (file: File, target: any) => {
+  const preSignedUrl = getPresignedUrl(target);
+  const key = getUploadedKey(target);
+
+  if (!preSignedUrl || !key) {
+    throw new Error("파일 업로드 응답 형식이 올바르지 않습니다.");
+  }
+
+  const response = await fetch(preSignedUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": file.type || "application/octet-stream",
+    },
+    body: file,
+  });
+
+  if (!response.ok) {
+    throw new Error(`${file.name} 업로드에 실패했습니다.`);
+  }
+
+  return key;
+};
+
+const uploadMaterialFiles = async (imageFiles: File[], pdfFile: File | null) => {
+  const files = [...imageFiles, ...(pdfFile ? [pdfFile] : [])];
+
+  if (files.length === 0) {
+    return {
+      imageKeys: [] as string[],
+      pdfKey: null as string | null,
+    };
+  }
+
+  const targets = await requestMaterialUploadTargets(files);
+
+  if (targets.length < files.length) {
+    throw new Error("업로드용 URL 개수가 파일 개수와 맞지 않습니다.");
+  }
+
+  const uploadedKeys = await Promise.all(
+    files.map((file, index) => uploadFileToPresignedUrl(file, targets[index])),
+  );
+
+  return {
+    imageKeys: uploadedKeys.slice(0, imageFiles.length),
+    pdfKey: pdfFile ? uploadedKeys[uploadedKeys.length - 1] : null,
+  };
+};
+
 const UploadPage = () => {
   const { getSubjectMapForChips } = useSubjects();
   const router = useRouter();
@@ -62,8 +162,7 @@ const UploadPage = () => {
         );
       }
 
-      const imageKeys = imageFiles.map((file) => file.name);
-      const pdfKey = pdfFile ? pdfFile.name : null;
+      const { imageKeys, pdfKey } = await uploadMaterialFiles(imageFiles, pdfFile);
 
       const payload = {
         title: data.title.trim(),

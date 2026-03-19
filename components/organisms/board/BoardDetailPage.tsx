@@ -18,6 +18,11 @@ import { BoardContents } from "./BoardContents";
 
 type CommentSortType = "latest" | "popular";
 
+const getBoardFileKey = (file: any) => {
+  if (typeof file === "string") return file;
+  return file?.urlKey ?? file?.key ?? file?.fileKey ?? file?.name ?? "";
+};
+
 export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -35,6 +40,12 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const [deletingCommentId, setDeletingCommentId] = useState<number | null>(
     null,
   );
+  const [commentLikeOverrides, setCommentLikeOverrides] = useState<
+    Record<number, boolean>
+  >({});
+  const [commentLikePendingId, setCommentLikePendingId] = useState<number | null>(
+    null,
+  );
 
   const { data: boardData, isLoading: boardLoading } = useQuery({
     queryKey: ["board", boardId],
@@ -42,17 +53,54 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     enabled: !!boardId,
   });
 
+  const boardFileKeys = useMemo(() => {
+    if (!Array.isArray(boardData?.images)) return [];
+
+    return boardData.images
+      .map((file: any) => getBoardFileKey(file))
+      .filter(Boolean);
+  }, [boardData?.images]);
+
   const { data: filesData, isLoading: filesLoading } = useQuery({
-    queryKey: ["board-files", boardData?.id, boardData?.images],
+    queryKey: ["board-files", boardData?.id, boardFileKeys],
     queryFn: async () => {
-      if (!boardData?.images || boardData.images.length === 0) return [];
-      const keys = boardData.images.map(
-        (image: any) => `board/${boardData.id}/${image.urlKey}`,
-      );
-      return fetchAPI("/api/files", "GET", { keys });
+      if (boardFileKeys.length === 0) return [];
+
+      const params = new URLSearchParams();
+      boardFileKeys.forEach((key) => {
+        params.append("keys", key);
+      });
+
+      return fetchAPI(`/api/files?${params.toString()}`, "GET");
     },
-    enabled: !!boardData?.id && !!boardData?.images,
+    enabled: boardFileKeys.length > 0,
   });
+
+  const imageUrls = useMemo(() => {
+    if (!Array.isArray(filesData)) return [];
+
+    return filesData
+      .filter((file: any) => {
+        const key = String(file?.key ?? "").toLowerCase();
+        return !key.endsWith(".pdf");
+      })
+      .map((file: any) => file.preSignedUrl)
+      .filter(Boolean);
+  }, [filesData]);
+
+  const pdfFile = useMemo(() => {
+    if (!Array.isArray(filesData)) return null;
+
+    return (
+      filesData.find((file: any) => {
+        const key = String(file?.key ?? "").toLowerCase();
+        return key.endsWith(".pdf");
+      }) ?? null
+    );
+  }, [filesData]);
+
+  const pdfUrl = pdfFile?.preSignedUrl ?? "";
+  const pdfName = pdfFile?.key?.split("/").pop() ?? "";
 
   const { data: commentsData, isLoading: commentsLoading } = useQuery({
     queryKey: ["board-comments", boardId],
@@ -125,6 +173,40 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     },
   });
 
+  const likeCommentMutation = useMutation({
+    mutationFn: async (payload: { commentId: number; nextLiked: boolean }) => {
+      const { commentId, nextLiked } = payload;
+
+      if (nextLiked) {
+        return fetchAPI(`/api/boards/comments/${commentId}/like`, "POST");
+      }
+
+      return fetchAPI(`/api/boards/comments/${commentId}/like`, "DELETE");
+    },
+    onMutate: ({ commentId, nextLiked }) => {
+      setCommentLikePendingId(commentId);
+      setCommentLikeOverrides((prev) => ({
+        ...prev,
+        [commentId]: nextLiked,
+      }));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["board-comments", boardId] });
+    },
+    onError: (error, variables) => {
+      setCommentLikeOverrides((prev) => {
+        const next = { ...prev };
+        delete next[variables.commentId];
+        return next;
+      });
+      console.error("댓글 좋아요 처리 실패:", error);
+      alert("댓글 좋아요 처리에 실패했습니다.");
+    },
+    onSettled: () => {
+      setCommentLikePendingId(null);
+    },
+  });
+
   const commentMutation = useMutation({
     mutationFn: () =>
       fetchAPI(`/api/boards/${boardId}/comments`, "POST", {
@@ -173,6 +255,9 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const handleEdit = () => router.push(`/post?edit=${boardId}`);
   const handleDelete = () => setShowDeleteConfirm(true);
   const handleReport = () => router.push(`/reports?type=BOARD&id=${boardId}`);
+  const handleCommentReport = (commentId: number) => {
+    router.push(`/reports?type=BOARD_COMMENT&id=${commentId}`);
+  };
 
   const confirmDelete = () => {
     deleteMutation.mutate();
@@ -196,6 +281,28 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     updateCommentMutation.mutate({
       commentId: editingCommentId,
       content: editingCommentValue,
+    });
+  };
+
+  const handleCommentLikeToggle = (comment: any) => {
+    const commentId = Number(comment?.id ?? comment?.commentId);
+    if (!commentId || commentLikePendingId === commentId) return;
+
+    const baseLiked = Boolean(
+      comment?.likeWhether ??
+        comment?.isLiked ??
+        comment?.liked ??
+        comment?.likedByMe ??
+        false,
+    );
+    const currentLiked =
+      commentLikeOverrides[commentId] !== undefined
+        ? commentLikeOverrides[commentId]
+        : baseLiked;
+
+    likeCommentMutation.mutate({
+      commentId,
+      nextLiked: !currentLiked,
     });
   };
 
@@ -236,7 +343,9 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
               />
               <BoardContents
                 content={boardData.content}
-                images={filesData?.map((file: any) => file.preSignedUrl) ?? []}
+                images={imageUrls}
+                pdfUrl={pdfUrl}
+                pdfName={pdfName}
                 filesLoading={filesLoading}
               />
             </div>
@@ -303,28 +412,31 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                 ) : (
                   <div className="flex flex-col gap-5">
                     {comments.map((comment: any) => {
-                      const commentId = Number(
-                        comment?.id ?? comment?.commentId,
-                      );
-                      const commentAuthorId = Number(
-                        comment?.userId ?? comment?.writerId,
-                      );
-                      const isCommentAuthor =
-                        Number(currentUserId) === commentAuthorId;
+                      const commentId = Number(comment?.id ?? comment?.commentId);
+                      const commentAuthorId = Number(comment?.userId ?? comment?.writerId);
+                      const isCommentAuthor = Number(currentUserId) === commentAuthorId;
 
-                      const commentMenuItems: ActionMenuItem[] = [
-                        {
-                          id: "edit",
-                          label: "수정",
-                          onClick: () => startEditComment(comment),
-                        },
-                        {
-                          id: "delete",
-                          label: "삭제",
-                          onClick: () => setDeletingCommentId(commentId),
-                          variant: "destructive",
-                        },
-                      ];
+                      const commentMenuItems: ActionMenuItem[] = isCommentAuthor
+                        ? [
+                            {
+                              id: "edit",
+                              label: "수정",
+                              onClick: () => startEditComment(comment),
+                            },
+                            {
+                              id: "delete",
+                              label: "삭제",
+                              onClick: () => setDeletingCommentId(commentId),
+                              variant: "destructive",
+                            },
+                          ]
+                        : [
+                            {
+                              id: "report",
+                              label: "신고",
+                              onClick: () => handleCommentReport(commentId),
+                            },
+                          ];
 
                       const profileImage =
                         comment?.profileImageUrl ??
@@ -332,11 +444,31 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                         comment?.imageUrl ??
                         "";
 
+                      const baseLiked = Boolean(
+                        comment?.likeWhether ??
+                          comment?.isLiked ??
+                          comment?.liked ??
+                          comment?.likedByMe ??
+                          false,
+                      );
+
+                      const isCommentLiked =
+                        commentLikeOverrides[commentId] !== undefined
+                          ? commentLikeOverrides[commentId]
+                          : baseLiked;
+
+                      const baseLikeCount = Number(comment?.likeCount ?? 0);
+                      const likeCount =
+                        commentLikeOverrides[commentId] === undefined
+                          ? baseLikeCount
+                          : commentLikeOverrides[commentId] === baseLiked
+                            ? baseLikeCount
+                            : commentLikeOverrides[commentId]
+                              ? baseLikeCount + 1
+                              : Math.max(0, baseLikeCount - 1);
+
                       return (
-                        <div
-                          key={commentId}
-                          className="flex min-h-[60px] w-full gap-3"
-                        >
+                        <div key={commentId} className="flex min-h-[60px] w-full gap-3">
                           <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[#F4F4F4]">
                             {profileImage ? (
                               <img
@@ -353,14 +485,11 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                             <div className="flex min-h-[60px] flex-1 flex-col justify-between">
                               <div className="flex items-center gap-2 text-xs">
                                 <span className="font-semibold text-[#111111]">
-                                  {comment?.nickname ??
-                                    comment?.userNickname ??
-                                    "익명"}
+                                  {comment?.nickname ?? comment?.userNickname ?? "익명"}
                                 </span>
                                 <span className="text-[#999999]">
                                   {formatDiffDate(
-                                    comment?.createdAt ??
-                                      new Date().toISOString(),
+                                    comment?.createdAt ?? new Date().toISOString(),
                                   )}
                                 </span>
                               </div>
@@ -369,9 +498,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                                 <div className="flex flex-col gap-2">
                                   <input
                                     value={editingCommentValue}
-                                    onChange={(e) =>
-                                      setEditingCommentValue(e.target.value)
-                                    }
+                                    onChange={(e) => setEditingCommentValue(e.target.value)}
                                     className="rounded-[12px] border border-[#C4C4C4] px-3 py-2 text-sm outline-none"
                                   />
                                   <div className="flex items-center gap-2">
@@ -404,35 +531,34 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                                 </p>
                               )}
 
-                              <div className="flex items-center gap-1 text-xs text-[#999999]">
-                                <span>♡</span>
-                                <span>{comment?.likeCount ?? 0}</span>
-                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleCommentLikeToggle(comment)}
+                                disabled={commentLikePendingId === commentId}
+                                className={
+                                  isCommentLiked
+                                    ? "flex items-center gap-1 text-xs text-primary"
+                                    : "flex items-center gap-1 text-xs text-[#999999]"
+                                }
+                              >
+                                <span>{isCommentLiked ? "♥" : "♡"}</span>
+                                <span>{likeCount}</span>
+                              </button>
                             </div>
 
-                            {isCommentAuthor && (
-                              <div className="absolute right-0 top-0">
-                                <ActionMenu
-                                  trigger={
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8"
-                                    >
-                                      <img
-                                        src="/Ellipsis.svg"
-                                        alt="댓글 더보기"
-                                        className="h-4 w-4"
-                                      />
-                                    </Button>
-                                  }
-                                  items={commentMenuItems}
-                                  align="end"
-                                  side="bottom"
-                                  showBackdrop={true}
-                                />
-                              </div>
-                            )}
+                            <div className="absolute right-0 top-0">
+                              <ActionMenu
+                                trigger={
+                                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <img src="/Ellipsis.svg" alt="더보기" className="h-5 w-5" />
+                                  </Button>
+                                }
+                                items={commentMenuItems}
+                                align="end"
+                                side="top"
+                                showBackdrop={true}
+                              />
+                            </div>
                           </div>
                         </div>
                       );
@@ -446,7 +572,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
       )}
 
       <div
-        className="fixed left-0 right-0 z-50 bg-white px-6"
+        className="fixed left-0 right-0 z-20 bg-white px-6"
         style={{
           height: 82,
           bottom: keyboardOffset,

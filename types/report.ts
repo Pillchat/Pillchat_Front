@@ -10,7 +10,13 @@ export type ReportReasonType =
   | "OTHER"
   | "ETC";
 
-export type TargetType = "QUESTION" | "ANSWER" | "USER";
+export type TargetType =
+  | "QUESTION"
+  | "ANSWER"
+  | "USER"
+  | "BOARD"
+  | "BOARD_COMMENT"
+  | "MATERIAL";
 
 export type ReportCreateRequest = {
   targetType: TargetType;
