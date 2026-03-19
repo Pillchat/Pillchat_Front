@@ -1,12 +1,14 @@
 import { serverFetch } from "@/lib/functions";
 import { NextRequest, NextResponse } from "next/server";
 
+type RouteParams = Promise<{ commentId: string }>;
+
 export async function POST(
   request: NextRequest,
-  { params }: { params: { commentId: string } },
+  { params }: { params: RouteParams },
 ) {
   try {
-    const { commentId } = params;
+    const { commentId } = await params;
 
     if (!commentId) {
       return NextResponse.json(
@@ -32,10 +34,10 @@ export async function POST(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { commentId: string } },
+  { params }: { params: RouteParams },
 ) {
   try {
-    const { commentId } = params;
+    const { commentId } = await params;
 
     if (!commentId) {
       return NextResponse.json(
