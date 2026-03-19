@@ -18,7 +18,7 @@ const resolveMaterialKey = (value: any, materialId: string | number) => {
   const raw =
     typeof value === "string"
       ? value
-      : value?.urlKey ?? value?.key ?? value?.fileKey ?? value?.name ?? "";
+      : (value?.urlKey ?? value?.key ?? value?.fileKey ?? value?.name ?? "");
 
   if (!raw) return "";
   return raw.includes("/") ? raw : `material/${materialId}/${raw}`;

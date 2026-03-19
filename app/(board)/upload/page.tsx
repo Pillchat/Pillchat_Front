@@ -23,7 +23,10 @@ enum Step {
 }
 
 const buildQueryParams = (
-  params: Record<string, string | number | (string | number)[] | null | undefined>,
+  params: Record<
+    string,
+    string | number | (string | number)[] | null | undefined
+  >,
 ) => {
   const searchParams = new URLSearchParams();
 
@@ -96,7 +99,10 @@ const uploadFileToPresignedUrl = async (file: File, target: any) => {
   return key;
 };
 
-const uploadMaterialFiles = async (imageFiles: File[], pdfFile: File | null) => {
+const uploadMaterialFiles = async (
+  imageFiles: File[],
+  pdfFile: File | null,
+) => {
   const files = [...imageFiles, ...(pdfFile ? [pdfFile] : [])];
 
   if (files.length === 0) {
@@ -162,7 +168,10 @@ const UploadPage = () => {
         );
       }
 
-      const { imageKeys, pdfKey } = await uploadMaterialFiles(imageFiles, pdfFile);
+      const { imageKeys, pdfKey } = await uploadMaterialFiles(
+        imageFiles,
+        pdfFile,
+      );
 
       const payload = {
         title: data.title.trim(),

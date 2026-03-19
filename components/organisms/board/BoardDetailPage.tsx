@@ -43,9 +43,9 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const [commentLikeOverrides, setCommentLikeOverrides] = useState<
     Record<number, boolean>
   >({});
-  const [commentLikePendingId, setCommentLikePendingId] = useState<number | null>(
-    null,
-  );
+  const [commentLikePendingId, setCommentLikePendingId] = useState<
+    number | null
+  >(null);
 
   const { data: boardData, isLoading: boardLoading } = useQuery({
     queryKey: ["board", boardId],
@@ -412,9 +412,14 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                 ) : (
                   <div className="flex flex-col gap-5">
                     {comments.map((comment: any) => {
-                      const commentId = Number(comment?.id ?? comment?.commentId);
-                      const commentAuthorId = Number(comment?.userId ?? comment?.writerId);
-                      const isCommentAuthor = Number(currentUserId) === commentAuthorId;
+                      const commentId = Number(
+                        comment?.id ?? comment?.commentId,
+                      );
+                      const commentAuthorId = Number(
+                        comment?.userId ?? comment?.writerId,
+                      );
+                      const isCommentAuthor =
+                        Number(currentUserId) === commentAuthorId;
 
                       const commentMenuItems: ActionMenuItem[] = isCommentAuthor
                         ? [
@@ -468,7 +473,10 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                               : Math.max(0, baseLikeCount - 1);
 
                       return (
-                        <div key={commentId} className="flex min-h-[60px] w-full gap-3">
+                        <div
+                          key={commentId}
+                          className="flex min-h-[60px] w-full gap-3"
+                        >
                           <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[#F4F4F4]">
                             {profileImage ? (
                               <img
@@ -485,11 +493,14 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                             <div className="flex min-h-[60px] flex-1 flex-col justify-between">
                               <div className="flex items-center gap-2 text-xs">
                                 <span className="font-semibold text-[#111111]">
-                                  {comment?.nickname ?? comment?.userNickname ?? "익명"}
+                                  {comment?.nickname ??
+                                    comment?.userNickname ??
+                                    "익명"}
                                 </span>
                                 <span className="text-[#999999]">
                                   {formatDiffDate(
-                                    comment?.createdAt ?? new Date().toISOString(),
+                                    comment?.createdAt ??
+                                      new Date().toISOString(),
                                   )}
                                 </span>
                               </div>
@@ -498,7 +509,9 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                                 <div className="flex flex-col gap-2">
                                   <input
                                     value={editingCommentValue}
-                                    onChange={(e) => setEditingCommentValue(e.target.value)}
+                                    onChange={(e) =>
+                                      setEditingCommentValue(e.target.value)
+                                    }
                                     className="rounded-[12px] border border-[#C4C4C4] px-3 py-2 text-sm outline-none"
                                   />
                                   <div className="flex items-center gap-2">
@@ -549,8 +562,16 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                             <div className="absolute right-0 top-0">
                               <ActionMenu
                                 trigger={
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <img src="/Ellipsis.svg" alt="더보기" className="h-5 w-5" />
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                  >
+                                    <img
+                                      src="/Ellipsis.svg"
+                                      alt="더보기"
+                                      className="h-5 w-5"
+                                    />
                                   </Button>
                                 }
                                 items={commentMenuItems}

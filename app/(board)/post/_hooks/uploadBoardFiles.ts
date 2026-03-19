@@ -18,21 +18,23 @@ export const uploadBoardFiles = async (
   );
 
   await Promise.all(
-    presignedList.map(async ({ preSignedUrl }: { preSignedUrl: string }, index: number) => {
-      const file = files[index];
+    presignedList.map(
+      async ({ preSignedUrl }: { preSignedUrl: string }, index: number) => {
+        const file = files[index];
 
-      const uploadRes = await fetch(preSignedUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": file.type || "application/octet-stream",
-        },
-        body: file,
-      });
+        const uploadRes = await fetch(preSignedUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+          },
+          body: file,
+        });
 
-      if (!uploadRes.ok) {
-        throw new Error(`${file.name} 업로드에 실패했습니다.`);
-      }
-    }),
+        if (!uploadRes.ok) {
+          throw new Error(`${file.name} 업로드에 실패했습니다.`);
+        }
+      },
+    ),
   );
 
   return presignedList.map((item: { key: string }) => item.key);

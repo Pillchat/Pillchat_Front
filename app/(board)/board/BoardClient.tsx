@@ -124,17 +124,19 @@ const BoardClient = () => {
   const boardImageKeys = useMemo(() => {
     if (isStudyTab) return [];
 
-    return [...new Set(
-      list.flatMap((item: any) =>
-        Array.isArray(item?.images)
-          ? item.images
-              .map((image: any) =>
-                typeof image === "string" ? image : image?.urlKey,
-              )
-              .filter(Boolean)
-          : [],
+    return [
+      ...new Set(
+        list.flatMap((item: any) =>
+          Array.isArray(item?.images)
+            ? item.images
+                .map((image: any) =>
+                  typeof image === "string" ? image : image?.urlKey,
+                )
+                .filter(Boolean)
+            : [],
+        ),
       ),
-    )];
+    ];
   }, [isStudyTab, list]);
 
   const { data: boardFilesData } = useQuery({

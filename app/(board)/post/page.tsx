@@ -20,7 +20,10 @@ import { SelectCategoryModal } from "./SelectCategoryModal";
 import { fetchAPI } from "@/lib/functions";
 
 const buildQueryParams = (
-  params: Record<string, string | number | (string | number)[] | null | undefined>,
+  params: Record<
+    string,
+    string | number | (string | number)[] | null | undefined
+  >,
 ) => {
   const searchParams = new URLSearchParams();
 
