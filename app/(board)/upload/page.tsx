@@ -189,7 +189,9 @@ const UploadPage = () => {
       }
 
       const existingImageKeys = previewItems
-        .filter((item: any) => item.source === "remote" && item.type === "image")
+        .filter(
+          (item: any) => item.source === "remote" && item.type === "image",
+        )
         .map((item: any) => item.key)
         .filter(Boolean);
 
@@ -232,7 +234,9 @@ const UploadPage = () => {
       : [];
 
     const pdfKeys = editMaterial?.pdfKey
-      ? [resolveMaterialKey(editMaterial.pdfKey, editMaterial.id)].filter(Boolean)
+      ? [resolveMaterialKey(editMaterial.pdfKey, editMaterial.id)].filter(
+          Boolean,
+        )
       : [];
 
     return [...new Set([...imageKeys, ...pdfKeys])];
@@ -619,7 +623,9 @@ const UploadPage = () => {
                 className="mb-2"
               />
               <p className="text-2xl font-semibold">
-                {isEditMode ? "학습자료가 수정되었습니다!" : "학습자료가 업로드되었습니다!"}
+                {isEditMode
+                  ? "학습자료가 수정되었습니다!"
+                  : "학습자료가 업로드되었습니다!"}
               </p>
             </div>
             <p className="text-sm">

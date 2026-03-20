@@ -48,7 +48,9 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
       : [];
 
     const pdfKeys = materialData?.pdfKey
-      ? [resolveMaterialKey(materialData.pdfKey, materialData.id)].filter(Boolean)
+      ? [resolveMaterialKey(materialData.pdfKey, materialData.id)].filter(
+          Boolean,
+        )
       : [];
 
     return [...new Set([...imageKeys, ...pdfKeys])];
