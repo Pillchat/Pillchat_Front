@@ -1,6 +1,6 @@
 "use client";
 
-type ArchiveTabKey = /*"my-questions" | */"my-study" | "my-note" | "my-post";
+type ArchiveTabKey = /*"my-questions" | */ "my-study" | "my-note" | "my-post";
 
 import { FC, Fragment, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -167,7 +167,9 @@ const ArchivePage: FC = () => {
         ...new Set(
           myPosts.flatMap((item: any) =>
             Array.isArray(item?.images)
-              ? item.images.map((file: any) => getBoardFileKey(file)).filter(Boolean)
+              ? item.images
+                  .map((file: any) => getBoardFileKey(file))
+                  .filter(Boolean)
               : [],
           ),
         ),
@@ -316,7 +318,9 @@ const ArchivePage: FC = () => {
             const boardId = item?.id;
 
             const fileKeys = Array.isArray(item?.images)
-              ? item.images.map((file: any) => getBoardFileKey(file)).filter(Boolean)
+              ? item.images
+                  .map((file: any) => getBoardFileKey(file))
+                  .filter(Boolean)
               : [];
 
             const imageUrls = fileKeys
@@ -466,7 +470,8 @@ const ArchivePage: FC = () => {
       )}
 
       <div className="relative flex-1 overflow-y-auto">
-        {/* {currentStatus === "my-questions" ? (
+        {
+          /* {currentStatus === "my-questions" ? (
           questionsLoading ? (
             <div className="flex h-full items-center justify-center">
               <div className="text-border">불러오는 중...</div>
@@ -479,63 +484,64 @@ const ArchivePage: FC = () => {
             renderQuestionList(myQuestions)
           )
         ) :  */
-        currentStatus === "my-study" ? (
-          materialsLoading ? (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-border">불러오는 중...</div>
-            </div>
-          ) : (
-            renderMaterialList(filteredMaterials)
-          )
-        ) : currentStatus === "my-note" ? (
-          notesLoading ? (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-border">불러오는 중...</div>
-            </div>
-          ) : filteredNotes.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center gap-3 pb-[5.625rem]">
-              <div className="text-border">
-                {wrongNotes.length === 0
-                  ? "아직 작성된 오답노트가 없습니다."
-                  : "해당 과목의 오답노트가 없습니다."}
+          currentStatus === "my-study" ? (
+            materialsLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <div className="text-border">불러오는 중...</div>
               </div>
-              {wrongNotes.length === 0 && (
+            ) : (
+              renderMaterialList(filteredMaterials)
+            )
+          ) : currentStatus === "my-note" ? (
+            notesLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <div className="text-border">불러오는 중...</div>
+              </div>
+            ) : filteredNotes.length === 0 ? (
+              <div className="flex h-full flex-col items-center justify-center gap-3 pb-[5.625rem]">
+                <div className="text-border">
+                  {wrongNotes.length === 0
+                    ? "아직 작성된 오답노트가 없습니다."
+                    : "해당 과목의 오답노트가 없습니다."}
+                </div>
+                {wrongNotes.length === 0 && (
+                  <button
+                    className="rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-white"
+                    onClick={() => router.push("/wrongnote/new")}
+                  >
+                    오답노트 작성하기
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="pb-[5.625rem]">
+                {filteredNotes.map((note) => (
+                  <WrongNoteCard
+                    key={note.id}
+                    note={note}
+                    onClick={() => router.push(`/wrongnote/${note.id}`)}
+                  />
+                ))}
                 <button
-                  className="rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-white"
-                  onClick={() => router.push("/wrongnote/new")}
+                  className="w-full py-4 text-center text-sm font-medium text-brand"
+                  onClick={() => router.push("/wrongnote")}
                 >
-                  오답노트 작성하기
+                  전체 보기
                 </button>
-              )}
-            </div>
+              </div>
+            )
+          ) : currentStatus === "my-post" ? (
+            postsLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <div className="text-border">불러오는 중...</div>
+              </div>
+            ) : (
+              renderBoardList(myPosts)
+            )
           ) : (
-            <div className="pb-[5.625rem]">
-              {filteredNotes.map((note) => (
-                <WrongNoteCard
-                  key={note.id}
-                  note={note}
-                  onClick={() => router.push(`/wrongnote/${note.id}`)}
-                />
-              ))}
-              <button
-                className="w-full py-4 text-center text-sm font-medium text-brand"
-                onClick={() => router.push("/wrongnote")}
-              >
-                전체 보기
-              </button>
-            </div>
+            renderPreparingText("게시글 목록은 준비 중입니다.")
           )
-        ) : currentStatus === "my-post" ? (
-          postsLoading ? (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-border">불러오는 중...</div>
-            </div>
-          ) : (
-            renderBoardList(myPosts)
-          )
-        ) : (
-          renderPreparingText("게시글 목록은 준비 중입니다.")
-        )}
+        }
       </div>
 
       {/* {currentStatus === "my-questions" && (

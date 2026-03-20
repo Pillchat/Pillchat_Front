@@ -311,7 +311,8 @@ const Home: FC = () => {
 
                 const cardData = {
                   ...board,
-                  userNickname: board?.userNickname ?? board?.nickname ?? "익명",
+                  userNickname:
+                    board?.userNickname ?? board?.nickname ?? "익명",
                   subjectName: board?.subjectName ?? board?.categoryName ?? "",
                   answerCount: getCommentCount(board),
                   createdAt: formatDiffDate(board?.createdAt),

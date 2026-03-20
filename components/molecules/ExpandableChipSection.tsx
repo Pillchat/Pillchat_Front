@@ -211,7 +211,9 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
                 onClick={closeModalWithoutApply}
               />
 
-              <div className={`fixed ${hasBottombar ? "bottom-[90px]" : "bottom-0"} left-0 right-0 z-50 mx-auto flex max-h-[50vh] max-w-screen-sm flex-col rounded-t-2xl border bg-white px-6 pt-4 shadow-lg`}>
+              <div
+                className={`fixed ${hasBottombar ? "bottom-[90px]" : "bottom-0"} left-0 right-0 z-50 mx-auto flex max-h-[50vh] max-w-screen-sm flex-col rounded-t-2xl border bg-white px-6 pt-4 shadow-lg`}
+              >
                 <div className="mb-4 flex items-center justify-between">
                   <p className="text-lg font-semibold">{category}</p>
                   <button

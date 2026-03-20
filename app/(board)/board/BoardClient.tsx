@@ -148,7 +148,9 @@ const BoardClient = () => {
           }
 
           return Array.isArray(item?.images)
-            ? item.images.map((image: any) => getBoardFileKey(image)).filter(Boolean)
+            ? item.images
+                .map((image: any) => getBoardFileKey(image))
+                .filter(Boolean)
             : [];
         }),
       ),
@@ -173,20 +175,23 @@ const BoardClient = () => {
   const previewImageUrlMap = useMemo(() => {
     if (!Array.isArray(previewFilesData)) return {};
 
-    return previewFilesData.reduce<Record<string, string>>((acc, file: any, index: number) => {
-      const requestedKey = previewFileKeys[index];
-      const responseKey = file?.key ?? "";
+    return previewFilesData.reduce<Record<string, string>>(
+      (acc, file: any, index: number) => {
+        const requestedKey = previewFileKeys[index];
+        const responseKey = file?.key ?? "";
 
-      if (requestedKey && file?.preSignedUrl) {
-        acc[requestedKey] = file.preSignedUrl;
-      }
+        if (requestedKey && file?.preSignedUrl) {
+          acc[requestedKey] = file.preSignedUrl;
+        }
 
-      if (responseKey && file?.preSignedUrl) {
-        acc[responseKey] = file.preSignedUrl;
-      }
+        if (responseKey && file?.preSignedUrl) {
+          acc[responseKey] = file.preSignedUrl;
+        }
 
-      return acc;
-    }, {});
+        return acc;
+      },
+      {},
+    );
   }, [previewFilesData, previewFileKeys]);
 
   const emptyText = q
@@ -264,7 +269,9 @@ const BoardClient = () => {
                         .filter(Boolean)
                     : []
                   : Array.isArray(item?.images)
-                    ? item.images.map((image: any) => getBoardFileKey(image)).filter(Boolean)
+                    ? item.images
+                        .map((image: any) => getBoardFileKey(image))
+                        .filter(Boolean)
                     : [];
 
                 const imageUrls = imageKeys
