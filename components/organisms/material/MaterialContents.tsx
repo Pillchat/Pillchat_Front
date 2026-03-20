@@ -1,6 +1,5 @@
 "use client";
 
-import { ImageCarousel } from "@/components/molecules";
 import { FC } from "react";
 
 export const MaterialContents: FC<{
@@ -18,8 +17,19 @@ export const MaterialContents: FC<{
       )}
 
       {images.length > 0 && (
-        <div>
-          <ImageCarousel images={images} />
+        <div className="flex flex-col gap-3">
+          {images.map((image, index) => (
+            <div
+              key={`${image}-${index}`}
+              className="overflow-hidden rounded-lg bg-[#F8F8F8]"
+            >
+              <img
+                src={image}
+                alt={`학습자료 이미지 ${index + 1}`}
+                className="w-full object-cover"
+              />
+            </div>
+          ))}
         </div>
       )}
 

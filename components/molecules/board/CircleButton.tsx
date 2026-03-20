@@ -20,7 +20,7 @@ export const CircleButton = ({
     <>
       {open && (
         <div
-          className={cn("fixed inset-0 z-[60] bg-black/60", className)}
+          className={cn("fixed inset-0 z-[30] bg-black/60", className)}
           onClick={() => setOpen(false)}
         />
       )}
@@ -28,7 +28,7 @@ export const CircleButton = ({
       {open && (
         <div
           className={cn(
-            "fixed bottom-[215px] right-6 z-[70] h-[120px] w-[164px]",
+            "fixed bottom-[215px] right-6 z-[40] h-[120px] w-[164px]",
             className,
           )}
         >
@@ -63,7 +63,7 @@ export const CircleButton = ({
         aria-label="circle action"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "fixed bottom-[132px] right-6 z-[70]",
+          "fixed bottom-[132px] right-6 z-[40]",
           "h-[64px] w-[64px] rounded-full",
           "grid place-items-center",
           open

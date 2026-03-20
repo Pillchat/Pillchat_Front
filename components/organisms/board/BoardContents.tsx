@@ -1,4 +1,3 @@
-import { ImageCarousel } from "@/components/molecules";
 import { FC } from "react";
 
 export const BoardContents: FC<{
@@ -19,8 +18,19 @@ export const BoardContents: FC<{
       )}
 
       {images.length > 0 && (
-        <div className="mt-4">
-          <ImageCarousel images={images} />
+        <div className="mt-4 flex flex-col gap-3">
+          {images.map((image, index) => (
+            <div
+              key={`${image}-${index}`}
+              className="overflow-hidden rounded-lg bg-[#F8F8F8]"
+            >
+              <img
+                src={image}
+                alt={`게시글 이미지 ${index + 1}`}
+                className="w-full object-cover"
+              />
+            </div>
+          ))}
         </div>
       )}
 

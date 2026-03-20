@@ -1,8 +1,9 @@
 "use client";
 
-type ArchiveTabKey = "my-questions" | "my-study" | "my-note" | "my-post";
+type ArchiveTabKey = /*"my-questions" | */ "my-study" | "my-note" | "my-post";
 
 import { FC, Fragment, useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import {
   AlarmHeader,
@@ -27,11 +28,25 @@ import type {
 } from "@/types/wrongnote";
 
 const TABS: { key: ArchiveTabKey; label: string }[] = [
-  { key: "my-questions", label: "내 질문" },
   { key: "my-study", label: "학습자료" },
   { key: "my-note", label: "오답노트" },
-  { key: "my-post", label: "게시물" },
+  { key: "my-post", label: "게시글" },
 ];
+
+const getBoardFileKey = (file: any) => {
+  if (typeof file === "string") return file;
+  return file?.urlKey ?? file?.key ?? file?.fileKey ?? file?.name ?? "";
+};
+
+const resolveMaterialKey = (value: any, materialId: string | number) => {
+  const raw =
+    typeof value === "string"
+      ? value
+      : (value?.urlKey ?? value?.key ?? value?.fileKey ?? value?.name ?? "");
+
+  if (!raw) return "";
+  return raw.includes("/") ? raw : `material/${materialId}/${raw}`;
+};
 
 const ArchivePage: FC = () => {
   const { currentStatus, handleTabChange } = useArchiveTabState();
@@ -146,6 +161,75 @@ const ArchivePage: FC = () => {
     );
   }, [wrongNotes, selectedSubjects]);
 
+  const previewFileKeys = useMemo(() => {
+    if (currentStatus === "my-post") {
+      return [
+        ...new Set(
+          myPosts.flatMap((item: any) =>
+            Array.isArray(item?.images)
+              ? item.images
+                  .map((file: any) => getBoardFileKey(file))
+                  .filter(Boolean)
+              : [],
+          ),
+        ),
+      ];
+    }
+
+    if (currentStatus === "my-study") {
+      return [
+        ...new Set(
+          filteredMaterials.flatMap((item: any) =>
+            item?.id && Array.isArray(item?.images)
+              ? item.images
+                  .map((value: any) => resolveMaterialKey(value, item.id))
+                  .filter(Boolean)
+              : [],
+          ),
+        ),
+      ];
+    }
+
+    return [];
+  }, [currentStatus, myPosts, filteredMaterials]);
+
+  const { data: previewFilesData } = useQuery({
+    queryKey: ["archive-preview-files", currentStatus, previewFileKeys],
+    queryFn: async () => {
+      if (previewFileKeys.length === 0) return [];
+
+      const params = new URLSearchParams();
+      previewFileKeys.forEach((key) => {
+        params.append("keys", key);
+      });
+
+      return fetchAPI(`/api/files?${params.toString()}`, "GET");
+    },
+    enabled: previewFileKeys.length > 0,
+  });
+
+  const previewImageUrlMap = useMemo(() => {
+    if (!Array.isArray(previewFilesData)) return {};
+
+    return previewFilesData.reduce<Record<string, string>>(
+      (acc, file: any, index: number) => {
+        const requestedKey = previewFileKeys[index];
+        const responseKey = file?.key ?? "";
+
+        if (requestedKey && file?.preSignedUrl) {
+          acc[requestedKey] = file.preSignedUrl;
+        }
+
+        if (responseKey && file?.preSignedUrl) {
+          acc[responseKey] = file.preSignedUrl;
+        }
+
+        return acc;
+      },
+      {},
+    );
+  }, [previewFilesData, previewFileKeys]);
+
   const rawSubjectMap = useMemo(
     () => getSubjectMapForChips(),
     [getSubjectMapForChips],
@@ -233,10 +317,34 @@ const ArchivePage: FC = () => {
           {map(list, (item) => {
             const boardId = item?.id;
 
+            const fileKeys = Array.isArray(item?.images)
+              ? item.images
+                  .map((file: any) => getBoardFileKey(file))
+                  .filter(Boolean)
+              : [];
+
+            const imageUrls = fileKeys
+              .filter((key: string) => !key.toLowerCase().endsWith(".pdf"))
+              .map((key: string) => previewImageUrlMap[key])
+              .filter(Boolean);
+
+            const hasPdf = fileKeys.some((key: string) =>
+              key.toLowerCase().endsWith(".pdf"),
+            );
+
+            const previewContent =
+              typeof item?.content === "string" && item.content.trim()
+                ? item.content.trim()
+                : hasPdf
+                  ? "PDF 첨부"
+                  : imageUrls.length > 0
+                    ? "이미지 첨부"
+                    : "첨부 파일 없음";
+
             const board = {
               id: String(boardId ?? ""),
               title: item?.title ?? "제목 없음",
-              content: item?.content ?? "내용 없음",
+              content: previewContent,
               createdAt: formatDiffDate(
                 item?.createdAt ?? new Date().toISOString(),
               ),
@@ -245,7 +353,7 @@ const ArchivePage: FC = () => {
               subjectName: item?.categoryName ?? "",
               viewCount: item?.viewCount ?? 0,
               userNickname: item?.nickname ?? item?.userNickname ?? "익명",
-              images: item?.images ?? [],
+              images: imageUrls,
             };
 
             return (
@@ -281,13 +389,24 @@ const ArchivePage: FC = () => {
           {map(list, (item) => {
             const materialId = item?.id;
 
+            const imageKeys =
+              item?.id && Array.isArray(item?.images)
+                ? item.images
+                    .map((value: any) => resolveMaterialKey(value, item.id))
+                    .filter(Boolean)
+                : [];
+
+            const imageUrls = imageKeys
+              .map((key: string) => previewImageUrlMap[key])
+              .filter(Boolean);
+
             const material = {
               id: String(materialId ?? ""),
               title: item?.title ?? "제목 없음",
               content: item?.pdfKey
                 ? "PDF 첨부"
-                : Array.isArray(item?.urlKey) && item.urlKey.length > 0
-                  ? `이미지 ${item.urlKey.length}장 첨부`
+                : imageUrls.length > 0
+                  ? "이미지 첨부"
                   : "첨부 파일 없음",
               createdAt: item?.createdAt ? formatDiffDate(item.createdAt) : "",
               likeCount: item?.likeCount ?? 0,
@@ -295,7 +414,7 @@ const ArchivePage: FC = () => {
               subjectName: item?.subjectName ?? item?.subject?.name ?? "",
               viewCount: item?.viewCount ?? 0,
               userNickname: item?.nickname ?? item?.userNickname ?? "익명",
-              images: item?.images ?? [],
+              images: imageUrls,
             };
 
             return (
@@ -350,7 +469,8 @@ const ArchivePage: FC = () => {
       )}
 
       <div className="relative flex-1 overflow-y-auto">
-        {currentStatus === "my-questions" ? (
+        {
+          /* {currentStatus === "my-questions" ? (
           questionsLoading ? (
             <div className="flex h-full items-center justify-center">
               <div className="text-border">불러오는 중...</div>
@@ -362,66 +482,68 @@ const ArchivePage: FC = () => {
           ) : (
             renderQuestionList(myQuestions)
           )
-        ) : currentStatus === "my-study" ? (
-          materialsLoading ? (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-border">불러오는 중...</div>
-            </div>
-          ) : (
-            renderMaterialList(filteredMaterials)
-          )
-        ) : currentStatus === "my-note" ? (
-          notesLoading ? (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-border">불러오는 중...</div>
-            </div>
-          ) : filteredNotes.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center gap-3 pb-[5.625rem]">
-              <div className="text-border">
-                {wrongNotes.length === 0
-                  ? "아직 작성된 오답노트가 없습니다."
-                  : "해당 과목의 오답노트가 없습니다."}
+        ) :  */
+          currentStatus === "my-study" ? (
+            materialsLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <div className="text-border">불러오는 중...</div>
               </div>
-              {wrongNotes.length === 0 && (
+            ) : (
+              renderMaterialList(filteredMaterials)
+            )
+          ) : currentStatus === "my-note" ? (
+            notesLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <div className="text-border">불러오는 중...</div>
+              </div>
+            ) : filteredNotes.length === 0 ? (
+              <div className="flex h-full flex-col items-center justify-center gap-3 pb-[5.625rem]">
+                <div className="text-border">
+                  {wrongNotes.length === 0
+                    ? "아직 작성된 오답노트가 없습니다."
+                    : "해당 과목의 오답노트가 없습니다."}
+                </div>
+                {wrongNotes.length === 0 && (
+                  <button
+                    className="rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-white"
+                    onClick={() => router.push("/wrongnote/new")}
+                  >
+                    오답노트 작성하기
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="pb-[5.625rem]">
+                {filteredNotes.map((note) => (
+                  <WrongNoteCard
+                    key={note.id}
+                    note={note}
+                    onClick={() => router.push(`/wrongnote/${note.id}`)}
+                  />
+                ))}
                 <button
-                  className="rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-white"
-                  onClick={() => router.push("/wrongnote/new")}
+                  className="w-full py-4 text-center text-sm font-medium text-brand"
+                  onClick={() => router.push("/wrongnote")}
                 >
-                  오답노트 작성하기
+                  전체 보기
                 </button>
-              )}
-            </div>
+              </div>
+            )
+          ) : currentStatus === "my-post" ? (
+            postsLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <div className="text-border">불러오는 중...</div>
+              </div>
+            ) : (
+              renderBoardList(myPosts)
+            )
           ) : (
-            <div className="pb-[5.625rem]">
-              {filteredNotes.map((note) => (
-                <WrongNoteCard
-                  key={note.id}
-                  note={note}
-                  onClick={() => router.push(`/wrongnote/${note.id}`)}
-                />
-              ))}
-              <button
-                className="w-full py-4 text-center text-sm font-medium text-brand"
-                onClick={() => router.push("/wrongnote")}
-              >
-                전체 보기
-              </button>
-            </div>
+            renderPreparingText("게시글 목록은 준비 중입니다.")
           )
-        ) : currentStatus === "my-post" ? (
-          postsLoading ? (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-border">불러오는 중...</div>
-            </div>
-          ) : (
-            renderBoardList(myPosts)
-          )
-        ) : (
-          renderPreparingText("게시물 목록은 준비 중입니다.")
-        )}
+        }
       </div>
 
-      {currentStatus === "my-questions" && (
+      {/* {currentStatus === "my-questions" && (
         <div className="mt-4 text-center">
           <button
             onClick={refetchQuestions}
@@ -430,7 +552,7 @@ const ArchivePage: FC = () => {
             새로고침
           </button>
         </div>
-      )}
+      )} */}
 
       {currentStatus === "my-note" && (
         <FloatingActionButton
@@ -509,7 +631,7 @@ const ArchivePage: FC = () => {
       )}
 
       <div className="flex-shrink-0">
-        <BottomNavbar />
+        <BottomNavbar className="z-20" />
       </div>
     </div>
   );
