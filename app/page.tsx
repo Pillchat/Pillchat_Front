@@ -11,7 +11,7 @@ import { useLocalStorage } from "@/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAPI, formatDiffDate, getCurrentUserInfo } from "@/lib/functions";
 import { QuestionResponse } from "@/types/question";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { QuestionWithBubble } from "@/components/icons";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -27,7 +27,6 @@ const Home: FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const userInfo = getCurrentUserInfo();
 
-  // 최근 질문들 가져오기 (답변을 기다리는 질문 우선)
   const { data: questions, isLoading } = useQuery({
     queryKey: ["home-questions"],
     queryFn: () => fetchAPI("/api/questions?status=pending", "GET"),
@@ -66,7 +65,6 @@ const Home: FC = () => {
       <AlarmHeader />
 
       <main className="flex-1 px-6 pb-24 pt-4">
-        {/* 메인 배너 카드 캐러셀 */}
         <div className="mb-6">
           <Carousel className="w-full">
             <CarouselContent>
@@ -171,6 +169,7 @@ const Home: FC = () => {
             </CarouselContent>
           </Carousel>
         </div>
+
         <div className="px-6 py-5">
           <h2 className="mb-2 text-xl font-bold text-gray-900">
             안녕하세요, {userInfo?.username}님!
@@ -179,9 +178,9 @@ const Home: FC = () => {
             오늘도 필챗과 함께하고 계세요!
           </h2>
         </div>
+
         <div className="-mx-6 border-t-[12px] border-t-[#FFF6F5] py-5" />
 
-        {/* 궁금해하실 질문들 섹션 */}
         <div className="mb-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">
@@ -235,6 +234,7 @@ const Home: FC = () => {
           )}
         </div>
       </main>
+
       <BottomNavbar />
     </div>
   );
