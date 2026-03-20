@@ -631,7 +631,7 @@ const ArchivePage: FC = () => {
       )}
 
       <div className="flex-shrink-0">
-        <BottomNavbar className="z-20"/>
+        <BottomNavbar className="z-20" />
       </div>
     </div>
   );
