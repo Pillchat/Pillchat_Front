@@ -73,7 +73,9 @@ const PostPage = () => {
 
   const { step, nextStep, setStep } = useStep();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>(
+    Object.keys(CATEGORY_MAP),
+  );
   const [selectValue, setSelectValue] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -156,10 +158,10 @@ const PostPage = () => {
     if (!isEditMode || !boardData) return;
 
     const categoryLabel =
-      boardData.categoryName ??
       Object.entries(CATEGORY_MAP).find(
         ([, value]) => value.value === boardData.category,
       )?.[0] ??
+      boardData.categoryName ??
       "";
 
     setFormValues({

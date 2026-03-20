@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useEffect, useState } from "react";
+import { FC, Fragment, useEffect, useMemo, useState } from "react";
 import {
   BottomNavbar,
   AlarmHeader,
@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import { useLocalStorage } from "@/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAPI, formatDiffDate, getCurrentUserInfo } from "@/lib/functions";
-import { QuestionResponse } from "@/types/question";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuestionWithBubble } from "@/components/icons";
 import { Separator } from "@/components/ui/separator";
@@ -27,9 +26,9 @@ const Home: FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const userInfo = getCurrentUserInfo();
 
-  const { data: questions, isLoading } = useQuery({
-    queryKey: ["home-questions"],
-    queryFn: () => fetchAPI("/api/questions?status=pending", "GET"),
+  const { data: boards, isLoading: isBoardsLoading } = useQuery({
+    queryKey: ["home-boards-best"],
+    queryFn: () => fetchAPI("/api/boards?status=best", "GET"),
     enabled: isAuthenticated === true,
   });
 
@@ -44,17 +43,80 @@ const Home: FC = () => {
     }
   }, [isAuthenticated, router]);
 
-  const handleQuestionClick = (questionId: string) => {
-    router.push(`/question/${questionId}`);
-  };
-
   const handleAskQuestion = () => {
     router.push("/ask");
   };
 
-  const handleViewAllQuestions = () => {
-    router.push("/qna");
+  const handleViewAllBoards = () => {
+    router.push("/board");
   };
+
+  const handleBoardClick = (boardId: string) => {
+    router.push(`/board/${boardId}`);
+  };
+
+  const rawBoardList = useMemo(() => {
+    if (Array.isArray(boards)) return boards;
+    if (Array.isArray(boards?.data)) return boards.data;
+    return [];
+  }, [boards]);
+
+  const boardList = useMemo(() => {
+    return [...rawBoardList]
+      .sort((a: any, b: any) => (b?.likeCount ?? 0) - (a?.likeCount ?? 0))
+      .slice(0, 3);
+  }, [rawBoardList]);
+
+  const getCommentCount = (item: any) =>
+    item?.answerCount ??
+    item?.commentCount ??
+    item?.commentsCount ??
+    item?.replyCount ??
+    item?.repliesCount ??
+    0;
+
+  const boardImageKeys = useMemo(() => {
+    return [
+      ...new Set(
+        boardList.flatMap((item: any) =>
+          Array.isArray(item?.images)
+            ? item.images
+                .map((image: any) =>
+                  typeof image === "string" ? image : image?.urlKey,
+                )
+                .filter(Boolean)
+            : [],
+        ),
+      ),
+    ];
+  }, [boardList]);
+
+  const { data: boardFilesData } = useQuery({
+    queryKey: ["home-board-files", boardImageKeys],
+    queryFn: async () => {
+      if (boardImageKeys.length === 0) return [];
+
+      const params = new URLSearchParams();
+      boardImageKeys.forEach((key) => {
+        params.append("keys", key);
+      });
+
+      return fetchAPI(`/api/files?${params.toString()}`, "GET");
+    },
+    enabled: isAuthenticated === true && boardImageKeys.length > 0,
+  });
+
+  const boardImageUrlMap = useMemo(() => {
+    if (!Array.isArray(boardFilesData)) return {};
+
+    return boardImageKeys.reduce<Record<string, string>>((acc, key, index) => {
+      const file = boardFilesData[index];
+      if (file?.preSignedUrl) {
+        acc[key] = file.preSignedUrl;
+      }
+      return acc;
+    }, {});
+  }, [boardFilesData, boardImageKeys]);
 
   if (isAuthenticated === null) {
     return <div>Loading...</div>;
@@ -70,42 +132,17 @@ const Home: FC = () => {
             <CarouselContent>
               <CarouselItem>
                 <Card
-                  className="cursor-pointer border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 transition-shadow hover:shadow-md"
-                  onClick={handleAskQuestion}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="mb-2 text-xl font-bold text-gray-900">
-                          오늘의 질문 처방전
-                        </h2>
-                        <p className="text-sm text-gray-600">
-                          클릭해서 궁금한 것 질문하기
-                        </p>
-                      </div>
-                      <div className="flex-shrink-0">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500">
-                          <QuestionWithBubble className="h-6 w-6 text-white" />
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </CarouselItem>
-
-              <CarouselItem>
-                <Card
                   className="cursor-pointer border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 transition-shadow hover:shadow-md"
-                  onClick={handleViewAllQuestions}
+                  onClick={handleViewAllBoards}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <h2 className="mb-2 text-xl font-bold text-gray-900">
-                          질문 광장 둘러보기
+                          게시판 둘러보기
                         </h2>
                         <p className="text-sm text-gray-600">
-                          다른 사람들의 질문과 답변 확인하기
+                          인기 게시글과 다양한 글을 확인하기
                         </p>
                       </div>
                       <div className="flex-shrink-0">
@@ -133,7 +170,7 @@ const Home: FC = () => {
               <CarouselItem>
                 <Card
                   className="cursor-pointer border-purple-200 bg-gradient-to-r from-purple-50 to-violet-50 transition-shadow hover:shadow-md"
-                  onClick={() => router.push("/mypage")}
+                  onClick={() => router.push("/archive")}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -142,7 +179,7 @@ const Home: FC = () => {
                           내 활동 확인하기
                         </h2>
                         <p className="text-sm text-gray-600">
-                          내가 작성한 질문과 답변 관리하기
+                          내가 작성한 게시글과 오답노트 관리하기
                         </p>
                       </div>
                       <div className="flex-shrink-0">
@@ -181,6 +218,7 @@ const Home: FC = () => {
 
         <div className="-mx-6 border-t-[12px] border-t-[#FFF6F5] py-5" />
 
+        {/*
         <div className="mb-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">
@@ -229,6 +267,78 @@ const Home: FC = () => {
                 className="font-medium text-blue-600 hover:text-blue-800"
               >
                 첫 번째 질문을 올려보세요!
+              </button>
+            </Card>
+          )}
+        </div>
+        */}
+
+        <div className="mb-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-900">
+              인기 게시글들
+            </h2>
+            <button
+              onClick={handleViewAllBoards}
+              className="text-sm font-medium text-border hover:text-foreground"
+            >
+              전체보기
+            </button>
+          </div>
+
+          {isBoardsLoading ? (
+            <div className="space-y-4">
+              {[...Array(3)].map((_, index) => (
+                <div key={index} className="animate-pulse">
+                  <div className="h-20 rounded-lg bg-gray-200"></div>
+                </div>
+              ))}
+            </div>
+          ) : boardList.length > 0 ? (
+            <div className="space-y-4">
+              {boardList.map((board: any, index: number) => {
+                const imageKeys = Array.isArray(board?.images)
+                  ? board.images
+                      .map((image: any) =>
+                        typeof image === "string" ? image : image?.urlKey,
+                      )
+                      .filter(Boolean)
+                  : [];
+
+                const imageUrls = imageKeys
+                  .map((key: string) => boardImageUrlMap[key])
+                  .filter(Boolean);
+
+                const cardData = {
+                  ...board,
+                  userNickname: board?.userNickname ?? board?.nickname ?? "익명",
+                  subjectName: board?.subjectName ?? board?.categoryName ?? "",
+                  answerCount: getCommentCount(board),
+                  createdAt: formatDiffDate(board?.createdAt),
+                  images: imageUrls,
+                };
+
+                return (
+                  <Fragment key={board.id}>
+                    <QuestionListCard
+                      question={cardData}
+                      onClick={() => handleBoardClick(String(board.id))}
+                    />
+                    {index < boardList.length - 1 && (
+                      <Separator className="mt-4" />
+                    )}
+                  </Fragment>
+                );
+              })}
+            </div>
+          ) : (
+            <Card className="p-6 text-center">
+              <p className="mb-4 text-gray-500">아직 게시글이 없습니다</p>
+              <button
+                onClick={handleViewAllBoards}
+                className="font-medium text-blue-600 hover:text-blue-800"
+              >
+                게시판 보러가기
               </button>
             </Card>
           )}

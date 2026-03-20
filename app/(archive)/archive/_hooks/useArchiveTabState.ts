@@ -4,10 +4,10 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 // 아카이브 탭 상태 타입 정의
-type ArchiveStatus = "my-questions" | "my-study" | "my-note" | "my-post";
+type ArchiveStatus = /*"my-questions" | */"my-study" | "my-note" | "my-post";
 
 // 기본 상태
-const DEFAULT_STATUS: ArchiveStatus = "my-questions";
+const DEFAULT_STATUS: ArchiveStatus = "my-study";
 
 /**
  * ✅ useArchiveTabState
