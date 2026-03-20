@@ -4,12 +4,14 @@ import { TextareaWithLabel, SelectBox } from "@/components/atoms";
 import { CustomHeader, SubmitModal } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
 import SelectReportTypeModal from "./modal/SelectReportTypeModal";
-
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { Controller } from "react-hook-form";
 import { useReportPage } from "./hooks/useReport";
+import { useRouter } from "next/navigation";
 
 export default function ReportPage() {
+  const router = useRouter();
+
   const {
     control,
     submitReport,
@@ -29,6 +31,11 @@ export default function ReportPage() {
     closeSubmitError,
     setReportTypes,
   } = useReportPage();
+
+  const handleCompleteReport = () => {
+    closeSubmitReport();
+    router.push("/board");
+  };
 
   return (
     <>
@@ -90,8 +97,8 @@ export default function ReportPage() {
 
         <SubmitModal
           isOpen={submitReport}
-          onClose={closeSubmitReport}
-          onConfirm={closeSubmitReport}
+          onClose={handleCompleteReport}
+          onConfirm={handleCompleteReport}
           title="제출 완료"
           message1="해당 게시글에 대한 신고가 완료되었습니다."
           message2="감사합니다."

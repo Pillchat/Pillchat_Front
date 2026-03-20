@@ -14,6 +14,16 @@ import { FC, useMemo, useState } from "react";
 import { MaterialTitleSection } from "./MaterialTitleSection";
 import { MaterialContents } from "./MaterialContents";
 
+const resolveMaterialKey = (value: any, materialId: string | number) => {
+  const raw =
+    typeof value === "string"
+      ? value
+      : (value?.urlKey ?? value?.key ?? value?.fileKey ?? value?.name ?? "");
+
+  if (!raw) return "";
+  return raw.includes("/") ? raw : `material/${materialId}/${raw}`;
+};
+
 export const MaterialDetailPage: FC<{ materialId: string }> = ({
   materialId,
 }) => {
@@ -32,50 +42,77 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
     if (!materialData?.id) return [];
 
     const imageKeys = Array.isArray(materialData?.urlKey)
-      ? materialData.urlKey.map((key: string) =>
-          key.includes("/") ? key : `material/${materialData.id}/${key}`,
+      ? materialData.urlKey
+          .map((value: any) => resolveMaterialKey(value, materialData.id))
+          .filter(Boolean)
+      : [];
+
+    const pdfKeys = materialData?.pdfKey
+      ? [resolveMaterialKey(materialData.pdfKey, materialData.id)].filter(
+          Boolean,
         )
       : [];
 
-    const pdfKeys =
-      materialData?.pdfKey && typeof materialData.pdfKey === "string"
-        ? [
-            materialData.pdfKey.includes("/")
-              ? materialData.pdfKey
-              : `material/${materialData.id}/${materialData.pdfKey}`,
-          ]
-        : [];
-
-    return [...imageKeys, ...pdfKeys];
+    return [...new Set([...imageKeys, ...pdfKeys])];
   }, [materialData]);
 
   const { data: filesData, isLoading: filesLoading } = useQuery({
     queryKey: ["material-files", materialData?.id, fileKeys],
     queryFn: async () => {
       if (fileKeys.length === 0) return [];
-      return fetchAPI("/api/files", "GET", { keys: fileKeys });
+
+      const params = new URLSearchParams();
+      fileKeys.forEach((key) => {
+        params.append("keys", key);
+      });
+
+      return fetchAPI(`/api/files?${params.toString()}`, "GET");
     },
     enabled: fileKeys.length > 0,
   });
 
+  const fileUrlMap = useMemo(() => {
+    if (!Array.isArray(filesData)) return {};
+
+    return fileKeys.reduce<Record<string, string>>((acc, key, index) => {
+      const file = filesData[index];
+      if (file?.preSignedUrl) {
+        acc[key] = file.preSignedUrl;
+      }
+      return acc;
+    }, {});
+  }, [filesData, fileKeys]);
+
   const imageUrls = useMemo(() => {
-    if (!Array.isArray(filesData)) return [];
-    return filesData
-      .filter((file: any) => {
-        const key = file?.key ?? "";
-        return !key.toLowerCase().endsWith(".pdf");
-      })
-      .map((file: any) => file.preSignedUrl);
-  }, [filesData]);
+    if (!materialData?.id || !Array.isArray(materialData?.urlKey)) return [];
+
+    return materialData.urlKey
+      .map((value: any) => resolveMaterialKey(value, materialData.id))
+      .map((key: string) => fileUrlMap[key])
+      .filter(Boolean);
+  }, [materialData, fileUrlMap]);
+
+  const pdfKey = useMemo(() => {
+    if (!materialData?.id || !materialData?.pdfKey) return "";
+    return resolveMaterialKey(materialData.pdfKey, materialData.id);
+  }, [materialData]);
 
   const pdfUrl = useMemo(() => {
-    if (!Array.isArray(filesData)) return "";
-    const pdfFile = filesData.find((file: any) => {
-      const key = file?.key ?? "";
-      return key.toLowerCase().endsWith(".pdf");
-    });
-    return pdfFile?.preSignedUrl ?? "";
-  }, [filesData]);
+    if (!pdfKey) return "";
+    return fileUrlMap[pdfKey] ?? "";
+  }, [fileUrlMap, pdfKey]);
+
+  const pdfName = useMemo(() => {
+    if (!materialData?.pdfKey) return "";
+    if (typeof materialData.pdfKey === "string") {
+      return materialData.pdfKey.split("/").pop() ?? materialData.pdfKey;
+    }
+    return (
+      materialData.pdfKey?.name ??
+      materialData.pdfKey?.urlKey?.split("/").pop() ??
+      ""
+    );
+  }, [materialData]);
 
   const isAuthor =
     materialData &&
@@ -99,6 +136,8 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
 
   const handleEdit = () => router.push(`/upload?edit=${materialId}`);
   const handleDelete = () => setShowDeleteConfirm(true);
+  const handleReport = () =>
+    router.push(`/reports?type=MATERIAL&id=${materialId}`);
 
   const confirmDelete = () => {
     deleteMutation.mutate();
@@ -115,15 +154,22 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
           variant: "destructive",
         },
       ]
-    : [];
+    : [
+        {
+          id: "report",
+          label: "신고",
+          onClick: handleReport,
+          variant: "destructive",
+        },
+      ];
 
   return (
     <div className="flex min-h-screen flex-col">
       <CustomHeader
         title="학습자료"
         showIcon
-        rightButtonLabel={isAuthor ? "수정" : undefined}
-        onRightButtonClick={isAuthor ? handleEdit : undefined}
+        rightButtonLabel={isAuthor ? "수정" : "신고"}
+        onRightButtonClick={isAuthor ? handleEdit : handleReport}
       />
 
       {materialLoading && (
@@ -147,7 +193,7 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
               <MaterialContents
                 images={imageUrls}
                 pdfUrl={pdfUrl}
-                pdfName={materialData.pdfKey ?? ""}
+                pdfName={pdfName}
                 filesLoading={filesLoading}
               />
             </div>

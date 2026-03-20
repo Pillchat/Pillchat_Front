@@ -10,6 +10,7 @@ import {
   usePostForm,
   usePostFiles,
   CATEGORY_MAP,
+  uploadBoardFiles,
 } from "./_hooks";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, ChangeEvent, useEffect } from "react";
@@ -17,6 +18,52 @@ import { useQuery } from "@tanstack/react-query";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { SelectCategoryModal } from "./SelectCategoryModal";
 import { fetchAPI } from "@/lib/functions";
+
+const buildQueryParams = (
+  params: Record<
+    string,
+    string | number | (string | number)[] | null | undefined
+  >,
+) => {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") return;
+
+    if (Array.isArray(value)) {
+      value.forEach((item) => {
+        if (item === undefined || item === null || item === "") return;
+        searchParams.append(key, String(item));
+      });
+      return;
+    }
+
+    searchParams.append(key, String(value));
+  });
+
+  return searchParams.toString();
+};
+
+const createBoard = async ({
+  title,
+  content,
+  category,
+  keys,
+}: {
+  title: string;
+  content: string;
+  category: string;
+  keys: string[];
+}) => {
+  const queryString = buildQueryParams({
+    title: title.trim(),
+    content: content.trim(),
+    category,
+    keys,
+  });
+
+  return fetchAPI(`/api/boards?${queryString}`, "POST");
+};
 
 const PostPage = () => {
   const router = useRouter();
@@ -60,26 +107,25 @@ const PostPage = () => {
     setFormValues,
   } = usePostForm({
     onSubmit: async (data) => {
-      const newKeys = [
-        ...imageFiles.map((file) => file.name),
-        ...(pdfFile ? [pdfFile.name] : []),
-      ];
+      const uploadedKeys = await uploadBoardFiles(imageFiles, pdfFile);
 
       if (isEditMode) {
-        await fetchAPI(`/api/boards/${editId}`, "PUT", {
+        const queryString = buildQueryParams({
           title: data.title.trim(),
           content: data.content.trim(),
           category: selectedCategory,
-          keys: [...remainingExistingKeys, ...newKeys],
+          keys: [...remainingExistingKeys, ...uploadedKeys],
         });
+
+        await fetchAPI(`/api/boards/${editId}?${queryString}`, "PUT");
         return;
       }
 
-      await fetchAPI("/api/board", "POST", {
-        title: data.title.trim(),
-        content: data.content.trim(),
+      await createBoard({
+        title: data.title,
+        content: data.content,
         category: selectedCategory,
-        keys: newKeys,
+        keys: uploadedKeys,
       });
     },
   });
@@ -94,12 +140,16 @@ const PostPage = () => {
     queryKey: ["board-edit-files", editId, boardData?.images],
     queryFn: async () => {
       if (!boardData?.images || boardData.images.length === 0) return [];
-      const keys = boardData.images.map(
-        (image: any) => `board/${boardData.id}/${image.urlKey}`,
-      );
-      return fetchAPI("/api/files", "GET", { keys });
+
+      const params = new URLSearchParams();
+      boardData.images.forEach((image: any) => {
+        params.append("keys", image.urlKey);
+      });
+      console.log("boardData.images", boardData?.images);
+
+      return fetchAPI(`/api/files?${params.toString()}`, "GET");
     },
-    enabled: !!boardData?.id && !!boardData?.images?.length,
+    enabled: !!boardData?.images?.length,
   });
 
   useEffect(() => {

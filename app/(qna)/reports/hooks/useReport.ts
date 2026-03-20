@@ -45,7 +45,14 @@ const useReportModalState = () => {
 };
 
 const isValidTargetType = (value: string | null): value is TargetType => {
-  return value === "QUESTION" || value === "ANSWER" || value === "USER";
+  return (
+    value === "QUESTION" ||
+    value === "ANSWER" ||
+    value === "USER" ||
+    value === "BOARD" ||
+    value === "BOARD_COMMENT" ||
+    value === "MATERIAL"
+  );
 };
 
 const useReportFormState = (

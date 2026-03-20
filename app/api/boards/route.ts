@@ -1,59 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
+import { buildQueryParams, serverFetch } from "@/lib/functions";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST;
 
 export async function POST(request: NextRequest) {
   try {
-    const accessToken = request.headers
-      .get("authorization")
-      ?.replace("Bearer ", "");
+    const { searchParams } = new URL(request.url);
 
-    if (!accessToken) {
+    const title = searchParams.get("title");
+    const content = searchParams.get("content");
+    const category = searchParams.get("category");
+    const keys = searchParams.getAll("keys");
+
+    if (!title || !content || !category) {
       return NextResponse.json(
-        { message: "인증 토큰이 필요합니다." },
-        { status: 401 },
+        { error: "title, content, category are required" },
+        { status: 400 },
       );
     }
 
-    const body = await request.json();
-    const { title, content, category, keys = [] } = body;
+    const queryString = buildQueryParams({
+      title,
+      content,
+      category,
+      keys,
+    });
 
-    const params = new URLSearchParams();
-    params.set("title", title ?? "");
-    params.set("content", content ?? "");
-    params.set("category", category ?? "");
+    const data = await serverFetch(`/api/boards?${queryString}`, {
+      method: "POST",
+      request,
+    });
 
-    if (Array.isArray(keys)) {
-      keys.forEach((key) => {
-        if (key) params.append("keys", key);
-      });
-    }
-
-    const response = await fetch(
-      `${API_BASE_URL}/api/boards?${params.toString()}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-    );
-
-    const text = await response.text();
-
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = { message: text || "알 수 없는 응답입니다." };
-    }
-
-    return NextResponse.json(data, { status: response.status });
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("게시글 업로드 API 에러:", error);
-
+    console.error("Error creating board:", error);
     return NextResponse.json(
-      { message: "게시글 업로드에 실패했습니다." },
+      { error: "Failed to create board" },
       { status: 500 },
     );
   }

@@ -3,29 +3,23 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { type, userId, files, questionId, answerId } = await request.json();
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get("type");
+    const files = searchParams.getAll("files");
 
-    if (!type || !userId || !files || !questionId) {
+    if (!type || files.length === 0) {
       return NextResponse.json(
-        { error: "questionId and files are required" },
+        { error: "type and files are required" },
         { status: 400 },
       );
     }
 
-    const _userId =
-      type === "question" ? questionId : type === "answer" ? answerId : userId;
+    const queryString = buildQueryParams({ type, files });
 
-    const data = await serverFetch(
-      `/api/files?${buildQueryParams({
-        type,
-        userId: _userId,
-        files,
-      })}`,
-      {
-        method: "POST",
-        request,
-      },
-    );
+    const data = await serverFetch(`/api/files?${queryString}`, {
+      method: "POST",
+      request,
+    });
 
     return NextResponse.json(data);
   } catch (error) {
@@ -40,16 +34,15 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const keys = searchParams.getAll("keys"); // 배열로 keys 파라미터들을 가져옴
+    const keys = searchParams.getAll("keys");
 
-    if (!keys || keys.length === 0) {
+    if (keys.length === 0) {
       return NextResponse.json(
         { error: "keys parameter is required" },
         { status: 400 },
       );
     }
 
-    // buildQueryParams를 사용하여 keys 배열을 쿼리 파라미터로 변환
     const queryString = buildQueryParams({ keys });
 
     const data = await serverFetch(`/api/files?${queryString}`, {
