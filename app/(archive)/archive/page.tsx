@@ -464,7 +464,6 @@ const ArchivePage: FC = () => {
             categoryTitleClassName="text-sm font-medium text-pretendard text-[#111]"
             buttonSize="sm"
             className="gap-0"
-            hasBottombar={true}
           />
         </div>
       )}
@@ -632,7 +631,7 @@ const ArchivePage: FC = () => {
       )}
 
       <div className="flex-shrink-0">
-        <BottomNavbar />
+        <BottomNavbar className="z-20"/>
       </div>
     </div>
   );

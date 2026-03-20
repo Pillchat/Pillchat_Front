@@ -227,7 +227,6 @@ const BoardClient = () => {
             categoryTitleClassName="text-sm font-medium text-pretendard text-[#111]"
             buttonSize="sm"
             className="gap-0"
-            hasBottombar={true}
           />
         </div>
       )}
@@ -343,7 +342,7 @@ const BoardClient = () => {
         )}
       </div>
 
-      <BottomNavbar className={mobileFixedHidden} />
+      <BottomNavbar className={`${mobileFixedHidden} z-20`} />
     </div>
   );
 };
