@@ -5,9 +5,11 @@ import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 export type UploadPreviewItem = {
   id: string;
   type: "image" | "pdf";
-  file: File;
   name: string;
   previewUrl: string;
+  source: "local" | "remote";
+  file?: File;
+  key?: string;
 };
 
 const MAX_IMAGE_COUNT = 10;
@@ -93,6 +95,7 @@ export const useUploadFiles = () => {
       file,
       name: file.name,
       previewUrl: registerObjectUrl(file),
+      source: "local" as const,
     }));
 
     setImageItems((prev) => [...prev, ...nextItems]);
@@ -115,7 +118,7 @@ export const useUploadFiles = () => {
       return;
     }
 
-    if (pdfItem) {
+    if (pdfItem?.source === "local") {
       revokeObjectUrl(pdfItem.previewUrl);
     }
 
@@ -125,6 +128,7 @@ export const useUploadFiles = () => {
       file,
       name: file.name,
       previewUrl: registerObjectUrl(file),
+      source: "local",
     };
 
     setPdfItem(nextPdfItem);
@@ -133,14 +137,16 @@ export const useUploadFiles = () => {
 
   const removeItem = (id: string) => {
     if (pdfItem?.id === id) {
-      revokeObjectUrl(pdfItem.previewUrl);
+      if (pdfItem.source === "local") {
+        revokeObjectUrl(pdfItem.previewUrl);
+      }
       setPdfItem(null);
       return;
     }
 
     setImageItems((prev) => {
       const target = prev.find((item) => item.id === id);
-      if (target) {
+      if (target?.source === "local") {
         revokeObjectUrl(target.previewUrl);
       }
       return prev.filter((item) => item.id !== id);
@@ -156,11 +162,32 @@ export const useUploadFiles = () => {
     if (pdfInputRef.current) pdfInputRef.current.value = "";
   };
 
+  const setInitialFiles = (items: UploadPreviewItem[]) => {
+    clearFiles();
+    setImageItems(items.filter((item) => item.type === "image"));
+    setPdfItem(items.find((item) => item.type === "pdf") ?? null);
+  };
+
   const previewItems = useMemo(() => {
     if (imageItems.length > 0) return imageItems;
     if (pdfItem) return [pdfItem];
     return [];
   }, [imageItems, pdfItem]);
+
+  const imageFiles = useMemo(
+    () =>
+      imageItems
+        .filter((item) => item.source === "local" && item.file)
+        .map((item) => item.file as File),
+    [imageItems],
+  );
+
+  const pdfFile = useMemo(() => {
+    if (pdfItem?.source === "local") {
+      return pdfItem.file ?? null;
+    }
+    return null;
+  }, [pdfItem]);
 
   return {
     imageInputRef,
@@ -171,9 +198,10 @@ export const useUploadFiles = () => {
     handlePdfChange,
     removeItem,
     clearFiles,
+    setInitialFiles,
     previewItems,
-    imageFiles: imageItems.map((item) => item.file),
-    pdfFile: pdfItem?.file ?? null,
+    imageFiles,
+    pdfFile,
     hasFiles: previewItems.length > 0,
   };
 };

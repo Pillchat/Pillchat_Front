@@ -9,12 +9,13 @@ import {
 import { BoardHeader, BoardButton } from "@/components/molecules/board";
 import { Controller } from "react-hook-form";
 import { useStep, useUploadForm, useUploadFiles } from "./_hooks";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import CheckCircle from "@/public/CheckCircle.svg";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { useSubjects } from "@/hooks";
 import { fetchAPI } from "@/lib/functions";
+import { useQuery } from "@tanstack/react-query";
 
 enum Step {
   Guide = 1,
@@ -52,6 +53,18 @@ const getPresignedUrl = (value: any) =>
 
 const getUploadedKey = (value: any) =>
   value?.key ?? value?.urlKey ?? value?.fileKey ?? "";
+
+const getFileNameFromKey = (key: string) => key.split("/").pop() ?? key;
+
+const resolveMaterialKey = (value: any, materialId: string | number) => {
+  const raw =
+    typeof value === "string"
+      ? value
+      : (value?.urlKey ?? value?.key ?? value?.fileKey ?? value?.name ?? "");
+
+  if (!raw) return "";
+  return raw.includes("/") ? raw : `material/${materialId}/${raw}`;
+};
 
 const requestMaterialUploadTargets = async (files: File[]) => {
   const queryString = buildQueryParams({
@@ -131,9 +144,14 @@ const uploadMaterialFiles = async (
 const UploadPage = () => {
   const { getSubjectMapForChips } = useSubjects();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+  const isEditMode = !!editId;
+
   const { step, nextStep, prevStep, setStep } = useStep();
   const [checked, setChecked] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   const {
     imageInputRef,
@@ -148,6 +166,7 @@ const UploadPage = () => {
     imageFiles,
     pdfFile,
     hasFiles,
+    setInitialFiles,
   } = useUploadFiles();
 
   const {
@@ -160,6 +179,7 @@ const UploadPage = () => {
     handleUpload,
     resetForm,
     isSubmitting,
+    setValue,
   } = useUploadForm({
     onSubmit: async (data) => {
       if (!data.subjectId) {
@@ -168,23 +188,144 @@ const UploadPage = () => {
         );
       }
 
-      const { imageKeys, pdfKey } = await uploadMaterialFiles(
-        imageFiles,
-        pdfFile,
-      );
+      const existingImageKeys = previewItems
+        .filter(
+          (item: any) => item.source === "remote" && item.type === "image",
+        )
+        .map((item: any) => item.key)
+        .filter(Boolean);
+
+      const existingPdfKey =
+        previewItems.find(
+          (item: any) => item.source === "remote" && item.type === "pdf",
+        )?.key ?? null;
+
+      const { imageKeys: newImageKeys, pdfKey: newPdfKey } =
+        await uploadMaterialFiles(imageFiles, pdfFile);
 
       const payload = {
         title: data.title.trim(),
         subjectId: Number(data.subjectId),
-        urlKey: imageKeys,
-        pdfKey,
+        urlKey: [...existingImageKeys, ...newImageKeys],
+        pdfKey: newPdfKey ?? existingPdfKey,
       };
 
-      console.log("학습자료 업로드 payload:", payload);
-
-      await fetchAPI("/api/materials", "POST", payload);
+      await fetchAPI(
+        isEditMode ? `/api/materials/${editId}` : "/api/materials",
+        isEditMode ? "PUT" : "POST",
+        payload,
+      );
     },
   });
+
+  const { data: editMaterial } = useQuery({
+    queryKey: ["material-edit", editId],
+    queryFn: () => fetchAPI(`/api/materials/${editId}`, "GET"),
+    enabled: isEditMode && !!editId,
+  });
+
+  const editFileKeys = useMemo(() => {
+    if (!editMaterial?.id) return [];
+
+    const imageKeys = Array.isArray(editMaterial?.images)
+      ? editMaterial.images
+          .map((value: any) => resolveMaterialKey(value, editMaterial.id))
+          .filter(Boolean)
+      : [];
+
+    const pdfKeys = editMaterial?.pdfKey
+      ? [resolveMaterialKey(editMaterial.pdfKey, editMaterial.id)].filter(
+          Boolean,
+        )
+      : [];
+
+    return [...new Set([...imageKeys, ...pdfKeys])];
+  }, [editMaterial]);
+
+  const { data: editFilesData } = useQuery({
+    queryKey: ["material-edit-files", editMaterial?.id, editFileKeys],
+    queryFn: async () => {
+      if (editFileKeys.length === 0) return [];
+
+      const params = new URLSearchParams();
+      editFileKeys.forEach((key) => {
+        params.append("keys", key);
+      });
+
+      return fetchAPI(`/api/files?${params.toString()}`, "GET");
+    },
+    enabled: isEditMode && editFileKeys.length > 0,
+  });
+
+  const editFileUrlMap = useMemo(() => {
+    if (!Array.isArray(editFilesData)) return {};
+
+    return editFileKeys.reduce<Record<string, string>>((acc, key, index) => {
+      const file = editFilesData[index];
+      if (file?.preSignedUrl) {
+        acc[key] = file.preSignedUrl;
+      }
+      return acc;
+    }, {});
+  }, [editFilesData, editFileKeys]);
+
+  useEffect(() => {
+    if (!isEditMode || !editMaterial || initialized) return;
+
+    setValue("title", editMaterial.title ?? "");
+    setValue("subject", editMaterial.subjectName ?? "");
+    setValue("subjectId", String(editMaterial.subjectId ?? ""));
+
+    const hasRemoteUrls =
+      editFileKeys.length === 0 ||
+      editFileKeys.every((key) => !!editFileUrlMap[key]);
+
+    if (!hasRemoteUrls) return;
+
+    const initialImages = Array.isArray(editMaterial.images)
+      ? editMaterial.images
+          .map((image: any) => {
+            const key = resolveMaterialKey(image, editMaterial.id);
+            const previewUrl = editFileUrlMap[key];
+            if (!key || !previewUrl) return null;
+
+            return {
+              id: `remote-image-${image.id ?? key}`,
+              type: "image",
+              name: getFileNameFromKey(key),
+              previewUrl,
+              key,
+              source: "remote",
+            };
+          })
+          .filter(Boolean)
+      : [];
+
+    const initialPdf =
+      editMaterial.pdfKey && editFileUrlMap[editMaterial.pdfKey]
+        ? [
+            {
+              id: `remote-pdf-${editMaterial.pdfKey}`,
+              type: "pdf",
+              name: getFileNameFromKey(editMaterial.pdfKey),
+              previewUrl: editFileUrlMap[editMaterial.pdfKey],
+              key: editMaterial.pdfKey,
+              source: "remote",
+            },
+          ]
+        : [];
+
+    setInitialFiles([...initialImages, ...initialPdf]);
+    setInitialized(true);
+  }, [
+    isEditMode,
+    editMaterial,
+    editFileKeys,
+    editFileUrlMap,
+    initialized,
+    setInitialFiles,
+    setValue,
+  ]);
 
   const canSubmit =
     !!title?.trim() &&
@@ -217,6 +358,7 @@ const UploadPage = () => {
     resetForm();
     clearFiles();
     setChecked(false);
+    setInitialized(false);
     setStep(Step.Guide);
   };
 
@@ -225,7 +367,7 @@ const UploadPage = () => {
       {step === Step.Guide && (
         <div className="flex h-full w-full flex-1 flex-col">
           <BoardHeader
-            title="학습자료 업로드"
+            title={isEditMode ? "학습자료 수정" : "학습자료 업로드"}
             showIcon
             onRightButtonClick={() => router.push("/")}
             onLeftButtonClick={() => router.push("/board")}
@@ -302,8 +444,16 @@ const UploadPage = () => {
       {step === Step.Upload && (
         <div className="flex h-full w-full flex-1 flex-col">
           <BoardHeader
-            title="학습자료 업로드"
-            rightButtonLabel={isSubmitting ? "업로드 중..." : "업로드"}
+            title={isEditMode ? "학습자료 수정" : "학습자료 업로드"}
+            rightButtonLabel={
+              isSubmitting
+                ? isEditMode
+                  ? "수정 중..."
+                  : "업로드 중..."
+                : isEditMode
+                  ? "수정"
+                  : "업로드"
+            }
             onRightButtonClick={openConfirmModal}
             isActive={canSubmit}
             onLeftButtonClick={prevStep}
@@ -407,7 +557,7 @@ const UploadPage = () => {
             {previewItems.length > 0 && (
               <div className="mt-5">
                 <div className="grid max-h-[calc(100vw-48px)] grid-cols-3 gap-3 overflow-y-auto pr-1">
-                  {previewItems.map((item) => (
+                  {previewItems.map((item: any) => (
                     <div
                       key={item.id}
                       className="relative aspect-square overflow-hidden border border-[#C4C4C4] bg-[#F8F8F8]"
@@ -454,8 +604,12 @@ const UploadPage = () => {
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleConfirmUpload}
-        title="업로드 최종 확인"
-        message={`‘${title ?? ""}’ 학습자료를 업로드 하시겠습니까?`}
+        title={isEditMode ? "수정 최종 확인" : "업로드 최종 확인"}
+        message={
+          isEditMode
+            ? `‘${title ?? ""}’ 학습자료를 수정하시겠습니까?`
+            : `‘${title ?? ""}’ 학습자료를 업로드 하시겠습니까?`
+        }
       />
 
       {step === Step.Complete && (
@@ -469,7 +623,9 @@ const UploadPage = () => {
                 className="mb-2"
               />
               <p className="text-2xl font-semibold">
-                학습자료가 업로드되었습니다!
+                {isEditMode
+                  ? "학습자료가 수정되었습니다!"
+                  : "학습자료가 업로드되었습니다!"}
               </p>
             </div>
             <p className="text-sm">

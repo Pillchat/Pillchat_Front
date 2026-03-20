@@ -41,8 +41,8 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
   const fileKeys = useMemo(() => {
     if (!materialData?.id) return [];
 
-    const imageKeys = Array.isArray(materialData?.urlKey)
-      ? materialData.urlKey
+    const imageKeys = Array.isArray(materialData?.images)
+      ? materialData.images
           .map((value: any) => resolveMaterialKey(value, materialData.id))
           .filter(Boolean)
       : [];
@@ -84,9 +84,9 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
   }, [filesData, fileKeys]);
 
   const imageUrls = useMemo(() => {
-    if (!materialData?.id || !Array.isArray(materialData?.urlKey)) return [];
+    if (!materialData?.id || !Array.isArray(materialData?.images)) return [];
 
-    return materialData.urlKey
+    return materialData.images
       .map((value: any) => resolveMaterialKey(value, materialData.id))
       .map((key: string) => fileUrlMap[key])
       .filter(Boolean);

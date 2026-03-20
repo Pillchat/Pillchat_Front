@@ -54,7 +54,7 @@ export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
 
   useEffect(() => {
     if (data?.id) {
-      setValue("subjectId", data.id, { shouldValidate: true });
+      setValue("subjectId", String(data.id), { shouldValidate: true });
     }
   }, [data, setValue]);
 
@@ -98,5 +98,6 @@ export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
     resetForm,
     isValid,
     isSubmitting,
+    setValue,
   };
 };
