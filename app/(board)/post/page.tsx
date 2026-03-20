@@ -109,12 +109,32 @@ const PostPage = () => {
     setFormValues,
   } = usePostForm({
     onSubmit: async (data) => {
+      const trimmedTitle = data.title.trim();
+      const trimmedContent = data.content.trim();
+      const hasAnyFiles = hasFiles || remainingExistingKeys.length > 0;
+
+      if (!selectedCategory) {
+        throw new Error("카테고리를 선택해주세요.");
+      }
+
+      if (!trimmedTitle) {
+        throw new Error("제목을 입력해주세요.");
+      }
+
+      if (trimmedContent.length < 10) {
+        throw new Error("본문은 10자 이상 입력해주세요.");
+      }
+
+      if (!hasAnyFiles) {
+        throw new Error("이미지 또는 PDF 파일을 1개 이상 업로드해주세요.");
+      }
+
       const uploadedKeys = await uploadBoardFiles(imageFiles, pdfFile);
 
       if (isEditMode) {
         const queryString = buildQueryParams({
-          title: data.title.trim(),
-          content: data.content.trim(),
+          title: trimmedTitle,
+          content: trimmedContent,
           category: selectedCategory,
           keys: [...remainingExistingKeys, ...uploadedKeys],
         });
@@ -124,8 +144,8 @@ const PostPage = () => {
       }
 
       await createBoard({
-        title: data.title,
-        content: data.content,
+        title: trimmedTitle,
+        content: trimmedContent,
         category: selectedCategory,
         keys: uploadedKeys,
       });
@@ -189,8 +209,16 @@ const PostPage = () => {
     setExistingPreviewItems(items);
   }, [isEditMode, boardData, filesData, setExistingPreviewItems]);
 
+  const trimmedTitle = title?.trim() ?? "";
+  const trimmedContent = content?.trim() ?? "";
+  const hasAnyFiles = hasFiles || remainingExistingKeys.length > 0;
+
   const canSubmit =
-    !!selectedCategory && !!title?.trim() && !!content?.trim() && !isSubmitting;
+    !!selectedCategory &&
+    trimmedTitle.length > 0 &&
+    trimmedContent.length >= 10 &&
+    hasAnyFiles &&
+    !isSubmitting;
 
   const openConfirmModal = () => {
     if (!canSubmit) return;
