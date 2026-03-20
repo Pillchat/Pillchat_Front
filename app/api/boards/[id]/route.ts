@@ -61,19 +61,21 @@ export async function PUT(
       );
     }
 
-    const body = await request.json();
-    const { title, content, category, keys = [] } = body;
+    const searchParams = request.nextUrl.searchParams;
+
+    const title = searchParams.get("title") ?? "";
+    const content = searchParams.get("content") ?? "";
+    const category = searchParams.get("category") ?? "";
+    const keys = searchParams.getAll("keys");
 
     const query = new URLSearchParams();
-    query.set("title", title ?? "");
-    query.set("content", content ?? "");
-    query.set("category", category ?? "");
+    query.set("title", title);
+    query.set("content", content);
+    query.set("category", category);
 
-    if (Array.isArray(keys)) {
-      keys.forEach((key) => {
-        if (key) query.append("keys", key);
-      });
-    }
+    keys.forEach((key) => {
+      if (key) query.append("keys", key);
+    });
 
     const response = await fetch(
       `${API_BASE_URL}/api/boards/${id}?${query.toString()}`,
