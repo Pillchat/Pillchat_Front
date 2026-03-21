@@ -227,7 +227,7 @@ const PremiumPage = () => {
 
   return (
     <div className="flex h-screen flex-col">
-      <CustomHeader title="고퀄리티 수제 제작문제" showIcon />
+      <CustomHeader title="고퀄리티 AI 문제 제작" showIcon />
 
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {/* 과목 선택 */}
