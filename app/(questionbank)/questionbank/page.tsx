@@ -59,7 +59,7 @@ const QuestionBankPage = () => {
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
           }
-          title="고퀄리티 문제 제작"
+          title="고퀄리티 AI 문제 제작"
           subtitle="AI를 이용하여 고품질 문제를 만들어 풀어보세요"
           onClick={() => router.push("/questionbank/premium")}
         />
