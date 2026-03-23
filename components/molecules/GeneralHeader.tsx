@@ -26,7 +26,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
   const pathname = usePathname();
   const unreadCount = useAtomValue(unreadCountAtom);
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(Boolean(currentQ.trim()));
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -38,7 +38,9 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
 
   useEffect(() => {
     if (pathname.startsWith("/qna") || pathname.startsWith("/board")) {
-      setValue(currentQ);
+      const trimmed = currentQ.trim();
+      setValue(trimmed);
+      setOpen(Boolean(trimmed));
     }
   }, [pathname, currentQ]);
 
@@ -66,8 +68,9 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
   };
 
   const onSubmit = () => {
-    goWithQuery(value);
-    setOpen(false);
+    const trimmed = value.trim();
+    goWithQuery(trimmed);
+    setOpen(Boolean(trimmed));
   };
 
   return (
@@ -85,9 +88,15 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") onSubmit();
-              if (e.key === "Escape") setOpen(false);
+              if (e.key === "Escape" && !currentQ.trim() && !value.trim()) {
+                setOpen(false);
+              }
             }}
-            onBlur={() => setOpen(false)}
+            onBlur={() => {
+              if (!currentQ.trim() && !value.trim()) {
+                setOpen(false);
+              }
+            }}
             placeholder="검색어 입력"
             className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-brand/40"
           />

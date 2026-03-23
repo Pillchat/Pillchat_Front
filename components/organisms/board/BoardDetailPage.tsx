@@ -507,13 +507,22 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
 
                               {editingCommentId === commentId ? (
                                 <div className="flex flex-col gap-2">
-                                  <input
-                                    value={editingCommentValue}
-                                    onChange={(e) =>
-                                      setEditingCommentValue(e.target.value)
-                                    }
-                                    className="rounded-[12px] border border-[#C4C4C4] px-3 py-2 text-sm outline-none"
-                                  />
+                                  <div className="flex flex-col gap-1">
+                                    <input
+                                      value={editingCommentValue}
+                                      onChange={(e) =>
+                                        setEditingCommentValue(
+                                          e.target.value.slice(0, 1000),
+                                        )
+                                      }
+                                      maxLength={1000}
+                                      className="rounded-[12px] border border-[#C4C4C4] px-3 py-2 text-sm outline-none"
+                                    />
+                                    <div className="text-right text-xs text-[#999999]">
+                                      {editingCommentValue.length}/{1000}
+                                    </div>
+                                  </div>
+
                                   <div className="flex items-center gap-2">
                                     <button
                                       type="button"
@@ -539,7 +548,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                                   </div>
                                 </div>
                               ) : (
-                                <p className="text-sm text-[#333333]">
+                                <p className="max-w-[260px] whitespace-pre-wrap break-words text-sm text-[#333333]">
                                   {comment?.content ?? ""}
                                 </p>
                               )}
@@ -595,35 +604,42 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
       <div
         className="fixed left-0 right-0 z-20 bg-white px-6"
         style={{
-          height: 82,
+          height: 96,
           bottom: keyboardOffset,
         }}
       >
-        <div className="relative flex h-full items-center justify-center">
-          <input
-            value={commentValue}
-            onChange={(e) => setCommentValue(e.target.value)}
-            onFocus={() => setIsCommentFocused(true)}
-            onBlur={() => {
-              setTimeout(() => {
-                setIsCommentFocused(false);
-              }, 120);
-            }}
-            placeholder="댓글을 입력하세요"
-            className="h-[50px] w-full rounded-[20px] border border-[#C4C4C4] px-3 py-3 pr-[88px] text-[#999999] outline-none"
-          />
+        <div className="flex h-full flex-col justify-center">
+          <div className="relative">
+            <input
+              value={commentValue}
+              onChange={(e) => setCommentValue(e.target.value.slice(0, 1000))}
+              onFocus={() => setIsCommentFocused(true)}
+              onBlur={() => {
+                setTimeout(() => {
+                  setIsCommentFocused(false);
+                }, 120);
+              }}
+              placeholder="댓글을 입력하세요"
+              maxLength={1000}
+              className="h-[50px] w-full rounded-[20px] border border-[#C4C4C4] px-3 py-3 pr-[88px] text-[#999999] outline-none"
+            />
 
-          {isCommentFocused && (
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={handleCommentSubmit}
-              disabled={!commentValue.trim() || commentMutation.isPending}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-[20px] bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-            >
-              {commentMutation.isPending ? "등록 중" : "올리기"}
-            </button>
-          )}
+            {isCommentFocused && (
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={handleCommentSubmit}
+                disabled={!commentValue.trim() || commentMutation.isPending}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-[20px] bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+              >
+                {commentMutation.isPending ? "등록 중" : "올리기"}
+              </button>
+            )}
+          </div>
+
+          <div className="mt-1 text-right text-xs text-[#999999]">
+            {commentValue.length}/{1000}
+          </div>
         </div>
       </div>
 

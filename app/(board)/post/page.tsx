@@ -471,9 +471,6 @@ const PostPage = () => {
                   : "업로드한 게시글은 게시판에서 바로 확인할 수 있어요."}
               </p>
             </div>
-            <p className="text-sm">
-              업로드한 게시글은 게시판에서 바로 확인할 수 있어요.
-            </p>
           </div>
 
           <div className="mx-6 mb-10 flex flex-col gap-3">
