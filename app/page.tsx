@@ -126,8 +126,8 @@ const Home: FC = () => {
     <div className="flex min-h-screen flex-col">
       <AlarmHeader />
 
-      <main className="flex-1 px-6 pb-24 pt-4">
-        <div className="mb-6">
+      <main className="flex-1 pb-24 pt-4">
+        <div className="mb-6 gap-2">
           <Carousel className="w-full">
             <CarouselContent>
               <CarouselItem>
@@ -216,7 +216,7 @@ const Home: FC = () => {
           </h2>
         </div>
 
-        <div className="-mx-6 border-t-[12px] border-t-[#FFF6F5] py-5" />
+        <div className="border-t-[12px] border-t-[#FFF6F5] py-5" />
 
         {/*
         <div className="mb-6">
@@ -273,7 +273,7 @@ const Home: FC = () => {
         </div>
         */}
 
-        <div className="mb-6">
+        <div className="mb-6 px-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">
               인기 게시글들
