@@ -89,7 +89,7 @@ export const FloatingActionButton: FC<FloatingActionButtonProps> = ({
   return (
     <div
       className={cn(
-        "z-50",
+        "z-30",
         isRelative
           ? "relative"
           : className?.includes("absolute")
