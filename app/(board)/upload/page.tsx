@@ -10,7 +10,7 @@ import { BoardHeader, BoardButton } from "@/components/molecules/board";
 import { Controller } from "react-hook-form";
 import { useStep, useUploadForm, useUploadFiles } from "./_hooks";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import CheckCircle from "@/public/CheckCircle.svg";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { useSubjects } from "@/hooks";
@@ -141,6 +141,20 @@ const uploadMaterialFiles = async (
   };
 };
 
+type MaterialDraft = {
+  step: Step;
+  checked: boolean;
+  title: string;
+  selectedSubject: string;
+  subjectId: string;
+  updatedAt: number;
+};
+
+const getMaterialDraftKey = (editId: string | null) =>
+  editId
+    ? `material-upload-draft:edit:${editId}`
+    : "material-upload-draft:create";
+
 const UploadPage = () => {
   const { getSubjectMapForChips } = useSubjects();
   const router = useRouter();
@@ -152,6 +166,13 @@ const UploadPage = () => {
   const [checked, setChecked] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [initialized, setInitialized] = useState(false);
+
+  const draftKey = useMemo(() => getMaterialDraftKey(editId), [editId]);
+  const [draftReady, setDraftReady] = useState(false);
+  const [hasDraftValues, setHasDraftValues] = useState(false);
+
+  const didRestoreDraftRef = useRef(false);
+  const didApplyEditDataRef = useRef(false);
 
   const {
     imageInputRef,
@@ -218,6 +239,40 @@ const UploadPage = () => {
     },
   });
 
+  useEffect(() => {
+    if (didRestoreDraftRef.current) return;
+
+    didRestoreDraftRef.current = true;
+
+    const savedDraft = window.localStorage.getItem(draftKey);
+
+    if (!savedDraft) {
+      setDraftReady(true);
+      return;
+    }
+
+    try {
+      const parsed: Partial<MaterialDraft> = JSON.parse(savedDraft);
+
+      setChecked(!!parsed.checked);
+      setValue("title", parsed.title ?? "");
+      setValue("subject", parsed.selectedSubject ?? "");
+      setValue("subjectId", parsed.subjectId ?? "");
+
+      if (parsed.step && parsed.step !== Step.Complete) {
+        setStep(parsed.step);
+      }
+
+      setHasDraftValues(
+        !!parsed.title || !!parsed.selectedSubject || !!parsed.subjectId,
+      );
+    } catch (error) {
+      console.error("학습자료 임시저장 복원 실패:", error);
+    } finally {
+      setDraftReady(true);
+    }
+  }, [draftKey, setStep]);
+
   const { data: editMaterial } = useQuery({
     queryKey: ["material-edit", editId],
     queryFn: () => fetchAPI(`/api/materials/${editId}`, "GET"),
@@ -270,17 +325,21 @@ const UploadPage = () => {
   }, [editFilesData, editFileKeys]);
 
   useEffect(() => {
-    if (!isEditMode || !editMaterial || initialized) return;
-
-    setValue("title", editMaterial.title ?? "");
-    setValue("subject", editMaterial.subjectName ?? "");
-    setValue("subjectId", String(editMaterial.subjectId ?? ""));
+    if (!draftReady || !isEditMode || !editMaterial || initialized) return;
+    if (hasDraftValues) return;
+    if (didApplyEditDataRef.current) return;
 
     const hasRemoteUrls =
       editFileKeys.length === 0 ||
       editFileKeys.every((key) => !!editFileUrlMap[key]);
 
     if (!hasRemoteUrls) return;
+
+    didApplyEditDataRef.current = true;
+
+    setValue("title", editMaterial.title ?? "");
+    setValue("subject", editMaterial.subjectName ?? "");
+    setValue("subjectId", String(editMaterial.subjectId ?? ""));
 
     const initialImages = Array.isArray(editMaterial.images)
       ? editMaterial.images
@@ -301,15 +360,19 @@ const UploadPage = () => {
           .filter(Boolean)
       : [];
 
+    const pdfKey = editMaterial?.pdfKey
+      ? resolveMaterialKey(editMaterial.pdfKey, editMaterial.id)
+      : "";
+
     const initialPdf =
-      editMaterial.pdfKey && editFileUrlMap[editMaterial.pdfKey]
+      pdfKey && editFileUrlMap[pdfKey]
         ? [
             {
-              id: `remote-pdf-${editMaterial.pdfKey}`,
+              id: `remote-pdf-${pdfKey}`,
               type: "pdf",
-              name: getFileNameFromKey(editMaterial.pdfKey),
-              previewUrl: editFileUrlMap[editMaterial.pdfKey],
-              key: editMaterial.pdfKey,
+              name: getFileNameFromKey(pdfKey),
+              previewUrl: editFileUrlMap[pdfKey],
+              key: pdfKey,
               source: "remote",
             },
           ]
@@ -318,14 +381,41 @@ const UploadPage = () => {
     setInitialFiles([...initialImages, ...initialPdf]);
     setInitialized(true);
   }, [
+    draftReady,
     isEditMode,
     editMaterial,
+    initialized,
+    hasDraftValues,
     editFileKeys,
     editFileUrlMap,
-    initialized,
-    setInitialFiles,
-    setValue,
   ]);
+
+  useEffect(() => {
+    if (!draftReady || step === Step.Complete) return;
+
+    const hasAnyDraftData =
+      !!title ||
+      !!selectedSubject ||
+      !!subjectId ||
+      checked ||
+      step !== Step.Guide;
+
+    if (!hasAnyDraftData) {
+      window.localStorage.removeItem(draftKey);
+      return;
+    }
+
+    const draft: MaterialDraft = {
+      step,
+      checked,
+      title: title ?? "",
+      selectedSubject: selectedSubject ?? "",
+      subjectId: subjectId ?? "",
+      updatedAt: Date.now(),
+    };
+
+    window.localStorage.setItem(draftKey, JSON.stringify(draft));
+  }, [draftKey, draftReady, step, checked, title, selectedSubject, subjectId]);
 
   const canSubmit =
     !!title?.trim() &&
@@ -343,6 +433,9 @@ const UploadPage = () => {
     try {
       setIsConfirmOpen(false);
       await handleUpload();
+      window.localStorage.removeItem(draftKey);
+      didApplyEditDataRef.current = false;
+      didRestoreDraftRef.current = false;
       nextStep();
     } catch (error) {
       console.error("학습자료 업로드 실패:", error);
@@ -355,10 +448,15 @@ const UploadPage = () => {
   };
 
   const resetUploadPage = () => {
+    window.localStorage.removeItem(draftKey);
+    didApplyEditDataRef.current = false;
+    didRestoreDraftRef.current = false;
     resetForm();
     clearFiles();
     setChecked(false);
     setInitialized(false);
+    setHasDraftValues(false);
+    setDraftReady(false);
     setStep(Step.Guide);
   };
 

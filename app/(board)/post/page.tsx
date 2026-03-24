@@ -13,7 +13,7 @@ import {
   uploadBoardFiles,
 } from "./_hooks";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, ChangeEvent, useEffect } from "react";
+import { useState, ChangeEvent, useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { SelectCategoryModal } from "./SelectCategoryModal";
@@ -43,6 +43,18 @@ const buildQueryParams = (
 
   return searchParams.toString();
 };
+
+type PostDraft = {
+  step: Step;
+  title: string;
+  content: string;
+  selectValue: string;
+  selectedCategory: string;
+  updatedAt: number;
+};
+
+const getPostDraftKey = (editId: string | null) =>
+  editId ? `board-post-draft:edit:${editId}` : "board-post-draft:create";
 
 const createBoard = async ({
   title,
@@ -79,6 +91,13 @@ const PostPage = () => {
   const [selectValue, setSelectValue] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+
+  const draftKey = useMemo(() => getPostDraftKey(editId), [editId]);
+  const [draftReady, setDraftReady] = useState(false);
+  const [hasDraftValues, setHasDraftValues] = useState(false);
+
+  const didRestoreDraftRef = useRef(false);
+  const didApplyEditDataRef = useRef(false);
 
   const {
     imageInputRef,
@@ -152,6 +171,45 @@ const PostPage = () => {
     },
   });
 
+  useEffect(() => {
+    if (didRestoreDraftRef.current) return;
+
+    const savedDraft = window.localStorage.getItem(draftKey);
+
+    didRestoreDraftRef.current = true;
+
+    if (!savedDraft) {
+      setDraftReady(true);
+      return;
+    }
+
+    try {
+      const parsed: Partial<PostDraft> = JSON.parse(savedDraft);
+
+      setFormValues({
+        title: parsed.title ?? "",
+        content: parsed.content ?? "",
+      });
+      setSelectValue(parsed.selectValue ?? "");
+      setSelectedCategory(parsed.selectedCategory ?? "");
+
+      if (parsed.step && parsed.step !== Step.Complete) {
+        setStep(parsed.step);
+      }
+
+      setHasDraftValues(
+        !!parsed.title ||
+          !!parsed.content ||
+          !!parsed.selectValue ||
+          !!parsed.selectedCategory,
+      );
+    } catch (error) {
+      console.error("게시글 임시저장 복원 실패:", error);
+    } finally {
+      setDraftReady(true);
+    }
+  }, [draftKey, setStep]);
+
   const { data: boardData } = useQuery({
     queryKey: ["board-edit", editId],
     queryFn: () => fetchAPI(`/api/boards/${editId}`, "GET"),
@@ -175,7 +233,10 @@ const PostPage = () => {
   });
 
   useEffect(() => {
-    if (!isEditMode || !boardData) return;
+    if (!draftReady || !isEditMode || !boardData || hasDraftValues) return;
+    if (didApplyEditDataRef.current) return;
+
+    didApplyEditDataRef.current = true;
 
     const categoryLabel =
       Object.entries(CATEGORY_MAP).find(
@@ -190,7 +251,7 @@ const PostPage = () => {
     });
     setSelectedCategory(boardData.category ?? "");
     setSelectValue(categoryLabel);
-  }, [isEditMode, boardData, setFormValues]);
+  }, [draftReady, isEditMode, boardData, hasDraftValues]);
 
   useEffect(() => {
     if (!isEditMode || !boardData?.images || !Array.isArray(filesData)) return;
@@ -213,6 +274,41 @@ const PostPage = () => {
   const trimmedContent = content?.trim() ?? "";
   const hasAnyFiles = hasFiles || remainingExistingKeys.length > 0;
 
+  useEffect(() => {
+    if (!draftReady || step === Step.Complete) return;
+
+    const hasAnyDraftData =
+      !!title ||
+      !!content ||
+      !!selectValue ||
+      !!selectedCategory ||
+      step !== Step.Upload;
+
+    if (!hasAnyDraftData) {
+      window.localStorage.removeItem(draftKey);
+      return;
+    }
+
+    const draft: PostDraft = {
+      step,
+      title: title ?? "",
+      content: content ?? "",
+      selectValue,
+      selectedCategory,
+      updatedAt: Date.now(),
+    };
+
+    window.localStorage.setItem(draftKey, JSON.stringify(draft));
+  }, [
+    draftKey,
+    draftReady,
+    step,
+    title,
+    content,
+    selectValue,
+    selectedCategory,
+  ]);
+
   const canSubmit =
     !!selectedCategory &&
     trimmedTitle.length > 0 &&
@@ -229,6 +325,7 @@ const PostPage = () => {
     try {
       setIsConfirmOpen(false);
       await handleUpload();
+      window.localStorage.removeItem(draftKey);
       nextStep();
     } catch (error) {
       console.error("게시글 업로드 실패:", error);
@@ -241,6 +338,7 @@ const PostPage = () => {
   };
 
   const resetPostPage = () => {
+    window.localStorage.removeItem(draftKey);
     resetForm();
     clearFiles();
     setSelectValue("");

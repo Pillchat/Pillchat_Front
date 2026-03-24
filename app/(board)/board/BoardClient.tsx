@@ -45,16 +45,16 @@ const BoardClient = () => {
 
   const { getSubjectMapForChips } = useSubjects();
 
-  const rawSubjectMap = useMemo(
+  const subjectMap = useMemo(
     () => getSubjectMapForChips(),
     [getSubjectMapForChips],
   );
 
-  const subjectData = useMemo(
+  const allSubjects = useMemo(
     () => ({
-      "과목별로 보기": [...new Set(Object.values(rawSubjectMap).flat())],
+      "과목 선택": [...new Set(Object.values(subjectMap).flat())],
     }),
-    [rawSubjectMap],
+    [subjectMap],
   );
 
   const handleSubjectToggle = (item: string) => {
@@ -219,7 +219,8 @@ const BoardClient = () => {
       {currentStatus === "study" && (
         <div className="px-6 pt-4">
           <ExpandableChipSection
-            data={subjectData}
+            data={allSubjects}
+            expandedData={subjectMap}
             selectedItems={selectedSubjects}
             onItemToggle={handleSubjectToggle}
             showDropdown
