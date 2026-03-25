@@ -23,12 +23,6 @@ const mypage: FC = () => {
   const isAdmin = isCurrentUserAdmin();
 
   useEffect(() => {
-    const userInfo = getCurrentUserInfo();
-    console.log("JWT payload:", userInfo);
-    console.log("isAdmin:", isAdmin);
-  }, [isAdmin]);
-
-  useEffect(() => {
     onMyProfile();
   }, [onMyProfile]);
 

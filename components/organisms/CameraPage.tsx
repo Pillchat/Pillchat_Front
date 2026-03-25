@@ -115,11 +115,6 @@ export const CameraPage = ({ setStep, route, setOcrData }: CameraPageProps) => {
 
   const handleNativeResult = useCallback(
     async (base64: string) => {
-      console.log(
-        "Received data from Native:",
-        base64.substring(0, 50) + "...",
-      ); // 로그 확인용
-
       if (!base64) {
         alert("이미지 데이터가 비어있습니다.");
         return;

@@ -27,7 +27,8 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
   const unreadCount = useAtomValue(unreadCountAtom);
 
   const [open, setOpen] = useState(Boolean(currentQ.trim()));
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(currentQ.trim());
+  const [debouncedValue, setDebouncedValue] = useState(currentQ.trim());
   const inputRef = useRef<HTMLInputElement>(null);
 
   const resolvedBasePath = useMemo(() => {
@@ -40,6 +41,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
     if (pathname.startsWith("/qna") || pathname.startsWith("/board")) {
       const trimmed = currentQ.trim();
       setValue(trimmed);
+      setDebouncedValue(trimmed);
       setOpen(Boolean(trimmed));
     }
   }, [pathname, currentQ]);
@@ -52,9 +54,23 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
     onSearchOpenChange?.(open);
   }, [open, onSearchOpenChange]);
 
-  const goWithQuery = (q: string) => {
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedValue(value);
+    }, 200);
+
+    return () => window.clearTimeout(timer);
+  }, [value]);
+
+  useEffect(() => {
+    if (!(pathname.startsWith("/qna") || pathname.startsWith("/board"))) return;
+
+    const trimmed = debouncedValue.trim();
+    const currentTrimmed = currentQ.trim();
+
+    if (trimmed === currentTrimmed) return;
+
     const params = new URLSearchParams();
-    const trimmed = q.trim();
 
     if (currentStatus) {
       params.set("status", currentStatus);
@@ -64,14 +80,18 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
       params.set("q", trimmed);
     }
 
-    router.push(`${resolvedBasePath}?${params.toString()}`);
-  };
-
-  const onSubmit = () => {
-    const trimmed = value.trim();
-    goWithQuery(trimmed);
-    setOpen(Boolean(trimmed));
-  };
+    const queryString = params.toString();
+    router.replace(
+      queryString ? `${resolvedBasePath}?${queryString}` : resolvedBasePath,
+    );
+  }, [
+    debouncedValue,
+    currentQ,
+    currentStatus,
+    pathname,
+    resolvedBasePath,
+    router,
+  ]);
 
   return (
     <header
@@ -87,7 +107,6 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") onSubmit();
               if (e.key === "Escape" && !currentQ.trim() && !value.trim()) {
                 setOpen(false);
               }
@@ -104,7 +123,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
             type="button"
             className="relative z-30 flex items-center"
             onMouseDown={(e) => e.preventDefault()}
-            onClick={onSubmit}
+            onClick={() => inputRef.current?.focus()}
           >
             <img src="/search.svg" alt="search" width={32} height={32} />
           </button>
