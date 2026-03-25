@@ -81,7 +81,9 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
     }
 
     const queryString = params.toString();
-    router.replace(queryString ? `${resolvedBasePath}?${queryString}` : resolvedBasePath);
+    router.replace(
+      queryString ? `${resolvedBasePath}?${queryString}` : resolvedBasePath,
+    );
   }, [
     debouncedValue,
     currentQ,
