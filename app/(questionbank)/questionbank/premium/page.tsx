@@ -321,7 +321,20 @@ const PremiumPage = () => {
             min="1"
             max="20"
             value={questionCount}
-            onChange={(e) => setQuestionCount(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+
+              if (value === "") {
+                setQuestionCount("");
+                return;
+              }
+
+              const numericValue = Number(value);
+
+              if (Number.isNaN(numericValue)) return;
+
+              setQuestionCount(String(Math.min(20, numericValue)));
+            }}
             className="w-full rounded-xl border border-gray-200 px-4 py-3 text-base outline-none focus:border-brand"
             placeholder="문제 수를 입력하세요 (최대 20개)"
           />

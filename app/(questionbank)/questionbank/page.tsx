@@ -15,7 +15,7 @@ const QuestionBankPage = () => {
       <div className="px-6 pb-4 pt-2">
         <h1 className="text-2xl font-bold text-foreground">문제은행</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          약사고시 대비 문제를 풀어보세요
+          다양한 문제로 개념을 익혀보세요!
         </p>
       </div>
 
