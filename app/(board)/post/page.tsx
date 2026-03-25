@@ -225,7 +225,6 @@ const PostPage = () => {
       boardData.images.forEach((image: any) => {
         params.append("keys", image.urlKey);
       });
-      console.log("boardData.images", boardData?.images);
 
       return fetchAPI(`/api/files?${params.toString()}`, "GET");
     },

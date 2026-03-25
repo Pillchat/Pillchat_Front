@@ -172,7 +172,6 @@ export const useAnswerForm = ({ questionId }: UseAnswerFormProps) => {
       }
     },
     onSuccess: (data) => {
-      console.log(isEditMode ? "Answer updated:" : "Answer posted:", data);
       queryClient.invalidateQueries({ queryKey: ["question", questionId] });
       queryClient.invalidateQueries({ queryKey: ["answers", questionId] });
       if (isEditMode && editAnswerId) {

@@ -110,9 +110,9 @@ export const useNachocodePush = () => {
           scheduledTime: params.scheduledTime,
         },
         (result) => {
-          if (result.status === "success") {
-            console.log("로컬 푸시 전송 성공");
-          }
+          // if (result.status === "success") {
+          //   console.log("로컬 푸시 전송 성공");
+          // }
         },
       );
     },

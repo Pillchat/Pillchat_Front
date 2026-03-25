@@ -19,8 +19,6 @@ export const useAnswerAccept = ({
       return fetchAPI(`/api/answers/${answerId}/accept`, "POST");
     },
     onSuccess: (data, answerId) => {
-      console.log("Answer accepted:", data);
-
       // 관련 쿼리들 무효화
       queryClient.invalidateQueries({ queryKey: ["question", questionId] });
       queryClient.invalidateQueries({ queryKey: ["answers", questionId] });

@@ -3,7 +3,7 @@ export function openCamera() {
     (window as any).ReactNativeWebView.postMessage(
       JSON.stringify({ type: "OPEN_CAMERA" }),
     );
-  } else {
+  } {/*else {
     console.log("웹 카메라 fallback");
-  }
+  }*/}
 }
