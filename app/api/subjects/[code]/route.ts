@@ -7,7 +7,8 @@ export async function GET(
 ) {
   try {
     const { code } = await context.params;
-    const data = await serverFetch(`/api/subjects/BIO-BIOCHEM`, {
+
+    const data = await serverFetch(`/api/subjects/${encodeURIComponent(code)}`, {
       method: "GET",
       request,
     });
@@ -15,8 +16,17 @@ export async function GET(
     return NextResponse.json(data);
   } catch (error) {
     console.error("과목 상세 조회 API 에러:", error);
-    const errorMessage = error instanceof Error ? error.message : "{}";
-    const errorInfo = JSON.parse(errorMessage);
+
+    let errorInfo: { message?: string; status?: number } = {};
+
+    if (error instanceof Error) {
+      try {
+        errorInfo = JSON.parse(error.message);
+      } catch {
+        errorInfo = { message: error.message };
+      }
+    }
+
     return NextResponse.json(
       { message: errorInfo.message || "과목을 불러오는데 실패했습니다." },
       { status: errorInfo.status || 500 },
