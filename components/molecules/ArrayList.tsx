@@ -12,6 +12,7 @@ type Props<T extends string = string> = {
   tabs?: Tab<T>[];
   className?: string;
   scrollable?: boolean;
+  innerClassName?: string;
 };
 
 const DEFAULT_TABS = [
@@ -29,6 +30,7 @@ export const ArrayList = <T extends string>({
   tabs = DEFAULT_TABS as unknown as Tab<T>[],
   className = "",
   scrollable = true,
+  innerClassName = "px-6 md:px-10",
 }: Props<T>) => {
   const fallback = tabs[0]?.key;
   const isControlled = value !== undefined;
@@ -51,7 +53,7 @@ export const ArrayList = <T extends string>({
         " ",
       )}
     >
-      <div className={scrollable ? "h-full px-6" : "h-full px-6"}>
+      <div className={["h-full", innerClassName].join(" ")}>
         <div
           className={[
             "h-full overflow-y-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
@@ -61,7 +63,7 @@ export const ArrayList = <T extends string>({
           <div
             className={
               scrollable
-                ? "flex h-full w-max min-w-[380px] items-center gap-5"
+                ? "flex h-full w-full min-w-[380px] items-center justify-between"
                 : "grid h-full w-full"
             }
             style={

@@ -214,7 +214,11 @@ const BoardClient = () => {
         onSearchOpenChange={setIsSearchOpen}
       />
 
-      <ArrayList value={currentStatus} onChange={handleTabChange} />
+      <ArrayList
+        value={currentStatus}
+        onChange={handleTabChange}
+        innerClassName="px-6 md:px-10"
+      />
 
       {currentStatus === "study" && (
         <div className="px-6 pt-4">
