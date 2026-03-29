@@ -87,10 +87,33 @@ const QuestionBankPage = () => {
 
         <EntryButton
           icon={
-            <svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="10" r="5.5" stroke="#FF412E" stroke-width="1"/>
-              <path d="M9.2 15L8.6 20L12 17.8L15.4 20L14.8 15" stroke="#FF412E" stroke-width="1" stroke-linejoin="round"/>
-              <path d="M10 10.1L11.2 11.3L14 8.6" stroke="#FF412E" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="240"
+              height="240"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <circle
+                cx="12"
+                cy="10"
+                r="5.5"
+                stroke="#FF412E"
+                stroke-width="1"
+              />
+              <path
+                d="M9.2 15L8.6 20L12 17.8L15.4 20L14.8 15"
+                stroke="#FF412E"
+                stroke-width="1"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M10 10.1L11.2 11.3L14 8.6"
+                stroke="#FF412E"
+                stroke-width="1"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
           }
           title="수제 문제 제작"
