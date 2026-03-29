@@ -63,7 +63,7 @@ export const ArrayList = <T extends string>({
           <div
             className={
               scrollable
-                ? "flex h-full min-w-[380px] w-full items-center justify-between"
+                ? "flex h-full w-full min-w-[380px] items-center justify-between"
                 : "grid h-full w-full"
             }
             style={

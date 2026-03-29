@@ -95,7 +95,13 @@ const QuestionBankPage = () => {
                 viewBox="0 0 24 24"
                 fill="none"
               >
-                <circle cx="12" cy="10" r="5.5" stroke="#FF412E" strokeWidth="1.5" />
+                <circle
+                  cx="12"
+                  cy="10"
+                  r="5.5"
+                  stroke="#FF412E"
+                  strokeWidth="1.5"
+                />
                 <path
                   d="M9.2 15L8.6 20L12 17.8L15.4 20L14.8 15"
                   stroke="#FF412E"
