@@ -8,10 +8,13 @@ export async function GET(
   try {
     const { code } = await context.params;
 
-    const data = await serverFetch(`/api/subjects/${encodeURIComponent(code)}`, {
-      method: "GET",
-      request,
-    });
+    const data = await serverFetch(
+      `/api/subjects/${encodeURIComponent(code)}`,
+      {
+        method: "GET",
+        request,
+      },
+    );
 
     return NextResponse.json(data);
   } catch (error) {
