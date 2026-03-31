@@ -26,9 +26,9 @@ const getBoardFileKey = (file: any) => {
 const shouldSkipViewOnLoad = () => {
   if (typeof window === "undefined") return false;
 
-  const navigationEntry = performance.getEntriesByType(
-    "navigation",
-  )[0] as PerformanceNavigationTiming | undefined;
+  const navigationEntry = performance.getEntriesByType("navigation")[0] as
+    | PerformanceNavigationTiming
+    | undefined;
 
   if (navigationEntry?.type) {
     return navigationEntry.type === "reload";
