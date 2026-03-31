@@ -307,7 +307,10 @@ const PostPage = () => {
   ]);
 
   const canSubmit =
-    !!selectedCategory && trimmedTitle.length > 0 && hasAnyFiles && !isSubmitting;
+    !!selectedCategory &&
+    trimmedTitle.length > 0 &&
+    hasAnyFiles &&
+    !isSubmitting;
 
   const openConfirmModal = () => {
     if (!canSubmit) return;

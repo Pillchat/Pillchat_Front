@@ -12,8 +12,18 @@ export async function GET(
     const accessToken = request.headers
       .get("authorization")
       ?.replace("Bearer ", "");
+    const skipView = request.nextUrl.searchParams.get("skipView");
+    const query = new URLSearchParams();
 
-    const response = await fetch(`${API_BASE_URL}/api/boards/${id}`, {
+    if (skipView !== null) {
+      query.set("skipView", skipView);
+    }
+
+    const targetUrl = `${API_BASE_URL}/api/boards/${id}${
+      query.toString() ? `?${query.toString()}` : ""
+    }`;
+
+    const response = await fetch(targetUrl, {
       method: "GET",
       headers: accessToken
         ? {
