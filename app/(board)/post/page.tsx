@@ -15,7 +15,6 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, ChangeEvent, useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { SelectCategoryModal } from "./SelectCategoryModal";
 import { fetchAPI } from "@/lib/functions";
 
@@ -140,8 +139,8 @@ const PostPage = () => {
         throw new Error("제목을 입력해주세요.");
       }
 
-      if (trimmedContent.length < 10) {
-        throw new Error("본문은 10자 이상 입력해주세요.");
+      if (!trimmedContent) {
+        throw new Error("내용이 필요합니다.");
       }
 
       if (!hasAnyFiles) {
@@ -208,7 +207,7 @@ const PostPage = () => {
     } finally {
       setDraftReady(true);
     }
-  }, [draftKey, setStep]);
+  }, [draftKey, setStep, setFormValues]);
 
   const { data: boardData } = useQuery({
     queryKey: ["board-edit", editId],
@@ -250,7 +249,7 @@ const PostPage = () => {
     });
     setSelectedCategory(boardData.category ?? "");
     setSelectValue(categoryLabel);
-  }, [draftReady, isEditMode, boardData, hasDraftValues]);
+  }, [draftReady, isEditMode, boardData, hasDraftValues, setFormValues]);
 
   useEffect(() => {
     if (!isEditMode || !boardData?.images || !Array.isArray(filesData)) return;
@@ -270,7 +269,6 @@ const PostPage = () => {
   }, [isEditMode, boardData, filesData, setExistingPreviewItems]);
 
   const trimmedTitle = title?.trim() ?? "";
-  const trimmedContent = content?.trim() ?? "";
   const hasAnyFiles = hasFiles || remainingExistingKeys.length > 0;
 
   useEffect(() => {
@@ -309,11 +307,7 @@ const PostPage = () => {
   ]);
 
   const canSubmit =
-    !!selectedCategory &&
-    trimmedTitle.length > 0 &&
-    trimmedContent.length >= 10 &&
-    hasAnyFiles &&
-    !isSubmitting;
+    !!selectedCategory && trimmedTitle.length > 0 && hasAnyFiles && !isSubmitting;
 
   const openConfirmModal = () => {
     if (!canSubmit) return;
@@ -375,8 +369,8 @@ const PostPage = () => {
             rightButtonLabel={
               isSubmitting
                 ? isEditMode
-                  ? "수정하는 중..."
-                  : "등록하는 중..."
+                  ? "수정하는 중.."
+                  : "등록하는 중.."
                 : isEditMode
                   ? "수정하기"
                   : "등록하기"
@@ -437,7 +431,6 @@ const PostPage = () => {
             <Controller
               name="content"
               control={control}
-              rules={QUESTION_FORM_RULES.content}
               render={({ field }) => (
                 <TextareaWithLabel
                   label="본문"
@@ -452,7 +445,7 @@ const PostPage = () => {
           </div>
 
           <div className="px-6">
-            <p className="mb-3 font-[Pretendard] text-xs">업로드 할 파일</p>
+            <p className="mb-3 font-[Pretendard] text-xs">업로드할 파일</p>
             <p className="mb-1 font-[Pretendard] text-xs text-[#999]">
               이미지 파일 (JPG, PNG 등) 최대 10장 가능 또는 PDF 파일 1개
             </p>
@@ -542,8 +535,8 @@ const PostPage = () => {
         title={isEditMode ? "수정 최종 확인" : "업로드 최종 확인"}
         message={
           isEditMode
-            ? `‘${title ?? ""}’ 게시글을 수정하시겠습니까?`
-            : `‘${title ?? ""}’ 게시글을 업로드 하시겠습니까?`
+            ? `"${title ?? ""}" 게시글을 수정하시겠습니까?`
+            : `"${title ?? ""}" 게시글을 업로드하시겠습니까?`
         }
       />
 
@@ -559,12 +552,12 @@ const PostPage = () => {
               />
               <p className="text-2xl font-semibold">
                 {isEditMode
-                  ? "게시글이 수정되었습니다!"
+                  ? "게시글이 수정되었습니다."
                   : "게시글이 업로드되었습니다!"}
               </p>
               <p className="text-sm">
                 {isEditMode
-                  ? "수정한 게시글은 게시판에서 바로 확인할 수 있어요."
+                  ? "수정된 게시글은 게시판에서 바로 확인할 수 있어요."
                   : "업로드한 게시글은 게시판에서 바로 확인할 수 있어요."}
               </p>
             </div>
