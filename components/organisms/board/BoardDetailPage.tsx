@@ -23,6 +23,29 @@ const getBoardFileKey = (file: any) => {
   return file?.urlKey ?? file?.key ?? file?.fileKey ?? file?.name ?? "";
 };
 
+const shouldSkipViewOnLoad = () => {
+  if (typeof window === "undefined") return false;
+
+  const navigationEntry = performance.getEntriesByType(
+    "navigation",
+  )[0] as PerformanceNavigationTiming | undefined;
+
+  if (navigationEntry?.type) {
+    return navigationEntry.type === "reload";
+  }
+
+  const legacyNavigation = (
+    performance as Performance & {
+      navigation?: {
+        TYPE_RELOAD?: number;
+        type?: number;
+      };
+    }
+  ).navigation;
+
+  return legacyNavigation?.type === legacyNavigation?.TYPE_RELOAD;
+};
+
 export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -40,6 +63,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const [deletingCommentId, setDeletingCommentId] = useState<number | null>(
     null,
   );
+  const [skipView] = useState(shouldSkipViewOnLoad);
   const [commentLikeOverrides, setCommentLikeOverrides] = useState<
     Record<number, boolean>
   >({});
@@ -48,8 +72,11 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   >(null);
 
   const { data: boardData, isLoading: boardLoading } = useQuery({
-    queryKey: ["board", boardId],
-    queryFn: () => fetchAPI(`/api/boards/${boardId}`, "GET"),
+    queryKey: ["board", boardId, skipView],
+    queryFn: () =>
+      fetchAPI(`/api/boards/${boardId}`, "GET", {
+        skipView: String(skipView),
+      }),
     enabled: !!boardId,
   });
 

@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  SolidButton,
-  TextButton,
-  TextareaWithLabel,
-} from "@/components/atoms";
+import { SolidButton, TextButton, TextareaWithLabel } from "@/components/atoms";
 import {
   IconInputField,
   ExpandableChipSection,
