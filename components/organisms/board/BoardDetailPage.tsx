@@ -8,7 +8,12 @@ import {
   SelectModal,
 } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
-import { fetchAPI, formatDiffDate, getCurrentUserId } from "@/lib/functions";
+import {
+  fetchAPI,
+  formatDiffDate,
+  getCurrentUserId,
+  shouldSkipBoardViewOnLoad,
+} from "@/lib/functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { FC, useEffect, useMemo, useState } from "react";
@@ -21,29 +26,6 @@ type CommentSortType = "latest" | "popular";
 const getBoardFileKey = (file: any) => {
   if (typeof file === "string") return file;
   return file?.urlKey ?? file?.key ?? file?.fileKey ?? file?.name ?? "";
-};
-
-const shouldSkipViewOnLoad = () => {
-  if (typeof window === "undefined") return false;
-
-  const navigationEntry = performance.getEntriesByType("navigation")[0] as
-    | PerformanceNavigationTiming
-    | undefined;
-
-  if (navigationEntry?.type) {
-    return navigationEntry.type === "reload";
-  }
-
-  const legacyNavigation = (
-    performance as Performance & {
-      navigation?: {
-        TYPE_RELOAD?: number;
-        type?: number;
-      };
-    }
-  ).navigation;
-
-  return legacyNavigation?.type === legacyNavigation?.TYPE_RELOAD;
 };
 
 export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
@@ -63,7 +45,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const [deletingCommentId, setDeletingCommentId] = useState<number | null>(
     null,
   );
-  const [skipView] = useState(shouldSkipViewOnLoad);
+  const [skipView] = useState(() => shouldSkipBoardViewOnLoad(boardId));
   const [commentLikeOverrides, setCommentLikeOverrides] = useState<
     Record<number, boolean>
   >({});

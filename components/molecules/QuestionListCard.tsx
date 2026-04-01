@@ -19,11 +19,13 @@ interface QuestionListCardProps {
     images?: string[] | QuestionImage[];
   };
   onClick: () => void;
+  hideStats?: boolean;
 }
 
 export const QuestionListCard: FC<QuestionListCardProps> = ({
   question,
   onClick,
+  hideStats = false,
 }) => {
   const firstImage =
     typeof question.images?.[0] === "string"
@@ -41,6 +43,7 @@ export const QuestionListCard: FC<QuestionListCardProps> = ({
       answerCount={question.answerCount ?? 0}
       commentCount={question.commentCount ?? 0}
       image={firstImage}
+      hideStats={hideStats}
     />
   );
 };

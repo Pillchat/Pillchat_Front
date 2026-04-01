@@ -17,7 +17,12 @@ import {
   useMyQuestions,
 } from "@/app/(archive)/archive/_hooks/";
 import { Separator } from "@/components/ui/separator";
-import { fetchAPI, formatDiffDate, getCurrentUserId } from "@/lib/functions";
+import {
+  fetchAPI,
+  formatDiffDate,
+  getCurrentUserId,
+  markBoardViewIntent,
+} from "@/lib/functions";
 import { map } from "lodash";
 import { useSubjects } from "@/hooks";
 import { FloatingActionButton } from "@/components/atoms";
@@ -252,6 +257,11 @@ const ArchivePage: FC = () => {
     return item?.question?.id ?? item?.questionId ?? item?.id ?? null;
   };
 
+  const handleBoardClick = (boardId: string | number) => {
+    markBoardViewIntent(boardId);
+    router.push(`/board/${boardId}`);
+  };
+
   const renderQuestionList = (list: any[] | undefined | null) => {
     if (!list || list.length === 0) {
       return (
@@ -361,7 +371,7 @@ const ArchivePage: FC = () => {
                 <QuestionListCard
                   question={board}
                   onClick={() => {
-                    if (boardId) router.push(`/board/${boardId}`);
+                    if (boardId) handleBoardClick(boardId);
                     else alert("게시글 ID를 찾을 수 없습니다.");
                   }}
                 />
