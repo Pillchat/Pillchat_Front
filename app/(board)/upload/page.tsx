@@ -1,6 +1,6 @@
 "use client";
 
-import { SolidButton, TextButton } from "@/components/atoms";
+import { SolidButton, TextButton, TextareaWithLabel } from "@/components/atoms";
 import {
   IconInputField,
   ExpandableChipSection,
@@ -145,6 +145,7 @@ type MaterialDraft = {
   step: Step;
   checked: boolean;
   title: string;
+  content: string;
   selectedSubject: string;
   subjectId: string;
   updatedAt: number;
@@ -196,7 +197,9 @@ const UploadPage = () => {
     selectedSubject,
     subjectId,
     title,
+    content,
     handleSubjectToggle,
+    handleContentChange,
     handleUpload,
     resetForm,
     isSubmitting,
@@ -226,6 +229,7 @@ const UploadPage = () => {
 
       const payload = {
         title: data.title.trim(),
+        content: data.content.trim(),
         subjectId: Number(data.subjectId),
         urlKey: [...existingImageKeys, ...newImageKeys],
         pdfKey: newPdfKey ?? existingPdfKey,
@@ -256,6 +260,7 @@ const UploadPage = () => {
 
       setChecked(!!parsed.checked);
       setValue("title", parsed.title ?? "");
+      setValue("content", parsed.content ?? "");
       setValue("subject", parsed.selectedSubject ?? "");
       setValue("subjectId", parsed.subjectId ?? "");
 
@@ -264,14 +269,17 @@ const UploadPage = () => {
       }
 
       setHasDraftValues(
-        !!parsed.title || !!parsed.selectedSubject || !!parsed.subjectId,
+        !!parsed.title ||
+          !!parsed.content ||
+          !!parsed.selectedSubject ||
+          !!parsed.subjectId,
       );
     } catch (error) {
       console.error("학습자료 임시저장 복원 실패:", error);
     } finally {
       setDraftReady(true);
     }
-  }, [draftKey, setStep]);
+  }, [draftKey, setStep, setValue]);
 
   const { data: editMaterial } = useQuery({
     queryKey: ["material-edit", editId],
@@ -338,6 +346,7 @@ const UploadPage = () => {
     didApplyEditDataRef.current = true;
 
     setValue("title", editMaterial.title ?? "");
+    setValue("content", editMaterial.content ?? "");
     setValue("subject", editMaterial.subjectName ?? "");
     setValue("subjectId", String(editMaterial.subjectId ?? ""));
 
@@ -388,6 +397,7 @@ const UploadPage = () => {
     hasDraftValues,
     editFileKeys,
     editFileUrlMap,
+    setValue,
   ]);
 
   useEffect(() => {
@@ -395,6 +405,7 @@ const UploadPage = () => {
 
     const hasAnyDraftData =
       !!title ||
+      !!content ||
       !!selectedSubject ||
       !!subjectId ||
       checked ||
@@ -409,13 +420,23 @@ const UploadPage = () => {
       step,
       checked,
       title: title ?? "",
+      content: content ?? "",
       selectedSubject: selectedSubject ?? "",
       subjectId: subjectId ?? "",
       updatedAt: Date.now(),
     };
 
     window.localStorage.setItem(draftKey, JSON.stringify(draft));
-  }, [draftKey, draftReady, step, checked, title, selectedSubject, subjectId]);
+  }, [
+    draftKey,
+    draftReady,
+    step,
+    checked,
+    title,
+    content,
+    selectedSubject,
+    subjectId,
+  ]);
 
   const canSubmit =
     !!title?.trim() &&
@@ -580,6 +601,23 @@ const UploadPage = () => {
                   onBlur={field.onBlur}
                   ref={field.ref}
                   errorMessage={errors.title?.message}
+                />
+              )}
+            />
+          </div>
+
+          <div className="mb-5 w-full px-6">
+            <Controller
+              name="content"
+              control={control}
+              render={({ field }) => (
+                <TextareaWithLabel
+                  label="본문"
+                  placeholder="본문을 입력해주세요."
+                  value={field.value ?? ""}
+                  onChange={(e) => handleContentChange(e.target.value)}
+                  onBlur={field.onBlur}
+                  errorMessage={errors.content?.message}
                 />
               )}
             />

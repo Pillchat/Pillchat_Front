@@ -77,7 +77,7 @@ export const usePostForm = ({ onSubmit }: UseUploadFormParams = {}) => {
 
   const handleContentChange = useCallback(
     (value: string) => {
-      setValue("content", value.replace(/^\s+/, "").replace(/\s{2,}/g, " "), {
+      setValue("content", value, {
         shouldValidate: true,
         shouldDirty: true,
         shouldTouch: true,

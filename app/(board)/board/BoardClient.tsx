@@ -14,7 +14,7 @@ import {
 } from "@/components/molecules";
 import { CircleButton } from "@/components/molecules/board";
 import { Separator } from "@/components/ui/separator";
-import { fetchAPI, formatDiffDate } from "@/lib/functions";
+import { fetchAPI, formatDiffDate, markBoardViewIntent } from "@/lib/functions";
 import { useBoardTabState } from "./_hooks";
 import { useSubjects } from "@/hooks";
 import { cn } from "@/lib/utils";
@@ -61,6 +61,11 @@ const BoardClient = () => {
     setSelectedSubjects((prev) =>
       prev.includes(item) ? prev.filter((v) => v !== item) : [...prev, item],
     );
+  };
+
+  const handleBoardClick = (boardId: string | number) => {
+    markBoardViewIntent(boardId);
+    router.push(`/board/${boardId}`);
   };
 
   const getCommentCount = (item: any) =>
@@ -326,12 +331,11 @@ const BoardClient = () => {
                   <Fragment key={item?.id}>
                     <QuestionListCard
                       question={cardData}
+                      hideStats={isStudyTab}
                       onClick={() =>
-                        router.push(
-                          isStudyTab
-                            ? `/materials/${item.id}`
-                            : `/board/${item.id}`,
-                        )
+                        isStudyTab
+                          ? router.push(`/materials/${item.id}`)
+                          : handleBoardClick(item.id)
                       }
                     />
                     <Separator className="last:hidden" />

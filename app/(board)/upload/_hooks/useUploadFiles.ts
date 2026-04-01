@@ -44,18 +44,10 @@ export const useUploadFiles = () => {
   };
 
   const openImagePicker = () => {
-    if (pdfItem) {
-      alert("PDF가 선택된 상태에서는 이미지를 업로드할 수 없습니다.");
-      return;
-    }
     imageInputRef.current?.click();
   };
 
   const openPdfPicker = () => {
-    if (imageItems.length > 0) {
-      alert("이미지가 선택된 상태에서는 PDF를 업로드할 수 없습니다.");
-      return;
-    }
     pdfInputRef.current?.click();
   };
 
@@ -63,12 +55,6 @@ export const useUploadFiles = () => {
     const selectedFiles = Array.from(e.target.files ?? []).filter((file) =>
       file.type.startsWith("image/"),
     );
-
-    if (pdfItem) {
-      alert("PDF가 선택된 상태에서는 이미지를 업로드할 수 없습니다.");
-      e.target.value = "";
-      return;
-    }
 
     if (selectedFiles.length === 0) {
       e.target.value = "";
@@ -106,12 +92,6 @@ export const useUploadFiles = () => {
     const file = Array.from(e.target.files ?? []).find(
       (item) => item.type === "application/pdf",
     );
-
-    if (imageItems.length > 0) {
-      alert("이미지가 선택된 상태에서는 PDF를 업로드할 수 없습니다.");
-      e.target.value = "";
-      return;
-    }
 
     if (!file) {
       e.target.value = "";
@@ -168,11 +148,10 @@ export const useUploadFiles = () => {
     setPdfItem(items.find((item) => item.type === "pdf") ?? null);
   };
 
-  const previewItems = useMemo(() => {
-    if (imageItems.length > 0) return imageItems;
-    if (pdfItem) return [pdfItem];
-    return [];
-  }, [imageItems, pdfItem]);
+  const previewItems = useMemo(
+    () => [...imageItems, ...(pdfItem ? [pdfItem] : [])],
+    [imageItems, pdfItem],
+  );
 
   const imageFiles = useMemo(
     () =>

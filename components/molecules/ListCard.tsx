@@ -11,6 +11,7 @@ export const ListCard: FC<{
   commentCount: number;
   likeCount: number;
   image?: string;
+  hideStats?: boolean;
 }> = ({
   title,
   content,
@@ -21,6 +22,7 @@ export const ListCard: FC<{
   likeCount,
   onClick,
   image,
+  hideStats = false,
 }) => {
   return (
     <div onClick={onClick} className="cursor-pointer">
@@ -54,11 +56,13 @@ export const ListCard: FC<{
         <div className="flex-1">
           <span>{createdAt}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <IconWithCount src="/Eye.svg" count={viewCount} />
-          <IconWithCount src="/Like.svg" count={likeCount} />
-          <IconWithCount src="/QuestionWithBubble.svg" count={answerCount} />
-        </div>
+        {!hideStats && (
+          <div className="flex items-center gap-2">
+            <IconWithCount src="/Eye.svg" count={viewCount} />
+            <IconWithCount src="/Like.svg" count={likeCount} />
+            <IconWithCount src="/QuestionWithBubble.svg" count={answerCount} />
+          </div>
+        )}
       </div>
     </div>
   );

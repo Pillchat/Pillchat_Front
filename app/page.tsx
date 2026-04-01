@@ -9,7 +9,12 @@ import {
 import { useRouter } from "next/navigation";
 import { useLocalStorage } from "@/hooks";
 import { useQuery } from "@tanstack/react-query";
-import { fetchAPI, formatDiffDate, getCurrentUserInfo } from "@/lib/functions";
+import {
+  fetchAPI,
+  formatDiffDate,
+  getCurrentUserInfo,
+  markBoardViewIntent,
+} from "@/lib/functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuestionWithBubble } from "@/components/icons";
 import { Separator } from "@/components/ui/separator";
@@ -52,6 +57,7 @@ const Home: FC = () => {
   };
 
   const handleBoardClick = (boardId: string) => {
+    markBoardViewIntent(boardId);
     router.push(`/board/${boardId}`);
   };
 

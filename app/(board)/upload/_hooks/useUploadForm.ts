@@ -10,6 +10,7 @@ export type UploadFormData = {
   title: string;
   subject: string;
   subjectId: string;
+  content: string;
 };
 
 type UseUploadFormParams = {
@@ -20,6 +21,7 @@ const DEFAULT_VALUES: UploadFormData = {
   title: "",
   subject: "",
   subjectId: "",
+  content: "",
 };
 
 export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
@@ -41,6 +43,7 @@ export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
   const selectedSubject = watch("subject");
   const subjectId = watch("subjectId");
   const title = watch("title");
+  const content = watch("content");
 
   const { data } = useQuery({
     queryKey: ["subjects", selectedSubject],
@@ -70,6 +73,14 @@ export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
     });
   };
 
+  const handleContentChange = (value: string) => {
+    setValue("content", value, {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+  };
+
   const handleUpload = handleSubmit(async (formData) => {
     try {
       setIsSubmitting(true);
@@ -77,6 +88,7 @@ export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
         title: formData.title.trim(),
         subject: formData.subject,
         subjectId: formData.subjectId,
+        content: formData.content.trim(),
       });
     } finally {
       setIsSubmitting(false);
@@ -93,7 +105,9 @@ export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
     selectedSubject,
     subjectId,
     title,
+    content,
     handleSubjectToggle,
+    handleContentChange,
     handleUpload,
     resetForm,
     isValid,
