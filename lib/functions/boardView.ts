@@ -56,7 +56,9 @@ export const shouldSkipBoardViewOnLoad = (boardId: string | number) => {
     return false;
   }
 
-  const rawIntent = window.sessionStorage.getItem(BOARD_VIEW_INTENT_STORAGE_KEY);
+  const rawIntent = window.sessionStorage.getItem(
+    BOARD_VIEW_INTENT_STORAGE_KEY,
+  );
   if (!rawIntent) return true;
 
   try {
