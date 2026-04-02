@@ -38,7 +38,7 @@ function SelectReportTypeModal({
         className="fixed inset-0 z-40 bg-black/50"
         onClick={() => closeClick?.()}
       />
-      <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-h-[100vh] max-w-screen-sm overflow-y-auto rounded-t-2xl border bg-white px-6 pb-6 pt-4 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-h-[100vh] max-w-screen-sm overflow-y-auto rounded-t-2xl border bg-white px-6 pb-6 pt-4 shadow-lg md:max-w-none">
         <div className="mb-4 mt-4 flex items-center justify-between">
           <div className="mx-auto flex max-w-[80%] flex-col items-center">
             <p className="mb-3 text-lg font-medium">신고 유형</p>

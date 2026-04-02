@@ -37,13 +37,16 @@ const LoginPage: FC = () => {
   });
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-evenly px-6">
-      <Logo />
+    <div className="login-page">
+      <div className="login-shell">
+        <div className="login-logo-section">
+          <Logo />
+        </div>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex w-full flex-col gap-8"
+        className="login-form"
       >
-        <div className="flex flex-col gap-4">
+        <div className="login-fields">
           <Controller
             name="email"
             control={control}
@@ -100,7 +103,7 @@ const LoginPage: FC = () => {
           />
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="login-actions">
           {loginError && (
             <p className="text-center text-sm text-destructive">{loginError}</p>
           )}
@@ -109,7 +112,7 @@ const LoginPage: FC = () => {
             로그인
           </Button>
 
-          <div className="flex flex-row justify-between">
+          <div className="login-footer-links">
             <p className="text-sm font-medium text-muted-foreground">
               아이디찾기 | 비밀번호찾기
             </p>
@@ -122,6 +125,7 @@ const LoginPage: FC = () => {
           </div>
         </div>
       </form>
+      </div>
     </div>
   );
 };
