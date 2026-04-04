@@ -8,6 +8,7 @@ import {
   SelectModal,
 } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   fetchAPI,
   formatDiffDate,
@@ -18,7 +19,7 @@ import {
 } from "@/lib/functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useLikeStatus } from "@/hooks/useLikeStatus";
 import { BoardTitleSection } from "./BoardTitleSection";
 import { BoardContents } from "./BoardContents";
@@ -28,6 +29,13 @@ type CommentSortType = "latest" | "popular";
 const getBoardFileKey = (file: any) => {
   if (typeof file === "string") return file;
   return file?.urlKey ?? file?.key ?? file?.fileKey ?? file?.name ?? "";
+};
+
+const resizeTextareaHeight = (textarea: HTMLTextAreaElement | null) => {
+  if (!textarea) return;
+
+  textarea.style.height = "0px";
+  textarea.style.height = `${textarea.scrollHeight}px`;
 };
 
 const shouldSkipViewOnLoad = () => {
@@ -58,10 +66,11 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const queryClient = useQueryClient();
   const { isLiked, likeCount, toggleLike } = useLikeStatus(boardId, "boards");
   const currentUserId = getCurrentUserId();
+  const commentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const editingCommentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [commentValue, setCommentValue] = useState("");
-  const [isCommentFocused, setIsCommentFocused] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
 
   const [commentSort, setCommentSort] = useState<CommentSortType>("latest");
@@ -105,6 +114,14 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     queryClient.invalidateQueries({ queryKey: ["boards"] });
     queryClient.invalidateQueries({ queryKey: ["home-boards-best"] });
   }, [boardData?.viewCount, boardId, queryClient]);
+
+  useEffect(() => {
+    resizeTextareaHeight(commentTextareaRef.current);
+  }, [commentValue]);
+
+  useEffect(() => {
+    resizeTextareaHeight(editingCommentTextareaRef.current);
+  }, [editingCommentId, editingCommentValue]);
 
   const boardFileKeys = useMemo(() => {
     if (!Array.isArray(boardData?.images)) return [];
@@ -267,7 +284,6 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
       }),
     onSuccess: () => {
       setCommentValue("");
-      setIsCommentFocused(false);
       queryClient.invalidateQueries({ queryKey: ["board-comments", boardId] });
     },
     onError: (error) => {
@@ -542,8 +558,8 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                             )}
                           </div>
 
-                          <div className="relative flex min-h-[60px] flex-1 justify-between">
-                            <div className="flex min-h-[60px] flex-1 flex-col justify-between">
+                          <div className="relative flex min-h-[60px] flex-1">
+                            <div className="flex min-h-[60px] flex-1 flex-col gap-2 pr-10">
                               <div className="flex items-center gap-2 text-xs">
                                 <span className="font-semibold text-[#111111]">
                                   {comment?.nickname ??
@@ -561,7 +577,8 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                               {editingCommentId === commentId ? (
                                 <div className="flex flex-col gap-2">
                                   <div className="flex flex-col gap-1">
-                                    <input
+                                    <Textarea
+                                      ref={editingCommentTextareaRef}
                                       value={editingCommentValue}
                                       onChange={(e) =>
                                         setEditingCommentValue(
@@ -569,7 +586,9 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                                         )
                                       }
                                       maxLength={1000}
-                                      className="rounded-[12px] border border-[#C4C4C4] px-3 py-2 text-sm outline-none"
+                                      placeholder="댓글을 수정하세요"
+                                      rows={1}
+                                      className="min-h-[84px] resize-none rounded-[12px] border border-[#C4C4C4] px-3 py-2 text-sm leading-5 text-[#333333] outline-none"
                                     />
                                     <div className="text-right text-xs text-[#999999]">
                                       {editingCommentValue.length}/{1000}
@@ -601,7 +620,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                                   </div>
                                 </div>
                               ) : (
-                                <p className="max-w-[260px] whitespace-pre-wrap break-words text-sm text-[#333333]">
+                                <p className="w-full whitespace-pre-wrap break-words text-sm leading-5 text-[#333333]">
                                   {comment?.content ?? ""}
                                 </p>
                               )}
@@ -655,42 +674,32 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
       )}
 
       <div
-        className="fixed left-0 right-0 z-20 bg-white px-6"
-        style={{
-          height: 96,
-          bottom: keyboardOffset,
-        }}
+        className="fixed left-0 right-0 z-20 bg-white px-6 pb-4 pt-3"
+        style={{ bottom: keyboardOffset }}
       >
-        <div className="flex h-full flex-col justify-center">
-          <div className="relative">
-            <input
+        <div className="flex flex-col gap-2">
+          <div className="flex items-end gap-2">
+            <Textarea
+              ref={commentTextareaRef}
               value={commentValue}
               onChange={(e) => setCommentValue(e.target.value.slice(0, 1000))}
-              onFocus={() => setIsCommentFocused(true)}
-              onBlur={() => {
-                setTimeout(() => {
-                  setIsCommentFocused(false);
-                }, 120);
-              }}
               placeholder="댓글을 입력하세요"
               maxLength={1000}
-              className="h-[50px] w-full rounded-[20px] border border-[#C4C4C4] px-3 py-3 pr-[88px] text-[#999999] outline-none"
+              rows={1}
+              className="min-h-[50px] flex-1 resize-none rounded-[20px] border border-[#C4C4C4] px-4 py-3 text-sm leading-5 text-[#333333] outline-none placeholder:text-[#999999]"
             />
 
-            {isCommentFocused && (
-              <button
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={handleCommentSubmit}
-                disabled={!commentValue.trim() || commentMutation.isPending}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-[20px] bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-              >
-                {commentMutation.isPending ? "등록 중" : "올리기"}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleCommentSubmit}
+              disabled={!commentValue.trim() || commentMutation.isPending}
+              className="h-[50px] shrink-0 rounded-[20px] bg-primary px-4 text-sm font-medium text-white disabled:opacity-50"
+            >
+              {commentMutation.isPending ? "등록 중" : "올리기"}
+            </button>
           </div>
 
-          <div className="mt-1 text-right text-xs text-[#999999]">
+          <div className="text-right text-xs text-[#999999]">
             {commentValue.length}/{1000}
           </div>
         </div>
