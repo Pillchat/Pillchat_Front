@@ -8,7 +8,11 @@ import {
   SelectModal,
 } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
-import { fetchAPI, getCurrentUserId } from "@/lib/functions";
+import {
+  fetchAPI,
+  getCurrentUserId,
+  syncViewCountInQueryData,
+} from "@/lib/functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { FC, useEffect, useState } from "react";
@@ -33,11 +37,32 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
   });
 
   useEffect(() => {
-    if (questionData) {
-      queryClient.invalidateQueries({ queryKey: ["questions"] });
-      queryClient.invalidateQueries({ queryKey: ["home-questions"] });
+    if (
+      questionData?.viewCount === undefined ||
+      questionData?.viewCount === null
+    ) {
+      return;
     }
-  }, [questionData, queryClient]);
+
+    queryClient.setQueriesData(
+      { queryKey: ["questions"] },
+      (oldData: unknown) =>
+        syncViewCountInQueryData(
+          oldData as any,
+          questionId,
+          questionData.viewCount,
+        ),
+    );
+    queryClient.setQueryData(["home-questions"], (oldData: unknown) =>
+      syncViewCountInQueryData(
+        oldData as any,
+        questionId,
+        questionData.viewCount,
+      ),
+    );
+    queryClient.invalidateQueries({ queryKey: ["questions"] });
+    queryClient.invalidateQueries({ queryKey: ["home-questions"] });
+  }, [questionData?.viewCount, queryClient, questionId]);
 
   const { data: filesData, isLoading: filesLoading } = useQuery({
     queryKey: ["files", questionData?.id, questionData?.images],

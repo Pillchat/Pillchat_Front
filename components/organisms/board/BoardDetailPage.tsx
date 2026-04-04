@@ -12,6 +12,8 @@ import {
   fetchAPI,
   formatDiffDate,
   getCurrentUserId,
+  rememberBoardViewCount,
+  syncViewCountInQueryData,
   shouldSkipBoardViewOnLoad,
 } from "@/lib/functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -83,7 +85,26 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
         skipView: String(skipView),
       }),
     enabled: !!boardId,
+    staleTime: skipView ? 60 * 1000 : 0,
+    refetchOnMount: skipView ? true : "always",
   });
+
+  useEffect(() => {
+    if (boardData?.viewCount === undefined || boardData?.viewCount === null) {
+      return;
+    }
+
+    rememberBoardViewCount(boardId, boardData.viewCount);
+
+    queryClient.setQueriesData({ queryKey: ["boards"] }, (oldData: unknown) =>
+      syncViewCountInQueryData(oldData as any, boardId, boardData.viewCount),
+    );
+    queryClient.setQueryData(["home-boards-best"], (oldData: unknown) =>
+      syncViewCountInQueryData(oldData as any, boardId, boardData.viewCount),
+    );
+    queryClient.invalidateQueries({ queryKey: ["boards"] });
+    queryClient.invalidateQueries({ queryKey: ["home-boards-best"] });
+  }, [boardData?.viewCount, boardId, queryClient]);
 
   const boardFileKeys = useMemo(() => {
     if (!Array.isArray(boardData?.images)) return [];
