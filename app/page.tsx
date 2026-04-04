@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   fetchAPI,
   formatDiffDate,
+  getRememberedBoardViewCounts,
   getCurrentUserInfo,
   markBoardViewIntent,
 } from "@/lib/functions";
@@ -29,6 +30,9 @@ const Home: FC = () => {
   const { getStorageItem } = useLocalStorage();
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [viewCountOverrides, setViewCountOverrides] = useState<
+    Record<string, number>
+  >({});
   const userInfo = getCurrentUserInfo();
 
   const { data: boards, isLoading: isBoardsLoading } = useQuery({
@@ -47,6 +51,29 @@ const Home: FC = () => {
       router.replace("/login");
     }
   }, [isAuthenticated, router]);
+
+  useEffect(() => {
+    const syncRememberedViewCounts = () => {
+      setViewCountOverrides(getRememberedBoardViewCounts());
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        syncRememberedViewCounts();
+      }
+    };
+
+    syncRememberedViewCounts();
+    window.addEventListener("pageshow", syncRememberedViewCounts);
+    window.addEventListener("popstate", syncRememberedViewCounts);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("pageshow", syncRememberedViewCounts);
+      window.removeEventListener("popstate", syncRememberedViewCounts);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   const handleAskQuestion = () => {
     router.push("/ask");
@@ -317,6 +344,10 @@ const Home: FC = () => {
 
                 const cardData = {
                   ...board,
+                  viewCount: Math.max(
+                    Number(board?.viewCount ?? 0),
+                    viewCountOverrides[String(board?.id ?? "")] ?? 0,
+                  ),
                   userNickname:
                     board?.userNickname ?? board?.nickname ?? "익명",
                   subjectName: board?.subjectName ?? board?.categoryName ?? "",

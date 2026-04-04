@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { map } from "lodash";
@@ -14,7 +14,12 @@ import {
 } from "@/components/molecules";
 import { CircleButton } from "@/components/molecules/board";
 import { Separator } from "@/components/ui/separator";
-import { fetchAPI, formatDiffDate, markBoardViewIntent } from "@/lib/functions";
+import {
+  fetchAPI,
+  formatDiffDate,
+  getRememberedBoardViewCounts,
+  markBoardViewIntent,
+} from "@/lib/functions";
 import { useBoardTabState } from "./_hooks";
 import { useSubjects } from "@/hooks";
 import { cn } from "@/lib/utils";
@@ -42,6 +47,9 @@ const BoardClient = () => {
 
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [viewCountOverrides, setViewCountOverrides] = useState<
+    Record<string, number>
+  >({});
 
   const { getSubjectMapForChips } = useSubjects();
 
@@ -77,6 +85,31 @@ const BoardClient = () => {
     0;
 
   const isStudyTab = currentStatus === "study";
+
+  useEffect(() => {
+    if (isStudyTab) return;
+
+    const syncRememberedViewCounts = () => {
+      setViewCountOverrides(getRememberedBoardViewCounts());
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        syncRememberedViewCounts();
+      }
+    };
+
+    syncRememberedViewCounts();
+    window.addEventListener("pageshow", syncRememberedViewCounts);
+    window.addEventListener("popstate", syncRememberedViewCounts);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("pageshow", syncRememberedViewCounts);
+      window.removeEventListener("popstate", syncRememberedViewCounts);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [isStudyTab]);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: isStudyTab ? ["materials", "all"] : ["boards", currentStatus],
@@ -318,6 +351,10 @@ const BoardClient = () => {
                   : {
                       ...item,
                       content: boardPreviewContent,
+                      viewCount: Math.max(
+                        Number(item?.viewCount ?? 0),
+                        viewCountOverrides[String(item?.id ?? "")] ?? 0,
+                      ),
                       userNickname:
                         item?.userNickname ?? item?.nickname ?? "익명",
                       subjectName:
