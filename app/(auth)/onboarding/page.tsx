@@ -31,7 +31,6 @@ const OnboardingPage: FC = () => {
           <p className="text-2xl font-semibold">
             환영해요. {userInfo?.username}님!
             <br />
-            회원가입이 완료되었어요!
           </p>
         </div>
         <p className="text-sm text-primary">

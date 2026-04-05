@@ -17,7 +17,11 @@ export const LikeButton: FC<{
       )}
       onClick={onClick}
     >
-      <img src="/Like.svg" alt="like" className="h-8 w-8" />
+      <img
+        src={isLiked ? "/LikeFilled.svg" : "/Like.svg"}
+        alt="like"
+        className="h-8 w-8"
+      />
       <span className={cn("text-base font-medium", isLiked && "text-primary")}>
         {likeCount}
       </span>

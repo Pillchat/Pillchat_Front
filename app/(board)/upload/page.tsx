@@ -438,6 +438,21 @@ const UploadPage = () => {
     subjectId,
   ]);
 
+  useEffect(() => {
+    if (step !== Step.Guide) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [step]);
+
   const canSubmit =
     !!title?.trim() &&
     !!selectedSubject?.trim() &&
@@ -484,77 +499,87 @@ const UploadPage = () => {
   return (
     <>
       {step === Step.Guide && (
-        <div className="flex h-full w-full flex-1 flex-col">
-          <BoardHeader
-            title={isEditMode ? "학습자료 수정" : "학습자료 업로드"}
-            showIcon
-            onRightButtonClick={() => router.push("/")}
-            onLeftButtonClick={() => router.push("/board")}
-          />
-          <div>
-            <div className="mb-10 mt-5">
-              <p className="font-Pretendard px-7 text-2xl font-semibold">
+        <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-white">
+          <div className="shrink-0 border-b border-[#F2F2F2] bg-white">
+            <BoardHeader
+              title={isEditMode ? "학습자료 수정" : "학습자료 업로드"}
+              showIcon
+              onRightButtonClick={() => router.push("/")}
+              onLeftButtonClick={() => router.push("/board")}
+            />
+          </div>
+
+          <div className="flex min-h-0 flex-1 flex-col px-6 pb-6 pt-5">
+            <div className="shrink-0 px-1">
+              <p className="font-Pretendard text-2xl font-semibold leading-[1.35]">
                 학습자료 업로드 전, 다음 안내사항을 반드시 읽고 확인해주세요.
               </p>
             </div>
-            <div className="h-[366px] px-6">
-              <div className="mb-6">
-                <p className="font-Pretendard mb-3 text-lg font-semibold">
-                  1. 저작권 관련 책임 안내
-                </p>
-                <ul className="font-Pretendard list-disc pl-5 text-sm font-medium">
-                  <li className="mb-2">
-                    사용자가 업로드하는 모든 자료는 대한민국 「저작권법」 제2조
-                    및 제4조에 따라 보호받는 저작물에 해당할 수 있습니다.
-                  </li>
-                  <li className="mb-2">
-                    특히 출시 문제, 국가고시(약사국시) 문제, 학원 또는 대학 족보
-                    등 저작권자가 따로 있는 자료를 무단으로 업로드하는 경우,
-                    저작권 침해로 간주되며 법적 책임이 따를 수 있습니다.
-                  </li>
-                  <li>
-                    본 플랫폼은 사용자가 업로드한 자료에 대한 저작권 침해 여부를
-                    사전 심사하지 않으며, 모든 법적 책임은 자료를 업로드한
-                    사용자 본인에게 있습니다.
-                  </li>
-                </ul>
+
+            <div className="mt-6 flex min-h-0 flex-1 flex-col justify-between gap-6">
+              <div className="space-y-5 px-1">
+                <div>
+                  <p className="font-Pretendard mb-2 text-base font-semibold">
+                    1. 저작권 관련 책임 안내
+                  </p>
+                  <ul className="font-Pretendard list-disc space-y-2 pl-5 text-[13px] font-medium leading-[1.45]">
+                    <li>
+                      사용자가 업로드하는 모든 자료는 대한민국 「저작권법」
+                      제2조 및 제4조에 따라 보호받는 저작물에 해당할 수
+                      있습니다.
+                    </li>
+                    <li>
+                      특히 출시 문제, 국가고시(약사국시) 문제, 학원 또는 대학
+                      족보 등 저작권자가 따로 있는 자료를 무단으로 업로드하는
+                      경우, 저작권 침해로 간주되며 법적 책임이 따를 수 있습니다.
+                    </li>
+                    <li>
+                      본 플랫폼은 사용자가 업로드한 자료에 대한 저작권 침해
+                      여부를 사전 심사하지 않으며, 모든 법적 책임은 자료를
+                      업로드한 사용자 본인에게 있습니다.
+                    </li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="font-Pretendard mb-2 text-base font-semibold">
+                    2. 책임 동의 안내
+                  </p>
+                  <ul className="font-Pretendard list-disc space-y-2 pl-5 text-[13px] font-medium leading-[1.45]">
+                    <li>
+                      본인은 자료를 직접 작성했거나, 저작권 문제가 없는 자료임을
+                      확인합니다.
+                    </li>
+                    <li>
+                      위 사항을 충분히 인지하였으며, 이를 위반하여 발생하는
+                      민형사상 법적 책임은 전적으로 본인에게 있음에 동의합니다.
+                    </li>
+                  </ul>
+                </div>
               </div>
 
-              <div className="mb-20">
-                <p className="font-Pretendard mb-3 text-lg font-semibold">
-                  2. 책임 동의 안내
-                </p>
-                <ul className="font-Pretendard list-disc pl-5 text-sm font-medium">
-                  <li className="mb-2">
-                    본인은 자료를 직접 작성했거나, 저작권 문제가 없는 자료임을
-                    확인합니다.
-                  </li>
-                  <li>
-                    위 사항을 충분히 인지하였으며, 이를 위반하여 발생하는
-                    민형사상 법적 책임은 전적으로 본인에게 있음에 동의합니다.
-                  </li>
-                </ul>
-              </div>
+              <div className="shrink-0 border-t border-[#F2F2F2] px-1 pt-5">
+                <div
+                  className="flex cursor-pointer items-center justify-center gap-2"
+                  onClick={() => setChecked((prev) => !prev)}
+                >
+                  <CheckCircle
+                    className="h-[22px] w-[22px]"
+                    style={{ color: checked ? "#FF412E" : "#C4C4C4" }}
+                  />
+                  <p className="font-Pretendard text-sm font-medium">
+                    위 내용에 동의합니다.
+                  </p>
+                </div>
 
-              <div
-                className="mb-3 mt-6 flex cursor-pointer items-center justify-center gap-2"
-                onClick={() => setChecked((prev) => !prev)}
-              >
-                <CheckCircle
-                  className="h-[22px] w-[22px]"
-                  style={{ color: checked ? "#FF412E" : "#C4C4C4" }}
-                />
-                <p className="font-Pretendard text-sm font-medium">
-                  위 내용에 동의합니다.
-                </p>
+                <div className="mt-4">
+                  <SolidButton
+                    disabled={!checked}
+                    onClick={nextStep}
+                    content="다음"
+                  />
+                </div>
               </div>
-
-              <SolidButton
-                className="mt-6 w-full"
-                disabled={!checked}
-                onClick={nextStep}
-                content="다음"
-              />
             </div>
           </div>
         </div>
