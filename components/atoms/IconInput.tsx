@@ -1,4 +1,5 @@
 import { forwardRef, InputHTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
 import { Input } from "../ui/input";
 
 interface IconInputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -19,6 +20,7 @@ export const IconInput = forwardRef<HTMLInputElement, IconInputProps>(
       iconAsButton,
       iconSize = 20,
       onIconClick,
+      className,
       ...inputProps
     },
     ref,
@@ -32,7 +34,10 @@ export const IconInput = forwardRef<HTMLInputElement, IconInputProps>(
         <Input
           ref={ref}
           {...inputProps}
-          className={`h-[52px] w-full ${iconPadding} rounded-[12px] border border-[#C4C4C4] pl-[1rem] font-[pretendard] text-[15px] font-medium focus:outline-none focus:ring-1 focus:ring-black`}
+          className={cn(
+            `h-[52px] w-full ${iconPadding} rounded-[12px] border border-[#C4C4C4] pl-[1rem] font-[pretendard] text-[15px] font-medium focus:outline-none focus:ring-1 focus:ring-black`,
+            className,
+          )}
         />
 
         {iconSrc && (
