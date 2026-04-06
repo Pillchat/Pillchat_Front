@@ -472,6 +472,8 @@ const ArchivePage: FC = () => {
             onItemToggle={handleSubjectToggle}
             showDropdown
             showDropdownButton
+            modalSelectionMode="instant"
+            modalMaxHeightClassName="max-h-[calc(100dvh-24px)]"
             categoryTitleClassName="text-sm font-medium text-pretendard text-[#111]"
             buttonSize="sm"
             className="gap-0"
