@@ -10,7 +10,7 @@ import {
   BottomNavbar,
 } from "@/components/molecules";
 import { useDelete, useLogout, useMyProfile } from "./_hooks";
-import { isCurrentUserAdmin, getCurrentUserInfo } from "@/lib/functions";
+import { fetchAPI, isCurrentUserAdmin } from "@/lib/functions";
 
 const mypage: FC = () => {
   const router = useRouter();
@@ -25,6 +25,19 @@ const mypage: FC = () => {
   useEffect(() => {
     onMyProfile();
   }, [onMyProfile]);
+
+  const handleOnboardingClick = async () => {
+    try {
+      const result = await fetchAPI("/api/auth/inquiry-myprofile", "GET");
+      const userType = result?.data?.userType;
+      const role = userType === "PROFESSIONAL" ? "professional" : "student";
+
+      router.push(`/onboarding/${role}`);
+    } catch (error) {
+      console.error("온보딩 진입 정보 조회 실패:", error);
+      router.push("/onboarding");
+    }
+  };
 
   if (error) {
     return (
@@ -82,7 +95,7 @@ const mypage: FC = () => {
               iconSrc="userInfo.svg"
               title="맞춤형 정보 설정"
               description="내가 설정한 항목을 변경할 수 있어요."
-              onClick={() => router.push("/onboarding")}
+              onClick={handleOnboardingClick}
             />
           </div>
 

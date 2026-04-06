@@ -392,6 +392,7 @@ const PostPage = () => {
               disabled={false}
               handleChange={handleSelectChange}
               onClick={openCategory}
+              selectClassName="border-[#C4C4C4] focus:border-[#C4C4C4]"
             />
           </div>
 
@@ -414,6 +415,7 @@ const PostPage = () => {
                   content="제목"
                   placeholder="제목을 입력해주세요."
                   value={field.value ?? ""}
+                  inputClassName="border-[#C4C4C4] focus-visible:border-[#C4C4C4] focus-visible:ring-[#C4C4C4]"
                   onChange={(e) =>
                     field.onChange(
                       e.target.value
@@ -439,6 +441,7 @@ const PostPage = () => {
                   label="본문"
                   placeholder="본문을 입력해주세요."
                   value={field.value ?? ""}
+                  className="border-[#C4C4C4] focus-visible:border-[#C4C4C4] focus-visible:ring-[#C4C4C4]"
                   onChange={(e) => handleContentChange(e.target.value)}
                   onBlur={field.onBlur}
                   errorMessage={errors.content?.message}
@@ -453,15 +456,17 @@ const PostPage = () => {
               이미지 파일 (JPG, PNG 등) 최대 10장 가능 또는 PDF 파일 1개
             </p>
 
-            <div className="flex w-full flex-row justify-around">
+            <div className="flex w-full gap-3">
               <BoardButton
                 imageSrc="/Image.svg"
+                className="max-w-[168.5px]"
                 text="이미지 업로드"
                 onClick={openImagePicker}
                 type="button"
               />
               <BoardButton
                 imageSrc="/File2.svg"
+                className="max-w-[168.5px]"
                 text="파일 업로드"
                 onClick={openPdfPicker}
                 type="button"

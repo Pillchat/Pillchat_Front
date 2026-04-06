@@ -4,7 +4,7 @@ import { TextButton } from "@/components/atoms";
 import { cn } from "@/lib/utils";
 import { ButtonSize } from "@/types";
 import { map } from "lodash";
-import { FC, ReactNode, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 type ExpandableChipSectionProps = {
   data: Record<string, string[]>;
@@ -23,6 +23,8 @@ type ExpandableChipSectionProps = {
   expandedData?: Record<string, string[]>;
   showDropdownButton?: boolean;
   hasBottombar?: boolean;
+  modalSelectionMode?: "manual" | "instant";
+  modalMaxHeightClassName?: string;
 };
 
 export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
@@ -42,11 +44,17 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
   expandedData,
   showDropdownButton = false,
   hasBottombar = false,
+  modalSelectionMode = "manual",
+  modalMaxHeightClassName = "max-h-[50vh]",
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [pendingSelectedItems, setPendingSelectedItems] = useState<string[]>(
     [],
   );
+  const isInstantModalSelection = modalSelectionMode === "instant";
+  const modalSelectedItems = isInstantModalSelection
+    ? selectedItems
+    : pendingSelectedItems;
 
   const isPendingChanged = useMemo(() => {
     if (pendingSelectedItems.length !== selectedItems.length) return true;
@@ -180,22 +188,6 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
     );
   };
 
-  const dropdownIcon: ReactNode = (
-    <svg
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M19 9l-7 7-7-7"
-      />
-    </svg>
-  );
-
   return (
     <div className={cn(className)}>
       {map(Object.entries(data), ([category, items]) => (
@@ -212,7 +204,11 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
               />
 
               <div
-                className={`fixed ${hasBottombar ? "bottom-[90px]" : "bottom-0"} left-0 right-0 z-50 mx-auto flex max-h-[50vh] max-w-screen-sm flex-col rounded-t-2xl border bg-white px-6 pt-4 shadow-lg md:max-w-none`}
+                className={cn(
+                  "fixed left-0 right-0 z-50 mx-auto flex max-w-screen-sm flex-col rounded-t-2xl border bg-white px-6 pt-4 shadow-lg md:max-w-none",
+                  hasBottombar ? "bottom-[90px]" : "bottom-0",
+                  modalMaxHeightClassName,
+                )}
               >
                 <div className="mb-4 flex items-center justify-between">
                   <p className="text-lg font-semibold">{category}</p>
@@ -242,11 +238,15 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
                               {map(subItems, (item) => (
                                 <TextButton
                                   key={item}
-                                  onClick={() => handlePendingItemClick(item)}
+                                  onClick={() =>
+                                    isInstantModalSelection
+                                      ? handleItemClick(item)
+                                      : handlePendingItemClick(item)
+                                  }
                                   variant="outline"
                                   label={item}
                                   className={cn(
-                                    pendingSelectedItems.includes(item) &&
+                                    modalSelectedItems.includes(item) &&
                                       selectedChipClassName,
                                   )}
                                   size={buttonSize}
@@ -261,11 +261,15 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
                         {map(items, (item) => (
                           <TextButton
                             key={item}
-                            onClick={() => handlePendingItemClick(item)}
+                            onClick={() =>
+                              isInstantModalSelection
+                                ? handleItemClick(item)
+                                : handlePendingItemClick(item)
+                            }
                             variant="outline"
                             label={item}
                             className={cn(
-                              pendingSelectedItems.includes(item) &&
+                              modalSelectedItems.includes(item) &&
                                 selectedChipClassName,
                             )}
                             size={buttonSize}
@@ -276,16 +280,18 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
                   </div>
                 </div>
 
-                <div className="sticky bottom-0 -mx-6 px-6 py-5">
-                  <button
-                    type="button"
-                    onClick={applyPendingSelection}
-                    className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
-                    disabled={!isPendingChanged}
-                  >
-                    선택 완료
-                  </button>
-                </div>
+                {!isInstantModalSelection && (
+                  <div className="sticky bottom-0 -mx-6 px-6 py-5">
+                    <button
+                      type="button"
+                      onClick={applyPendingSelection}
+                      className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
+                      disabled={!isPendingChanged}
+                    >
+                      선택 완료
+                    </button>
+                  </div>
+                )}
               </div>
             </>
           ) : (

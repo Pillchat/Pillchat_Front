@@ -1,4 +1,5 @@
 import { ChangeEvent } from "react";
+import { cn } from "@/lib/utils";
 
 interface IOption {
   key: number | string;
@@ -13,6 +14,8 @@ interface ISelectBoxProps {
   disabled: boolean;
   handleChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   onClick?: () => void;
+  labelClassName?: string;
+  selectClassName?: string;
 }
 
 export function SelectBox({
@@ -23,15 +26,23 @@ export function SelectBox({
   disabled,
   handleChange,
   onClick,
+  labelClassName,
+  selectClassName,
 }: ISelectBoxProps) {
   return (
     <div className="relative">
-      {label && <label className="text-xs">{label}</label>}
+      {label && (
+        <label className={cn("text-xs", labelClassName)}>{label}</label>
+      )}
       <div>
         <select
-          className="h-12 w-full appearance-none rounded-lg border border-[] bg-none px-3 py-3"
+          className={cn(
+            "h-12 w-full appearance-none rounded-lg border bg-transparent px-3 py-3 focus:outline-none",
+            selectClassName,
+          )}
           value={selectedValue}
-          disabled
+          disabled={disabled}
+          onChange={handleChange}
           // onMouseDown={(e) => e.preventDefault()}
         >
           <option value="" disabled hidden>

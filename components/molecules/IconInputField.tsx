@@ -5,6 +5,8 @@ interface IconInputFieldProps {
   content: string;
   value?: string;
   disabled?: boolean;
+  labelClassName?: string;
+  inputClassName?: string;
   iconSrc?: string;
   iconAlt?: string;
   iconPosition?: "left" | "right";
@@ -29,6 +31,8 @@ export const IconInputField = forwardRef<HTMLInputElement, IconInputFieldProps>(
       content,
       value,
       disabled,
+      labelClassName,
+      inputClassName,
       iconSrc,
       iconAlt,
       iconSize,
@@ -48,12 +52,13 @@ export const IconInputField = forwardRef<HTMLInputElement, IconInputFieldProps>(
   ) {
     return (
       <div className="flex flex-col gap-[4px]">
-        <p className="text-sm">{content}</p>
+        <p className={labelClassName ?? "text-sm"}>{content}</p>
 
         <IconInput
           ref={ref}
           value={value ?? ""}
           disabled={disabled}
+          className={inputClassName}
           type={type}
           iconSrc={iconSrc}
           iconAlt={iconAlt}

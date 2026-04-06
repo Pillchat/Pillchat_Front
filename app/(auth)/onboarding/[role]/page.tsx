@@ -55,7 +55,9 @@ type OnboardingFormData = ProfessionalFormData | StudentFormData;
 
 const OnboardingForRolePage: FC = () => {
   const router = useRouter();
-  const { role } = useParams<{ role: string }>();
+  const params = useParams<{ role: string; step?: string }>();
+  const role = params.role;
+  const stepParam = params.step;
   const [currentStep, setCurrentStep] = useAtom(currentStepAtom);
   const [username, setUsername] = useState<string>("회원");
   const [professionalPrefill, setProfessionalPrefill] =
@@ -67,6 +69,19 @@ const OnboardingForRolePage: FC = () => {
     const userInfo = getCurrentUserInfo();
     setUsername(userInfo?.username ?? "회원");
   }, []);
+
+  useEffect(() => {
+    if (!stepParam) {
+      setCurrentStep(1);
+      return;
+    }
+
+    const parsedStep = Number(stepParam.replace(/\D/g, ""));
+
+    if (Number.isFinite(parsedStep) && parsedStep >= 1) {
+      setCurrentStep(parsedStep);
+    }
+  }, [setCurrentStep, stepParam]);
 
   useEffect(() => {
     const run = async () => {
