@@ -198,6 +198,7 @@ const FindPage = () => {
                 variant={verifyButtonDisabled ? "disabled" : "brand"}
                 disabled={verifyButtonDisabled}
                 onClick={isCodeSent ? handleVerifyCode : handleSendCode}
+                className="text-[#999]"
               />
             </div>
           </>
