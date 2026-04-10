@@ -112,8 +112,11 @@ const LoginPage: FC = () => {
             </Button>
 
             <div className="login-footer-links">
-              <p className="text-sm font-medium text-muted-foreground">
-                아이디찾기 | 비밀번호찾기
+              <p
+                className="text-sm font-medium text-muted-foreground"
+                onClick={() => router.push("/find")}
+              >
+                비밀번호 찾기
               </p>
               <p
                 className="cursor-pointer text-sm font-medium text-muted-foreground"
