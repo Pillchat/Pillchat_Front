@@ -52,7 +52,6 @@ const LoginPage: FC = () => {
                 <IconInputField
                   content="이메일"
                   placeholder="이메일을 입력해주세요"
-                  errorMessage={errors.email?.message}
                   {...field}
                 />
               )}
