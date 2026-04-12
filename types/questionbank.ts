@@ -267,6 +267,11 @@ export interface QuestionResult {
   isBookmarked: boolean;
 }
 
+export interface QuestionDraft {
+  selectedChoiceId: string | null;
+  textAnswer: string | null;
+}
+
 /** 퀴즈 세션 (프론트 상태) */
 export interface QuizSession {
   sessionId: number;
@@ -274,6 +279,7 @@ export interface QuizSession {
   title: string;
   questions: QuizQuestion[];
   results: Record<number, QuestionResult>;
+  draftAnswers: Record<number, QuestionDraft>;
   currentIndex: number;
   gradingState: GradingState;
   selectedChoiceId: string | null;

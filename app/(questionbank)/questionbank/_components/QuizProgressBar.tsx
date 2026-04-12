@@ -5,17 +5,26 @@ import {
   progressLabelAtom,
   isCurrentBookmarkedAtom,
   currentQuestionAtom,
+  quizSessionAtom,
+  prevQuestionAtom,
   toggleBookmarkAtom,
 } from "@/store/quizSession";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 const QuizProgressBar: FC = () => {
+  const session = useAtomValue(quizSessionAtom);
   const progressLabel = useAtomValue(progressLabelAtom);
   const isBookmarked = useAtomValue(isCurrentBookmarkedAtom);
   const currentQuestion = useAtomValue(currentQuestionAtom);
+  const movePrevQuestion = useSetAtom(prevQuestionAtom);
   const toggleBookmark = useSetAtom(toggleBookmarkAtom);
   const [showHint, setShowHint] = useState(false);
+  const canMovePrev = (session?.currentIndex ?? 0) > 0;
+
+  useEffect(() => {
+    setShowHint(false);
+  }, [currentQuestion?.id]);
 
   return (
     <div className="flex-shrink-0">
@@ -25,6 +34,19 @@ const QuizProgressBar: FC = () => {
           {progressLabel}
         </span>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => movePrevQuestion()}
+            disabled={!canMovePrev}
+            className={cn(
+              "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+              canMovePrev
+                ? "bg-brand text-white"
+                : "cursor-not-allowed bg-gray-50 text-gray-300",
+            )}
+          >
+            이전 문제
+          </button>
+
           {/* 힌트 버튼 */}
           {currentQuestion?.hint && (
             <button
