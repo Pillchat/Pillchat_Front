@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { fetchAPI } from "@/lib/functions";
 import { Input, SolidButton } from "@/components/atoms";
 import {
   IconInputField,
@@ -12,17 +13,16 @@ import { Button } from "@/components/ui/button";
 
 type Step = "verify" | "reset";
 
-const createMockCode = () =>
-  Math.floor(100000 + Math.random() * 900000).toString();
-
 const FindPage = () => {
   const router = useRouter();
 
   const [step, setStep] = useState<Step>("verify");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [issuedCode, setIssuedCode] = useState("");
   const [isCodeSent, setIsCodeSent] = useState(false);
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState("");
   const [verificationError, setVerificationError] = useState("");
 
   const [password, setPassword] = useState("");
@@ -31,6 +31,8 @@ const FindPage = () => {
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [showPasswordConfirmField, setShowPasswordConfirmField] =
     useState(false);
+  const [passwordResetError, setPasswordResetError] = useState("");
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
 
   const isValidEmail = email.trim().includes("@") && email.trim().includes(".");
@@ -41,7 +43,7 @@ const FindPage = () => {
   const resetVerificationState = () => {
     setIsCodeSent(false);
     setCode("");
-    setIssuedCode("");
+    setVerificationMessage("");
     setVerificationError("");
   };
 
@@ -54,45 +56,90 @@ const FindPage = () => {
     if (showPasswordConfirmField) {
       setShowPasswordConfirmField(false);
       setPasswordConfirm("");
+      setPasswordResetError("");
       return;
     }
 
     setStep("verify");
+    setPasswordResetError("");
   };
 
   const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
     const nextEmail = e.target.value;
 
-    if (nextEmail !== email && (isCodeSent || code || issuedCode)) {
+    if (nextEmail !== email && (isCodeSent || code)) {
       resetVerificationState();
     }
 
     setEmail(nextEmail);
   };
 
-  const handleSendCode = () => {
-    if (!isValidEmail) return;
+  const handleSendCode = async () => {
+    if (!isValidEmail || isSendingCode) return;
 
-    setIssuedCode(createMockCode());
-    setIsCodeSent(true);
-    setCode("");
+    setIsSendingCode(true);
+    setVerificationMessage("");
     setVerificationError("");
+
+    try {
+      await fetchAPI("/api/auth/password-reset/send", "POST", {
+        email: email.trim(),
+      });
+
+      setIsCodeSent(true);
+      setCode("");
+      setVerificationMessage("인증번호를 전송했습니다.");
+    } catch (error: any) {
+      console.error("비밀번호 재설정 인증번호 발송 실패:", error);
+      setVerificationError(
+        error.message || "인증번호 발송에 실패했습니다. 다시 시도해주세요.",
+      );
+    } finally {
+      setIsSendingCode(false);
+    }
   };
 
-  const handleVerifyCode = () => {
-    if (!isCodeSent || !code.trim()) return;
+  const handleVerifyCode = async () => {
+    if (!isCodeSent || !code.trim() || isVerifyingCode) return;
 
-    if (code.trim() !== issuedCode) {
-      setVerificationError("인증번호가 일치하지 않습니다.");
-      return;
-    }
-
+    setIsVerifyingCode(true);
+    setVerificationMessage("");
     setVerificationError("");
-    setStep("reset");
+
+    try {
+      const response = await fetch("/api/auth/password-reset/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          code: code.trim(),
+        }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || result.error || "인증번호 확인에 실패했습니다.",
+        );
+      }
+
+      setStep("reset");
+    } catch (error: any) {
+      console.error("비밀번호 재설정 인증번호 확인 실패:", error);
+      setVerificationError(
+        error.message || "인증번호가 일치하지 않습니다.",
+      );
+    } finally {
+      setIsVerifyingCode(false);
+    }
   };
 
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
+    setPasswordResetError("");
 
     if (showPasswordConfirmField && passwordConfirm) {
       setPasswordConfirm("");
@@ -104,8 +151,27 @@ const FindPage = () => {
     setShowPasswordConfirmField(true);
   };
 
-  const handlePasswordConfirm = () => {
-    setIsSubmitModalOpen(true);
+  const handlePasswordConfirm = async () => {
+    if (!isPasswordMatch || isResettingPassword) return;
+
+    setIsResettingPassword(true);
+    setPasswordResetError("");
+
+    try {
+      await fetchAPI("/api/auth/password-reset", "POST", {
+        email: email.trim(),
+        newPassword: password,
+      });
+
+      setIsSubmitModalOpen(true);
+    } catch (error: any) {
+      console.error("비밀번호 재설정 실패:", error);
+      setPasswordResetError(
+        error.message || "비밀번호 재설정에 실패했습니다. 다시 시도해주세요.",
+      );
+    } finally {
+      setIsResettingPassword(false);
+    }
   };
 
   const handlePasswordSubmit = () => {
@@ -113,10 +179,12 @@ const FindPage = () => {
     router.push("/login");
   };
 
-  const verifyButtonDisabled = !isCodeSent ? !isValidEmail : !code.trim();
+  const verifyButtonDisabled = !isCodeSent
+    ? !isValidEmail || isSendingCode
+    : !code.trim() || isVerifyingCode;
   const passwordButtonDisabled = !showPasswordConfirmField
     ? !isValidPassword
-    : !isPasswordMatch;
+    : !isPasswordMatch || isResettingPassword;
 
   return (
     <div className="min-h-[100dvh] bg-white">
@@ -170,17 +238,17 @@ const FindPage = () => {
                   <Button
                     type="button"
                     variant={isCodeSent ? "stroke-brand" : "disabled"}
-                    disabled={!isCodeSent}
+                    disabled={!isCodeSent || isSendingCode}
                     className="h-[52px] w-[30%] rounded-[12px] px-0 text-[15px] font-medium"
                     onClick={handleSendCode}
                   >
-                    재전송
+                    {isSendingCode ? "전송 중" : "재전송"}
                   </Button>
                 </div>
 
-                {isCodeSent && (
-                  <p className="text-xs text-[#FF412E]">
-                    임시 인증번호: {issuedCode}
+                {verificationMessage && (
+                  <p className="text-xs text-[#2F6BFF]">
+                    {verificationMessage}
                   </p>
                 )}
 
@@ -194,7 +262,15 @@ const FindPage = () => {
 
             <div className="mt-auto pb-[calc(env(safe-area-inset-bottom)+2.5rem)] pt-[3rem]">
               <SolidButton
-                content={isCodeSent ? "다음" : "인증번호 받기"}
+                content={
+                  !isCodeSent
+                    ? isSendingCode
+                      ? "전송 중..."
+                      : "인증번호 받기"
+                    : isVerifyingCode
+                      ? "확인 중..."
+                      : "다음"
+                }
                 variant={verifyButtonDisabled ? "disabled" : "brand"}
                 disabled={verifyButtonDisabled}
                 onClick={isCodeSent ? handleVerifyCode : handleSendCode}
@@ -236,7 +312,10 @@ const FindPage = () => {
                     content="비밀번호 확인"
                     iconAsButton
                     value={passwordConfirm}
-                    onChange={(e) => setPasswordConfirm(e.target.value)}
+                    onChange={(e) => {
+                      setPasswordConfirm(e.target.value);
+                      setPasswordResetError("");
+                    }}
                     onIconClick={() => setShowPasswordConfirm((prev) => !prev)}
                     iconPosition="right"
                     iconSrc={
@@ -264,11 +343,21 @@ const FindPage = () => {
                   </p>
                 </div>
               )}
+
+              {passwordResetError && (
+                <p className="text-sm text-destructive">{passwordResetError}</p>
+              )}
             </div>
 
             <div className="mt-auto pb-[calc(env(safe-area-inset-bottom)+2.5rem)] pt-[3rem]">
               <SolidButton
-                content={showPasswordConfirmField ? "확인" : "다음"}
+                content={
+                  showPasswordConfirmField
+                    ? isResettingPassword
+                      ? "처리 중..."
+                      : "확인"
+                    : "다음"
+                }
                 variant={passwordButtonDisabled ? "disabled" : "brand"}
                 disabled={passwordButtonDisabled}
                 onClick={
