@@ -32,9 +32,7 @@ export const POST = async (request: NextRequest) => {
         {
           success: false,
           message:
-            data?.message ||
-            data?.reason ||
-            "인증번호 확인에 실패했습니다.",
+            data?.message || data?.reason || "인증번호 확인에 실패했습니다.",
         },
         { status: response.status },
       );

@@ -42,9 +42,7 @@ export const POST = async (request: NextRequest) => {
         {
           success: false,
           message:
-            data?.message ||
-            data?.reason ||
-            "비밀번호 재설정에 실패했습니다.",
+            data?.message || data?.reason || "비밀번호 재설정에 실패했습니다.",
         },
         { status: response.status },
       );

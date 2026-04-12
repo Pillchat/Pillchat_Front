@@ -129,9 +129,7 @@ const FindPage = () => {
       setStep("reset");
     } catch (error: any) {
       console.error("비밀번호 재설정 인증번호 확인 실패:", error);
-      setVerificationError(
-        error.message || "인증번호가 일치하지 않습니다.",
-      );
+      setVerificationError(error.message || "인증번호가 일치하지 않습니다.");
     } finally {
       setIsVerifyingCode(false);
     }
