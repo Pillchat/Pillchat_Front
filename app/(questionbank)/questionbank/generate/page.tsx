@@ -15,6 +15,7 @@ import type {
 } from "@/types/questionbank";
 
 const POLL_INTERVAL = 3000;
+const PDF_MIME_TYPE = "application/pdf";
 
 const GeneratePage = () => {
   const router = useRouter();
@@ -24,13 +25,32 @@ const GeneratePage = () => {
   const [error, setError] = useState<string | null>(null);
   const initSession = useSetAtom(initQuizSessionAtom);
   const abortRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const openFilePicker = () => {
+    fileInputRef.current?.click();
+  };
+
+  const isPdfFile = (selected: File) => {
+    const normalizedName = selected.name.toLowerCase();
+
+    return (
+      selected.type === PDF_MIME_TYPE || normalizedName.endsWith(".pdf")
+    );
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
-    if (selected && selected.type === "application/pdf") {
+
+    if (selected && isPdfFile(selected)) {
       setFile(selected);
       setError(null);
+    } else if (selected) {
+      setFile(null);
+      setError("PDF 파일만 업로드할 수 있습니다.");
     }
+
+    e.target.value = "";
   };
 
   const parsedCount = Number(questionCount);
@@ -129,7 +149,11 @@ const GeneratePage = () => {
       <CustomHeader title="문제 생성" showIcon />
 
       <div className="flex flex-1 flex-col items-center justify-center px-6">
-        <label className="flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-16 transition-colors hover:border-brand hover:bg-brandSecondary">
+        <button
+          type="button"
+          onClick={openFilePicker}
+          className="flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-16 text-left transition-colors hover:border-brand hover:bg-brandSecondary"
+        >
           <svg
             width="48"
             height="48"
@@ -151,13 +175,14 @@ const GeneratePage = () => {
           <p className="mt-1 text-sm text-muted-foreground">
             클릭하여 파일 선택
           </p>
-          <input
-            type="file"
-            accept=".pdf"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-        </label>
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={`${PDF_MIME_TYPE},.pdf`}
+          className="hidden"
+          onChange={handleFileChange}
+        />
         {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
 
         {/* 문제 수 입력 */}
