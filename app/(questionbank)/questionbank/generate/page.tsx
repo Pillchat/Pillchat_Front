@@ -34,9 +34,7 @@ const GeneratePage = () => {
   const isPdfFile = (selected: File) => {
     const normalizedName = selected.name.toLowerCase();
 
-    return (
-      selected.type === PDF_MIME_TYPE || normalizedName.endsWith(".pdf")
-    );
+    return selected.type === PDF_MIME_TYPE || normalizedName.endsWith(".pdf");
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
