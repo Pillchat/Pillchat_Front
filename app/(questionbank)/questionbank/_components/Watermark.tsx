@@ -1,26 +1,30 @@
 "use client";
 
 import { useEffect, useCallback } from "react";
+import { useAtomValue } from "jotai";
+import { nicknameAtom } from "@/store/profile";
 
 const WATERMARK_ID = "__pillchat_wm__";
 
 /** Canvas API로 워터마크 패턴 이미지 생성 */
-function createWatermarkPattern(): string {
+function createWatermarkPattern(nickname: string | null): string {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
 
-  canvas.width = 200;
-  canvas.height = 150;
+  canvas.width = 500;
+  canvas.height = 300;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.font = "14px sans-serif";
-  ctx.fillStyle = "rgba(0, 0, 0, 0.07)";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+  ctx.fillStyle = "rgba(0, 0, 0, 0.04)";
   ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.rotate((-30 * Math.PI) / 180);
-  ctx.fillText("Pillchat", 0, 0);
+  ctx.rotate((-20 * Math.PI) / 180);
+
+  ctx.font = "bold 36px sans-serif";
+  const text = nickname ? `Pillchat ${nickname}` : "Pillchat";
+  ctx.fillText(text, 0, 0);
 
   return canvas.toDataURL();
 }
@@ -49,10 +53,12 @@ function applyWatermark(dataUrl: string) {
 }
 
 const Watermark = () => {
+  const nickname = useAtomValue(nicknameAtom);
+
   const restore = useCallback(() => {
-    const dataUrl = createWatermarkPattern();
+    const dataUrl = createWatermarkPattern(nickname);
     if (dataUrl) applyWatermark(dataUrl);
-  }, []);
+  }, [nickname]);
 
   useEffect(() => {
     restore();
