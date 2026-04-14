@@ -426,7 +426,6 @@ const PostPage = () => {
                   }
                   onBlur={field.onBlur}
                   ref={field.ref}
-                  errorMessage={errors.title?.message}
                 />
               )}
             />
