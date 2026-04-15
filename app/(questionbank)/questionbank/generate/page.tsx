@@ -16,6 +16,22 @@ import type {
 
 const POLL_INTERVAL = 3000;
 const PDF_MIME_TYPE = "application/pdf";
+const PDF_FILE_EXTENSIONS = [".pdf"];
+
+type PdfPickerFileHandle = {
+  getFile: () => Promise<File>;
+};
+
+type FilePickerWindow = Window & {
+  showOpenFilePicker?: (options: {
+    multiple?: boolean;
+    excludeAcceptAllOption?: boolean;
+    types?: Array<{
+      description?: string;
+      accept: Record<string, string[]>;
+    }>;
+  }) => Promise<PdfPickerFileHandle[]>;
+};
 
 const GeneratePage = () => {
   const router = useRouter();
@@ -27,27 +43,68 @@ const GeneratePage = () => {
   const abortRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const openFilePicker = () => {
-    fileInputRef.current?.click();
-  };
-
   const isPdfFile = (selected: File) => {
     const normalizedName = selected.name.toLowerCase();
 
-    return selected.type === PDF_MIME_TYPE || normalizedName.endsWith(".pdf");
+    if (!normalizedName.endsWith(".pdf")) {
+      return false;
+    }
+
+    return !selected.type || selected.type === PDF_MIME_TYPE;
+  };
+
+  const applySelectedFile = (selected: File | null) => {
+    if (selected && isPdfFile(selected)) {
+      setFile(selected);
+      setError(null);
+      return;
+    }
+
+    if (selected) {
+      setFile(null);
+      setError("PDF 파일만 업로드할 수 있습니다.");
+    }
+  };
+
+  const openFilePicker = async () => {
+    const pickerWindow = window as FilePickerWindow;
+
+    if (pickerWindow.showOpenFilePicker) {
+      try {
+        const [fileHandle] = await pickerWindow.showOpenFilePicker({
+          multiple: false,
+          excludeAcceptAllOption: true,
+          types: [
+            {
+              description: "PDF Files",
+              accept: {
+                [PDF_MIME_TYPE]: PDF_FILE_EXTENSIONS,
+              },
+            },
+          ],
+        });
+
+        if (!fileHandle) {
+          return;
+        }
+
+        const selected = await fileHandle.getFile();
+        applySelectedFile(selected);
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+      }
+    }
+
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
 
-    if (selected && isPdfFile(selected)) {
-      setFile(selected);
-      setError(null);
-    } else if (selected) {
-      setFile(null);
-      setError("PDF 파일만 업로드할 수 있습니다.");
-    }
-
+    applySelectedFile(selected ?? null);
     e.target.value = "";
   };
 
@@ -177,7 +234,7 @@ const GeneratePage = () => {
         <input
           ref={fileInputRef}
           type="file"
-          accept={`${PDF_MIME_TYPE},.pdf`}
+          accept={PDF_MIME_TYPE}
           className="hidden"
           onChange={handleFileChange}
         />
