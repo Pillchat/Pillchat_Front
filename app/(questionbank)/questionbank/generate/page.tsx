@@ -16,22 +16,7 @@ import type {
 
 const POLL_INTERVAL = 3000;
 const PDF_MIME_TYPE = "application/pdf";
-const PDF_FILE_EXTENSIONS = [".pdf"];
-
-type PdfPickerFileHandle = {
-  getFile: () => Promise<File>;
-};
-
-type FilePickerWindow = Window & {
-  showOpenFilePicker?: (options: {
-    multiple?: boolean;
-    excludeAcceptAllOption?: boolean;
-    types?: Array<{
-      description?: string;
-      accept: Record<string, string[]>;
-    }>;
-  }) => Promise<PdfPickerFileHandle[]>;
-};
+const PDF_ACCEPT = ".pdf,.PDF";
 
 const GeneratePage = () => {
   const router = useRouter();
@@ -41,7 +26,6 @@ const GeneratePage = () => {
   const [error, setError] = useState<string | null>(null);
   const initSession = useSetAtom(initQuizSessionAtom);
   const abortRef = useRef(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isPdfFile = (selected: File) => {
     const normalizedName = selected.name.toLowerCase();
@@ -64,41 +48,6 @@ const GeneratePage = () => {
       setFile(null);
       setError("PDF 파일만 업로드할 수 있습니다.");
     }
-  };
-
-  const openFilePicker = async () => {
-    const pickerWindow = window as FilePickerWindow;
-
-    if (pickerWindow.showOpenFilePicker) {
-      try {
-        const [fileHandle] = await pickerWindow.showOpenFilePicker({
-          multiple: false,
-          excludeAcceptAllOption: true,
-          types: [
-            {
-              description: "PDF Files",
-              accept: {
-                [PDF_MIME_TYPE]: PDF_FILE_EXTENSIONS,
-              },
-            },
-          ],
-        });
-
-        if (!fileHandle) {
-          return;
-        }
-
-        const selected = await fileHandle.getFile();
-        applySelectedFile(selected);
-        return;
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
-          return;
-        }
-      }
-    }
-
-    fileInputRef.current?.click();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -204,11 +153,7 @@ const GeneratePage = () => {
       <CustomHeader title="문제 생성" showIcon />
 
       <div className="flex flex-1 flex-col items-center justify-center px-6">
-        <button
-          type="button"
-          onClick={openFilePicker}
-          className="flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-16 text-left transition-colors hover:border-brand hover:bg-brandSecondary"
-        >
+        <div className="relative flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-16 text-left transition-colors hover:border-brand hover:bg-brandSecondary">
           <svg
             width="48"
             height="48"
@@ -230,14 +175,13 @@ const GeneratePage = () => {
           <p className="mt-1 text-sm text-muted-foreground">
             클릭하여 파일 선택
           </p>
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={PDF_MIME_TYPE}
-          className="hidden"
-          onChange={handleFileChange}
-        />
+          <input
+            type="file"
+            accept={PDF_ACCEPT}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            onChange={handleFileChange}
+          />
+        </div>
         {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
 
         {/* 문제 수 입력 */}
