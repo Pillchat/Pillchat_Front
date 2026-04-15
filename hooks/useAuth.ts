@@ -15,6 +15,9 @@ export const useAuth = () => {
       setStorageItem("access_token", accessToken);
       setStorageItem("refresh_token", refreshTokenValue);
 
+      // 미들웨어용 쿠키 설정
+      document.cookie = `access_token=${accessToken}; path=/; max-age=${24 * 3600}; SameSite=Lax`;
+
       // 자동 토큰 갱신 설정 (24시간 - 1분 전에 갱신)
       setTimeout(() => {
         handleSilentRefresh(accessToken);
@@ -38,6 +41,9 @@ export const useAuth = () => {
           setStorageItem("access_token", access_token);
           setStorageItem("refresh_token", refresh_token);
 
+          // 미들웨어용 쿠키 갱신
+          document.cookie = `access_token=${access_token}; path=/; max-age=${24 * 3600}; SameSite=Lax`;
+
           // 다시 자동 갱신 설정
           setTimeout(() => {
             handleSilentRefresh(access_token);
@@ -56,6 +62,9 @@ export const useAuth = () => {
   const clearTokens = useCallback(() => {
     removeStorageItem("access_token");
     removeStorageItem("refresh_token");
+
+    // 미들웨어용 쿠키 삭제
+    document.cookie = "access_token=; path=/; max-age=0";
   }, [removeStorageItem]);
 
   // 현재 토큰 확인
