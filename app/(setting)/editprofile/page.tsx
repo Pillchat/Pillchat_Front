@@ -3,7 +3,6 @@
 import { useAtom } from "jotai";
 import {
   profileImgAtom,
-  idAtom,
   updateProfileAtom,
   nicknameAtom,
 } from "@/store/profile";
@@ -11,16 +10,12 @@ import {
 import { useState, useRef, ChangeEvent } from "react";
 import { CustomHeader, IconInputField } from "@/components/molecules";
 import { ProfileImg, SolidButton, Toast } from "@/components/atoms";
-import { useUpload } from "./_hooks/useUpload";
-import { accessTokenAtom } from "@/store/S3auth";
 import { useRouter } from "next/navigation";
-import { useUpdate } from "./_hooks/useUpdate";
+import { uploadProfile } from "@/lib/functions/multipartApi";
 
 const EditProfile = () => {
   const [serverProfileImg] = useAtom(profileImgAtom);
   const [serverNickname] = useAtom(nicknameAtom);
-  const [userId] = useAtom(idAtom);
-  const [accessToken] = useAtom(accessTokenAtom);
 
   const [tempProfileImg, setTempProfileImg] = useState<string | null>(
     serverProfileImg,
@@ -31,9 +26,6 @@ const EditProfile = () => {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
-
-  const { onUpload } = useUpload();
-  const { onUpdate } = useUpdate();
 
   const handleProfileImgClick = () => fileInputRef.current?.click();
 
@@ -51,46 +43,13 @@ const EditProfile = () => {
       return;
     }
 
-    if (!userId) {
-      alert("유저 ID를 확인할 수 없습니다.");
-      return;
-    }
-
-    if (!accessToken) {
-      alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
-      return;
-    }
-
     try {
-      let keys: string[] = [];
-
-      if (fileInputRef.current?.files?.[0]) {
-        const file = fileInputRef.current.files[0];
-
-        const result = await onUpload({
-          userId,
-          file,
-          type: "profile",
-          access_token: `Bearer ${accessToken}`,
-        });
-
-        if (!result?.success || !result?.key) {
-          throw new Error("이미지 업로드 실패");
-        }
-
-        keys = [result.key];
-      }
-
-      await onUpdate({
-        accessToken,
-        tempNickname: tempNickname.trim(),
-        keys,
-      });
+      const file = fileInputRef.current?.files?.[0];
+      await uploadProfile(tempNickname.trim(), file);
 
       updateProfile({
         nickname: tempNickname.trim(),
         profileImg: tempProfileImg ?? serverProfileImg ?? undefined,
-        keys,
       });
 
       setOpen(true);

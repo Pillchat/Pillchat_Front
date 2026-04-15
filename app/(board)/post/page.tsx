@@ -17,6 +17,7 @@ import { useState, ChangeEvent, useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SelectCategoryModal } from "./SelectCategoryModal";
 import { fetchAPI } from "@/lib/functions";
+import { uploadBoard } from "@/lib/functions/multipartApi";
 
 const buildQueryParams = (
   params: Record<
@@ -147,9 +148,10 @@ const PostPage = () => {
         throw new Error("이미지 또는 PDF 파일을 1개 이상 업로드해주세요.");
       }
 
-      const uploadedKeys = await uploadBoardFiles(imageFiles, pdfFile);
-
       if (isEditMode) {
+        // 수정 모드: 기존 presigned URL 방식 유지 (V2 수정 엔드포인트 미지원)
+        const uploadedKeys = await uploadBoardFiles(imageFiles, pdfFile);
+
         const queryString = buildQueryParams({
           title: trimmedTitle,
           content: trimmedContent,
@@ -161,11 +163,13 @@ const PostPage = () => {
         return;
       }
 
-      await createBoard({
+      // 생성 모드: V2 multipart API (파일 + 데이터 한번에)
+      await uploadBoard({
         title: trimmedTitle,
         content: trimmedContent,
         category: selectedCategory,
-        keys: uploadedKeys,
+        images: imageFiles.length > 0 ? imageFiles : undefined,
+        pdf: pdfFile || undefined,
       });
     },
   });
