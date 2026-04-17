@@ -15,6 +15,7 @@ import CheckCircle from "@/public/CheckCircle.svg";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { useSubjects } from "@/hooks";
 import { fetchAPI } from "@/lib/functions";
+import { uploadMaterial } from "@/lib/functions/multipartApi";
 import { useQuery } from "@tanstack/react-query";
 
 enum Step {
@@ -212,34 +213,43 @@ const UploadPage = () => {
         );
       }
 
-      const existingImageKeys = previewItems
-        .filter(
-          (item: any) => item.source === "remote" && item.type === "image",
-        )
-        .map((item: any) => item.key)
-        .filter(Boolean);
+      if (isEditMode) {
+        // 수정 모드: 기존 presigned URL 방식 유지 (V2 수정 엔드포인트 미지원)
+        const existingImageKeys = previewItems
+          .filter(
+            (item: any) => item.source === "remote" && item.type === "image",
+          )
+          .map((item: any) => item.key)
+          .filter(Boolean);
 
-      const existingPdfKey =
-        previewItems.find(
-          (item: any) => item.source === "remote" && item.type === "pdf",
-        )?.key ?? null;
+        const existingPdfKey =
+          previewItems.find(
+            (item: any) => item.source === "remote" && item.type === "pdf",
+          )?.key ?? null;
 
-      const { imageKeys: newImageKeys, pdfKey: newPdfKey } =
-        await uploadMaterialFiles(imageFiles, pdfFile);
+        const { imageKeys: newImageKeys, pdfKey: newPdfKey } =
+          await uploadMaterialFiles(imageFiles, pdfFile);
 
-      const payload = {
+        const payload = {
+          title: data.title.trim(),
+          content: data.content.trim(),
+          subjectId: Number(data.subjectId),
+          urlKey: [...existingImageKeys, ...newImageKeys],
+          pdfKey: newPdfKey ?? existingPdfKey,
+        };
+
+        await fetchAPI(`/api/materials/${editId}`, "PUT", payload);
+        return;
+      }
+
+      // 생성 모드: V2 multipart API (파일 + 데이터 한번에)
+      await uploadMaterial({
         title: data.title.trim(),
         content: data.content.trim(),
         subjectId: Number(data.subjectId),
-        urlKey: [...existingImageKeys, ...newImageKeys],
-        pdfKey: newPdfKey ?? existingPdfKey,
-      };
-
-      await fetchAPI(
-        isEditMode ? `/api/materials/${editId}` : "/api/materials",
-        isEditMode ? "PUT" : "POST",
-        payload,
-      );
+        files: imageFiles.length > 0 ? imageFiles : undefined,
+        pdf: pdfFile || undefined,
+      });
     },
   });
 
