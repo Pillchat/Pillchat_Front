@@ -692,7 +692,7 @@ const UploadPage = () => {
           <div className="px-6">
             <p className="mb-3 font-[Pretendard] text-xs">업로드 할 파일</p>
             <p className="mb-1 font-[Pretendard] text-xs text-[#999]">
-              이미지 파일 (JPG, PNG 등) 최대 10장 가능 또는 PDF 파일 1개
+              이미지 파일 (JPG, PNG 등) 최대 10장 또는 PDF 파일 1개 가능
             </p>
 
             <div className="flex w-full gap-3">
