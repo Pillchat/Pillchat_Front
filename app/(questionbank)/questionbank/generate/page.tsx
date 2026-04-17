@@ -170,7 +170,7 @@ const GeneratePage = () => {
             <line x1="9" y1="15" x2="15" y2="15" />
           </svg>
           <p className="mt-4 text-base font-medium text-foreground">
-            {file ? file.name : "PDF 파일을 업로드 해주세요."}
+            {file ? file.name : "자료를 업로드 해주세요."}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             클릭하여 파일 선택
