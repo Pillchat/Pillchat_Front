@@ -9,7 +9,8 @@ import {
 import { BoardHeader, BoardButton } from "@/components/molecules/board";
 import { Controller } from "react-hook-form";
 import { useStep, useUploadForm, useUploadFiles } from "./_hooks";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CheckCircle from "@/public/CheckCircle.svg";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
@@ -268,7 +269,6 @@ const UploadPage = () => {
     try {
       const parsed: Partial<MaterialDraft> = JSON.parse(savedDraft);
 
-      setChecked(!!parsed.checked);
       setValue("title", parsed.title ?? "");
       setValue("content", parsed.content ?? "");
       setValue("subject", parsed.selectedSubject ?? "");

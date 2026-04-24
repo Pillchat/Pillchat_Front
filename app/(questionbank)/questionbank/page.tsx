@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { MeaninglessHeader, BottomNavbar } from "@/components/molecules";
 import EntryButton from "./_components/EntryButton";
 

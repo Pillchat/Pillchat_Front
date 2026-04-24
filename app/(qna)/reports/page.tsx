@@ -7,7 +7,7 @@ import SelectReportTypeModal from "./modal/SelectReportTypeModal";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { Controller } from "react-hook-form";
 import { useReportPage } from "./hooks/useReport";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 
 export default function ReportPage() {
   const router = useRouter();

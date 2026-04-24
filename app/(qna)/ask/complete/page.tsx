@@ -2,7 +2,7 @@
 
 import { TextButton } from "@/components/atoms";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { FC } from "react";
 
 const CompletePage: FC = () => {

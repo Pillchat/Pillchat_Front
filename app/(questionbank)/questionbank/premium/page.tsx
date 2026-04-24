@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { useSetAtom } from "jotai";
 import { fetchAPI } from "@/lib/functions";
 import { initQuizSessionAtom, mapChoices } from "@/store/quizSession";

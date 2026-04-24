@@ -1,7 +1,7 @@
 "use client";
 
 import { LeftArrowButton, TextButton } from "@/components/atoms";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { Button } from "../ui/button";
 import { FC } from "react";
 

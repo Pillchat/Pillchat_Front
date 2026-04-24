@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { useAuth } from "@/hooks"; // 기존 토큰 저장 훅 재사용
 
 // 기존 SignupFormData에 수동 입력 필드를 확장한 인터페이스 정의

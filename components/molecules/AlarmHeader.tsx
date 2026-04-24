@@ -2,7 +2,8 @@
 
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { unreadCountAtom } from "@/store/notification";
 

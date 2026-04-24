@@ -4,7 +4,7 @@ type ArchiveTabKey = /*"my-questions" | */ "my-study" | "my-note" | "my-post";
 
 import { FC, Fragment, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import {
   AlarmHeader,
   BottomNavbar,

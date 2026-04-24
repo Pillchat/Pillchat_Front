@@ -12,7 +12,8 @@ import { FC, Fragment, useMemo } from "react";
 import { useQnaTabState } from "./_hooks";
 import { map } from "lodash";
 import { Separator } from "@/components/ui/separator";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
+import { useSearchParams } from "next/navigation";
 import { FloatingActionButton } from "@/components/atoms";
 import { QuestionWithBubble } from "@/components/icons";
 

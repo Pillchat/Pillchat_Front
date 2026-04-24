@@ -6,7 +6,7 @@ import {
   AlarmHeader,
   QuestionListCard,
 } from "@/components/molecules";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { useLocalStorage } from "@/hooks";
 import { useQuery } from "@tanstack/react-query";
 import {

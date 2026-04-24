@@ -2,7 +2,7 @@
 
 // import { FC } from "react";
 // import { useState } from "react";
-// import { useRouter } from "next/navigation";
+// import { useRouter } from "@/lib/navigation";
 // import { Step, useStep, useVerify, useCheckVerify, useSubmit } from "./_hooks";
 
 // import { RoleCard, SolidButton, StrokeButton } from "@/components/atoms";
@@ -486,7 +486,7 @@ export type SignupFormData = {
 // export default SignupPage;
 
 import { FC, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import {
   Step,
   useStep,
@@ -613,7 +613,10 @@ const SignupPage: FC = () => {
       {/* 1. 역할 선택 (Role) */}
       {step === Step.Role && (
         <>
-          <StepHeader content="직장 확인" onIconClick={prevStep} />
+          <StepHeader
+            content="직장 확인"
+            onIconClick={() => router.push("/login")}
+          />
           <div className="mt-[5rem] text-xl font-semibold">
             <p>현재 어떤 직종에</p>
             <p>일하고 계신가요?</p>

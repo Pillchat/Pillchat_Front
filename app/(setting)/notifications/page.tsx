@@ -1,7 +1,7 @@
 "use client";
 
 import { FC, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { CustomHeader } from "@/components/molecules";
 import { useNotifications } from "@/hooks/useNotifications";
 import { formatDiffDate } from "@/lib/functions";

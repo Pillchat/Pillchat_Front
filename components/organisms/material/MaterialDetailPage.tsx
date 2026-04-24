@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { fetchAPI, getCurrentUserId } from "@/lib/functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { FC, useMemo, useState } from "react";
 import { MaterialTitleSection } from "./MaterialTitleSection";
 import { MaterialContents } from "./MaterialContents";

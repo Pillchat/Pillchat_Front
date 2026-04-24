@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { LoginFormData } from "../page";
 import { useAuth } from "@/hooks";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { fetchAPI, setTokens } from "@/lib/functions";
 
 export const useSubmit = () => {

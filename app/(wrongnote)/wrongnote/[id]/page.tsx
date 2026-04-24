@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
+import { useParams } from "next/navigation";
 import { fetchAPI } from "@/lib/functions";
 import { CustomHeader } from "@/components/molecules";
 import type { WrongNoteDetail, WrongNoteLikeResponse } from "@/types/wrongnote";

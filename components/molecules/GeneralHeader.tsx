@@ -2,7 +2,8 @@
 
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
+import { usePathname } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { unreadCountAtom } from "@/store/notification";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
   const [open, setOpen] = useState(Boolean(currentQ.trim()));
   const [value, setValue] = useState(currentQ.trim());
   const [debouncedValue, setDebouncedValue] = useState(currentQ.trim());
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const resolvedBasePath = useMemo(() => {
@@ -42,9 +44,13 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
       const trimmed = currentQ.trim();
       setValue(trimmed);
       setDebouncedValue(trimmed);
-      setOpen(Boolean(trimmed));
+      if (trimmed) {
+        setOpen(true);
+      } else if (!isInputFocused) {
+        setOpen(false);
+      }
     }
-  }, [pathname, currentQ]);
+  }, [pathname, currentQ, isInputFocused]);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -106,12 +112,14 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
             ref={inputRef}
             value={value}
             onChange={(e) => setValue(e.target.value)}
+            onFocus={() => setIsInputFocused(true)}
             onKeyDown={(e) => {
               if (e.key === "Escape" && !currentQ.trim() && !value.trim()) {
                 setOpen(false);
               }
             }}
             onBlur={() => {
+              setIsInputFocused(false);
               if (!currentQ.trim() && !value.trim()) {
                 setOpen(false);
               }
