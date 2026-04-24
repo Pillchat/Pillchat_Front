@@ -613,7 +613,10 @@ const SignupPage: FC = () => {
       {/* 1. 역할 선택 (Role) */}
       {step === Step.Role && (
         <>
-          <StepHeader content="직장 확인" onIconClick={() => router.push("/login")} />
+          <StepHeader
+            content="직장 확인"
+            onIconClick={() => router.push("/login")}
+          />
           <div className="mt-[5rem] text-xl font-semibold">
             <p>현재 어떤 직종에</p>
             <p>일하고 계신가요?</p>
