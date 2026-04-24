@@ -18,7 +18,7 @@ import {
   shouldSkipBoardViewOnLoad,
 } from "@/lib/functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useLikeStatus } from "@/hooks/useLikeStatus";
 import { BoardTitleSection } from "./BoardTitleSection";

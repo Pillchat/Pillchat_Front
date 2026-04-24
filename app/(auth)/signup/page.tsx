@@ -2,7 +2,7 @@
 
 // import { FC } from "react";
 // import { useState } from "react";
-// import { useRouter } from "next/navigation";
+// import { useRouter } from "@/lib/navigation";
 // import { Step, useStep, useVerify, useCheckVerify, useSubmit } from "./_hooks";
 
 // import { RoleCard, SolidButton, StrokeButton } from "@/components/atoms";
@@ -486,7 +486,7 @@ export type SignupFormData = {
 // export default SignupPage;
 
 import { FC, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import {
   Step,
   useStep,

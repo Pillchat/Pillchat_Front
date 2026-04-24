@@ -10,7 +10,7 @@ import {
 import { useState, useRef, ChangeEvent } from "react";
 import { CustomHeader, IconInputField } from "@/components/molecules";
 import { ProfileImg, SolidButton, Toast } from "@/components/atoms";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { uploadProfile } from "@/lib/functions/multipartApi";
 
 const EditProfile = () => {

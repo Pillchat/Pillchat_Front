@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@radix-ui/react-label";
 import { FC } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSubmit } from "./_hooks";
 import { useState } from "react";

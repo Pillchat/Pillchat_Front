@@ -1,7 +1,7 @@
 "use client";
 
 import { FC, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { RankIndicator } from "@/components/atoms";
 import { InfoHeader, GeneralModal } from "@/components/molecules";
 import { usePromotion } from "./_hooks/usePromotion";

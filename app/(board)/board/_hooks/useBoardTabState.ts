@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo } from "react";
 
 export type BoardStatus = "best" | "latest" | "study" | "column" | "promo";

@@ -1,4 +1,5 @@
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 type QnaStatus = "pending" | "completed";

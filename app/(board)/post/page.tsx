@@ -12,7 +12,8 @@ import {
   CATEGORY_MAP,
   uploadBoardFiles,
 } from "./_hooks";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState, ChangeEvent, useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SelectCategoryModal } from "./SelectCategoryModal";

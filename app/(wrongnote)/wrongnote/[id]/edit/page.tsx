@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
+import { useParams } from "next/navigation";
 import { fetchAPI } from "@/lib/functions";
 import { CustomHeader, ExpandableChipSection } from "@/components/molecules";
 import { SolidButton } from "@/components/atoms";
