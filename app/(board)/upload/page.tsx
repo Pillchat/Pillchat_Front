@@ -268,7 +268,6 @@ const UploadPage = () => {
     try {
       const parsed: Partial<MaterialDraft> = JSON.parse(savedDraft);
 
-      setChecked(!!parsed.checked);
       setValue("title", parsed.title ?? "");
       setValue("content", parsed.content ?? "");
       setValue("subject", parsed.selectedSubject ?? "");
