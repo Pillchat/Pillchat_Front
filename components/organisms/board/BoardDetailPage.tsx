@@ -558,8 +558,8 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                             )}
                           </div>
 
-                          <div className="relative flex min-h-[60px] flex-1">
-                            <div className="flex min-h-[60px] flex-1 flex-col gap-2 pr-10">
+                          <div className="relative flex min-h-[60px] min-w-0 flex-1">
+                            <div className="flex min-h-[60px] min-w-0 flex-1 flex-col gap-2 pr-10">
                               <div className="flex items-center gap-2 text-xs">
                                 <span className="font-semibold text-[#111111]">
                                   {comment?.nickname ??
@@ -620,7 +620,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                                   </div>
                                 </div>
                               ) : (
-                                <p className="w-full whitespace-pre-wrap break-words text-sm leading-5 text-[#333333]">
+                                <p className="w-full whitespace-pre-wrap break-words text-sm leading-5 text-[#333333] [overflow-wrap:anywhere]">
                                   {comment?.content ?? ""}
                                 </p>
                               )}
