@@ -33,7 +33,10 @@ export const POST = async (request: NextRequest) => {
       success: true,
       data: {
         access_token:
-          data.access_token ?? data.accessToken ?? data.access ?? data.data?.accessToken,
+          data.access_token ??
+          data.accessToken ??
+          data.access ??
+          data.data?.accessToken,
         refresh_token:
           data.refresh_token ??
           data.refreshToken ??

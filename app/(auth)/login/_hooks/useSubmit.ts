@@ -24,7 +24,11 @@ export const useSubmit = () => {
         const { access_token, refresh_token } = response.data;
 
         if (access_token && refresh_token) {
-          saveTokensAndSetupRefresh(access_token, refresh_token, data.rememberMe);
+          saveTokensAndSetupRefresh(
+            access_token,
+            refresh_token,
+            data.rememberMe,
+          );
           router.push("/");
         } else {
           setError("로그인 응답에 토큰 데이터가 없습니다.");

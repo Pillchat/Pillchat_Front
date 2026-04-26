@@ -21,7 +21,9 @@ export const getRequestUserId = (request: NextRequest) => {
   if (!token) return null;
 
   try {
-    const payload = JSON.parse(decodeBase64Url(token.split(".")[1])) as JwtPayload;
+    const payload = JSON.parse(
+      decodeBase64Url(token.split(".")[1]),
+    ) as JwtPayload;
     const userId = payload.userId ?? payload.id ?? payload.sub;
     return userId == null ? null : String(userId);
   } catch {
@@ -29,7 +31,10 @@ export const getRequestUserId = (request: NextRequest) => {
   }
 };
 
-export const isOwnedByRequestUser = (item: any, requestUserId: string | null) => {
+export const isOwnedByRequestUser = (
+  item: any,
+  requestUserId: string | null,
+) => {
   if (!requestUserId) return false;
 
   const itemUserId =

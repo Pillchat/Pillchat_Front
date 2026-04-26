@@ -27,27 +27,30 @@ const NoteSelectModal: FC<NoteSelectModalProps> = ({
   const [hasMore, setHasMore] = useState(true);
   const currentUserId = getCurrentUserId();
 
-  const fetchNotes = useCallback(async (pageNum: number, reset = false) => {
-    setLoading(true);
-    try {
-      const raw = await fetchAPI(
-        `/api/wrong-notes?sort=createdAt,desc&page=${pageNum}&size=${PAGE_SIZE}`,
-        "GET",
-      );
-      const data: WrongNoteListResponse = raw.data ?? raw;
-      const items = Array.isArray(data.content)
-        ? data.content.filter(
-            (note) => Number(note.userId) === Number(currentUserId),
-          )
-        : [];
-      setNotes((prev) => (reset ? items : [...prev, ...items]));
-      setHasMore(pageNum + 1 < (data.totalPages ?? 0));
-    } catch {
-      if (reset) setNotes([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentUserId]);
+  const fetchNotes = useCallback(
+    async (pageNum: number, reset = false) => {
+      setLoading(true);
+      try {
+        const raw = await fetchAPI(
+          `/api/wrong-notes?sort=createdAt,desc&page=${pageNum}&size=${PAGE_SIZE}`,
+          "GET",
+        );
+        const data: WrongNoteListResponse = raw.data ?? raw;
+        const items = Array.isArray(data.content)
+          ? data.content.filter(
+              (note) => Number(note.userId) === Number(currentUserId),
+            )
+          : [];
+        setNotes((prev) => (reset ? items : [...prev, ...items]));
+        setHasMore(pageNum + 1 < (data.totalPages ?? 0));
+      } catch {
+        if (reset) setNotes([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [currentUserId],
+  );
 
   useEffect(() => {
     if (isOpen) {

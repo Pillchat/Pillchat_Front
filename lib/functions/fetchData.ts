@@ -32,9 +32,7 @@ const getStoredToken = (key: string) => {
     if (token) return token;
   }
 
-  return (
-    window.sessionStorage.getItem(key) ?? window.localStorage.getItem(key)
-  );
+  return window.sessionStorage.getItem(key) ?? window.localStorage.getItem(key);
 };
 
 const setAccessTokenCookie = (accessToken: string, rememberMe: boolean) => {

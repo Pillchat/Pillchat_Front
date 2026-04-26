@@ -30,7 +30,9 @@ export async function GET(request: NextRequest) {
       };
 
       return NextResponse.json(
-        data?.data ? { ...data, data: filteredResponseData } : filteredResponseData,
+        data?.data
+          ? { ...data, data: filteredResponseData }
+          : filteredResponseData,
       );
     }
 

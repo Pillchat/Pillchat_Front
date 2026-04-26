@@ -15,7 +15,10 @@ export async function GET(
     });
 
     const note = data?.data ?? data;
-    if (note?.userId != null && !isOwnedByRequestUser(note, getRequestUserId(request))) {
+    if (
+      note?.userId != null &&
+      !isOwnedByRequestUser(note, getRequestUserId(request))
+    ) {
       return NextResponse.json(
         { message: "오답노트를 찾을 수 없습니다." },
         { status: 404 },
