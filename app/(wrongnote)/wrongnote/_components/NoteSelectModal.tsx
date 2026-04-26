@@ -1,7 +1,7 @@
 "use client";
 
 import { FC, useState, useEffect, useCallback } from "react";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI, getCurrentUserId } from "@/lib/functions";
 import type {
   WrongNoteListItem,
   WrongNoteListResponse,
@@ -25,6 +25,7 @@ const NoteSelectModal: FC<NoteSelectModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const currentUserId = getCurrentUserId();
 
   const fetchNotes = useCallback(async (pageNum: number, reset = false) => {
     setLoading(true);
@@ -34,7 +35,11 @@ const NoteSelectModal: FC<NoteSelectModalProps> = ({
         "GET",
       );
       const data: WrongNoteListResponse = raw.data ?? raw;
-      const items = Array.isArray(data.content) ? data.content : [];
+      const items = Array.isArray(data.content)
+        ? data.content.filter(
+            (note) => Number(note.userId) === Number(currentUserId),
+          )
+        : [];
       setNotes((prev) => (reset ? items : [...prev, ...items]));
       setHasMore(pageNum + 1 < (data.totalPages ?? 0));
     } catch {
@@ -42,7 +47,7 @@ const NoteSelectModal: FC<NoteSelectModalProps> = ({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentUserId]);
 
   useEffect(() => {
     if (isOpen) {

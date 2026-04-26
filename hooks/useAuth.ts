@@ -1,83 +1,54 @@
 import { useCallback } from "react";
-import { useLocalStorage } from "./useLocalStorage";
-import { refreshTokens } from "@/lib/functions";
+import {
+  clearTokens as clearStoredTokens,
+  getRefreshToken,
+  getToken,
+  refreshTokens,
+  setTokens,
+} from "@/lib/functions";
 
 const JWT_EXPIRY_TIME = 24 * 3600 * 1000; // 24시간
 
 export const useAuth = () => {
-  const { getStorageItem, setStorageItem, removeStorageItem } =
-    useLocalStorage();
+  const handleSilentRefresh = useCallback(async (_accessToken: string) => {
+    try {
+      const response = await refreshTokens();
+      if (response) {
+        setTimeout(() => {
+          handleSilentRefresh(response.access_token);
+        }, JWT_EXPIRY_TIME - 60000);
+      }
+    } catch (error: any) {
+      console.error("토큰 갱신 실패:", error);
+      clearStoredTokens();
+    }
+  }, []);
 
-  // 토큰 저장 및 자동 갱신 설정
   const saveTokensAndSetupRefresh = useCallback(
-    (accessToken: string, refreshTokenValue: string) => {
-      // localStorage에 토큰 저장
-      setStorageItem("access_token", accessToken);
-      setStorageItem("refresh_token", refreshTokenValue);
+    (accessToken: string, refreshTokenValue: string, rememberMe = true) => {
+      setTokens(accessToken, refreshTokenValue, rememberMe);
 
-      // 미들웨어용 쿠키 설정
-      document.cookie = `access_token=${accessToken}; path=/; max-age=${24 * 3600}; SameSite=Lax`;
-
-      // 자동 토큰 갱신 설정 (24시간 - 1분 전에 갱신)
       setTimeout(() => {
         handleSilentRefresh(accessToken);
       }, JWT_EXPIRY_TIME - 60000);
     },
-    [setStorageItem],
+    [handleSilentRefresh],
   );
 
-  // 자동 토큰 갱신
-  const handleSilentRefresh = useCallback(
-    async (accessToken: string) => {
-      try {
-        const response = await refreshTokens();
-        if (
-          response &&
-          typeof response === "object" &&
-          "access_token" in response &&
-          "refresh_token" in response
-        ) {
-          const { access_token, refresh_token } = response;
-          setStorageItem("access_token", access_token);
-          setStorageItem("refresh_token", refresh_token);
-
-          // 미들웨어용 쿠키 갱신
-          document.cookie = `access_token=${access_token}; path=/; max-age=${24 * 3600}; SameSite=Lax`;
-
-          // 다시 자동 갱신 설정
-          setTimeout(() => {
-            handleSilentRefresh(access_token);
-          }, JWT_EXPIRY_TIME - 60000);
-        }
-      } catch (error: any) {
-        console.error("토큰 갱신 실패:", error);
-        // 토큰 갱신 실패 시 로그아웃 처리
-        clearTokens();
-      }
-    },
-    [setStorageItem],
-  );
-
-  // 토큰 삭제 (로그아웃)
   const clearTokens = useCallback(() => {
-    removeStorageItem("access_token");
-    removeStorageItem("refresh_token");
+    clearStoredTokens();
+  }, []);
 
-    // 미들웨어용 쿠키 삭제
-    document.cookie = "access_token=; path=/; max-age=0";
-  }, [removeStorageItem]);
-
-  // 현재 토큰 확인
   const getTokens = useCallback(() => {
-    const accessToken = getStorageItem("access_token");
-    const refreshTokenValue = getStorageItem("refresh_token");
+    const accessToken = getToken();
+    const refreshTokenValue = getRefreshToken();
 
     return {
       accessToken,
       refreshToken: refreshTokenValue,
       isAuthenticated: !!(accessToken && refreshTokenValue),
     };
-  }, [getStorageItem]);
+  }, []);
 
   return {
     saveTokensAndSetupRefresh,

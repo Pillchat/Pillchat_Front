@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "@/lib/navigation";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI, getCurrentUserId } from "@/lib/functions";
 import { CustomHeader, TabsWithUnderline } from "@/components/molecules";
 import { FloatingActionButton } from "@/components/atoms";
 import WrongNoteCard from "./_components/WrongNoteCard";
@@ -25,6 +25,7 @@ const WrongNoteListPage = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const currentUserId = getCurrentUserId();
 
   const fetchNotes = useCallback(
     async (pageNum: number, sortBy: string, reset = false) => {
@@ -35,7 +36,11 @@ const WrongNoteListPage = () => {
           "GET",
         );
         const data: WrongNoteListResponse = raw.data ?? raw;
-        const items = Array.isArray(data.content) ? data.content : [];
+        const items = Array.isArray(data.content)
+          ? data.content.filter(
+              (note) => Number(note.userId) === Number(currentUserId),
+            )
+          : [];
         setNotes((prev) => (reset ? items : [...prev, ...items]));
         setHasMore(pageNum + 1 < (data.totalPages ?? 0));
       } catch {
@@ -44,7 +49,7 @@ const WrongNoteListPage = () => {
         setLoading(false);
       }
     },
-    [],
+    [currentUserId],
   );
 
   useEffect(() => {

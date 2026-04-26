@@ -2,6 +2,8 @@
  * JWT 토큰 관련 유틸리티 함수들
  */
 
+import { getToken } from "./fetchData";
+
 type JWTPayload = {
   sub?: string; // subject (userId)
   exp?: number; // expiration time
@@ -58,7 +60,7 @@ export const getCurrentUserId = (): string | null => {
       return null;
     }
 
-    const token = localStorage.getItem("access_token");
+    const token = getToken();
     if (!token) {
       return null;
     }
@@ -147,7 +149,7 @@ export const getCurrentUserInfo = (): JWTPayload | null => {
       return null;
     }
 
-    const token = localStorage.getItem("access_token");
+    const token = getToken();
     if (!token) {
       return null;
     }

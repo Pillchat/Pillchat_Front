@@ -32,8 +32,14 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json({
       success: true,
       data: {
-        access_token: data.access || data.access_token,
-        refresh_token: data.refresh || data.refresh_token,
+        access_token:
+          data.access_token ?? data.accessToken ?? data.access ?? data.data?.accessToken,
+        refresh_token:
+          data.refresh_token ??
+          data.refreshToken ??
+          data.refresh ??
+          data.data?.refreshToken ??
+          refreshToken,
       },
     });
   } catch (error) {
