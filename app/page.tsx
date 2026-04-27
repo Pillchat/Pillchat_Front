@@ -7,7 +7,6 @@ import {
   QuestionListCard,
 } from "@/components/molecules";
 import { useRouter } from "@/lib/navigation";
-import { useLocalStorage } from "@/hooks";
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchAPI,
@@ -15,6 +14,7 @@ import {
   getRememberedBoardViewCounts,
   getCurrentUserInfo,
   markBoardViewIntent,
+  getToken,
 } from "@/lib/functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuestionWithBubble } from "@/components/icons";
@@ -27,7 +27,6 @@ import {
 
 const Home: FC = () => {
   const router = useRouter();
-  const { getStorageItem } = useLocalStorage();
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [viewCountOverrides, setViewCountOverrides] = useState<
@@ -42,9 +41,9 @@ const Home: FC = () => {
   });
 
   useEffect(() => {
-    const token = getStorageItem("access_token");
+    const token = getToken();
     setIsAuthenticated(!!token);
-  }, [getStorageItem]);
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated === false) {

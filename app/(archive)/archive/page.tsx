@@ -21,6 +21,7 @@ import {
   fetchAPI,
   formatDiffDate,
   getCurrentUserId,
+  getToken,
   markBoardViewIntent,
 } from "@/lib/functions";
 import { map } from "lodash";
@@ -63,8 +64,7 @@ const ArchivePage: FC = () => {
   const [myPosts, setMyPosts] = useState<any[]>([]);
   const [postsLoading, setPostsLoading] = useState(false);
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const token = getToken();
 
   const {
     data: myQuestions,
@@ -114,7 +114,12 @@ const ArchivePage: FC = () => {
           "GET",
         );
         const data: WrongNoteListResponse = raw.data ?? raw;
-        setWrongNotes(Array.isArray(data.content) ? data.content : []);
+        const items = Array.isArray(data.content)
+          ? data.content.filter(
+              (item) => Number(item?.userId) === Number(currentUserId),
+            )
+          : [];
+        setWrongNotes(items);
       } catch {
         setWrongNotes([]);
       } finally {
