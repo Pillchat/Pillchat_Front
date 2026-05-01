@@ -574,12 +574,14 @@ const SignupPage: FC = () => {
     setIsGradeOpen(false);
   };
 
+  const isValidStudentId = (value: string) => /^\d{8}$/.test(value);
+
   // 정보 입력 단계 유효성 검사
   const isValidManualInfo = () => {
     if (!realName.trim()) return false;
 
     if (route === "student") {
-      return !!(university && studentId);
+      return !!university && isValidStudentId(studentId);
     } else if (route === "professional") {
       return !!licenseNumber;
     }
@@ -706,12 +708,17 @@ const SignupPage: FC = () => {
                   <IconInputField
                     content="학번"
                     value={studentId}
-                    onChange={(e) => setStudentId(e.target.value)}
+                    onChange={(e) =>
+                      setStudentId(e.target.value.replace(/\D/g, ""))
+                    }
                     onIconClick={() => setStudentId("")}
                     placeholder="20241234"
                     iconSrc="/Cancel.svg"
                     iconAsButton={true}
                     iconSize={20}
+                    type="text"
+                    maxLength={8}
+                    inputMode="numeric"
                   />
                   <SelectBox
                     label="학년 (선택)"
