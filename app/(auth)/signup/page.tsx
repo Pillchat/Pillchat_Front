@@ -589,7 +589,7 @@ const SignupPage: FC = () => {
   };
 
   const isValidNickname = (nickname: string) =>
-    /^[A-Za-z0-9]{2,}$/.test(nickname.trim());
+    /^[가-힣A-Za-z0-9]{2,}$/.test(nickname.trim());
 
   const handleSubmit = async () => {
     if (!nickname || !email || !password || !route) {
@@ -598,7 +598,7 @@ const SignupPage: FC = () => {
     }
 
     if (!isValidNickname(nickname)) {
-      alert("닉네임은 영문과 숫자만 사용해 2자 이상 입력해주세요.");
+      alert("닉네임은 한글, 영문, 숫자만 사용해 2자 이상 입력해주세요.");
       return;
     }
 
@@ -1022,7 +1022,7 @@ const SignupPage: FC = () => {
               />
 
               <p className="font-regular text-sm text-border">
-                영문, 숫자만 사용한 2자 이상
+                한글, 영문, 숫자만 사용한 2자 이상
               </p>
             </div>
 
