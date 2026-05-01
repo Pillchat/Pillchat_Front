@@ -786,11 +786,14 @@ const SignupPage: FC = () => {
           </div>
 
           <div className="z-[1] mb-14 mt-auto flex w-full flex-col items-center bg-[linear-gradient(to_top,_#FFFFFF_0%,_#FFFFFF_24%,_transparent_100%)] shadow-[0_-22px_24px_rgba(255,255,255,0.3),_0_-50px_40px_rgba(255,255,255,0.6)]">
-            <div className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]">
+            <button
+              type="button"
+              className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]"
+              onClick={() => setCheckedTerms(!checkedTerms)}
+            >
               <img
                 className="h-[26px] w-[26px]"
                 src={checkedTerms ? "/CheckedIcon.svg" : "/UncheckIcon.svg"}
-                onClick={() => setCheckedTerms(!checkedTerms)}
                 alt="icon"
               />
               <div className="flex flex-row text-sm font-medium">
@@ -799,7 +802,7 @@ const SignupPage: FC = () => {
                 </p>
                 <p>에 동의합니다.</p>
               </div>
-            </div>
+            </button>
 
             <div className="font-regular mt-[1rem] w-[90%]">
               <SolidButton
@@ -828,11 +831,14 @@ const SignupPage: FC = () => {
           </div>
 
           <div className="z-[1] mb-14 mt-auto flex w-full flex-col items-center bg-[linear-gradient(to_top,_#FFFFFF_0%,_#FFFFFF_24%,_transparent_100%)] shadow-[0_-22px_24px_rgba(255,255,255,0.3),_0_-50px_40px_rgba(255,255,255,0.6)]">
-            <div className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]">
+            <button
+              type="button"
+              className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]"
+              onClick={() => setCheckedPrivacy(!checkedPrivacy)}
+            >
               <img
                 className="h-[26px] w-[26px]"
                 src={checkedPrivacy ? "/CheckedIcon.svg" : "/UncheckIcon.svg"}
-                onClick={() => setCheckedPrivacy(!checkedPrivacy)}
                 alt="icon"
               />
               <div className="flex flex-row text-sm font-medium">
@@ -841,7 +847,7 @@ const SignupPage: FC = () => {
                 </p>
                 <p>에 동의합니다.</p>
               </div>
-            </div>
+            </button>
 
             <div className="font-regular mt-[1rem] w-[90%]">
               <SolidButton
