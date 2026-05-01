@@ -496,8 +496,14 @@ import {
   PRIVACY_TEXT,
 } from "./_hooks";
 import { useManualSubmit } from "./_hooks/useManualSubmit";
+import { GRADE_OPTIONS, SelectGradeModal } from "./SelectGradeModal";
 
-import { RoleCard, SolidButton, StrokeButton } from "@/components/atoms";
+import {
+  RoleCard,
+  SelectBox,
+  SolidButton,
+  StrokeButton,
+} from "@/components/atoms";
 import { StepHeader, IconInputField } from "@/components/molecules";
 import { VerifyInputField } from "@/components/organisms";
 
@@ -529,6 +535,7 @@ const SignupPage: FC = () => {
   const [department, setDepartment] = useState("");
   const [studentId, setStudentId] = useState("");
   const [grade, setGrade] = useState("");
+  const [isGradeOpen, setIsGradeOpen] = useState(false);
 
   // 전문가용
   const [licenseNumber, setLicenseNumber] = useState("");
@@ -560,6 +567,11 @@ const SignupPage: FC = () => {
   const handleResendCode = async () => {
     if (!email) return;
     await onVerify(email);
+  };
+
+  const handleGradeSelect = (selectedGrade: string) => {
+    setGrade(selectedGrade);
+    setIsGradeOpen(false);
   };
 
   // 정보 입력 단계 유효성 검사
@@ -618,8 +630,7 @@ const SignupPage: FC = () => {
             onIconClick={() => router.push("/login")}
           />
           <div className="mt-[5rem] text-xl font-semibold">
-            <p>현재 어떤 직종에</p>
-            <p>일하고 계신가요?</p>
+            <p>현재 어떤 직종에 일하고 계신가요?</p>
           </div>
 
           <div className="mt-5 flex flex-row gap-[15px]">
@@ -702,15 +713,19 @@ const SignupPage: FC = () => {
                     iconAsButton={true}
                     iconSize={20}
                   />
-                  <IconInputField
-                    content="학년 (선택)"
-                    value={grade}
-                    onChange={(e) => setGrade(e.target.value)}
-                    onIconClick={() => setGrade("")}
-                    placeholder="1학년"
-                    iconSrc="/Cancel.svg"
-                    iconAsButton={true}
-                    iconSize={20}
+                  <SelectBox
+                    label="학년 (선택)"
+                    options={GRADE_OPTIONS.map((item) => ({
+                      key: item,
+                      value: item,
+                    }))}
+                    selectedValue={grade}
+                    placeholder="학년을 선택해주세요."
+                    disabled={false}
+                    handleChange={(e) => setGrade(e.target.value)}
+                    onClick={() => setIsGradeOpen(true)}
+                    labelClassName="text-sm"
+                    selectClassName="h-[52px] rounded-[12px] border-[#C4C4C4] px-4 font-[pretendard] text-[15px] font-medium focus:border-[#C4C4C4]"
                   />
                 </>
               ) : route === "professional" ? (
@@ -1018,6 +1033,12 @@ const SignupPage: FC = () => {
           </div>
         </>
       )}
+
+      <SelectGradeModal
+        isOpen={isGradeOpen}
+        closeClick={() => setIsGradeOpen(false)}
+        onSelect={handleGradeSelect}
+      />
     </div>
   );
 };
