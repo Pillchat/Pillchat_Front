@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "@/lib/navigation";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI, getCurrentUserId } from "@/lib/functions";
 import { CustomHeader } from "@/components/molecules";
 import { SolidButton } from "@/components/atoms";
 import type {
@@ -20,6 +20,7 @@ const GenerateExamPage = () => {
   const [questionCount, setQuestionCount] = useState(10);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const currentUserId = getCurrentUserId();
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -29,7 +30,12 @@ const GenerateExamPage = () => {
           "GET",
         );
         const data: WrongNoteListResponse = raw.data ?? raw;
-        setNotes(Array.isArray(data.content) ? data.content : []);
+        const items = Array.isArray(data.content)
+          ? data.content.filter(
+              (note) => Number(note.userId) === Number(currentUserId),
+            )
+          : [];
+        setNotes(items);
       } catch {
         // 에러 처리
       } finally {
@@ -37,7 +43,7 @@ const GenerateExamPage = () => {
       }
     };
     fetchNotes();
-  }, []);
+  }, [currentUserId]);
 
   const toggleNote = (id: number) => {
     setSelectedIds((prev) => {

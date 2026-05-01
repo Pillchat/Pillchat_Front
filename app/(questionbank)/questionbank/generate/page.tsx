@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useSetAtom } from "jotai";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI, getToken } from "@/lib/functions";
 import { initQuizSessionAtom, mapChoices } from "@/store/quizSession";
 import { CustomHeader } from "@/components/molecules";
 import { SolidButton } from "@/components/atoms";
@@ -75,7 +75,7 @@ const GeneratePage = () => {
       const uploadRes = await fetch("/api/questionbank/pdf", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          Authorization: `Bearer ${getToken()}`,
         },
         body: formData,
       });
