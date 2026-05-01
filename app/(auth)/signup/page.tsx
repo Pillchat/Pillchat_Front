@@ -496,8 +496,14 @@ import {
   PRIVACY_TEXT,
 } from "./_hooks";
 import { useManualSubmit } from "./_hooks/useManualSubmit";
+import { GRADE_OPTIONS, SelectGradeModal } from "./SelectGradeModal";
 
-import { RoleCard, SolidButton, StrokeButton } from "@/components/atoms";
+import {
+  RoleCard,
+  SelectBox,
+  SolidButton,
+  StrokeButton,
+} from "@/components/atoms";
 import { StepHeader, IconInputField } from "@/components/molecules";
 import { VerifyInputField } from "@/components/organisms";
 
@@ -529,6 +535,7 @@ const SignupPage: FC = () => {
   const [department, setDepartment] = useState("");
   const [studentId, setStudentId] = useState("");
   const [grade, setGrade] = useState("");
+  const [isGradeOpen, setIsGradeOpen] = useState(false);
 
   // 전문가용
   const [licenseNumber, setLicenseNumber] = useState("");
@@ -562,12 +569,19 @@ const SignupPage: FC = () => {
     await onVerify(email);
   };
 
+  const handleGradeSelect = (selectedGrade: string) => {
+    setGrade(selectedGrade);
+    setIsGradeOpen(false);
+  };
+
+  const isValidStudentId = (value: string) => /^\d{8}$/.test(value);
+
   // 정보 입력 단계 유효성 검사
   const isValidManualInfo = () => {
     if (!realName.trim()) return false;
 
     if (route === "student") {
-      return !!(university && studentId);
+      return !!university && isValidStudentId(studentId);
     } else if (route === "professional") {
       return !!licenseNumber;
     }
@@ -575,7 +589,7 @@ const SignupPage: FC = () => {
   };
 
   const isValidNickname = (nickname: string) =>
-    /^[A-Za-z0-9]{2,}$/.test(nickname.trim());
+    /^[가-힣A-Za-z0-9]{2,}$/.test(nickname.trim());
 
   const handleSubmit = async () => {
     if (!nickname || !email || !password || !route) {
@@ -584,7 +598,7 @@ const SignupPage: FC = () => {
     }
 
     if (!isValidNickname(nickname)) {
-      alert("닉네임은 영문과 숫자만 사용해 2자 이상 입력해주세요.");
+      alert("닉네임은 한글, 영문, 숫자만 사용해 2자 이상 입력해주세요.");
       return;
     }
 
@@ -618,8 +632,7 @@ const SignupPage: FC = () => {
             onIconClick={() => router.push("/login")}
           />
           <div className="mt-[5rem] text-xl font-semibold">
-            <p>현재 어떤 직종에</p>
-            <p>일하고 계신가요?</p>
+            <p>현재 어떤 직종에 일하고 계신가요?</p>
           </div>
 
           <div className="mt-5 flex flex-row gap-[15px]">
@@ -695,22 +708,31 @@ const SignupPage: FC = () => {
                   <IconInputField
                     content="학번"
                     value={studentId}
-                    onChange={(e) => setStudentId(e.target.value)}
+                    onChange={(e) =>
+                      setStudentId(e.target.value.replace(/\D/g, ""))
+                    }
                     onIconClick={() => setStudentId("")}
                     placeholder="20241234"
                     iconSrc="/Cancel.svg"
                     iconAsButton={true}
                     iconSize={20}
+                    type="text"
+                    maxLength={8}
+                    inputMode="numeric"
                   />
-                  <IconInputField
-                    content="학년 (선택)"
-                    value={grade}
-                    onChange={(e) => setGrade(e.target.value)}
-                    onIconClick={() => setGrade("")}
-                    placeholder="1학년"
-                    iconSrc="/Cancel.svg"
-                    iconAsButton={true}
-                    iconSize={20}
+                  <SelectBox
+                    label="학년 (선택)"
+                    options={GRADE_OPTIONS.map((item) => ({
+                      key: item,
+                      value: item,
+                    }))}
+                    selectedValue={grade}
+                    placeholder="학년을 선택해주세요."
+                    disabled={false}
+                    handleChange={(e) => setGrade(e.target.value)}
+                    onClick={() => setIsGradeOpen(true)}
+                    labelClassName="text-sm"
+                    selectClassName="h-[52px] rounded-[12px] border-[#C4C4C4] px-4 font-[pretendard] text-[15px] font-medium focus:border-[#C4C4C4]"
                   />
                 </>
               ) : route === "professional" ? (
@@ -771,11 +793,14 @@ const SignupPage: FC = () => {
           </div>
 
           <div className="z-[1] mb-14 mt-auto flex w-full flex-col items-center bg-[linear-gradient(to_top,_#FFFFFF_0%,_#FFFFFF_24%,_transparent_100%)] shadow-[0_-22px_24px_rgba(255,255,255,0.3),_0_-50px_40px_rgba(255,255,255,0.6)]">
-            <div className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]">
+            <button
+              type="button"
+              className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]"
+              onClick={() => setCheckedTerms(!checkedTerms)}
+            >
               <img
                 className="h-[26px] w-[26px]"
                 src={checkedTerms ? "/CheckedIcon.svg" : "/UncheckIcon.svg"}
-                onClick={() => setCheckedTerms(!checkedTerms)}
                 alt="icon"
               />
               <div className="flex flex-row text-sm font-medium">
@@ -784,7 +809,7 @@ const SignupPage: FC = () => {
                 </p>
                 <p>에 동의합니다.</p>
               </div>
-            </div>
+            </button>
 
             <div className="font-regular mt-[1rem] w-[90%]">
               <SolidButton
@@ -813,11 +838,14 @@ const SignupPage: FC = () => {
           </div>
 
           <div className="z-[1] mb-14 mt-auto flex w-full flex-col items-center bg-[linear-gradient(to_top,_#FFFFFF_0%,_#FFFFFF_24%,_transparent_100%)] shadow-[0_-22px_24px_rgba(255,255,255,0.3),_0_-50px_40px_rgba(255,255,255,0.6)]">
-            <div className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]">
+            <button
+              type="button"
+              className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]"
+              onClick={() => setCheckedPrivacy(!checkedPrivacy)}
+            >
               <img
                 className="h-[26px] w-[26px]"
                 src={checkedPrivacy ? "/CheckedIcon.svg" : "/UncheckIcon.svg"}
-                onClick={() => setCheckedPrivacy(!checkedPrivacy)}
                 alt="icon"
               />
               <div className="flex flex-row text-sm font-medium">
@@ -826,7 +854,7 @@ const SignupPage: FC = () => {
                 </p>
                 <p>에 동의합니다.</p>
               </div>
-            </div>
+            </button>
 
             <div className="font-regular mt-[1rem] w-[90%]">
               <SolidButton
@@ -994,7 +1022,7 @@ const SignupPage: FC = () => {
               />
 
               <p className="font-regular text-sm text-border">
-                영문, 숫자만 사용한 2자 이상
+                한글, 영문, 숫자만 사용한 2자 이상
               </p>
             </div>
 
@@ -1018,6 +1046,12 @@ const SignupPage: FC = () => {
           </div>
         </>
       )}
+
+      <SelectGradeModal
+        isOpen={isGradeOpen}
+        closeClick={() => setIsGradeOpen(false)}
+        onSelect={handleGradeSelect}
+      />
     </div>
   );
 };
