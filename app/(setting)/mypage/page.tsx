@@ -57,7 +57,7 @@ const mypage: FC = () => {
   }
 
   return (
-    <div className="min-h-screen w-full overflow-y-auto pb-[7rem]">
+    <div className="min-h-screen w-full overflow-y-auto pb-[8.25rem]">
       <div className="flex w-full flex-col items-center">
         <MeaninglessHeader />
 
