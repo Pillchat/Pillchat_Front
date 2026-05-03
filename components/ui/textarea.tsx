@@ -49,7 +49,9 @@ const resizeTextarea = (textarea: HTMLTextAreaElement) => {
 
   textarea.style.height = "auto";
   textarea.style.height = `${
-    heightLimit ? Math.min(textarea.scrollHeight, heightLimit) : textarea.scrollHeight
+    heightLimit
+      ? Math.min(textarea.scrollHeight, heightLimit)
+      : textarea.scrollHeight
   }px`;
   textarea.style.overflowY =
     heightLimit && textarea.scrollHeight > heightLimit ? "auto" : "hidden";
