@@ -445,7 +445,7 @@ const PostPage = () => {
                   label="본문"
                   placeholder="본문을 입력해주세요."
                   value={field.value ?? ""}
-                  className="border-[#C4C4C4] focus-visible:border-[#C4C4C4] focus-visible:ring-[#C4C4C4]"
+                  className="max-h-[50dvh] border-[#C4C4C4] focus-visible:border-[#C4C4C4] focus-visible:ring-[#C4C4C4]"
                   onChange={(e) => handleContentChange(e.target.value)}
                   onBlur={field.onBlur}
                   errorMessage={errors.content?.message}
@@ -460,17 +460,15 @@ const PostPage = () => {
               이미지 파일 (JPG, PNG 등) 최대 10장 또는 PDF 파일 1개 가능
             </p>
 
-            <div className="flex w-full gap-3">
+            <div className="grid w-full grid-cols-2 gap-3">
               <BoardButton
                 imageSrc="/Image.svg"
-                className="max-w-[168.5px]"
                 text="이미지 업로드"
                 onClick={openImagePicker}
                 type="button"
               />
               <BoardButton
                 imageSrc="/File2.svg"
-                className="max-w-[168.5px]"
                 text="파일 업로드"
                 onClick={openPdfPicker}
                 type="button"
@@ -496,7 +494,7 @@ const PostPage = () => {
 
             {previewItems.length > 0 && (
               <div className="mt-5">
-                <div className="grid max-h-[calc(100vw-48px)] grid-cols-3 gap-3 overflow-y-auto pr-1">
+                <div className="grid max-h-[60dvh] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                   {previewItems.map((item) => (
                     <div
                       key={item.id}
