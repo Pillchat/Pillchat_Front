@@ -10,6 +10,7 @@ export const TopRouteProgress = () => {
   const barRef = useRef<HTMLDivElement | null>(null);
   const timerRef = useRef<number | null>(null);
   const hideTimerRef = useRef<number | null>(null);
+  const fallbackTimerRef = useRef<number | null>(null);
   const widthRef = useRef(0);
   const visibleRef = useRef(false);
   const finishingRef = useRef(false);
@@ -37,11 +38,19 @@ export const TopRouteProgress = () => {
     }
   };
 
+  const clearFallbackTimer = () => {
+    if (fallbackTimerRef.current) {
+      window.clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    }
+  };
+
   const start = () => {
+    if (visibleRef.current && !finishingRef.current) return;
+
     clearHideTimer();
     clearTimer();
-
-    if (visibleRef.current && !finishingRef.current) return;
+    clearFallbackTimer();
 
     visibleRef.current = true;
     finishingRef.current = false;
@@ -61,6 +70,12 @@ export const TopRouteProgress = () => {
 
       syncBar();
     }, 120);
+
+    fallbackTimerRef.current = window.setTimeout(() => {
+      if (currentPathRef.current === window.location.pathname) {
+        done();
+      }
+    }, 6000);
   };
 
   const done = () => {
@@ -68,6 +83,7 @@ export const TopRouteProgress = () => {
 
     clearTimer();
     clearHideTimer();
+    clearFallbackTimer();
     finishingRef.current = true;
     widthRef.current = 100;
     syncBar();
@@ -91,6 +107,10 @@ export const TopRouteProgress = () => {
     };
 
     const handleClick = (e: MouseEvent) => {
+      if (e.defaultPrevented) return;
+      if (e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
       const target = e.target as HTMLElement | null;
       const anchor = target?.closest("a");
       if (!anchor) return;
@@ -129,6 +149,7 @@ export const TopRouteProgress = () => {
       );
       clearTimer();
       clearHideTimer();
+      clearFallbackTimer();
     };
   }, []);
 

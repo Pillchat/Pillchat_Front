@@ -20,13 +20,13 @@ export const BoardButton: FC<BoardButtonProps> = ({
     <button
       type="button"
       className={cn(
-        "flex h-[58px] w-full min-w-0 flex-1 items-center justify-center rounded-[12px] border border-[#C4C4C4] bg-white",
+        "flex min-h-[58px] w-full min-w-0 items-center justify-center rounded-[12px] border border-[#C4C4C4] bg-white px-3 py-3",
         className,
       )}
       {...props}
     >
-      <div className="flex min-w-0 items-center justify-center gap-3 px-3">
-        <div className="flex h-[32px] w-[32px] items-center justify-center">
+      <div className="flex min-w-0 items-center justify-center gap-2 sm:gap-3">
+        <div className="flex h-[32px] w-[32px] shrink-0 items-center justify-center">
           <img
             src={imageSrc}
             alt={imageAlt}
