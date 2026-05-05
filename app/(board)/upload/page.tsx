@@ -655,6 +655,7 @@ const UploadPage = () => {
                   onChange={(e) => handleContentChange(e.target.value)}
                   onBlur={field.onBlur}
                   errorMessage={errors.content?.message}
+                  showMaxLengthError
                 />
               )}
             />
