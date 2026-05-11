@@ -14,7 +14,7 @@ import {
   getRememberedBoardViewCounts,
   getCurrentUserInfo,
   markBoardViewIntent,
-  getToken,
+  getValidAccessToken,
 } from "@/lib/functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuestionWithBubble } from "@/components/icons";
@@ -41,8 +41,12 @@ const Home: FC = () => {
   });
 
   useEffect(() => {
-    const token = getToken();
-    setIsAuthenticated(!!token);
+    const checkAuth = async () => {
+      const token = await getValidAccessToken();
+      setIsAuthenticated(!!token);
+    };
+
+    checkAuth();
   }, []);
 
   useEffect(() => {

@@ -6,6 +6,28 @@ const REFRESH_TOKEN_KEY = "refresh_token";
 
 const isBrowser = () => typeof window !== "undefined";
 
+const getTokenExpiryTime = (token: string): number | null => {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+    const parsed = JSON.parse(atob(padded));
+
+    return typeof parsed.exp === "number" ? parsed.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+};
+
+const isStoredTokenExpired = (token: string) => {
+  const expiresAt = getTokenExpiryTime(token);
+  if (!expiresAt) return true;
+
+  return Date.now() >= expiresAt;
+};
+
 const getStorage = (mode: AuthStorageMode): Storage | null => {
   if (!isBrowser()) return null;
   return mode === "local" ? window.localStorage : window.sessionStorage;
@@ -38,13 +60,29 @@ const getStoredToken = (key: string) => {
 const setAccessTokenCookie = (accessToken: string, rememberMe: boolean) => {
   if (!isBrowser()) return;
 
-  const maxAge = rememberMe ? `; max-age=${24 * 3600}` : "";
+  const expiresAt = getTokenExpiryTime(accessToken);
+  const maxAgeSeconds = expiresAt
+    ? Math.max(0, Math.floor((expiresAt - Date.now()) / 1000))
+    : 24 * 3600;
+  const maxAge = rememberMe ? `; max-age=${maxAgeSeconds}` : "";
   document.cookie = `access_token=${accessToken}; path=/${maxAge}; SameSite=Lax`;
 };
 
 export const getToken = () => getStoredToken(ACCESS_TOKEN_KEY);
 
 export const getRefreshToken = () => getStoredToken(REFRESH_TOKEN_KEY);
+
+export const getValidAccessToken = async () => {
+  const token = getToken();
+  if (token && !isStoredTokenExpired(token)) return token;
+
+  if (getRefreshToken()) {
+    const refreshed = await refreshTokens();
+    if (refreshed) return refreshed.access_token;
+  }
+
+  return null;
+};
 
 export const setTokens = (
   accessToken: string,
@@ -127,14 +165,15 @@ export const refreshTokens = async (): Promise<
 };
 
 export const fetchPost = async (url: string, data: any) => {
-  const token = getToken();
+  const token =
+    url === "/api/auth/login" ? null : await getValidAccessToken();
   const headers: Record<string, string> = {};
 
   if (url !== "/api/auth/login" && token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, {
+  let response = await fetch(url, {
     method: "POST",
     body: JSON.stringify(data),
     headers: {
@@ -142,6 +181,20 @@ export const fetchPost = async (url: string, data: any) => {
       ...headers,
     },
   });
+
+  if (response.status === 401 && url !== "/api/auth/login") {
+    const refreshed = await refreshTokens();
+    if (refreshed) {
+      response = await fetch(url, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${refreshed.access_token}`,
+        },
+      });
+    }
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({
@@ -156,7 +209,9 @@ export const fetchPost = async (url: string, data: any) => {
 };
 
 export const fetchAPI = async (url: string, method: string, data?: any) => {
-  const token = getToken();
+  const isAuthRequest =
+    url === "/api/auth/login" || url === "/api/auth/refresh-token";
+  const token = isAuthRequest ? null : await getValidAccessToken();
   const headers: Record<string, string> = {};
 
   if (token) {
@@ -183,11 +238,26 @@ export const fetchAPI = async (url: string, method: string, data?: any) => {
     headers["Content-Type"] = "application/json";
   }
 
-  const response = await fetch(requestUrl, {
+  const requestOptions: RequestInit = {
     method,
     body: requestBody,
     headers,
-  });
+  };
+
+  let response = await fetch(requestUrl, requestOptions);
+
+  if (response.status === 401 && !isAuthRequest) {
+    const refreshed = await refreshTokens();
+    if (refreshed) {
+      response = await fetch(requestUrl, {
+        ...requestOptions,
+        headers: {
+          ...headers,
+          Authorization: `Bearer ${refreshed.access_token}`,
+        },
+      });
+    }
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({

@@ -11,7 +11,12 @@ import { useSubmit } from "./_hooks";
 import { useState } from "react";
 import { IconInputField } from "@/components/molecules";
 import { emailRules, passwordRules } from "@/validations";
-import { getRefreshToken, getToken, refreshTokens } from "@/lib/functions";
+import {
+  getRefreshToken,
+  getToken,
+  isTokenExpired,
+  refreshTokens,
+} from "@/lib/functions";
 
 export type LoginFormData = {
   email: string;
@@ -41,7 +46,8 @@ const LoginPage: FC = () => {
   useEffect(() => {
     const restoreLogin = async () => {
       try {
-        if (getToken()) {
+        const token = getToken();
+        if (token && !isTokenExpired(token)) {
           router.replace("/");
           return;
         }
