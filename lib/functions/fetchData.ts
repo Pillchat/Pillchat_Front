@@ -165,8 +165,7 @@ export const refreshTokens = async (): Promise<
 };
 
 export const fetchPost = async (url: string, data: any) => {
-  const token =
-    url === "/api/auth/login" ? null : await getValidAccessToken();
+  const token = url === "/api/auth/login" ? null : await getValidAccessToken();
   const headers: Record<string, string> = {};
 
   if (url !== "/api/auth/login" && token) {
