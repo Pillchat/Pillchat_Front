@@ -20,16 +20,19 @@ function Name({ content, dark }: { content: string; dark?: boolean }) {
 
 export function StepHeader({ content, onIconClick, dark }: StepHeaderProps) {
   return (
-    <div
-      className={`relative flex h-[60px] w-full flex-row items-center justify-center ${dark ? "bg-black" : "bg-white"}`}
-    >
-      <img
-        src={dark ? "/ReturnPage-white.svg" : "/ReturnPage.svg"}
-        className="absolute left-5 h-6 w-6 cursor-pointer"
-        onClick={onIconClick}
-        alt="뒤로가기"
-      />
-      <Name content={content} dark={dark} />
-    </div>
+    <>
+      <header
+        className={`fixed left-1/2 top-0 z-50 flex h-[90px] w-full max-w-screen-sm -translate-x-1/2 flex-row items-center justify-center md:max-w-none ${dark ? "bg-black" : "bg-white"}`}
+      >
+        <img
+          src={dark ? "/ReturnPage-white.svg" : "/ReturnPage.svg"}
+          className="absolute left-5 h-6 w-6 cursor-pointer"
+          onClick={onIconClick}
+          alt="뒤로가기"
+        />
+        <Name content={content} dark={dark} />
+      </header>
+      <div aria-hidden="true" className="h-[90px] shrink-0" />
+    </>
   );
 }

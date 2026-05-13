@@ -298,7 +298,7 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
             <div
               className={
                 showDropdownButton
-                  ? "flex items-center gap-2"
+                  ? "relative flex items-center gap-2"
                   : chipContainerClassName
               }
             >
@@ -322,6 +322,10 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
                       ))}
                     </div>
                   </div>
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute bottom-2 right-10 top-0 w-10 bg-gradient-to-l from-white via-white/80 to-transparent"
+                  />
 
                   <TextButton
                     onClick={openModal}
@@ -341,7 +345,7 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
                         />
                       </svg>
                     }
-                    className="shrink-0 -translate-y-[4px] rounded-full px-3"
+                    className="z-10 h-8 w-8 shrink-0 -translate-y-[4px] rounded-full bg-white p-0"
                     size={buttonSize}
                   />
                 </>
