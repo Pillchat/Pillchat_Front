@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const pickToken = (data: any, keys: string[]) => {
+  for (const source of [data, data?.data]) {
+    for (const key of keys) {
+      const token = source?.[key];
+      if (typeof token === "string" && token) return token;
+    }
+  }
+
+  return undefined;
+};
+
 export const POST = async (request: NextRequest) => {
   try {
     const { refreshToken } = await request.json();
@@ -32,16 +43,13 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json({
       success: true,
       data: {
-        access_token:
-          data.access_token ??
-          data.accessToken ??
-          data.access ??
-          data.data?.accessToken,
+        access_token: pickToken(data, [
+          "access_token",
+          "accessToken",
+          "access",
+        ]),
         refresh_token:
-          data.refresh_token ??
-          data.refreshToken ??
-          data.refresh ??
-          data.data?.refreshToken ??
+          pickToken(data, ["refresh_token", "refreshToken", "refresh"]) ??
           refreshToken,
       },
     });
