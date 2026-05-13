@@ -100,72 +100,77 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
   ]);
 
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-10 flex w-full items-center justify-between bg-background/95 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-        !hideBottomBorder && "border-b border-border/40",
-      )}
-    >
-      {open ? (
-        <div className="flex w-full items-center gap-3">
-          <input
-            ref={inputRef}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onFocus={() => setIsInputFocused(true)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape" && !currentQ.trim() && !value.trim()) {
-                setOpen(false);
-              }
-            }}
-            onBlur={() => {
-              setIsInputFocused(false);
-              if (!currentQ.trim() && !value.trim()) {
-                setOpen(false);
-              }
-            }}
-            placeholder="검색어 입력"
-            className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-brand/40"
-          />
-          <button
-            type="button"
-            className="relative z-30 flex items-center"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => inputRef.current?.focus()}
-          >
-            <img src="/search.svg" alt="search" width={32} height={32} />
-          </button>
-        </div>
-      ) : (
-        <>
-          <Link
-            href="/"
-            className="flex h-[3.625rem] cursor-pointer items-center"
-          >
-            <img src="/PillChat.svg" alt="logo" width={82} height={32} />
-          </Link>
-
-          <div className="flex items-center gap-4">
+    <>
+      <header
+        className={cn(
+          "fixed left-1/2 top-0 z-50 flex h-[90px] w-full max-w-screen-sm -translate-x-1/2 items-center justify-between bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:max-w-none",
+          !hideBottomBorder && "border-b border-border/40",
+        )}
+      >
+        {open ? (
+          <div className="flex w-full items-center gap-3">
+            <input
+              ref={inputRef}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              onFocus={() => setIsInputFocused(true)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape" && !currentQ.trim() && !value.trim()) {
+                  setOpen(false);
+                }
+              }}
+              onBlur={() => {
+                setIsInputFocused(false);
+                if (!currentQ.trim() && !value.trim()) {
+                  setOpen(false);
+                }
+              }}
+              placeholder="검색어 입력"
+              className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-brand/40"
+            />
             <button
               type="button"
-              className="flex h-[3.625rem] items-center"
-              onClick={() => setOpen(true)}
+              className="relative z-30 flex items-center"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => inputRef.current?.focus()}
             >
               <img src="/search.svg" alt="search" width={32} height={32} />
             </button>
-
-            <div
-              className="relative flex h-[3.625rem] cursor-pointer items-center"
-              onClick={() => router.push("/notifications")}
-            >
-              <img src="/Bell.svg" alt="notification" width={32} height={32} />
-              {unreadCount > 0 && (
-                <span className="absolute right-0 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand" />
-              )}
-            </div>
           </div>
-        </>
-      )}
-    </header>
+        ) : (
+          <>
+            <Link href="/" className="flex h-full cursor-pointer items-center">
+              <img src="/PillChat.svg" alt="logo" width={82} height={32} />
+            </Link>
+
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                className="flex h-full items-center"
+                onClick={() => setOpen(true)}
+              >
+                <img src="/search.svg" alt="search" width={32} height={32} />
+              </button>
+
+              <div
+                className="relative flex h-full cursor-pointer items-center"
+                onClick={() => router.push("/notifications")}
+              >
+                <img
+                  src="/Bell.svg"
+                  alt="notification"
+                  width={32}
+                  height={32}
+                />
+                {unreadCount > 0 && (
+                  <span className="absolute right-0 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand" />
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </header>
+      <div aria-hidden="true" className="h-[90px] shrink-0" />
+    </>
   );
 };
