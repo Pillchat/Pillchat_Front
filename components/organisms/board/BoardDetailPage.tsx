@@ -681,6 +681,14 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
         </>
       )}
 
+      {keyboardOffset > 0 && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed bottom-0 left-1/2 z-30 w-full max-w-screen-sm -translate-x-1/2 bg-white md:max-w-none"
+          style={{ height: keyboardOffset }}
+        />
+      )}
+
       <div
         ref={commentBarRef}
         className="fixed bottom-0 left-1/2 z-40 w-full max-w-screen-sm -translate-x-1/2 border-t border-[#F4F4F4] bg-white px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 md:max-w-none"
@@ -695,7 +703,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
               placeholder="댓글을 입력하세요"
               maxLength={1000}
               rows={1}
-              className="min-h-[50px] flex-1 resize-none rounded-[20px] border border-[#C4C4C4] px-4 py-3 text-sm leading-5 text-[#333333] outline-none placeholder:text-[#999999]"
+              className="min-h-[50px] flex-1 resize-none rounded-[20px] border border-[#C4C4C4] px-4 py-3 text-sm leading-5 text-[#111] outline-none placeholder:text-[#999999]"
             />
 
             <button
