@@ -125,7 +125,13 @@ const SolvePage = () => {
     }
   };
 
-  const mainButtonLabel = gradingState === "graded" ? "다음 문제" : "채점하기";
+  const isLastQuestion = session.currentIndex + 1 === session.questions.length;
+  const mainButtonLabel =
+    gradingState === "graded"
+      ? isLastQuestion
+        ? "결과보기"
+        : "다음 문제"
+      : "채점하기";
   const isMainDisabled = gradingState === "unanswered";
 
   /** 문제 유형별 입력 컴포넌트 렌더링 */
