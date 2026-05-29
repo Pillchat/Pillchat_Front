@@ -123,7 +123,7 @@ const mypage: FC = () => {
             <SystemField
               iconSrc="HeadPhone.svg"
               title="고객 센터"
-              onClick={() => (location.href = "https://pf.kakao.com/_axcExbn")}
+              onClick={() => router.push("/support")}
             />
           </div>
 
