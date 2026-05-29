@@ -16,6 +16,7 @@ type SectionWithChipsProps = {
   categoryTitleClassName?: string;
   className?: string;
   chipContainerClassName?: string;
+  chipClassName?: string;
   selectedChipClassName?: string;
   comment?: string;
   maxVisibleChips?: number;
@@ -34,6 +35,7 @@ export const SectionWithChips: FC<SectionWithChipsProps> = ({
   categoryTitleClassName = "text-xs font-normal text-foreground",
   className = "flex flex-col gap-6",
   chipContainerClassName = "flex flex-wrap gap-1",
+  chipClassName,
   selectedChipClassName = "border-primary bg-accent text-primary",
   comment,
   maxVisibleChips = 4,
@@ -162,6 +164,7 @@ export const SectionWithChips: FC<SectionWithChipsProps> = ({
             variant="outline"
             label={item}
             className={cn(
+              chipClassName,
               selectedItems.includes(item) && selectedChipClassName,
             )}
             size={buttonSize}
@@ -251,6 +254,7 @@ export const SectionWithChips: FC<SectionWithChipsProps> = ({
                                   variant="outline"
                                   label={item}
                                   className={cn(
+                                    chipClassName,
                                     pendingSelectedItems.includes(item) &&
                                       selectedChipClassName,
                                   )}
@@ -270,6 +274,7 @@ export const SectionWithChips: FC<SectionWithChipsProps> = ({
                             variant="outline"
                             label={item}
                             className={cn(
+                              chipClassName,
                               pendingSelectedItems.includes(item) &&
                                 selectedChipClassName,
                             )}
@@ -310,6 +315,7 @@ export const SectionWithChips: FC<SectionWithChipsProps> = ({
                       label={item}
                       className={cn(
                         "flex-shrink-0",
+                        chipClassName,
                         selectedItems.includes(item) && selectedChipClassName,
                       )}
                       size={buttonSize}
