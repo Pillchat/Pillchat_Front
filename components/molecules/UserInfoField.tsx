@@ -28,7 +28,7 @@ export function UserInfoField({ onIconClick, author }: Option) {
   const displaySchool = author?.school || school || "학교정보없음";
   const displayGrade = author?.grade || studentGrade || "학년정보없음";
   const displayProfileImg =
-    author?.avatarUrl || profileImg || "/defaultProfile.svg";
+    author?.avatarUrl || profileImg || "/icons/defaultProfile.svg";
   const hasGrade = author ? !!author.grade : !!grade;
 
   return (
@@ -44,7 +44,11 @@ export function UserInfoField({ onIconClick, author }: Option) {
         </p>
       </div>
       {onIconClick && (
-        <img src={"/ArrowIcon.svg"} className="ml-auto" onClick={onIconClick} />
+        <img
+          src={"/icons/ArrowIcon.svg"}
+          className="ml-auto"
+          onClick={onIconClick}
+        />
       )}
     </div>
   );

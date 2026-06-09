@@ -58,9 +58,12 @@ export const ListCard: FC<{
         </div>
         {!hideStats && (
           <div className="flex items-center gap-2">
-            <IconWithCount src="/Eye.svg" count={viewCount} />
-            <IconWithCount src="/Like.svg" count={likeCount} />
-            <IconWithCount src="/QuestionWithBubble.svg" count={answerCount} />
+            <IconWithCount src="/icons/Eye.svg" count={viewCount} />
+            <IconWithCount src="/icons/Like.svg" count={likeCount} />
+            <IconWithCount
+              src="/icons/QuestionWithBubble.svg"
+              count={answerCount}
+            />
           </div>
         )}
       </div>

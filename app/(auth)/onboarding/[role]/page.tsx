@@ -7,9 +7,10 @@ import {
   SelectPersonalInfo,
   SelectSubject,
   SelectSubjectByGrade,
-} from "@/components/organisms";
-import { currentStepAtom } from "@/lib/atoms";
-import { getCurrentUserInfo, fetchAPI } from "@/lib/functions";
+} from "../_components";
+import { currentStepAtom } from "@/store/onboarding";
+import { getCurrentUserInfo } from "@/lib/client/auth";
+import { fetchAPI } from "@/lib/client/fetch";
 import { useAtom } from "jotai";
 import { useRouter } from "@/lib/navigation";
 import { useParams } from "next/navigation";

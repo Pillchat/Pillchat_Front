@@ -7,7 +7,8 @@ import {
   QuestionFormData,
   QuestionResponse,
 } from "@/types/question";
-import { fetchAPI, getCurrentUserId } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
+import { getCurrentUserId } from "@/lib/client/auth";
 import { useState, useRef, useEffect } from "react";
 import { ImageButtonRef } from "@/components/atoms/ImageButton";
 import { useSubjects } from "@/hooks";

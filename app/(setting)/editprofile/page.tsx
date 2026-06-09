@@ -10,8 +10,8 @@ import {
 import { useState, useRef, ChangeEvent } from "react";
 import { CustomHeader, IconInputField } from "@/components/molecules";
 import { ProfileImg, SolidButton, Toast } from "@/components/atoms";
-import { useRouter } from "@/lib/navigation";
-import { uploadProfile } from "@/lib/functions/multipartApi";
+import { useRouter } from "next/navigation";
+import { uploadProfile } from "@/lib/client/upload";
 
 const EditProfile = () => {
   const [serverProfileImg] = useAtom(profileImgAtom);

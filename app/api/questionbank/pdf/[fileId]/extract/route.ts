@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 
 // GET /api/questionbank/pdf/:fileId/extract — PDF 추출 상태 조회
 export async function GET(

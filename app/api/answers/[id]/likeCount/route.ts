@@ -1,4 +1,4 @@
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(

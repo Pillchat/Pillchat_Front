@@ -1,7 +1,7 @@
 "use client";
 
 import { FC, useState } from "react";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 import type { BookmarkListItem } from "@/types/questionbank";
 
 interface BookmarkCardProps {

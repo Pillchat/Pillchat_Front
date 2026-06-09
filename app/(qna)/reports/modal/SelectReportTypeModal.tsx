@@ -2,15 +2,13 @@
 
 import { useEffect } from "react";
 import { useReportType } from "../hooks/useReportType";
-import { RTM } from "../../../../lib/atoms/RTM";
+import { REPORT_TYPE_MAP } from "@/constants/reportTypes";
 
 type SelectReportTypeModalProps = {
   closeClick?: () => void;
   onSelect?: (label: string, value: string) => void;
   setReportTypes: (types: string[]) => void;
 };
-
-const REPORT_TYPE_MAP: Record<string, { label: string; value: string }> = RTM;
 
 function SelectReportTypeModal({
   closeClick,
@@ -65,7 +63,7 @@ function SelectReportTypeModal({
                   {item}
                 </button>
                 <img
-                  src="/ArrowIcon.svg"
+                  src="/icons/ArrowIcon.svg"
                   alt="arrow-left"
                   width={20}
                   height={20}

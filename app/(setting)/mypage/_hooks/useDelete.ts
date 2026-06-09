@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { fetchAPI } from "@/lib/functions";
-import { useRouter } from "@/lib/navigation";
+import { fetchAPI } from "@/lib/client/fetch";
+import { useRouter } from "next/navigation";
 
 export const useDelete = () => {
   const [isLoading, setIsLoading] = useState(false);

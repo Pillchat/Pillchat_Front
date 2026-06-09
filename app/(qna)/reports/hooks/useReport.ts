@@ -8,7 +8,7 @@ import {
   ReportReasonType,
   TargetType,
 } from "@/types/report";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 
 const useReportModalState = () => {
   const [submitReport, setSubmitReport] = useState(false);

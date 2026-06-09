@@ -4,3 +4,4 @@ export * from "./ocrVerifyAtom";
 export * from "./profile";
 export * from "./tempToken";
 export * from "./quizSession";
+export * from "./onboarding";

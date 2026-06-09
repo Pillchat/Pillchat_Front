@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { clearTokens, fetchAPI } from "@/lib/functions";
-import { useRouter } from "@/lib/navigation";
+import { fetchAPI } from "@/lib/client/fetch";
+import { useRouter } from "next/navigation";
 
 export const useLogout = () => {
   const [isLoading, setIsLoading] = useState(false);

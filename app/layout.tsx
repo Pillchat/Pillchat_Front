@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   title: "Pillchat",
   description: "Pillchat",
   icons: {
-    icon: "/PillChat.svg",
+    icon: "/brand/PillChat.svg",
   },
 };
 

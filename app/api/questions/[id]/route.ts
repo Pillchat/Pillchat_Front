@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST;
 

@@ -1,8 +1,8 @@
 "use client";
 
 import { FC, useEffect } from "react";
-import { useRouter } from "@/lib/navigation";
-import { fetchAPI } from "@/lib/functions";
+import { useRouter } from "next/navigation";
+import { fetchAPI } from "@/lib/client/fetch";
 
 const OnboardingPage: FC = () => {
   const router = useRouter();

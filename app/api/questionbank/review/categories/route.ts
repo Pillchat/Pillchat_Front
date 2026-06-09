@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 
 // GET /api/questionbank/review/categories?sourceType=PDF|PREMIUM
 // → 백엔드 GET /api/review/categories?sourceType=...

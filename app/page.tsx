@@ -8,14 +8,13 @@ import {
 } from "@/components/molecules";
 import { useRouter } from "@/lib/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { fetchAPI } from "@/lib/client/fetch";
+import { formatDiffDate } from "@/lib/shared/date";
 import {
-  fetchAPI,
-  formatDiffDate,
   getRememberedBoardViewCounts,
-  getCurrentUserInfo,
   markBoardViewIntent,
-  getValidAccessToken,
-} from "@/lib/functions";
+} from "@/lib/client/boardView";
+import { getCurrentUserInfo } from "@/lib/client/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuestionWithBubble } from "@/components/icons";
 import { Separator } from "@/components/ui/separator";

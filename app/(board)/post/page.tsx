@@ -17,8 +17,8 @@ import { useSearchParams } from "next/navigation";
 import { useState, ChangeEvent, useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SelectCategoryModal } from "./SelectCategoryModal";
-import { fetchAPI } from "@/lib/functions";
-import { uploadBoard } from "@/lib/functions/multipartApi";
+import { fetchAPI } from "@/lib/client/fetch";
+import { uploadBoard } from "@/lib/client/upload";
 
 const buildQueryParams = (
   params: Record<
@@ -463,13 +463,15 @@ const PostPage = () => {
 
             <div className="grid w-full grid-cols-2 gap-3">
               <BoardButton
-                imageSrc="/Image.svg"
+                imageSrc="/icons/Image.svg"
+                className="max-w-[168.5px]"
                 text="이미지 업로드"
                 onClick={openImagePicker}
                 type="button"
               />
               <BoardButton
-                imageSrc="/File2.svg"
+                imageSrc="/icons/File2.svg"
+                className="max-w-[168.5px]"
                 text="파일 업로드"
                 onClick={openPdfPicker}
                 type="button"
@@ -506,7 +508,7 @@ const PostPage = () => {
                         onClick={() => removeItem(item.id)}
                         className="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center"
                       >
-                        <img src="/Remove.svg" alt="제거" />
+                        <img src="/icons/Remove.svg" alt="제거" />
                       </button>
 
                       {item.type === "image" ? (
@@ -556,7 +558,7 @@ const PostPage = () => {
           <div className="flex flex-grow flex-col items-center justify-center gap-3">
             <div className="flex flex-col items-center justify-center text-center">
               <img
-                src="/UncheckedIcon.svg"
+                src="/icons/UncheckedIcon.svg"
                 alt="완료"
                 width={72}
                 className="mb-2"

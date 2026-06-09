@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { useSubjects } from "@/hooks";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 
 export type UploadFormData = {
   title: string;

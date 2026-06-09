@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 
 // GET /api/questionbank/ai-questions/result/:taskId — 생성된 문제 결과
 export async function GET(

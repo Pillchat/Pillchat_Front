@@ -18,7 +18,7 @@ export const LikeButton: FC<{
       onClick={onClick}
     >
       <img
-        src={isLiked ? "/LikeFilled.svg" : "/Like.svg"}
+        src={isLiked ? "/icons/LikeFilled.svg" : "/icons/Like.svg"}
         alt="like"
         className="h-8 w-8"
       />

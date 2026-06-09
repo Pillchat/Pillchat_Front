@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 
 // POST /api/wrong-notes/generate-exam — AI 시험지 생성
 export async function POST(request: NextRequest) {

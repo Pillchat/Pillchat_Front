@@ -23,7 +23,7 @@ const grade: FC = () => {
     <div className="flex min-h-screen flex-col items-center">
       <InfoHeader
         title="승급 정보"
-        infoIconSrc="/Info.svg"
+        infoIconSrc="/icons/Info.svg"
         infoIconSize="2rem"
         infoIconOnClick={() => router.push("/gradeInfo")}
         isActive
@@ -40,12 +40,12 @@ const grade: FC = () => {
 
           <div className="mt-6 flex flex-col">
             <div className="flex flex-row items-center gap-1">
-              <img src={"/UncheckedIcon.svg"} />
+              <img src={"/icons/UncheckedIcon.svg"} />
               <p>매월 1일 추가 답변 열람권 2장 증정!</p>
             </div>
 
             <div className="flex flex-row items-center gap-1">
-              <img src={"/UncheckedIcon.svg"} />
+              <img src={"/icons/UncheckedIcon.svg"} />
               <p>학습자료 구매권 10% 할인 쿠폰 1장 증정!</p>
             </div>
           </div>
@@ -58,7 +58,11 @@ const grade: FC = () => {
       <div className="mt-5 flex w-[90%] flex-row items-center justify-between gap-1">
         <div className="flex flex-row items-center gap-1">
           <img
-            src={isPromotionAchieved ? "/CheckedIcon.svg" : "/UncheckIcon.svg"}
+            src={
+              isPromotionAchieved
+                ? "/icons/CheckedIcon.svg"
+                : "/icons/UncheckIcon.svg"
+            }
           />
           <p style={{ color: isPromotionAchieved ? "#FF412E" : "inherit" }}>
             질문 및 답변 합산 100개 이상

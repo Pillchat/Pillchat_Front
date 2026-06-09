@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serverFetch } from "@/lib/functions";
-import { getRequestUserId, isOwnedByRequestUser } from "../_auth";
+import { serverFetch } from "@/lib/server/fetch";
 
 // GET /api/wrong-notes/[noteId] — 오답노트 상세
 export async function GET(

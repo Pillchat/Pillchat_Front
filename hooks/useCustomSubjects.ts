@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useAtom } from "jotai";
-import { studentInfoAtom } from "@/lib/atoms/onboarding";
+import { studentInfoAtom } from "@/store/onboarding";
 import { REGISTRATION_STATUS } from "@/constants";
 
 export const useCustomSubjects = () => {

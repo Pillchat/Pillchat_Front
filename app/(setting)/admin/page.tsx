@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { fetchAPI, isCurrentUserAdmin } from "@/lib/functions";
-import { formatDiffDate } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
+import { isCurrentUserAdmin } from "@/lib/client/auth";
+import { formatDiffDate } from "@/lib/shared/date";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAtom } from "jotai";
 import { pushHistoryAtom } from "@/store/notification";
@@ -245,7 +246,7 @@ const HistorySection: FC<{
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <img
-          src="/Bell.svg"
+          src="/icons/Bell.svg"
           alt="no history"
           className="mb-4 h-12 w-12 opacity-30"
         />

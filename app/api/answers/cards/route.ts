@@ -1,4 +1,5 @@
-import { buildQueryParams, serverFetch } from "@/lib/functions";
+import { buildQueryParams } from "@/lib/shared/query";
+import { serverFetch } from "@/lib/server/fetch";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {

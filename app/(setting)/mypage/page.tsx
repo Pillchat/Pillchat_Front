@@ -10,7 +10,8 @@ import {
   BottomNavbar,
 } from "@/components/molecules";
 import { useDelete, useLogout, useMyProfile } from "./_hooks";
-import { fetchAPI, isCurrentUserAdmin } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
+import { isCurrentUserAdmin } from "@/lib/client/auth";
 
 const mypage: FC = () => {
   const router = useRouter();
@@ -78,21 +79,21 @@ const mypage: FC = () => {
           <p className="text-sm text-muted-foreground">정보</p>
           <div className="mt-4 flex flex-col gap-6">
             <SystemField
-              iconSrc="userUp.svg"
+              iconSrc="/icons/userUp.svg"
               title="승급 조건"
               description="다음 승급을 위한 조건을 알아보세요."
               onClick={() => router.push("/grade")}
             />
 
             <SystemField
-              iconSrc="BellColor.svg"
+              iconSrc="/icons/BellColor.svg"
               title="알림 설정"
               description="원하는 알림만 받도록 설정해보세요."
               onClick={() => router.push("/bellSetting")}
             />
 
             <SystemField
-              iconSrc="userInfo.svg"
+              iconSrc="/icons/userInfo.svg"
               title="맞춤형 정보 설정"
               description="내가 설정한 항목을 변경할 수 있어요."
               onClick={handleOnboardingClick}
@@ -107,7 +108,7 @@ const mypage: FC = () => {
             <p className="text-sm text-muted-foreground">관리자</p>
             <div className="mt-4 flex flex-col gap-6">
               <SystemField
-                iconSrc="BellColor.svg"
+                iconSrc="/icons/BellColor.svg"
                 title="푸시 알림 관리"
                 description="푸시 알림 발송 및 이력을 관리할 수 있어요."
                 onClick={() => router.push("/admin")}
@@ -121,7 +122,7 @@ const mypage: FC = () => {
           <p className="text-sm text-muted-foreground">문의 및 건의</p>
           <div className="mt-4 flex flex-col gap-6">
             <SystemField
-              iconSrc="HeadPhone.svg"
+              iconSrc="/icons/HeadPhone.svg"
               title="고객 센터"
               onClick={() => router.push("/support")}
             />
@@ -133,7 +134,7 @@ const mypage: FC = () => {
         <div className="mt-8 w-[90%]">
           <div className="flex flex-col gap-6">
             <SystemField
-              iconSrc="Logout.svg"
+              iconSrc="/icons/Logout.svg"
               title="로그아웃"
               onClick={() => {
                 setOpenModal("logout");
@@ -141,7 +142,7 @@ const mypage: FC = () => {
             />
 
             <SystemField
-              iconSrc="UserRemove.svg"
+              iconSrc="/icons/UserRemove.svg"
               title="계정 탈퇴"
               textColor="text-border"
               onClick={() => {

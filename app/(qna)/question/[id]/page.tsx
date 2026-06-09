@@ -1,4 +1,4 @@
-import { QuestionDetailPage } from "@/components/organisms";
+import { QuestionDetailPage } from "./_components/QuestionDetailPage";
 import { FC } from "react";
 
 type QuestionPageProps = {

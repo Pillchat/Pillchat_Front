@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 
 // GET /api/questionbank/my-tasks — 내 문제 생성 작업 목록 조회
 export async function GET(request: NextRequest) {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useAtomValue, useSetAtom } from "jotai";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 import { quizSessionAtom, clearQuizSessionAtom } from "@/store/quizSession";
 import { CustomHeader } from "@/components/molecules";
 import DonutChart from "../_components/DonutChart";

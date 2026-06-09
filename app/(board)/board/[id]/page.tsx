@@ -1,4 +1,4 @@
-import { BoardDetailPage } from "@/components/organisms";
+import { BoardDetailPage } from "./_components/BoardDetailPage";
 
 export default async function Page({
   params,

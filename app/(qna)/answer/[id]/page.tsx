@@ -1,4 +1,4 @@
-import { AnswerForm } from "@/components/organisms";
+import { AnswerForm } from "./_components/AnswerForm";
 
 type AnswerPageProps = {
   params: Promise<{

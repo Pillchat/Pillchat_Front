@@ -1,11 +1,6 @@
 import { useCallback } from "react";
-import {
-  clearTokens as clearStoredTokens,
-  getRefreshToken,
-  getToken,
-  refreshTokens,
-  setTokens,
-} from "@/lib/functions";
+import { useLocalStorage } from "./useLocalStorage";
+import { refreshTokens } from "@/lib/client/fetch";
 
 const JWT_EXPIRY_TIME = 24 * 3600 * 1000; // 24시간
 
