@@ -12,7 +12,7 @@ import { fetchAPI } from "@/lib/client/fetch";
 import { getCurrentUserId } from "@/lib/client/auth";
 import { syncViewCountInQueryData } from "@/lib/shared/syncViewCount";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { FC, useEffect, useState } from "react";
 import { useLikeStatus } from "@/hooks/useLikeStatus";
 import { QuestionTitleSection } from "./QuestionTitleSection";

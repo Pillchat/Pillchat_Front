@@ -1,7 +1,7 @@
 "use client";
 
 import { FC, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { SystemField } from "@/components/atoms";
 import {
   MeaninglessHeader,
@@ -58,7 +58,7 @@ const mypage: FC = () => {
   }
 
   return (
-    <div className="min-h-screen w-full overflow-y-auto pb-[7rem]">
+    <div className="min-h-screen w-full overflow-y-auto pb-[8.25rem]">
       <div className="flex w-full flex-col items-center">
         <MeaninglessHeader />
 
@@ -124,7 +124,7 @@ const mypage: FC = () => {
             <SystemField
               iconSrc="/icons/HeadPhone.svg"
               title="고객 센터"
-              onClick={() => (location.href = "https://pf.kakao.com/_axcExbn")}
+              onClick={() => router.push("/support")}
             />
           </div>
 

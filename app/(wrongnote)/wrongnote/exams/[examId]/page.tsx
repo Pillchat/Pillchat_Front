@@ -33,7 +33,7 @@ const ExamDetailPage = () => {
     if (!exam?.pdfS3Key || downloading) return;
     setDownloading(true);
     try {
-      const token = localStorage.getItem("access_token");
+      const token = getToken();
       const res = await fetch(`/api/wrong-notes/exams/${examId}/pdf`, {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),

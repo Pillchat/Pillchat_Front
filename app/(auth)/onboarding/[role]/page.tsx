@@ -12,7 +12,8 @@ import { currentStepAtom } from "@/store/onboarding";
 import { getCurrentUserInfo } from "@/lib/client/auth";
 import { fetchAPI } from "@/lib/client/fetch";
 import { useAtom } from "jotai";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
+import { useParams } from "next/navigation";
 import { FC, useEffect, useMemo, useState } from "react";
 
 type Opt = {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 // 아카이브 탭 상태 타입 정의

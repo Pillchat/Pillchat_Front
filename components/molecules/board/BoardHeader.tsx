@@ -1,7 +1,7 @@
 "use client";
 
 import { LeftArrowButton, TextButton } from "@/components/atoms";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { Button } from "@/components/ui/button";
 import { FC } from "react";
 
@@ -31,10 +31,11 @@ export const BoardHeader: FC<BoardHeaderProps> = ({
   const router = useRouter();
 
   return (
-    <header className="flex w-full items-center justify-between px-6 py-4">
-      <LeftArrowButton onClick={onLeftButtonClick ?? (() => router.back())} />
+    <>
+      <header className="fixed left-1/2 top-0 z-50 flex h-[90px] w-full max-w-screen-sm -translate-x-1/2 items-center justify-between bg-white px-6 md:max-w-none">
+        <LeftArrowButton onClick={onLeftButtonClick ?? (() => router.back())} />
 
-      <p className="text-lg font-semibold">{title}</p>
+        <p className="text-lg font-semibold">{title}</p>
 
       <div className="flex items-center gap-2">
         {showIcon ? (
@@ -56,16 +57,18 @@ export const BoardHeader: FC<BoardHeaderProps> = ({
           />
         )}
 
-        {boardIconSrc && (
-          <img
-            src={boardIconSrc}
-            alt="board-icon"
-            style={{ width: boardIconSize, height: boardIconSize }}
-            className="cursor-pointer"
-            onClick={boardIconOnClick}
-          />
-        )}
-      </div>
-    </header>
+          {boardIconSrc && (
+            <img
+              src={boardIconSrc}
+              alt="board-icon"
+              style={{ width: boardIconSize, height: boardIconSize }}
+              className="cursor-pointer"
+              onClick={boardIconOnClick}
+            />
+          )}
+        </div>
+      </header>
+      <div aria-hidden="true" className="h-[90px] shrink-0" />
+    </>
   );
 };

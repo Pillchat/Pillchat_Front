@@ -240,6 +240,8 @@ export const SelectPersonalInfo = ({
           onItemToggle={handleStudyDayToggle}
           maxSelection={7}
           buttonSize="square"
+          chipContainerClassName="flex flex-nowrap gap-1"
+          chipClassName="w-11 min-w-0 flex-[0_1_2.75rem] px-0"
         />
 
         <SectionWithChips

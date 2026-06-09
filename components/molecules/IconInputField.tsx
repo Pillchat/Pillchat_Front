@@ -1,4 +1,4 @@
-import { forwardRef, ChangeEvent } from "react";
+import { forwardRef, ChangeEvent, InputHTMLAttributes } from "react";
 import { IconInput } from "../atoms";
 
 interface IconInputFieldProps {
@@ -17,6 +17,7 @@ interface IconInputFieldProps {
   placeholder?: string;
   autoFocus?: boolean;
   type?: string;
+  inputMode?: InputHTMLAttributes<HTMLInputElement>["inputMode"];
   maxLength?: number;
   minLength?: number;
   errorMessage?: string;
@@ -42,6 +43,7 @@ export const IconInputField = forwardRef<HTMLInputElement, IconInputFieldProps>(
       placeholder,
       autoFocus,
       type = "text",
+      inputMode,
       maxLength,
       minLength,
       errorMessage,
@@ -60,6 +62,7 @@ export const IconInputField = forwardRef<HTMLInputElement, IconInputFieldProps>(
           disabled={disabled}
           className={inputClassName}
           type={type}
+          inputMode={inputMode}
           iconSrc={iconSrc}
           iconAlt={iconAlt}
           iconSize={iconSize}

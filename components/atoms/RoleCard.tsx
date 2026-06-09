@@ -9,12 +9,12 @@ interface RoleCardProps {
 export function RoleCard({ title, imageSrc, onClick }: RoleCardProps) {
   return (
     <div
-      className="flex w-[140px] flex-col items-center justify-center gap-[12px]"
+      className="flex w-[165px] flex-col items-center justify-center gap-[12px]"
       onClick={onClick}
     >
-      <div className="flex h-[180px] w-full flex-col items-center justify-center gap-[14px] rounded-[12px] border border-[#FF452E]">
-        <p className="font-[pretendard] text-[20px] font-semibold">{title}</p>
-        <img src={imageSrc} alt={title} className="pr-2" />
+      <div className="flex h-[210px] w-full flex-col items-center justify-center gap-[18px] rounded-[12px] border border-[#FF452E]">
+        <p className="font-[pretendard] text-[22px] font-semibold">{title}</p>
+        <img src={imageSrc} alt={title} className="h-[120px] pr-2" />
       </div>
     </div>
   );

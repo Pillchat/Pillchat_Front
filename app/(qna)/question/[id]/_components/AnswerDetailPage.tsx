@@ -13,7 +13,7 @@
 // import { useFetchImage, useAnswerAccept } from "@/hooks";
 // import { Image, LikeButton, TextButton } from "@/components/atoms";
 // import { Button } from "@/components/ui/button";
-// import { useRouter } from "next/navigation";
+// import { useRouter } from "@/lib/navigation";
 
 // // 개별 답변 컴포넌트
 // const AnswerItem: FC<{
@@ -247,7 +247,7 @@ import { useFetchImage, useAnswerAccept } from "@/hooks";
 import { useLikeStatus } from "@/hooks/useLikeStatus";
 import { Image, LikeButton, TextButton } from "@/components/atoms";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 
 // =====================
 // 개별 답변 컴포넌트

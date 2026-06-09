@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { useSetAtom } from "jotai";
 import { fetchAPI } from "@/lib/client/fetch";
 import { initQuizSessionAtom, mapChoices } from "@/store/quizSession";
@@ -75,7 +75,7 @@ const GeneratePage = () => {
       const uploadRes = await fetch("/api/questionbank/pdf", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          Authorization: `Bearer ${getToken()}`,
         },
         body: formData,
       });

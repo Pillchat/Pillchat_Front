@@ -9,7 +9,8 @@ import {
 import { BoardHeader, BoardButton } from "@/components/molecules/board";
 import { Controller } from "react-hook-form";
 import { useStep, useUploadForm, useUploadFiles } from "./_hooks";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CheckCircle from "@/public/icons/CheckCircle.svg";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
@@ -268,7 +269,6 @@ const UploadPage = () => {
     try {
       const parsed: Partial<MaterialDraft> = JSON.parse(savedDraft);
 
-      setChecked(!!parsed.checked);
       setValue("title", parsed.title ?? "");
       setValue("content", parsed.content ?? "");
       setValue("subject", parsed.selectedSubject ?? "");
@@ -651,10 +651,11 @@ const UploadPage = () => {
                   label="본문"
                   placeholder="본문을 입력해주세요."
                   value={field.value ?? ""}
-                  className="border-[#C4C4C4] focus-visible:border-[#C4C4C4] focus-visible:ring-[#C4C4C4]"
+                  className="max-h-[50dvh] border-[#C4C4C4] focus-visible:border-[#C4C4C4] focus-visible:ring-[#C4C4C4]"
                   onChange={(e) => handleContentChange(e.target.value)}
                   onBlur={field.onBlur}
                   errorMessage={errors.content?.message}
+                  showMaxLengthError
                 />
               )}
             />
@@ -695,7 +696,7 @@ const UploadPage = () => {
               이미지 파일 (JPG, PNG 등) 최대 10장 또는 PDF 파일 1개 가능
             </p>
 
-            <div className="flex w-full gap-3">
+            <div className="grid w-full grid-cols-2 gap-3">
               <BoardButton
                 imageSrc="/icons/Image.svg"
                 className="max-w-[168.5px]"
@@ -731,7 +732,7 @@ const UploadPage = () => {
 
             {previewItems.length > 0 && (
               <div className="mt-5">
-                <div className="grid max-h-[calc(100vw-48px)] grid-cols-3 gap-3 overflow-y-auto pr-1">
+                <div className="grid max-h-[60dvh] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                   {previewItems.map((item: any) => (
                     <div
                       key={item.id}

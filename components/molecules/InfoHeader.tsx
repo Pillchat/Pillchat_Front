@@ -1,7 +1,7 @@
 "use client";
 
 import { LeftArrowButton, TextButton } from "@/components/atoms";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { Button } from "../ui/button";
 import { FC } from "react";
 
@@ -29,12 +29,13 @@ export const InfoHeader: FC<InfoHeaderProps> = ({
   const router = useRouter();
 
   return (
-    <header className="flex w-full items-center justify-between px-6 py-4">
-      {/* 왼쪽: 뒤로가기 */}
-      <LeftArrowButton onClick={() => router.back()} />
+    <>
+      <header className="fixed left-1/2 top-0 z-50 flex h-[90px] w-full max-w-screen-sm -translate-x-1/2 items-center justify-between bg-white px-6 md:max-w-none">
+        {/* 왼쪽: 뒤로가기 */}
+        <LeftArrowButton onClick={() => router.back()} />
 
-      {/* 가운데: 타이틀 */}
-      <p className="text-lg font-semibold">{title}</p>
+        {/* 가운데: 타이틀 */}
+        <p className="text-lg font-semibold">{title}</p>
 
       {/* 오른쪽: 버튼 + 아이콘 */}
       <div className="flex items-center gap-2">
@@ -57,16 +58,18 @@ export const InfoHeader: FC<InfoHeaderProps> = ({
           />
         )}
 
-        {infoIconSrc && (
-          <img
-            src={infoIconSrc}
-            alt="info-icon"
-            style={{ width: infoIconSize, height: infoIconSize }}
-            className="cursor-pointer"
-            onClick={infoIconOnClick}
-          />
-        )}
-      </div>
-    </header>
+          {infoIconSrc && (
+            <img
+              src={infoIconSrc}
+              alt="info-icon"
+              style={{ width: infoIconSize, height: infoIconSize }}
+              className="cursor-pointer"
+              onClick={infoIconOnClick}
+            />
+          )}
+        </div>
+      </header>
+      <div aria-hidden="true" className="h-[90px] shrink-0" />
+    </>
   );
 };

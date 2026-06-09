@@ -77,15 +77,12 @@ const NewWrongNotePage = () => {
             onChange={(e) => setTitle(e.target.value)}
             maxLength={200}
             placeholder="오답노트 제목"
-            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-base outline-none focus:border-brand"
+            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-base outline-none focus:border-[#111]"
           />
         </div>
 
         {/* 과목 */}
         <div className="mb-5">
-          <label className="mb-1.5 block text-sm font-semibold text-foreground">
-            과목
-          </label>
           <ExpandableChipSection
             data={allSubjects}
             expandedData={subjectMap}
@@ -93,7 +90,7 @@ const NewWrongNotePage = () => {
             onItemToggle={handleSubjectToggle}
             showDropdown
             showDropdownButton
-            categoryTitleClassName="text-sm font-medium text-pretendard text-[#111]"
+            categoryTitleClassName="text-sm font-semibold text-pretendard text-[#111]"
             buttonSize="sm"
             className="gap-0"
           />

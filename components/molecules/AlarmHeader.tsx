@@ -2,7 +2,8 @@
 
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { unreadCountAtom } from "@/store/notification";
 
@@ -105,8 +106,32 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
               )}
             </div>
           </div>
-        </>
-      )}
-    </header>
+        ) : (
+          <>
+            <Link href="/" className="flex h-full cursor-pointer items-center">
+              <img src="/PillChat.svg" alt="logo" width={82} height={32} />
+            </Link>
+
+            <div className="flex items-center gap-4">
+              <div
+                className="relative flex h-full cursor-pointer items-center"
+                onClick={() => router.push("/notifications")}
+              >
+                <img
+                  src="/Bell.svg"
+                  alt="notification"
+                  width={32}
+                  height={32}
+                />
+                {unreadCount > 0 && (
+                  <span className="absolute right-0 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand" />
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </header>
+      <div aria-hidden="true" className="h-[90px] shrink-0" />
+    </>
   );
 };

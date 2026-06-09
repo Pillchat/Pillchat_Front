@@ -13,6 +13,17 @@ export async function GET(
       request,
     });
 
+    const note = data?.data ?? data;
+    if (
+      note?.userId != null &&
+      !isOwnedByRequestUser(note, getRequestUserId(request))
+    ) {
+      return NextResponse.json(
+        { message: "오답노트를 찾을 수 없습니다." },
+        { status: 404 },
+      );
+    }
+
     return NextResponse.json(data);
   } catch (error: any) {
     console.error("오답노트 상세 조회 에러:", error);

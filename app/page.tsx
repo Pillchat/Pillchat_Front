@@ -6,8 +6,7 @@ import {
   AlarmHeader,
   QuestionListCard,
 } from "@/components/molecules";
-import { useRouter } from "next/navigation";
-import { useLocalStorage } from "@/hooks";
+import { useRouter } from "@/lib/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAPI } from "@/lib/client/fetch";
 import { formatDiffDate } from "@/lib/shared/date";
@@ -27,7 +26,6 @@ import {
 
 const Home: FC = () => {
   const router = useRouter();
-  const { getStorageItem } = useLocalStorage();
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [viewCountOverrides, setViewCountOverrides] = useState<
@@ -42,9 +40,13 @@ const Home: FC = () => {
   });
 
   useEffect(() => {
-    const token = getStorageItem("access_token");
-    setIsAuthenticated(!!token);
-  }, [getStorageItem]);
+    const checkAuth = async () => {
+      const token = await getValidAccessToken();
+      setIsAuthenticated(!!token);
+    };
+
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated === false) {

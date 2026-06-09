@@ -13,6 +13,28 @@ export async function GET(request: NextRequest) {
       request,
     });
 
+    const requestUserId = getRequestUserId(request);
+    const responseData = data?.data ?? data;
+    const content = responseData?.content;
+
+    if (Array.isArray(content)) {
+      const filteredContent = content.filter((item: any) =>
+        isOwnedByRequestUser(item, requestUserId),
+      );
+      const filteredResponseData = {
+        ...responseData,
+        content: filteredContent,
+        totalElements: filteredContent.length,
+        totalPages: filteredContent.length > 0 ? 1 : 0,
+      };
+
+      return NextResponse.json(
+        data?.data
+          ? { ...data, data: filteredResponseData }
+          : filteredResponseData,
+      );
+    }
+
     return NextResponse.json(data);
   } catch (error: any) {
     console.error("오답노트 목록 조회 에러:", error);

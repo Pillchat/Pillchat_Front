@@ -3,14 +3,20 @@
 import { Logo } from "@/components/atoms";
 import { Button } from "@/components/ui/button";
 import { Label } from "@radix-ui/react-label";
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSubmit } from "./_hooks";
 import { useState } from "react";
 import { IconInputField } from "@/components/molecules";
 import { emailRules, passwordRules } from "@/validations";
+import {
+  getRefreshToken,
+  getToken,
+  isTokenExpired,
+  refreshTokens,
+} from "@/lib/functions";
 
 export type LoginFormData = {
   email: string;
@@ -22,6 +28,7 @@ const LoginPage: FC = () => {
   const router = useRouter();
   const { onSubmit, isLoading, error: loginError } = useSubmit();
   const [eye, setEye] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const {
     control,
@@ -35,6 +42,30 @@ const LoginPage: FC = () => {
       rememberMe: false,
     },
   });
+
+  useEffect(() => {
+    const restoreLogin = async () => {
+      try {
+        const token = getToken();
+        if (token && !isTokenExpired(token)) {
+          router.replace("/");
+          return;
+        }
+
+        if (getRefreshToken()) {
+          const refreshed = await refreshTokens();
+          if (refreshed) {
+            router.replace("/");
+            return;
+          }
+        }
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    restoreLogin();
+  }, [router]);
 
   return (
     <div className="login-page">
@@ -106,7 +137,10 @@ const LoginPage: FC = () => {
               </p>
             )}
 
-            <Button className="w-full" disabled={!isValid || isLoading}>
+            <Button
+              className="w-full"
+              disabled={!isValid || isLoading || isCheckingAuth}
+            >
               로그인
             </Button>
 

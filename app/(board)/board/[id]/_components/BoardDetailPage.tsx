@@ -18,7 +18,7 @@ import {
 } from "@/lib/client/boardView";
 import { syncViewCountInQueryData } from "@/lib/shared/syncViewCount";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useLikeStatus } from "@/hooks/useLikeStatus";
 import { BoardTitleSection } from "./BoardTitleSection";
@@ -29,13 +29,6 @@ type CommentSortType = "latest" | "popular";
 const getBoardFileKey = (file: any) => {
   if (typeof file === "string") return file;
   return file?.urlKey ?? file?.key ?? file?.fileKey ?? file?.name ?? "";
-};
-
-const resizeTextareaHeight = (textarea: HTMLTextAreaElement | null) => {
-  if (!textarea) return;
-
-  textarea.style.height = "0px";
-  textarea.style.height = `${textarea.scrollHeight}px`;
 };
 
 const shouldSkipViewOnLoad = () => {
@@ -68,10 +61,12 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const currentUserId = getCurrentUserId();
   const commentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const editingCommentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const commentBarRef = useRef<HTMLDivElement | null>(null);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [commentValue, setCommentValue] = useState("");
   const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const [commentBarHeight, setCommentBarHeight] = useState(112);
 
   const [commentSort, setCommentSort] = useState<CommentSortType>("latest");
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
@@ -114,14 +109,6 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     queryClient.invalidateQueries({ queryKey: ["boards"] });
     queryClient.invalidateQueries({ queryKey: ["home-boards-best"] });
   }, [boardData?.viewCount, boardId, queryClient]);
-
-  useEffect(() => {
-    resizeTextareaHeight(commentTextareaRef.current);
-  }, [commentValue]);
-
-  useEffect(() => {
-    resizeTextareaHeight(editingCommentTextareaRef.current);
-  }, [editingCommentId, editingCommentValue]);
 
   const boardFileKeys = useMemo(() => {
     if (!Array.isArray(boardData?.images)) return [];
@@ -218,6 +205,24 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     return () => {
       vv.removeEventListener("resize", updateOffset);
       vv.removeEventListener("scroll", updateOffset);
+    };
+  }, []);
+
+  useEffect(() => {
+    const commentBar = commentBarRef.current;
+    if (!commentBar) return;
+
+    const updateHeight = () => {
+      setCommentBarHeight(Math.ceil(commentBar.getBoundingClientRect().height));
+    };
+
+    updateHeight();
+
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(commentBar);
+
+    return () => {
+      observer.disconnect();
     };
   }, []);
 
@@ -388,7 +393,10 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     : [{ id: "report", label: "신고", onClick: handleReport }];
 
   return (
-    <div className="flex min-h-screen flex-col pb-[82px]">
+    <div
+      className="flex min-h-screen flex-col"
+      style={{ paddingBottom: commentBarHeight }}
+    >
       <CustomHeader
         title="게시판"
         showIcon
@@ -562,8 +570,8 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                             )}
                           </div>
 
-                          <div className="relative flex min-h-[60px] flex-1">
-                            <div className="flex min-h-[60px] flex-1 flex-col gap-2 pr-10">
+                          <div className="relative flex min-h-[60px] min-w-0 flex-1">
+                            <div className="flex min-h-[60px] min-w-0 flex-1 flex-col gap-2 pr-10">
                               <div className="flex items-center gap-2 text-xs">
                                 <span className="font-semibold text-[#111111]">
                                   {comment?.nickname ??
@@ -624,7 +632,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                                   </div>
                                 </div>
                               ) : (
-                                <p className="w-full whitespace-pre-wrap break-words text-sm leading-5 text-[#333333]">
+                                <p className="w-full whitespace-pre-wrap break-words text-sm leading-5 text-[#333333] [overflow-wrap:anywhere]">
                                   {comment?.content ?? ""}
                                 </p>
                               )}
@@ -677,8 +685,17 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
         </>
       )}
 
+      {keyboardOffset > 0 && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed bottom-0 left-1/2 z-30 w-full max-w-screen-sm -translate-x-1/2 bg-white md:max-w-none"
+          style={{ height: keyboardOffset }}
+        />
+      )}
+
       <div
-        className="fixed left-0 right-0 z-20 bg-white px-6 pb-4 pt-3"
+        ref={commentBarRef}
+        className="fixed bottom-0 left-1/2 z-40 w-full max-w-screen-sm -translate-x-1/2 border-t border-[#F4F4F4] bg-white px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 md:max-w-none"
         style={{ bottom: keyboardOffset }}
       >
         <div className="flex flex-col gap-2">
@@ -690,7 +707,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
               placeholder="댓글을 입력하세요"
               maxLength={1000}
               rows={1}
-              className="min-h-[50px] flex-1 resize-none rounded-[20px] border border-[#C4C4C4] px-4 py-3 text-sm leading-5 text-[#333333] outline-none placeholder:text-[#999999]"
+              className="min-h-[50px] flex-1 resize-none rounded-[20px] border border-[#C4C4C4] px-4 py-3 text-sm leading-5 text-[#111] outline-none placeholder:text-[#999999]"
             />
 
             <button
