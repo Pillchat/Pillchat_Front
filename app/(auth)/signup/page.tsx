@@ -771,7 +771,11 @@ const SignupPage: FC = () => {
             <div className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]">
               <img
                 className="h-[26px] w-[26px]"
-                src={checkedTerms ? "/icons/CheckedIcon.svg" : "/icons/UncheckIcon.svg"}
+                src={
+                  checkedTerms
+                    ? "/icons/CheckedIcon.svg"
+                    : "/icons/UncheckIcon.svg"
+                }
                 onClick={() => setCheckedTerms(!checkedTerms)}
                 alt="icon"
               />
@@ -813,7 +817,11 @@ const SignupPage: FC = () => {
             <div className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]">
               <img
                 className="h-[26px] w-[26px]"
-                src={checkedPrivacy ? "/icons/CheckedIcon.svg" : "/icons/UncheckIcon.svg"}
+                src={
+                  checkedPrivacy
+                    ? "/icons/CheckedIcon.svg"
+                    : "/icons/UncheckIcon.svg"
+                }
                 onClick={() => setCheckedPrivacy(!checkedPrivacy)}
                 alt="icon"
               />
@@ -914,7 +922,9 @@ const SignupPage: FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 onIconClick={() => setShowPassword(!showPassword)}
                 iconPosition="right"
-                iconSrc={showPassword ? "/icons/ClosedEye.svg" : "/icons/OpenEye.svg"}
+                iconSrc={
+                  showPassword ? "/icons/ClosedEye.svg" : "/icons/OpenEye.svg"
+                }
                 iconSize={20}
                 placeholder="비밀번호를 적어주세요"
                 autoFocus={true}
@@ -937,7 +947,11 @@ const SignupPage: FC = () => {
                   onChange={(e) => setPasswordRe(e.target.value)}
                   onIconClick={() => setShowPasswordRe(!showPasswordRe)}
                   iconPosition="right"
-                  iconSrc={showPasswordRe ? "/icons/ClosedEye.svg" : "/icons/OpenEye.svg"}
+                  iconSrc={
+                    showPasswordRe
+                      ? "/icons/ClosedEye.svg"
+                      : "/icons/OpenEye.svg"
+                  }
                   iconSize={20}
                   placeholder="비밀번호를 적어주세요"
                   type={showPasswordRe ? "text" : "password"}

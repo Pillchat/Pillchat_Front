@@ -58,7 +58,11 @@ const grade: FC = () => {
       <div className="mt-5 flex w-[90%] flex-row items-center justify-between gap-1">
         <div className="flex flex-row items-center gap-1">
           <img
-            src={isPromotionAchieved ? "/icons/CheckedIcon.svg" : "/icons/UncheckIcon.svg"}
+            src={
+              isPromotionAchieved
+                ? "/icons/CheckedIcon.svg"
+                : "/icons/UncheckIcon.svg"
+            }
           />
           <p style={{ color: isPromotionAchieved ? "#FF412E" : "inherit" }}>
             질문 및 답변 합산 100개 이상

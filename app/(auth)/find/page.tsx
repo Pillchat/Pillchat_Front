@@ -291,7 +291,9 @@ const FindPage = () => {
                   onChange={handlePasswordChange}
                   onIconClick={() => setShowPassword((prev) => !prev)}
                   iconPosition="right"
-                  iconSrc={showPassword ? "/icons/OpenEye.svg" : "/icons/ClosedEye.svg"}
+                  iconSrc={
+                    showPassword ? "/icons/OpenEye.svg" : "/icons/ClosedEye.svg"
+                  }
                   iconSize={20}
                   placeholder="비밀번호를 입력해주세요."
                   autoFocus
@@ -317,7 +319,9 @@ const FindPage = () => {
                     onIconClick={() => setShowPasswordConfirm((prev) => !prev)}
                     iconPosition="right"
                     iconSrc={
-                      showPasswordConfirm ? "/icons/OpenEye.svg" : "/icons/ClosedEye.svg"
+                      showPasswordConfirm
+                        ? "/icons/OpenEye.svg"
+                        : "/icons/ClosedEye.svg"
                     }
                     iconSize={20}
                     placeholder="비밀번호를 한 번 더 입력해주세요."

@@ -297,7 +297,9 @@ export const SelectSubjectByGrade = ({
                       <TextButton
                         className="gap-0 pr-0"
                         label="추가하기"
-                        afterIcon={<img src="/icons/CirclePlus.svg" alt="plus" />}
+                        afterIcon={
+                          <img src="/icons/CirclePlus.svg" alt="plus" />
+                        }
                         variant="outline"
                         size="sm"
                         onClick={() => toggleInput(year, "general", true)}
@@ -346,7 +348,9 @@ export const SelectSubjectByGrade = ({
                       <TextButton
                         className="gap-0 pr-0"
                         label="추가하기"
-                        afterIcon={<img src="/icons/CirclePlus.svg" alt="plus" />}
+                        afterIcon={
+                          <img src="/icons/CirclePlus.svg" alt="plus" />
+                        }
                         variant="outline"
                         size="sm"
                         onClick={() => toggleInput(year, "major", true)}

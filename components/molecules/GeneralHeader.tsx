@@ -143,14 +143,24 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
               className="flex h-[3.625rem] items-center"
               onClick={() => setOpen(true)}
             >
-              <img src="/icons/search.svg" alt="search" width={32} height={32} />
+              <img
+                src="/icons/search.svg"
+                alt="search"
+                width={32}
+                height={32}
+              />
             </button>
 
             <div
               className="relative flex h-[3.625rem] cursor-pointer items-center"
               onClick={() => router.push("/notifications")}
             >
-              <img src="/icons/Bell.svg" alt="notification" width={32} height={32} />
+              <img
+                src="/icons/Bell.svg"
+                alt="notification"
+                width={32}
+                height={32}
+              />
               {unreadCount > 0 && (
                 <span className="absolute right-0 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand" />
               )}

@@ -60,7 +60,10 @@ export const ListCard: FC<{
           <div className="flex items-center gap-2">
             <IconWithCount src="/icons/Eye.svg" count={viewCount} />
             <IconWithCount src="/icons/Like.svg" count={likeCount} />
-            <IconWithCount src="/icons/QuestionWithBubble.svg" count={answerCount} />
+            <IconWithCount
+              src="/icons/QuestionWithBubble.svg"
+              count={answerCount}
+            />
           </div>
         )}
       </div>

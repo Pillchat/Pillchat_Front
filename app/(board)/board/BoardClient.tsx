@@ -16,7 +16,10 @@ import { CircleButton } from "@/components/molecules/board";
 import { Separator } from "@/components/ui/separator";
 import { fetchAPI } from "@/lib/client/fetch";
 import { formatDiffDate } from "@/lib/shared/date";
-import { getRememberedBoardViewCounts, markBoardViewIntent } from "@/lib/client/boardView";
+import {
+  getRememberedBoardViewCounts,
+  markBoardViewIntent,
+} from "@/lib/client/boardView";
 import { useBoardTabState } from "./_hooks";
 import { useSubjects } from "@/hooks";
 import { cn } from "@/lib/utils";

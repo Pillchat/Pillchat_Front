@@ -44,7 +44,11 @@ export function UserInfoField({ onIconClick, author }: Option) {
         </p>
       </div>
       {onIconClick && (
-        <img src={"/icons/ArrowIcon.svg"} className="ml-auto" onClick={onIconClick} />
+        <img
+          src={"/icons/ArrowIcon.svg"}
+          className="ml-auto"
+          onClick={onIconClick}
+        />
       )}
     </div>
   );

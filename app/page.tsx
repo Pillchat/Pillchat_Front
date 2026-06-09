@@ -11,7 +11,10 @@ import { useLocalStorage } from "@/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAPI } from "@/lib/client/fetch";
 import { formatDiffDate } from "@/lib/shared/date";
-import { getRememberedBoardViewCounts, markBoardViewIntent } from "@/lib/client/boardView";
+import {
+  getRememberedBoardViewCounts,
+  markBoardViewIntent,
+} from "@/lib/client/boardView";
 import { getCurrentUserInfo } from "@/lib/client/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuestionWithBubble } from "@/components/icons";

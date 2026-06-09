@@ -66,23 +66,23 @@ docs/                    개발 문서
 
 ## 파일 배치 기준
 
-| 파일 성격 | 위치 | 예시 |
-| --- | --- | --- |
-| 특정 page 또는 route에서만 쓰는 컴포넌트 | `app/<route>/_components` | `BoardDetailPage`, `AnswerForm` |
-| 특정 page 또는 route에서만 쓰는 hook | `app/<route>/_hooks` | `useAnswerForm`, `usePostForm` |
-| 여러 route에서 재사용하는 작은 UI | `components/atoms` | `LikeButton`, `TextButton` |
-| 여러 route에서 재사용하는 조합 UI | `components/molecules` | `CustomHeader`, `BottomNavbar` |
-| shadcn/Radix primitive | `components/ui` | `button`, `dialog`, `textarea` |
-| React 컴포넌트 형태의 아이콘 | `components/icons` | `QuestionWithBubble` |
-| 여러 route에서 쓰는 hook | `hooks` | `useSubjects`, `useAuth` |
-| 브라우저/localStorage 기반 helper | `lib/client` | `fetchAPI`, `getCurrentUserId`, `uploadBoard` |
-| Next route handler 전용 helper | `lib/server` | `serverFetch`, `proxyToBackend` |
-| 순수 공통 helper | `lib/shared` | `formatDiffDate`, `buildQueryParams` |
-| route handler | `app/api/<domain>/route.ts` | `app/api/questions/route.ts` |
-| 공유 type | `types` | `question.ts`, `wrongnote.ts` |
-| 공유 validation | `validations` | `email.ts`, `password.ts` |
-| Jotai state | `store` | `profile.ts`, `quizSession.ts`, `onboarding/*` |
-| URL로 참조하는 SVG/PNG/font | `public/<asset-type>` | `/brand/PillChat.svg`, `/icons/Bell.svg` |
+| 파일 성격                                | 위치                        | 예시                                           |
+| ---------------------------------------- | --------------------------- | ---------------------------------------------- |
+| 특정 page 또는 route에서만 쓰는 컴포넌트 | `app/<route>/_components`   | `BoardDetailPage`, `AnswerForm`                |
+| 특정 page 또는 route에서만 쓰는 hook     | `app/<route>/_hooks`        | `useAnswerForm`, `usePostForm`                 |
+| 여러 route에서 재사용하는 작은 UI        | `components/atoms`          | `LikeButton`, `TextButton`                     |
+| 여러 route에서 재사용하는 조합 UI        | `components/molecules`      | `CustomHeader`, `BottomNavbar`                 |
+| shadcn/Radix primitive                   | `components/ui`             | `button`, `dialog`, `textarea`                 |
+| React 컴포넌트 형태의 아이콘             | `components/icons`          | `QuestionWithBubble`                           |
+| 여러 route에서 쓰는 hook                 | `hooks`                     | `useSubjects`, `useAuth`                       |
+| 브라우저/localStorage 기반 helper        | `lib/client`                | `fetchAPI`, `getCurrentUserId`, `uploadBoard`  |
+| Next route handler 전용 helper           | `lib/server`                | `serverFetch`, `proxyToBackend`                |
+| 순수 공통 helper                         | `lib/shared`                | `formatDiffDate`, `buildQueryParams`           |
+| route handler                            | `app/api/<domain>/route.ts` | `app/api/questions/route.ts`                   |
+| 공유 type                                | `types`                     | `question.ts`, `wrongnote.ts`                  |
+| 공유 validation                          | `validations`               | `email.ts`, `password.ts`                      |
+| Jotai state                              | `store`                     | `profile.ts`, `quizSession.ts`, `onboarding/*` |
+| URL로 참조하는 SVG/PNG/font              | `public/<asset-type>`       | `/brand/PillChat.svg`, `/icons/Bell.svg`       |
 
 ## 변경 전후 요약
 

@@ -94,7 +94,12 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
               className="relative flex h-[3.625rem] cursor-pointer items-center"
               onClick={() => router.push("/notifications")}
             >
-              <img src="/icons/Bell.svg" alt="notification" width={32} height={32} />
+              <img
+                src="/icons/Bell.svg"
+                alt="notification"
+                width={32}
+                height={32}
+              />
               {unreadCount > 0 && (
                 <span className="absolute right-0 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand" />
               )}

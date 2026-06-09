@@ -12,7 +12,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { fetchAPI } from "@/lib/client/fetch";
 import { formatDiffDate } from "@/lib/shared/date";
 import { getCurrentUserId } from "@/lib/client/auth";
-import { rememberBoardViewCount, shouldSkipBoardViewOnLoad } from "@/lib/client/boardView";
+import {
+  rememberBoardViewCount,
+  shouldSkipBoardViewOnLoad,
+} from "@/lib/client/boardView";
 import { syncViewCountInQueryData } from "@/lib/shared/syncViewCount";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -425,7 +428,11 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
               <ActionMenu
                 trigger={
                   <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <img src="/icons/Ellipsis.svg" alt="더보기" className="h-5 w-5" />
+                    <img
+                      src="/icons/Ellipsis.svg"
+                      alt="더보기"
+                      className="h-5 w-5"
+                    />
                   </Button>
                 }
                 items={menuItems}

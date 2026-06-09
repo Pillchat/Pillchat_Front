@@ -160,7 +160,11 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
               <ActionMenu
                 trigger={
                   <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <img src="/icons/Ellipsis.svg" alt="더보기" className="h-5 w-5" />
+                    <img
+                      src="/icons/Ellipsis.svg"
+                      alt="더보기"
+                      className="h-5 w-5"
+                    />
                   </Button>
                 }
                 items={menuItems}
