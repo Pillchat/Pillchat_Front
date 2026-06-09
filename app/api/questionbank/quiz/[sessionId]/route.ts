@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 
 // POST /api/questionbank/quiz/:sessionId — 답안 제출 또는 퀴즈 종료
 export async function POST(

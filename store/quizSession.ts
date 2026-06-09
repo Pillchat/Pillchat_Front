@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 import type {
   QuizSession,
   QuizQuestion,

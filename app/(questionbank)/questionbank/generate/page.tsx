@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSetAtom } from "jotai";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 import { initQuizSessionAtom, mapChoices } from "@/store/quizSession";
 import { CustomHeader } from "@/components/molecules";
 import { SolidButton } from "@/components/atoms";

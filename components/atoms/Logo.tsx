@@ -7,7 +7,7 @@ export const Logo: FC = () => (
   <div className="flex flex-col items-center justify-center gap-3">
     <div>
       <Image
-        src="/PillChat.svg"
+        src="/brand/PillChat.svg"
         alt="PillChat logo"
         width={160}
         height={83}

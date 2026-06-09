@@ -44,7 +44,7 @@ export const InfoHeader: FC<InfoHeaderProps> = ({
             size="icon"
             onClick={() => router.push("/")}
           >
-            <img src="/Home.svg" alt="home" width={32} height={32} />
+            <img src="/icons/Home.svg" alt="home" width={32} height={32} />
           </Button>
         ) : (
           <TextButton

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 
 // GET /api/wrong-notes/exams — 시험지 목록
 export async function GET(request: NextRequest) {

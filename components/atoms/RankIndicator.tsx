@@ -43,7 +43,7 @@ export const RankIndicator: React.FC<RankIndicatorProps> = ({
           >
             {isActive && profileImg ? (
               <img
-                src={profileImg || "/defaultProfile.svg"}
+                src={profileImg || "/icons/defaultProfile.svg"}
                 alt="Profile"
                 className="h-16 w-16 rounded-full object-cover"
               />

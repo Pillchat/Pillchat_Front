@@ -1,4 +1,4 @@
-import { MaterialDetailPage } from "@/components/organisms";
+import { MaterialDetailPage } from "./_components/MaterialDetailPage";
 
 export default async function Page({
   params,

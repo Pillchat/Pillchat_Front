@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 import { useRouter } from "next/navigation";
 
 export const useLogout = () => {

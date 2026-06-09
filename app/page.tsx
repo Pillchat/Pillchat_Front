@@ -9,13 +9,10 @@ import {
 import { useRouter } from "next/navigation";
 import { useLocalStorage } from "@/hooks";
 import { useQuery } from "@tanstack/react-query";
-import {
-  fetchAPI,
-  formatDiffDate,
-  getRememberedBoardViewCounts,
-  getCurrentUserInfo,
-  markBoardViewIntent,
-} from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
+import { formatDiffDate } from "@/lib/shared/date";
+import { getRememberedBoardViewCounts, markBoardViewIntent } from "@/lib/client/boardView";
+import { getCurrentUserInfo } from "@/lib/client/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuestionWithBubble } from "@/components/icons";
 import { Separator } from "@/components/ui/separator";

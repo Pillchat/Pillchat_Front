@@ -66,7 +66,7 @@ const LoginPage: FC = () => {
                   content="비밀번호"
                   placeholder="비밀번호를 입력해주세요"
                   type={eye ? "text" : "password"}
-                  iconSrc={eye ? "/ClosedEye.svg" : "/Eye.svg"}
+                  iconSrc={eye ? "/icons/ClosedEye.svg" : "/icons/Eye.svg"}
                   iconAlt="비밀번호 보기"
                   iconAsButton
                   iconSize={20}

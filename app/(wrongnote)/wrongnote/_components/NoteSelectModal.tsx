@@ -1,7 +1,7 @@
 "use client";
 
 import { FC, useState, useEffect, useCallback } from "react";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 import type {
   WrongNoteListItem,
   WrongNoteListResponse,

@@ -13,7 +13,7 @@ import {
   keysAtom,
   profileImgAtom,
 } from "@/store/profile";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 
 export const useMyProfile = () => {
   const [isLoading, setIsLoading] = useAtom(profileLoadingAtom);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 import { CustomHeader } from "@/components/molecules";
 import type { WrongNoteExam } from "@/types/wrongnote";
 

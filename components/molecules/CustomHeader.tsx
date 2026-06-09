@@ -32,7 +32,7 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
       <p className="text-lg font-semibold">{title}</p>
       {showIcon ? (
         <Button variant="textOnly" size="icon" onClick={() => router.push("/")}>
-          <img src="/Home.svg" alt="arrow-left" width={32} height={32} />
+          <img src="/icons/Home.svg" alt="arrow-left" width={32} height={32} />
         </Button>
       ) : (
         <TextButton

@@ -6,7 +6,8 @@ import {
   QuestionListCard,
   TabsWithUnderline,
 } from "@/components/molecules";
-import { fetchAPI, formatDiffDate } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
+import { formatDiffDate } from "@/lib/shared/date";
 import { useQuery } from "@tanstack/react-query";
 import { FC, Fragment, useMemo } from "react";
 import { useQnaTabState } from "./_hooks";

@@ -1,5 +1,5 @@
 // import { NextRequest, NextResponse } from "next/server";
-// import { serverFetch } from "@/lib/functions";
+// import { serverFetch } from "@/lib/server/fetch";
 
 // // 개별 답변 조회
 // export async function GET(
@@ -75,7 +75,7 @@
 
 // app/api/answers/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 
 // GET: 개별 답변 조회
 export async function GET(

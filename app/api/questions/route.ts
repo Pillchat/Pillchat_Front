@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { QuestionCreateRequest, QuestionResponse } from "@/types/question";
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 import { filter } from "lodash";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 
 // GET /api/questionbank/stats — 통계 조회 (type 쿼리로 분기)
 export async function GET(request: NextRequest) {

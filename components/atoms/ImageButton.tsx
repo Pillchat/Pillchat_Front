@@ -9,7 +9,8 @@ import {
   useImperativeHandle,
   useEffect,
 } from "react";
-import { fetchAPI, getCurrentUserId } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
+import { getCurrentUserId } from "@/lib/client/auth";
 
 interface UploadedImage {
   id: string;
@@ -245,7 +246,7 @@ export const ImageButton = forwardRef<ImageButtonRef, ImageButtonProps>(
             size="icon"
             className="pointer-events-none h-5 w-5"
           >
-            <img src="/Camera_muted.svg" alt="camera" width={20} height={20} />
+            <img src="/icons/Camera_muted.svg" alt="camera" width={20} height={20} />
           </Button>
           <p className="text-xs font-medium text-border">
             {images.length} / {maxImages}

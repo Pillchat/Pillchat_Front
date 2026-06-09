@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 
 // POST /api/wrong-notes/[noteId]/like — 좋아요 토글
 export async function POST(

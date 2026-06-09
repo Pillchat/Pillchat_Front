@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 
 interface PromotionData {
   currentGrade: string;

@@ -61,7 +61,7 @@ export function SelectBox({
         <div className="absolute inset-0 cursor-pointer" onClick={onClick} />
         <span className="absolute bottom-4 right-4 ...">
           <img
-            src="/ArrowIcon.svg"
+            src="/icons/ArrowIcon.svg"
             alt="arrow-left"
             width={16}
             height={16}

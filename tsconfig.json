@@ -28,10 +28,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    "src",
-    "src/types/global.d.ts",
-    "app/(qna)/reports/modal/S.tsxSelectReportTypeModal"
+    ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }

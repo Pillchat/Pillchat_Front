@@ -2,7 +2,7 @@
 
 import { ChangeEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 import { Input, SolidButton } from "@/components/atoms";
 import {
   IconInputField,
@@ -210,7 +210,7 @@ const FindPage = () => {
                 type="email"
                 iconAsButton={Boolean(email)}
                 iconPosition="right"
-                iconSrc={email ? "/Cancel.svg" : undefined}
+                iconSrc={email ? "/icons/Cancel.svg" : undefined}
                 iconSize={20}
                 placeholder="이메일을 입력해주세요."
                 autoFocus
@@ -291,7 +291,7 @@ const FindPage = () => {
                   onChange={handlePasswordChange}
                   onIconClick={() => setShowPassword((prev) => !prev)}
                   iconPosition="right"
-                  iconSrc={showPassword ? "/OpenEye.svg" : "/ClosedEye.svg"}
+                  iconSrc={showPassword ? "/icons/OpenEye.svg" : "/icons/ClosedEye.svg"}
                   iconSize={20}
                   placeholder="비밀번호를 입력해주세요."
                   autoFocus
@@ -317,7 +317,7 @@ const FindPage = () => {
                     onIconClick={() => setShowPasswordConfirm((prev) => !prev)}
                     iconPosition="right"
                     iconSrc={
-                      showPasswordConfirm ? "/OpenEye.svg" : "/ClosedEye.svg"
+                      showPasswordConfirm ? "/icons/OpenEye.svg" : "/icons/ClosedEye.svg"
                     }
                     iconSize={20}
                     placeholder="비밀번호를 한 번 더 입력해주세요."

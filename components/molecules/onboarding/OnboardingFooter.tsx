@@ -6,13 +6,13 @@ import {
   currentStepAtom,
   studentInfoAtom,
   professionalInfoAtom,
-} from "@/lib/atoms/onboarding";
+} from "@/store/onboarding";
 import { Button } from "@/components/ui/button";
 import { SelectModal } from "../SelectModal";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 import { useLogout } from "@/app/(setting)/mypage/_hooks/useLogout";
 
 type OnboardingFooterProps = {

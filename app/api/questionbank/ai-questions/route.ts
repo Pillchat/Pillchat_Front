@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 
 // POST /api/questionbank/ai-questions — AI 문제 생성 (PDF / Premium)
 export async function POST(request: NextRequest) {

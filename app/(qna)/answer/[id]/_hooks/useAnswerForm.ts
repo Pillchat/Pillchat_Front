@@ -1,7 +1,8 @@
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { fetchAPI, getCurrentUserId } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
+import { getCurrentUserId } from "@/lib/client/auth";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ImageButtonRef } from "@/components/atoms/ImageButton";
 import { useAnswerSteps } from "./useAnswerSteps";

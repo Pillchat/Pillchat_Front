@@ -1,5 +1,5 @@
 import { useAtom } from "jotai";
-import { studentInfoAtom, professionalInfoAtom } from "@/lib/atoms/onboarding";
+import { studentInfoAtom, professionalInfoAtom } from "@/store/onboarding";
 import { useSubjects } from "./useSubjects";
 import { filter, includes } from "lodash";
 

@@ -63,7 +63,7 @@ export const SelectCategoryModal = ({
                   {item}
                 </button>
                 <img
-                  src="/ArrowIcon.svg"
+                  src="/icons/ArrowIcon.svg"
                   alt="arrow-right"
                   width={20}
                   height={20}

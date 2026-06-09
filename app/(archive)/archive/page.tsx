@@ -17,12 +17,10 @@ import {
   useMyQuestions,
 } from "@/app/(archive)/archive/_hooks/";
 import { Separator } from "@/components/ui/separator";
-import {
-  fetchAPI,
-  formatDiffDate,
-  getCurrentUserId,
-  markBoardViewIntent,
-} from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
+import { formatDiffDate } from "@/lib/shared/date";
+import { getCurrentUserId } from "@/lib/client/auth";
+import { markBoardViewIntent } from "@/lib/client/boardView";
 import { map } from "lodash";
 import { useSubjects } from "@/hooks";
 import { FloatingActionButton } from "@/components/atoms";

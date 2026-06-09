@@ -11,11 +11,11 @@ import { Controller } from "react-hook-form";
 import { useStep, useUploadForm, useUploadFiles } from "./_hooks";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import CheckCircle from "@/public/CheckCircle.svg";
+import CheckCircle from "@/public/icons/CheckCircle.svg";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { useSubjects } from "@/hooks";
-import { fetchAPI } from "@/lib/functions";
-import { uploadMaterial } from "@/lib/functions/multipartApi";
+import { fetchAPI } from "@/lib/client/fetch";
+import { uploadMaterial } from "@/lib/client/upload";
 import { useQuery } from "@tanstack/react-query";
 
 enum Step {
@@ -697,14 +697,14 @@ const UploadPage = () => {
 
             <div className="flex w-full gap-3">
               <BoardButton
-                imageSrc="/Image.svg"
+                imageSrc="/icons/Image.svg"
                 className="max-w-[168.5px]"
                 text="이미지 업로드"
                 onClick={openImagePicker}
                 type="button"
               />
               <BoardButton
-                imageSrc="/File2.svg"
+                imageSrc="/icons/File2.svg"
                 className="max-w-[168.5px]"
                 text="파일 업로드"
                 onClick={openPdfPicker}
@@ -742,7 +742,7 @@ const UploadPage = () => {
                         onClick={() => removeItem(item.id)}
                         className="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center"
                       >
-                        <img src="/Remove.svg" alt="제거" />
+                        <img src="/icons/Remove.svg" alt="제거" />
                       </button>
 
                       {item.type === "image" ? (
@@ -792,7 +792,7 @@ const UploadPage = () => {
           <div className="flex flex-grow flex-col items-center justify-center gap-3">
             <div className="flex flex-col items-center justify-center text-center">
               <img
-                src="/UncheckedIcon.svg"
+                src="/icons/UncheckedIcon.svg"
                 alt="완료"
                 width={72}
                 className="mb-2"

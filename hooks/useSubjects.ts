@@ -1,4 +1,4 @@
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 import { useQuery } from "@tanstack/react-query";
 
 // API 데이터 타입 정의

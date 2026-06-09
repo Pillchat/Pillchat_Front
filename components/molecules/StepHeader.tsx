@@ -24,7 +24,7 @@ export function StepHeader({ content, onIconClick, dark }: StepHeaderProps) {
       className={`relative flex h-[60px] w-full flex-row items-center justify-center ${dark ? "bg-black" : "bg-white"}`}
     >
       <img
-        src={dark ? "/ReturnPage-white.svg" : "/ReturnPage.svg"}
+        src={dark ? "/icons/ReturnPage-white.svg" : "/icons/ReturnPage.svg"}
         className="absolute left-5 h-6 w-6 cursor-pointer"
         onClick={onIconClick}
         alt="뒤로가기"

@@ -77,7 +77,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
             onMouseDown={(e) => e.preventDefault()}
             onClick={onSubmit}
           >
-            <img src="/search.svg" alt="search" width={32} height={32} />
+            <img src="/icons/search.svg" alt="search" width={32} height={32} />
           </button>
         </div>
       ) : (
@@ -86,7 +86,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
             href="/"
             className="flex h-[3.625rem] cursor-pointer items-center"
           >
-            <img src="/PillChat.svg" alt="logo" width={82} height={32} />
+            <img src="/brand/PillChat.svg" alt="logo" width={82} height={32} />
           </Link>
 
           <div className="flex items-center gap-4">
@@ -94,7 +94,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
               className="relative flex h-[3.625rem] cursor-pointer items-center"
               onClick={() => router.push("/notifications")}
             >
-              <img src="/Bell.svg" alt="notification" width={32} height={32} />
+              <img src="/icons/Bell.svg" alt="notification" width={32} height={32} />
               {unreadCount > 0 && (
                 <span className="absolute right-0 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand" />
               )}

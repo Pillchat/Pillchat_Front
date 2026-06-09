@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { FC, useEffect, useState } from "react";
-import HomeIcon from "@/public/Home.svg";
-import CommunityIcon from "@/public/Community.svg";
-import QnaIcon from "@/public/Qna.svg";
-import Board from "@/public/Board.svg";
-import QuestionBankIcon from "@/public/Questionbank.svg";
-import ArchiveIcon from "@/public/Archive.svg";
-import MyPageIcon from "@/public/Mypage.svg";
+import HomeIcon from "@/public/icons/Home.svg";
+import CommunityIcon from "@/public/icons/Community.svg";
+import QnaIcon from "@/public/icons/Qna.svg";
+import Board from "@/public/icons/Board.svg";
+import QuestionBankIcon from "@/public/icons/Questionbank.svg";
+import ArchiveIcon from "@/public/icons/Archive.svg";
+import MyPageIcon from "@/public/icons/Mypage.svg";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 

@@ -1,4 +1,4 @@
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 
 export const uploadBoardFiles = async (
   imageFiles: File[],

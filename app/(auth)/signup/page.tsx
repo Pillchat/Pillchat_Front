@@ -7,7 +7,7 @@
 
 // import { RoleCard, SolidButton, StrokeButton } from "@/components/atoms";
 // import { StepHeader, InputField, IconInputField } from "@/components/molecules";
-// import { VerifyInputField, CameraPage } from "@/components/organisms";
+// import { VerifyInputField, CameraPage } from "./_components";
 
 export type SignupFormData = {
   email: string;
@@ -93,22 +93,22 @@ export type SignupFormData = {
 //           <div className="mt-5 flex flex-row gap-[15px]">
 //             <RoleCard
 //               title="학생"
-//               imageSrc="/Student.svg"
+//               imageSrc="/illustrations/Student.svg"
 //               onClick={() => {
 //                 setRoute("학생");
 //                 setValueBadge("학생증");
-//                 setRoleImg("/StudentCard.svg");
+//                 setRoleImg("/illustrations/StudentCard.svg");
 //                 setStep(5);
 //               }}
 //             />
 
 //             <RoleCard
 //               title="전문가"
-//               imageSrc="/Specialist.svg"
+//               imageSrc="/illustrations/Specialist.svg"
 //               onClick={() => {
 //                 setRoute("전문가");
 //                 setValueBadge("약사 면허증");
-//                 setRoleImg("/DoctorCard.svg");
+//                 setRoleImg("/illustrations/DoctorCard.svg");
 //                 nextStep();
 //               }}
 //             />
@@ -286,7 +286,7 @@ export type SignupFormData = {
 //             <div className="mt-[2rem] flex flex-row items-center justify-center gap-[0.15rem]">
 //               <img
 //                 className="h-[26px] w-[26px]"
-//                 src={checked ? "/CheckedIcon.svg" : "/UncheckIcon.svg"}
+//                 src={checked ? "/icons/CheckedIcon.svg" : "/icons/UncheckIcon.svg"}
 //                 onClick={() => seChecked(!checked)}
 //                 alt="icon"
 //               />
@@ -327,7 +327,7 @@ export type SignupFormData = {
 //               onIconClick={() => setEmail("")}
 //               type="email"
 //               iconPosition="right"
-//               iconSrc="/Cancel.svg"
+//               iconSrc="/icons/Cancel.svg"
 //               iconSize={20}
 //               placeholder="이메일을 적어주세요"
 //               autoFocus={true}
@@ -386,7 +386,7 @@ export type SignupFormData = {
 //                 onChange={(e) => setPassword(e.target.value)}
 //                 onIconClick={() => setShowPassword(!showPassword)}
 //                 iconPosition="right"
-//                 iconSrc={showPassword ? "/ClosedEye.svg" : "/OpenEye.svg"}
+//                 iconSrc={showPassword ? "/icons/ClosedEye.svg" : "/icons/OpenEye.svg"}
 //                 iconSize={20}
 //                 placeholder="비밀번호를 적어주세요"
 //                 autoFocus={true}
@@ -409,7 +409,7 @@ export type SignupFormData = {
 //                   onChange={(e) => setPasswordRe(e.target.value)}
 //                   onIconClick={() => setShowPasswordRe(!showPasswordRe)}
 //                   iconPosition="right"
-//                   iconSrc={showPasswordRe ? "/ClosedEye.svg" : "/OpenEye.svg"}
+//                   iconSrc={showPasswordRe ? "/icons/ClosedEye.svg" : "/icons/OpenEye.svg"}
 //                   iconSize={20}
 //                   placeholder="비밀번호를 적어주세요"
 //                   type={showPasswordRe ? "text" : "password"}
@@ -454,7 +454,7 @@ export type SignupFormData = {
 //                 onChange={(e) => setNickname(e.target.value)}
 //                 onIconClick={() => setNickname("")}
 //                 iconPosition="right"
-//                 iconSrc="Cancel.svg"
+//                 iconSrc="/icons/Cancel.svg"
 //                 iconSize={20}
 //                 placeholder="닉네임을 적어주세요"
 //                 autoFocus={true}
@@ -499,7 +499,7 @@ import { useManualSubmit } from "./_hooks/useManualSubmit";
 
 import { RoleCard, SolidButton, StrokeButton } from "@/components/atoms";
 import { StepHeader, IconInputField } from "@/components/molecules";
-import { VerifyInputField } from "@/components/organisms";
+import { VerifyInputField } from "./_components/VerifyInputField";
 
 const SignupPage: FC = () => {
   const { step, nextStep, prevStep, setStep } = useStep();
@@ -622,7 +622,7 @@ const SignupPage: FC = () => {
           <div className="mt-5 flex flex-row gap-[15px]">
             <RoleCard
               title="학생"
-              imageSrc="/Student.svg"
+              imageSrc="/illustrations/Student.svg"
               onClick={() => {
                 setRoute("student");
                 // OCR 가이드/촬영(Guide, Ocr) 단계를 건너뛰고 바로 정보 입력(DepartMent -> ManualInfo) 단계로 이동
@@ -632,7 +632,7 @@ const SignupPage: FC = () => {
 
             <RoleCard
               title="전문가"
-              imageSrc="/Specialist.svg"
+              imageSrc="/illustrations/Specialist.svg"
               onClick={() => {
                 setRoute("professional");
                 // OCR 가이드/촬영 단계를 건너뛰고 바로 정보 입력 단계로 이동
@@ -662,7 +662,7 @@ const SignupPage: FC = () => {
                 onChange={(e) => setRealName(e.target.value)}
                 onIconClick={() => setRealName("")}
                 placeholder="홍길동"
-                iconSrc="/Cancel.svg"
+                iconSrc="/icons/Cancel.svg"
                 iconAsButton={true}
                 iconSize={20}
               />
@@ -675,7 +675,7 @@ const SignupPage: FC = () => {
                     onChange={(e) => setUniversity(e.target.value)}
                     onIconClick={() => setUniversity("")}
                     placeholder="한국대학교"
-                    iconSrc="/Cancel.svg"
+                    iconSrc="/icons/Cancel.svg"
                     iconAsButton={true}
                     iconSize={20}
                   />
@@ -685,7 +685,7 @@ const SignupPage: FC = () => {
                     onChange={(e) => setDepartment(e.target.value)}
                     onIconClick={() => setDepartment("")}
                     placeholder="약학과"
-                    iconSrc="/Cancel.svg"
+                    iconSrc="/icons/Cancel.svg"
                     iconAsButton={true}
                     iconSize={20}
                   />
@@ -695,7 +695,7 @@ const SignupPage: FC = () => {
                     onChange={(e) => setStudentId(e.target.value)}
                     onIconClick={() => setStudentId("")}
                     placeholder="20241234"
-                    iconSrc="/Cancel.svg"
+                    iconSrc="/icons/Cancel.svg"
                     iconAsButton={true}
                     iconSize={20}
                   />
@@ -705,7 +705,7 @@ const SignupPage: FC = () => {
                     onChange={(e) => setGrade(e.target.value)}
                     onIconClick={() => setGrade("")}
                     placeholder="1학년"
-                    iconSrc="/Cancel.svg"
+                    iconSrc="/icons/Cancel.svg"
                     iconAsButton={true}
                     iconSize={20}
                   />
@@ -718,7 +718,7 @@ const SignupPage: FC = () => {
                     onChange={(e) => setLicenseNumber(e.target.value)}
                     onIconClick={() => setLicenseNumber("")}
                     placeholder="12345"
-                    iconSrc="/Cancel.svg"
+                    iconSrc="/icons/Cancel.svg"
                     iconAsButton={true}
                     iconSize={20}
                   />
@@ -728,7 +728,7 @@ const SignupPage: FC = () => {
                     onChange={(e) => setIssueDate(e.target.value)}
                     onIconClick={() => setIssueDate("")}
                     placeholder="YYYY-MM-DD"
-                    iconSrc="/Cancel.svg"
+                    iconSrc="/icons/Cancel.svg"
                     iconAsButton={true}
                     iconSize={20}
                   />
@@ -771,7 +771,7 @@ const SignupPage: FC = () => {
             <div className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]">
               <img
                 className="h-[26px] w-[26px]"
-                src={checkedTerms ? "/CheckedIcon.svg" : "/UncheckIcon.svg"}
+                src={checkedTerms ? "/icons/CheckedIcon.svg" : "/icons/UncheckIcon.svg"}
                 onClick={() => setCheckedTerms(!checkedTerms)}
                 alt="icon"
               />
@@ -813,7 +813,7 @@ const SignupPage: FC = () => {
             <div className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]">
               <img
                 className="h-[26px] w-[26px]"
-                src={checkedPrivacy ? "/CheckedIcon.svg" : "/UncheckIcon.svg"}
+                src={checkedPrivacy ? "/icons/CheckedIcon.svg" : "/icons/UncheckIcon.svg"}
                 onClick={() => setCheckedPrivacy(!checkedPrivacy)}
                 alt="icon"
               />
@@ -853,7 +853,7 @@ const SignupPage: FC = () => {
               onIconClick={() => setEmail("")}
               type="email"
               iconPosition="right"
-              iconSrc="/Cancel.svg"
+              iconSrc="/icons/Cancel.svg"
               iconSize={20}
               placeholder="이메일을 적어주세요"
               autoFocus={true}
@@ -914,7 +914,7 @@ const SignupPage: FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 onIconClick={() => setShowPassword(!showPassword)}
                 iconPosition="right"
-                iconSrc={showPassword ? "/ClosedEye.svg" : "/OpenEye.svg"}
+                iconSrc={showPassword ? "/icons/ClosedEye.svg" : "/icons/OpenEye.svg"}
                 iconSize={20}
                 placeholder="비밀번호를 적어주세요"
                 autoFocus={true}
@@ -937,7 +937,7 @@ const SignupPage: FC = () => {
                   onChange={(e) => setPasswordRe(e.target.value)}
                   onIconClick={() => setShowPasswordRe(!showPasswordRe)}
                   iconPosition="right"
-                  iconSrc={showPasswordRe ? "/ClosedEye.svg" : "/OpenEye.svg"}
+                  iconSrc={showPasswordRe ? "/icons/ClosedEye.svg" : "/icons/OpenEye.svg"}
                   iconSize={20}
                   placeholder="비밀번호를 적어주세요"
                   type={showPasswordRe ? "text" : "password"}
@@ -984,7 +984,7 @@ const SignupPage: FC = () => {
                 onChange={(e) => setNickname(e.target.value)}
                 onIconClick={() => setNickname("")}
                 iconPosition="right"
-                iconSrc="Cancel.svg"
+                iconSrc="/icons/Cancel.svg"
                 iconSize={20}
                 placeholder="닉네임을 적어주세요"
                 autoFocus={true}

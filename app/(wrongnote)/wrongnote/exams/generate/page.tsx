@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { fetchAPI } from "@/lib/functions";
+import { fetchAPI } from "@/lib/client/fetch";
 import { CustomHeader } from "@/components/molecules";
 import { SolidButton } from "@/components/atoms";
 import type {

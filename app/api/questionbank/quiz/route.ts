@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serverFetch } from "@/lib/functions";
+import { serverFetch } from "@/lib/server/fetch";
 
 // POST /api/questionbank/quiz — 퀴즈 세션 시작
 export async function POST(request: NextRequest) {

@@ -4,15 +4,15 @@ import { FC, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CustomHeader } from "@/components/molecules";
 import { useNotifications } from "@/hooks/useNotifications";
-import { formatDiffDate } from "@/lib/functions";
+import { formatDiffDate } from "@/lib/shared/date";
 import { Notification, NotificationType } from "@/types/notification";
 
 const NOTIFICATION_ICON: Record<NotificationType, string> = {
-  ANSWER: "/QuestionWithBubble.svg",
-  ADOPT: "/Like.svg",
-  QUESTION: "/QuestionWithBubble.svg",
-  MATERIAL: "/QuestionWithBubble.svg",
-  SYSTEM: "/BellColor.svg",
+  ANSWER: "/icons/QuestionWithBubble.svg",
+  ADOPT: "/icons/Like.svg",
+  QUESTION: "/icons/QuestionWithBubble.svg",
+  MATERIAL: "/icons/QuestionWithBubble.svg",
+  SYSTEM: "/icons/BellColor.svg",
 };
 
 const NotificationItem: FC<{
@@ -112,7 +112,7 @@ const NotificationsPage: FC = () => {
         {notifications.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center py-20">
             <img
-              src="/Bell.svg"
+              src="/icons/Bell.svg"
               alt="no notifications"
               className="mb-4 h-12 w-12 opacity-30"
             />
