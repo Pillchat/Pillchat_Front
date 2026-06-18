@@ -52,23 +52,23 @@ export const SelectCategoryModal = ({
             const mapped = CATEGORY_MAP[item as keyof typeof CATEGORY_MAP];
 
             return (
-              <div key={i} className="flex w-full flex-row justify-between">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelect?.(mapped?.label || item, mapped?.value || item);
-                  }}
-                  className="rounded-lg p-3 text-left"
-                >
-                  {item}
-                </button>
+              <button
+                key={i}
+                type="button"
+                onClick={() => {
+                  onSelect?.(mapped?.label || item, mapped?.value || item);
+                }}
+                className="flex w-full items-center justify-between rounded-lg p-3 text-left transition-colors hover:bg-[#F8F8F8]"
+              >
+                <span>{item}</span>
                 <img
                   src="/icons/ArrowIcon.svg"
                   alt="arrow-right"
                   width={20}
                   height={20}
+                  className="shrink-0"
                 />
-              </div>
+              </button>
             );
           })}
         </div>

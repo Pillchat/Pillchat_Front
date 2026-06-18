@@ -11,6 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { fetchAPI } from "@/lib/client/fetch";
 import { formatDiffDate } from "@/lib/shared/date";
+import {
+  buildFileUrlMap,
+  getFileKey,
+  isPdfFileKey,
+} from "@/lib/shared/filePreview";
 import { getCurrentUserId } from "@/lib/client/auth";
 import {
   rememberBoardViewCount,
@@ -25,11 +30,6 @@ import { BoardTitleSection } from "./BoardTitleSection";
 import { BoardContents } from "./BoardContents";
 
 type CommentSortType = "latest" | "popular";
-
-const getBoardFileKey = (file: any) => {
-  if (typeof file === "string") return file;
-  return file?.urlKey ?? file?.key ?? file?.fileKey ?? file?.name ?? "";
-};
 
 const shouldSkipViewOnLoad = () => {
   if (typeof window === "undefined") return false;
@@ -114,7 +114,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     if (!Array.isArray(boardData?.images)) return [];
 
     return boardData.images
-      .map((file: any) => getBoardFileKey(file))
+      .map((file: any) => getFileKey(file))
       .filter(Boolean);
   }, [boardData?.images]);
 
@@ -133,31 +133,27 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     enabled: boardFileKeys.length > 0,
   });
 
-  const imageUrls = useMemo(() => {
-    if (!Array.isArray(filesData)) return [];
+  const fileUrlMap = useMemo(
+    () => buildFileUrlMap(boardFileKeys, filesData),
+    [boardFileKeys, filesData],
+  );
 
-    return filesData
-      .filter((file: any) => {
-        const key = String(file?.key ?? "").toLowerCase();
-        return !key.endsWith(".pdf");
-      })
-      .map((file: any) => file.preSignedUrl)
-      .filter(Boolean);
-  }, [filesData]);
+  const imageUrls = useMemo(
+    () =>
+      boardFileKeys
+        .filter((key) => !isPdfFileKey(key))
+        .map((key) => fileUrlMap[key])
+        .filter(Boolean),
+    [boardFileKeys, fileUrlMap],
+  );
 
-  const pdfFile = useMemo(() => {
-    if (!Array.isArray(filesData)) return null;
+  const pdfKey = useMemo(
+    () => boardFileKeys.find((key) => isPdfFileKey(key)) ?? "",
+    [boardFileKeys],
+  );
 
-    return (
-      filesData.find((file: any) => {
-        const key = String(file?.key ?? "").toLowerCase();
-        return key.endsWith(".pdf");
-      }) ?? null
-    );
-  }, [filesData]);
-
-  const pdfUrl = pdfFile?.preSignedUrl ?? "";
-  const pdfName = pdfFile?.key?.split("/").pop() ?? "";
+  const pdfUrl = pdfKey ? (fileUrlMap[pdfKey] ?? "") : "";
+  const pdfName = pdfKey.split("/").pop() ?? "";
 
   const { data: commentsData, isLoading: commentsLoading } = useQuery({
     queryKey: ["board-comments", boardId],

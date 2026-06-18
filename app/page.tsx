@@ -9,6 +9,12 @@ import {
 import { useRouter } from "@/lib/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAPI } from "@/lib/client/fetch";
+import { getValidAccessToken } from "@/lib/functions";
+import {
+  buildFileUrlMap,
+  getFileKey,
+  isPdfFileKey,
+} from "@/lib/shared/filePreview";
 import { formatDiffDate } from "@/lib/shared/date";
 import {
   getRememberedBoardViewCounts,
@@ -116,10 +122,9 @@ const Home: FC = () => {
         boardList.flatMap((item: any) =>
           Array.isArray(item?.images)
             ? item.images
-                .map((image: any) =>
-                  typeof image === "string" ? image : image?.urlKey,
-                )
+                .map((image: any) => getFileKey(image))
                 .filter(Boolean)
+                .filter((key: string) => !isPdfFileKey(key))
             : [],
         ),
       ),
@@ -141,17 +146,10 @@ const Home: FC = () => {
     enabled: isAuthenticated === true && boardImageKeys.length > 0,
   });
 
-  const boardImageUrlMap = useMemo(() => {
-    if (!Array.isArray(boardFilesData)) return {};
-
-    return boardImageKeys.reduce<Record<string, string>>((acc, key, index) => {
-      const file = boardFilesData[index];
-      if (file?.preSignedUrl) {
-        acc[key] = file.preSignedUrl;
-      }
-      return acc;
-    }, {});
-  }, [boardFilesData, boardImageKeys]);
+  const boardImageUrlMap = useMemo(
+    () => buildFileUrlMap(boardImageKeys, boardFilesData),
+    [boardFilesData, boardImageKeys],
+  );
 
   if (isAuthenticated === null) {
     return <div>Loading...</div>;

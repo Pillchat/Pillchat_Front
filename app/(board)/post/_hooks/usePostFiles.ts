@@ -127,7 +127,7 @@ export const usePostFiles = () => {
       return;
     }
 
-    if (pdfItem) {
+    if (pdfItem?.source === "new") {
       revokeObjectUrl(pdfItem.previewUrl);
     }
 
@@ -146,7 +146,9 @@ export const usePostFiles = () => {
 
   const removeItem = (id: string) => {
     if (pdfItem?.id === id) {
-      revokeObjectUrl(pdfItem.previewUrl);
+      if (pdfItem.source === "new") {
+        revokeObjectUrl(pdfItem.previewUrl);
+      }
       setPdfItem(null);
       return;
     }
@@ -176,15 +178,12 @@ export const usePostFiles = () => {
   }, []);
 
   const setExistingPreviewItems = useCallback((items: UploadPreviewItem[]) => {
-    setExistingItems(items);
+    setExistingItems(items.filter((item) => item.type === "image"));
+    setPdfItem(items.find((item) => item.type === "pdf") ?? null);
   }, []);
 
   const previewItems = useMemo(() => {
-    if (existingItems.length > 0 || imageItems.length > 0) {
-      return [...existingItems, ...imageItems];
-    }
-    if (pdfItem) return [pdfItem];
-    return [];
+    return [...existingItems, ...imageItems, ...(pdfItem ? [pdfItem] : [])];
   }, [existingItems, imageItems, pdfItem]);
 
   return {
@@ -203,8 +202,9 @@ export const usePostFiles = () => {
     pdfFile: pdfItem?.file ?? null,
     hasFiles: previewItems.length > 0,
     setExistingPreviewItems,
-    remainingExistingKeys: existingItems
-      .map((item) => item.urlKey)
-      .filter((key): key is string => !!key),
+    remainingExistingKeys: [
+      ...existingItems.map((item) => item.urlKey),
+      pdfItem?.source === "existing" ? pdfItem.urlKey : undefined,
+    ].filter((key): key is string => !!key),
   };
 };
