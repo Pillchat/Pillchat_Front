@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { getCurrentUserId } from "@/lib/client/auth";
 import { fetchAPI } from "@/lib/client/fetch";
 import { CustomHeader, TabsWithUnderline } from "@/components/molecules";
 import { FloatingActionButton } from "@/components/atoms";

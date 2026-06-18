@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getCurrentUserId } from "@/lib/client/auth";
 import { fetchAPI } from "@/lib/client/fetch";
 import { CustomHeader } from "@/components/molecules";
 import { SolidButton } from "@/components/atoms";

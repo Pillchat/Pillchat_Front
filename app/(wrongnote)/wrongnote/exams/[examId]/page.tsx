@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { fetchAPI } from "@/lib/client/fetch";
 import { CustomHeader } from "@/components/molecules";
+import { getToken } from "@/lib/functions";
 import type { WrongNoteExam } from "@/types/wrongnote";
 
 const ExamDetailPage = () => {
