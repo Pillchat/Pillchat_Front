@@ -14,7 +14,7 @@ type Inquiry = {
 const STORAGE_KEY = "yakchat:support-inquiries";
 
 const TEXT = {
-  headerTitle: "문의하기",
+  headerTitle: "나의 문의 내역",
   writer: "나",
   loading: "문의 내역을 불러오는 중...",
   notFound: "문의 내역을 찾을 수 없습니다.",
@@ -77,8 +77,8 @@ const SupportDetailClient = ({ inquiryId }: { inquiryId: string }) => {
 
       {inquiry && (
         <>
-          <div className="mx-6 flex flex-col gap-8 pb-10 pt-5">
-            <div className="flex flex-col gap-6">
+          <div className="mx-6 flex flex-col gap-6 pb-10 pt-5">
+            <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
                 <div className="text-left text-xl font-semibold">
                   {inquiry.title}
