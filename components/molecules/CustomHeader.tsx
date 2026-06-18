@@ -1,9 +1,11 @@
 "use client";
 
+import { FC } from "react";
+
 import { LeftArrowButton, TextButton } from "@/components/atoms";
 import { useRouter } from "@/lib/navigation";
+
 import { Button } from "../ui/button";
-import { FC } from "react";
 
 interface CustomHeaderProps {
   title: string;
@@ -50,7 +52,6 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
           <div aria-hidden="true" className="h-9 w-9" />
         )}
       </header>
-      <div aria-hidden="true" className="h-[90px] shrink-0" />
     </>
   );
 };

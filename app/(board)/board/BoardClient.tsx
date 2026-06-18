@@ -16,6 +16,11 @@ import { CircleButton } from "@/components/molecules/board";
 import { Separator } from "@/components/ui/separator";
 import { formatDiffDate } from "@/lib/shared/date";
 import {
+  buildFileUrlMap,
+  getFileKey,
+  isPdfFileKey,
+} from "@/lib/shared/filePreview";
+import {
   getRememberedBoardViewCounts,
   markBoardViewIntent,
 } from "@/lib/client/boardView";
@@ -36,11 +41,6 @@ const resolveMaterialKey = (value: any, materialId: string | number) => {
 
   if (!raw) return "";
   return raw.includes("/") ? raw : `material/${materialId}/${raw}`;
-};
-
-const getBoardFileKey = (file: any) => {
-  if (typeof file === "string") return file;
-  return file?.urlKey ?? file?.key ?? file?.fileKey ?? file?.name ?? "";
 };
 
 const BoardClient = () => {
@@ -87,6 +87,11 @@ const BoardClient = () => {
     item?.replyCount ??
     item?.repliesCount ??
     0;
+
+  const getBoardAttachmentKeys = (item: any) =>
+    Array.isArray(item?.images)
+      ? item.images.map((image: any) => getFileKey(image)).filter(Boolean)
+      : [];
 
   const isStudyTab = currentStatus === "study";
 
@@ -190,8 +195,9 @@ const BoardClient = () => {
 
           return Array.isArray(item?.images)
             ? item.images
-                .map((image: any) => getBoardFileKey(image))
+                .map((image: any) => getFileKey(image))
                 .filter(Boolean)
+                .filter((key: string) => !isPdfFileKey(key))
             : [];
         }),
       ),
@@ -200,27 +206,10 @@ const BoardClient = () => {
 
   const { data: previewFilesData } = useFilesQuery({ keys: previewFileKeys });
 
-  const previewImageUrlMap = useMemo(() => {
-    if (!Array.isArray(previewFilesData)) return {};
-
-    return previewFilesData.reduce<Record<string, string>>(
-      (acc, file: any, index: number) => {
-        const requestedKey = previewFileKeys[index];
-        const responseKey = file?.key ?? "";
-
-        if (requestedKey && file?.preSignedUrl) {
-          acc[requestedKey] = file.preSignedUrl;
-        }
-
-        if (responseKey && file?.preSignedUrl) {
-          acc[responseKey] = file.preSignedUrl;
-        }
-
-        return acc;
-      },
-      {},
-    );
-  }, [previewFilesData, previewFileKeys]);
+  const previewImageUrlMap = useMemo(
+    () => buildFileUrlMap(previewFileKeys, previewFilesData),
+    [previewFilesData, previewFileKeys],
+  );
 
   const emptyText = q
     ? `"${q}" 검색 결과가 없습니다.`
@@ -273,7 +262,7 @@ const BoardClient = () => {
       <div
         className={cn(
           "relative flex-1",
-          isSearchOpen ? "overflow-hidden" : "overflow-y-auto",
+          isSearchOpen ? "overflow-hidden" : undefined,
         )}
       >
         {isLoading ? (
@@ -294,17 +283,17 @@ const BoardClient = () => {
           <div className="mx-6 py-5 pb-[5.625rem]">
             <div className="flex flex-col gap-5">
               {map(list, (item: any) => {
-                const imageKeys = isStudyTab
+                const attachmentKeys = isStudyTab
                   ? item?.id && Array.isArray(item?.images)
                     ? item.images
                         .map((value: any) => resolveMaterialKey(value, item.id))
                         .filter(Boolean)
                     : []
-                  : Array.isArray(item?.images)
-                    ? item.images
-                        .map((image: any) => getBoardFileKey(image))
-                        .filter(Boolean)
-                    : [];
+                  : getBoardAttachmentKeys(item);
+
+                const imageKeys = isStudyTab
+                  ? attachmentKeys
+                  : attachmentKeys.filter((key: string) => !isPdfFileKey(key));
 
                 const imageUrls = imageKeys
                   .map((key: string) => previewImageUrlMap[key])

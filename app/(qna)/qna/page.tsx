@@ -53,7 +53,7 @@ const QnaPage: FC = () => {
   return (
     <div className="flex h-screen flex-col">
       <div className="flex-shrink-0">
-        <GeneralHeader />
+        <GeneralHeader currentQ={q} currentStatus={currentStatus} />
         <TabsWithUnderline
           className="mx-6"
           tabs={TABS}

@@ -99,19 +99,37 @@ const ReviewListPage = () => {
         bodyMap[mode],
       );
       const quizData: QuizStartResponse = quizRaw.data ?? quizRaw;
+      const answerByQuestionId = new Map(
+        taskQuestions.map((question) => [question.id, question]),
+      );
 
       initSession({
         sessionId: quizData.sessionId,
         sourceType: sourceTypeMap[mode],
         title: selectedTask.title,
-        questions: quizData.questions.map((q) => ({
-          id: q.id,
-          questionType: q.type,
-          passage: q.content,
-          choices: mapChoices(q.choices),
-          subject: q.subject,
-          hint: q.hint,
-        })),
+        questions: quizData.questions.map((q) => {
+          const answer = answerByQuestionId.get(q.id);
+          const quizQuestion = q as typeof q & {
+            answer?: string;
+            correctAnswer?: string;
+            explanation?: string | null;
+          };
+
+          return {
+            id: q.id,
+            questionType: q.type,
+            passage: q.content,
+            choices: mapChoices(q.choices),
+            subject: q.subject,
+            hint: q.hint,
+            correctAnswer:
+              answer?.answer ??
+              quizQuestion.answer ??
+              quizQuestion.correctAnswer,
+            explanation:
+              answer?.explanation ?? quizQuestion.explanation ?? undefined,
+          };
+        }),
       });
       router.push("/questionbank/solve");
     } catch {

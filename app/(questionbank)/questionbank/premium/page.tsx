@@ -16,6 +16,7 @@ import type {
   SubjectTopic,
   GenerateStatusResponse,
   QuizStartResponse,
+  ServerQuestion,
 } from "@/types/questionbank";
 
 const POLL_INTERVAL = 2000;
@@ -195,6 +196,18 @@ const PremiumPage = () => {
       }
 
       // 3) 퀴즈 세션 시작
+      const resultRaw = await fetchAPI(
+        `/api/questionbank/ai-questions/result/${taskId}`,
+        "GET",
+      );
+      const resultQuestions: ServerQuestion[] =
+        resultRaw.questions ?? resultRaw.data?.questions ?? resultRaw;
+      const answerByQuestionId = new Map(
+        (Array.isArray(resultQuestions) ? resultQuestions : []).map(
+          (question) => [question.id, question],
+        ),
+      );
+
       const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", {
         type: "PREMIUM",
         taskId,
@@ -206,14 +219,29 @@ const PremiumPage = () => {
         sessionId: quizData.sessionId,
         sourceType: "PREMIUM",
         title: `${selectedSubject.name} 수제 제작 문제`,
-        questions: quizData.questions.map((q) => ({
-          id: q.id,
-          questionType: q.type,
-          passage: q.content,
-          choices: mapChoices(q.choices),
-          subject: q.subject,
-          hint: q.hint,
-        })),
+        questions: quizData.questions.map((q) => {
+          const answer = answerByQuestionId.get(q.id);
+          const quizQuestion = q as typeof q & {
+            answer?: string;
+            correctAnswer?: string;
+            explanation?: string | null;
+          };
+
+          return {
+            id: q.id,
+            questionType: q.type,
+            passage: q.content,
+            choices: mapChoices(q.choices),
+            subject: q.subject,
+            hint: q.hint,
+            correctAnswer:
+              answer?.answer ??
+              quizQuestion.answer ??
+              quizQuestion.correctAnswer,
+            explanation:
+              answer?.explanation ?? quizQuestion.explanation ?? undefined,
+          };
+        }),
       });
       router.push("/questionbank/solve");
     } catch (err: any) {

@@ -583,7 +583,7 @@ const UploadPage = () => {
       )}
 
       {step === Step.Upload && (
-        <div className="flex h-full w-full flex-1 flex-col">
+        <div className="flex min-h-screen flex-col bg-white">
           <BoardHeader
             title={isEditMode ? "학습자료 수정" : "학습자료 업로드"}
             rightButtonLabel={
@@ -600,165 +600,167 @@ const UploadPage = () => {
             onLeftButtonClick={prevStep}
           />
 
-          <div className="mb-5 w-full px-6">
-            <Controller
-              name="title"
-              control={control}
-              rules={{
-                required: "제목을 입력해주세요.",
-              }}
-              render={({ field }) => (
-                <IconInputField
-                  content="제목"
-                  placeholder="제목을 입력해주세요."
-                  value={field.value ?? ""}
-                  inputClassName="border-[#C4C4C4] focus-visible:border-[#C4C4C4] focus-visible:ring-[#C4C4C4]"
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value
-                        .replace(/^\s+/, "")
-                        .replace(/\s{2,}/g, " ")
-                        .slice(0, 30),
-                    )
-                  }
-                  onBlur={field.onBlur}
-                  ref={field.ref}
-                  errorMessage={errors.title?.message}
-                />
-              )}
-            />
-          </div>
-
-          <div className="mb-5 w-full px-6">
-            <Controller
-              name="content"
-              control={control}
-              render={({ field }) => (
-                <TextareaWithLabel
-                  label="본문"
-                  placeholder="본문을 입력해주세요."
-                  value={field.value ?? ""}
-                  className="max-h-[50dvh] border-[#C4C4C4] focus-visible:border-[#C4C4C4] focus-visible:ring-[#C4C4C4]"
-                  onChange={(e) => handleContentChange(e.target.value)}
-                  onBlur={field.onBlur}
-                  errorMessage={errors.content?.message}
-                  showMaxLengthError
-                />
-              )}
-            />
-          </div>
-
-          <Controller
-            name="subject"
-            control={control}
-            rules={QUESTION_FORM_RULES.subject}
-            render={() => (
-              <div className="mb-5 flex flex-col gap-1 px-6">
-                <ExpandableChipSection
-                  data={{
-                    과목: Object.values(getSubjectMapForChips()).flat(),
-                  }}
-                  selectedItems={selectedSubject ? [selectedSubject] : []}
-                  onItemToggle={handleSubjectToggle}
-                  chipContainerClassName="flex gap-1"
-                  selectedChipClassName="border-primary bg-accent text-primary"
-                  selectionMode="single"
-                  showDropdown={true}
-                  maxVisibleChips={4}
-                  expandedData={getSubjectMapForChips()}
-                  showDropdownButton={true}
-                />
-                {errors.subject && (
-                  <p className="text-sm text-destructive">
-                    {errors.subject.message}
-                  </p>
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-8">
+            <div className="mb-5 w-full px-6">
+              <Controller
+                name="title"
+                control={control}
+                rules={{
+                  required: "제목을 입력해주세요.",
+                }}
+                render={({ field }) => (
+                  <IconInputField
+                    content="제목"
+                    placeholder="제목을 입력해주세요."
+                    value={field.value ?? ""}
+                    inputClassName="border-[#C4C4C4] focus-visible:border-[#C4C4C4] focus-visible:ring-[#C4C4C4]"
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value
+                          .replace(/^\s+/, "")
+                          .replace(/\s{2,}/g, " ")
+                          .slice(0, 30),
+                      )
+                    }
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    errorMessage={errors.title?.message}
+                  />
                 )}
-              </div>
-            )}
-          />
-
-          <div className="px-6">
-            <p className="mb-3 font-[Pretendard] text-xs">업로드 할 파일</p>
-            <p className="mb-1 font-[Pretendard] text-xs text-[#999]">
-              이미지 파일 (JPG, PNG 등) 최대 10장 또는 PDF 파일 1개 가능
-            </p>
-
-            <div className="grid w-full grid-cols-2 gap-3">
-              <BoardButton
-                imageSrc="/icons/Image.svg"
-                className="max-w-[168.5px]"
-                text="이미지 업로드"
-                onClick={openImagePicker}
-                type="button"
-              />
-              <BoardButton
-                imageSrc="/icons/File2.svg"
-                className="max-w-[168.5px]"
-                text="파일 업로드"
-                onClick={openPdfPicker}
-                type="button"
               />
             </div>
 
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={handleImageChange}
-            />
+            <div className="mb-5 w-full px-6">
+              <Controller
+                name="content"
+                control={control}
+                render={({ field }) => (
+                  <TextareaWithLabel
+                    label="본문"
+                    placeholder="본문을 입력해주세요."
+                    value={field.value ?? ""}
+                    className="max-h-[50dvh] border-[#C4C4C4] focus-visible:border-[#C4C4C4] focus-visible:ring-[#C4C4C4]"
+                    onChange={(e) => handleContentChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    errorMessage={errors.content?.message}
+                    showMaxLengthError
+                  />
+                )}
+              />
+            </div>
 
-            <input
-              ref={pdfInputRef}
-              type="file"
-              accept="application/pdf"
-              className="hidden"
-              onChange={handlePdfChange}
-            />
-
-            {previewItems.length > 0 && (
-              <div className="mt-5">
-                <div className="grid max-h-[60dvh] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  {previewItems.map((item: any) => (
-                    <div
-                      key={item.id}
-                      className="relative aspect-square overflow-hidden border border-[#C4C4C4] bg-[#F8F8F8]"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => removeItem(item.id)}
-                        className="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center"
-                      >
-                        <img src="/icons/Remove.svg" alt="제거" />
-                      </button>
-
-                      {item.type === "image" ? (
-                        <img
-                          src={item.previewUrl}
-                          alt={item.name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <>
-                          <embed
-                            src={`${item.previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-                            type="application/pdf"
-                            className="h-full w-full"
-                          />
-                          <div className="absolute left-2 top-2 rounded bg-black/60 px-2 py-1 text-[10px] text-white">
-                            PDF
-                          </div>
-                          <div className="absolute bottom-0 left-0 right-0 truncate bg-black/55 px-2 py-1 text-[10px] text-white">
-                            {item.name}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
+            <Controller
+              name="subject"
+              control={control}
+              rules={QUESTION_FORM_RULES.subject}
+              render={() => (
+                <div className="mb-5 flex flex-col gap-1 px-6">
+                  <ExpandableChipSection
+                    data={{
+                      과목: Object.values(getSubjectMapForChips()).flat(),
+                    }}
+                    selectedItems={selectedSubject ? [selectedSubject] : []}
+                    onItemToggle={handleSubjectToggle}
+                    chipContainerClassName="flex gap-1"
+                    selectedChipClassName="border-primary bg-accent text-primary"
+                    selectionMode="single"
+                    showDropdown={true}
+                    maxVisibleChips={4}
+                    expandedData={getSubjectMapForChips()}
+                    showDropdownButton={true}
+                  />
+                  {errors.subject && (
+                    <p className="text-sm text-destructive">
+                      {errors.subject.message}
+                    </p>
+                  )}
                 </div>
+              )}
+            />
+
+            <div className="px-6">
+              <p className="mb-3 font-[Pretendard] text-xs">업로드 할 파일</p>
+              <p className="mb-1 font-[Pretendard] text-xs text-[#999]">
+                이미지 파일 (JPG, PNG 등) 최대 10장 또는 PDF 파일 1개 가능
+              </p>
+
+              <div className="grid w-full grid-cols-2 gap-3">
+                <BoardButton
+                  imageSrc="/icons/Image.svg"
+                  className="max-w-[168.5px]"
+                  text="이미지 업로드"
+                  onClick={openImagePicker}
+                  type="button"
+                />
+                <BoardButton
+                  imageSrc="/icons/File2.svg"
+                  className="max-w-[168.5px]"
+                  text="파일 업로드"
+                  onClick={openPdfPicker}
+                  type="button"
+                />
               </div>
-            )}
+
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleImageChange}
+              />
+
+              <input
+                ref={pdfInputRef}
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+                onChange={handlePdfChange}
+              />
+
+              {previewItems.length > 0 && (
+                <div className="mt-5 pb-2">
+                  <div className="grid max-h-[60dvh] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                    {previewItems.map((item: any) => (
+                      <div
+                        key={item.id}
+                        className="relative aspect-square overflow-hidden border border-[#C4C4C4] bg-[#F8F8F8]"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.id)}
+                          className="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center"
+                        >
+                          <img src="/icons/Remove.svg" alt="제거" />
+                        </button>
+
+                        {item.type === "image" ? (
+                          <img
+                            src={item.previewUrl}
+                            alt={item.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <>
+                            <embed
+                              src={`${item.previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                              type="application/pdf"
+                              className="h-full w-full"
+                            />
+                            <div className="absolute left-2 top-2 rounded bg-black/60 px-2 py-1 text-[10px] text-white">
+                              PDF
+                            </div>
+                            <div className="absolute bottom-0 left-0 right-0 truncate bg-black/55 px-2 py-1 text-[10px] text-white">
+                              {item.name}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

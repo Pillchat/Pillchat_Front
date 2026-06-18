@@ -574,7 +574,7 @@ const SignupPage: FC = () => {
     setIsGradeOpen(false);
   };
 
-  const isValidStudentId = (value: string) => /^\d{8}$/.test(value);
+  const isValidStudentId = (value: string) => /^\d{8,12}$/.test(value);
 
   // 정보 입력 단계 유효성 검사
   const isValidManualInfo = () => {
@@ -717,9 +717,12 @@ const SignupPage: FC = () => {
                     iconAsButton={true}
                     iconSize={20}
                     type="text"
-                    maxLength={8}
+                    maxLength={14}
                     inputMode="numeric"
                   />
+                  <p className="text-sm text-border">
+                    14자 이하로 입력해주세요
+                  </p>
                   <IconInputField
                     content="학년 (선택)"
                     value={grade}

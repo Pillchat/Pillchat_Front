@@ -2,9 +2,10 @@
 
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "@/lib/navigation";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAtomValue } from "jotai";
+
+import { useRouter } from "@/lib/navigation";
 import { unreadCountAtom } from "@/store/notification";
 
 interface AlarmHeaderProps {
@@ -20,14 +21,15 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
   const unreadCount = useAtomValue(unreadCountAtom);
 
   const currentStatus = useMemo(() => {
-    const s = searchParams.get("status");
-    return s === "pending" || s === "completed" ? s : "pending";
+    const status = searchParams.get("status");
+    return status === "pending" || status === "completed" ? status : "pending";
   }, [searchParams]);
 
   const currentQ = useMemo(() => searchParams.get("q") ?? "", [searchParams]);
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
+  const [isComposing, setIsComposing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -37,18 +39,26 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
   }, [pathname, currentQ]);
 
   useEffect(() => {
-    if (open) inputRef.current?.focus();
+    if (open) {
+      inputRef.current?.focus();
+    }
   }, [open]);
 
   const goQnaWithQuery = (q: string) => {
     const params = new URLSearchParams();
     params.set("status", currentStatus);
+
     const trimmed = q.trim();
-    if (trimmed) params.set("q", trimmed);
+    if (trimmed) {
+      params.set("q", trimmed);
+    }
+
     router.push(`/qna?${params.toString()}`);
   };
 
   const onSubmit = () => {
+    if (isComposing) return;
+
     goQnaWithQuery(value);
   };
 
@@ -65,7 +75,21 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
               ref={inputRef}
               value={value}
               onChange={(e) => setValue(e.target.value)}
+              onCompositionStart={() => setIsComposing(true)}
+              onCompositionEnd={(e) => {
+                setIsComposing(false);
+                setValue(e.currentTarget.value);
+              }}
               onKeyDown={(e) => {
+                if (
+                  isComposing ||
+                  e.nativeEvent.isComposing ||
+                  e.key === "Process" ||
+                  e.keyCode === 229
+                ) {
+                  return;
+                }
+
                 if (e.key === "Enter") onSubmit();
                 if (e.key === "Escape") setOpen(false);
               }}
@@ -120,7 +144,6 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
           </>
         )}
       </header>
-      <div aria-hidden="true" className="h-[90px] shrink-0" />
     </>
   );
 };

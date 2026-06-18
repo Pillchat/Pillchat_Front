@@ -2,11 +2,12 @@
 
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "@/lib/navigation";
 import { usePathname } from "next/navigation";
 import { useAtomValue } from "jotai";
-import { unreadCountAtom } from "@/store/notification";
+
+import { useRouter } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
+import { unreadCountAtom } from "@/store/notification";
 
 interface GeneralHeaderProps {
   currentQ?: string;
@@ -31,6 +32,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
   const [value, setValue] = useState(currentQ.trim());
   const [debouncedValue, setDebouncedValue] = useState(currentQ.trim());
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [isComposing, setIsComposing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const resolvedBasePath = useMemo(() => {
@@ -40,20 +42,33 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
   }, [pathname, searchBasePath]);
 
   useEffect(() => {
-    if (pathname.startsWith("/qna") || pathname.startsWith("/board")) {
-      const trimmed = currentQ.trim();
-      setValue(trimmed);
-      setDebouncedValue(trimmed);
-      if (trimmed) {
-        setOpen(true);
-      } else if (!isInputFocused) {
-        setOpen(false);
-      }
+    if (!(pathname.startsWith("/qna") || pathname.startsWith("/board"))) {
+      return;
+    }
+
+    const trimmed = currentQ.trim();
+    setValue(trimmed);
+    setDebouncedValue(trimmed);
+
+    if (trimmed) {
+      setOpen(true);
+    }
+  }, [pathname, currentQ]);
+
+  useEffect(() => {
+    if (!(pathname.startsWith("/qna") || pathname.startsWith("/board"))) {
+      return;
+    }
+
+    if (!isInputFocused && !currentQ.trim()) {
+      setOpen(false);
     }
   }, [pathname, currentQ, isInputFocused]);
 
   useEffect(() => {
-    if (open) inputRef.current?.focus();
+    if (open) {
+      inputRef.current?.focus();
+    }
   }, [open]);
 
   useEffect(() => {
@@ -61,12 +76,14 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
   }, [open, onSearchOpenChange]);
 
   useEffect(() => {
+    if (isComposing) return;
+
     const timer = window.setTimeout(() => {
       setDebouncedValue(value);
     }, 200);
 
     return () => window.clearTimeout(timer);
-  }, [value]);
+  }, [value, isComposing]);
 
   useEffect(() => {
     if (!(pathname.startsWith("/qna") || pathname.startsWith("/board"))) return;
@@ -113,12 +130,29 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
               ref={inputRef}
               value={value}
               onChange={(e) => setValue(e.target.value)}
+              onCompositionStart={() => setIsComposing(true)}
+              onCompositionEnd={(e) => {
+                setIsComposing(false);
+                setValue(e.currentTarget.value);
+              }}
+              onFocus={() => setIsInputFocused(true)}
               onKeyDown={(e) => {
+                if (
+                  isComposing ||
+                  e.nativeEvent.isComposing ||
+                  e.key === "Process" ||
+                  e.keyCode === 229
+                ) {
+                  return;
+                }
+
                 if (e.key === "Escape" && !currentQ.trim() && !value.trim()) {
                   setOpen(false);
+                  setIsInputFocused(false);
                 }
               }}
               onBlur={() => {
+                setIsInputFocused(false);
                 if (!currentQ.trim() && !value.trim()) {
                   setOpen(false);
                 }
@@ -132,12 +166,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => inputRef.current?.focus()}
             >
-              <img
-                src="/icons/search.svg"
-                alt="search"
-                width={32}
-                height={32}
-              />
+              <img src="/icons/search.svg" alt="search" width={32} height={32} />
             </button>
           </div>
         ) : (
@@ -187,7 +216,6 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
           </>
         )}
       </header>
-      <div aria-hidden="true" className="h-[90px] shrink-0" />
     </>
   );
 };

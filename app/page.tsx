@@ -8,6 +8,11 @@ import {
 } from "@/components/molecules";
 import { useRouter } from "@/lib/navigation";
 import { getValidAccessToken } from "@/lib/client/fetch";
+import {
+  buildFileUrlMap,
+  getFileKey,
+  isPdfFileKey,
+} from "@/lib/shared/filePreview";
 import { formatDiffDate } from "@/lib/shared/date";
 import {
   getRememberedBoardViewCounts,
@@ -114,10 +119,9 @@ const Home: FC = () => {
         boardList.flatMap((item: any) =>
           Array.isArray(item?.images)
             ? item.images
-                .map((image: any) =>
-                  typeof image === "string" ? image : image?.urlKey,
-                )
+                .map((image: any) => getFileKey(image))
                 .filter(Boolean)
+                .filter((key: string) => !isPdfFileKey(key))
             : [],
         ),
       ),
@@ -128,17 +132,10 @@ const Home: FC = () => {
     keys: isAuthenticated === true ? boardImageKeys : [],
   });
 
-  const boardImageUrlMap = useMemo(() => {
-    if (!Array.isArray(boardFilesData)) return {};
-
-    return boardImageKeys.reduce<Record<string, string>>((acc, key, index) => {
-      const file = boardFilesData[index];
-      if (file?.preSignedUrl) {
-        acc[key] = file.preSignedUrl;
-      }
-      return acc;
-    }, {});
-  }, [boardFilesData, boardImageKeys]);
+  const boardImageUrlMap = useMemo(
+    () => buildFileUrlMap(boardImageKeys, boardFilesData),
+    [boardFilesData, boardImageKeys],
+  );
 
   if (isAuthenticated === null) {
     return <div>Loading...</div>;
@@ -321,10 +318,9 @@ const Home: FC = () => {
               {boardList.map((board: any, index: number) => {
                 const imageKeys = Array.isArray(board?.images)
                   ? board.images
-                      .map((image: any) =>
-                        typeof image === "string" ? image : image?.urlKey,
-                      )
+                      .map((image: any) => getFileKey(image))
                       .filter(Boolean)
+                      .filter((key: string) => !isPdfFileKey(key))
                   : [];
 
                 const imageUrls = imageKeys

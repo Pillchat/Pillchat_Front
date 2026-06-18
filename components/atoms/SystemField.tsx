@@ -13,9 +13,11 @@ export function SystemField({
   textColor = "text-black",
   onClick,
 }: option) {
+  const normalizedIconSrc = iconSrc.startsWith("/") ? iconSrc : `/${iconSrc}`;
+
   return (
     <div className="flex w-full flex-row items-center gap-2" onClick={onClick}>
-      <img src={`/${iconSrc}`} className="h-10 w-10" />
+      <img src={normalizedIconSrc} alt={title} className="h-10 w-10" />
       <div className="flex flex-col">
         <p className={`text-lg ${textColor}`}>{title}</p>
         <p className="text-sm font-light text-button-foreground">
