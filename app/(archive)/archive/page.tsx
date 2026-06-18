@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { fetchAPI } from "@/lib/client/fetch";
 import { formatDiffDate } from "@/lib/shared/date";
 import { getCurrentUserId } from "@/lib/client/auth";
+import { getToken } from "@/lib/functions";
 import { markBoardViewIntent } from "@/lib/client/boardView";
 import { map } from "lodash";
 import { useSubjects } from "@/hooks";
