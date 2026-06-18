@@ -1,5 +1,4 @@
-import { fetchAPI } from "@/lib/client/fetch";
-import { useQuery } from "@tanstack/react-query";
+import { useFilesQuery } from "@/hooks/queries";
 
 export const useFetchImage = ({
   type,
@@ -15,20 +14,11 @@ export const useFetchImage = ({
     urlKey: string;
   }[];
 }) => {
-  const { data: imageData, isLoading: imageLoading } = useQuery({
-    queryKey: ["files", type, sourceId, sourceKey, images],
-    queryFn: async () => {
-      if (!sourceKey && (!images || images.length === 0)) {
-        return [];
-      }
-
-      const keys = sourceKey
-        ? [sourceKey]
-        : images?.map((image) => `${type}/${sourceId}/${image.urlKey}`);
-
-      return fetchAPI("/api/files", "GET", { keys });
-    },
-    enabled: (!!sourceId && !!images) || !!sourceKey,
+  const { data: imageData, isLoading: imageLoading } = useFilesQuery({
+    type,
+    sourceId,
+    sourceKey,
+    images,
   });
 
   return { imageData, imageLoading };

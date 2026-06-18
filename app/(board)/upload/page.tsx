@@ -17,7 +17,7 @@ import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { useSubjects } from "@/hooks";
 import { fetchAPI } from "@/lib/client/fetch";
 import { uploadMaterial } from "@/lib/client/upload";
-import { useQuery } from "@tanstack/react-query";
+import { useFilesQuery, useMaterialQuery } from "@/hooks/queries";
 
 enum Step {
   Guide = 1,
@@ -291,9 +291,7 @@ const UploadPage = () => {
     }
   }, [draftKey, setStep, setValue]);
 
-  const { data: editMaterial } = useQuery({
-    queryKey: ["material-edit", editId],
-    queryFn: () => fetchAPI(`/api/materials/${editId}`, "GET"),
+  const { data: editMaterial } = useMaterialQuery(editId, {
     enabled: isEditMode && !!editId,
   });
 
@@ -315,19 +313,8 @@ const UploadPage = () => {
     return [...new Set([...imageKeys, ...pdfKeys])];
   }, [editMaterial]);
 
-  const { data: editFilesData } = useQuery({
-    queryKey: ["material-edit-files", editMaterial?.id, editFileKeys],
-    queryFn: async () => {
-      if (editFileKeys.length === 0) return [];
-
-      const params = new URLSearchParams();
-      editFileKeys.forEach((key) => {
-        params.append("keys", key);
-      });
-
-      return fetchAPI(`/api/files?${params.toString()}`, "GET");
-    },
-    enabled: isEditMode && editFileKeys.length > 0,
+  const { data: editFilesData } = useFilesQuery({
+    keys: isEditMode ? editFileKeys : [],
   });
 
   const editFileUrlMap = useMemo(() => {

@@ -8,13 +8,14 @@ import {
   SelectModal,
 } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
-import { fetchAPI } from "@/lib/client/fetch";
 import { getCurrentUserId } from "@/lib/client/auth";
 import { syncViewCountInQueryData } from "@/lib/shared/syncViewCount";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/lib/navigation";
 import { FC, useEffect, useState } from "react";
 import { useLikeStatus } from "@/hooks/useLikeStatus";
+import { useFilesQuery, useQuestionQuery } from "@/hooks/queries";
+import { useDeleteQuestionMutation } from "@/hooks/mutations";
 import { QuestionTitleSection } from "./QuestionTitleSection";
 import { QuestionContents } from "./QuestionContents";
 import { AnswerDetailPage } from "./AnswerDetailPage";
@@ -28,11 +29,8 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
   const currentUserId = getCurrentUserId();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const { data: questionData, isLoading: questionLoading } = useQuery({
-    queryKey: ["question", questionId],
-    queryFn: () => fetchAPI(`/api/questions/${questionId}`, "GET"),
-    enabled: !!questionId,
-  });
+  const { data: questionData, isLoading: questionLoading } =
+    useQuestionQuery(questionId);
 
   useEffect(() => {
     if (
@@ -62,29 +60,25 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
     queryClient.invalidateQueries({ queryKey: ["home-questions"] });
   }, [questionData?.viewCount, queryClient, questionId]);
 
-  const { data: filesData, isLoading: filesLoading } = useQuery({
-    queryKey: ["files", questionData?.id, questionData?.images],
-    queryFn: async () => {
-      if (!questionData?.images || questionData.images.length === 0) return [];
-      const keys = questionData.images.map(
-        (image) => `question/${questionData.id}/${image.urlKey}`,
-      );
-      return fetchAPI("/api/files", "GET", { keys });
-    },
-    enabled: !!questionData?.id && !!questionData?.images,
+  const questionFileKeys =
+    questionData?.images?.map(
+      (image) => `question/${questionData.id}/${image.urlKey}`,
+    ) ?? [];
+  const { data: filesData, isLoading: filesLoading } = useFilesQuery({
+    keys: questionFileKeys,
   });
 
   const handleLikeClick = async () => {
     await toggleLike();
   };
 
-  const isAuthor =
+  const isAuthor = Boolean(
     questionData &&
-    currentUserId &&
-    (questionData.userId ? questionData.userId === currentUserId : false);
+      currentUserId &&
+      (questionData.userId ? questionData.userId === currentUserId : false),
+  );
 
-  const deleteMutation = useMutation({
-    mutationFn: () => fetchAPI(`/api/questions/${questionId}`, "DELETE"),
+  const deleteMutation = useDeleteQuestionMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["questions"] });
       queryClient.invalidateQueries({ queryKey: ["question", questionId] });
@@ -101,7 +95,7 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
   const handleReport = () =>
     router.push(`/reports?type=QUESTION&id=${questionId}`);
   const confirmDelete = () => {
-    deleteMutation.mutate();
+    deleteMutation.mutate(questionId);
     setShowDeleteConfirm(false);
   };
 

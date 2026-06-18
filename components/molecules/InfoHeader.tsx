@@ -37,26 +37,26 @@ export const InfoHeader: FC<InfoHeaderProps> = ({
         {/* 가운데: 타이틀 */}
         <p className="text-lg font-semibold">{title}</p>
 
-      {/* 오른쪽: 버튼 + 아이콘 */}
-      <div className="flex items-center gap-2">
-        {showIcon ? (
-          <Button
-            variant="textOnly"
-            size="icon"
-            onClick={() => router.push("/")}
-          >
-            <img src="/icons/Home.svg" alt="home" width={32} height={32} />
-          </Button>
-        ) : (
-          <TextButton
-            label={rightButtonLabel}
-            variant="textOnly"
-            onClick={onRightButtonClick}
-            className={`text-md p-0 ${
-              isActive ? "text-foreground" : "text-muted-foreground"
-            }`}
-          />
-        )}
+        {/* 오른쪽: 버튼 + 아이콘 */}
+        <div className="flex items-center gap-2">
+          {showIcon ? (
+            <Button
+              variant="textOnly"
+              size="icon"
+              onClick={() => router.push("/")}
+            >
+              <img src="/icons/Home.svg" alt="home" width={32} height={32} />
+            </Button>
+          ) : (
+            <TextButton
+              label={rightButtonLabel}
+              variant="textOnly"
+              onClick={onRightButtonClick}
+              className={`text-md p-0 ${
+                isActive ? "text-foreground" : "text-muted-foreground"
+              }`}
+            />
+          )}
 
           {infoIconSrc && (
             <img

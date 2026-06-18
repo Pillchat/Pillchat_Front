@@ -103,7 +103,12 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
               onMouseDown={(e) => e.preventDefault()}
               onClick={onSubmit}
             >
-              <img src="/icons/search.svg" alt="search" width={32} height={32} />
+              <img
+                src="/icons/search.svg"
+                alt="search"
+                width={32}
+                height={32}
+              />
             </button>
           </div>
         ) : (
@@ -112,7 +117,12 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
               href="/"
               className="flex h-[3.625rem] cursor-pointer items-center"
             >
-              <img src="/brand/PillChat.svg" alt="logo" width={82} height={32} />
+              <img
+                src="/brand/PillChat.svg"
+                alt="logo"
+                width={82}
+                height={32}
+              />
             </Link>
 
             <div className="flex items-center gap-4">

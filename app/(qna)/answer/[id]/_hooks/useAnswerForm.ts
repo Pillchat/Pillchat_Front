@@ -1,12 +1,16 @@
 import { useForm } from "react-hook-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { fetchAPI } from "@/lib/client/fetch";
 import { getCurrentUserId } from "@/lib/client/auth";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ImageButtonRef } from "@/components/atoms/ImageButton";
 import { useAnswerSteps } from "./useAnswerSteps";
-import { Answer, QuestionResponse } from "@/types";
+import {
+  useAnswerQuery,
+  useFilesQuery,
+  useQuestionQuery,
+} from "@/hooks/queries";
+import { useSaveAnswerMutation } from "@/hooks/mutations";
 
 export interface AnswerFormData {
   questionId: string;
@@ -48,40 +52,22 @@ export const useAnswerForm = ({ questionId }: UseAnswerFormProps) => {
 
   // 질문 데이터 조회
   const { data: question, isLoading: isLoadingQuestion } =
-    useQuery<QuestionResponse>({
-      queryKey: ["question", questionId],
-      queryFn: () => fetchAPI(`/api/questions/${questionId}`, "GET"),
-      enabled: !!questionId,
-    });
+    useQuestionQuery(questionId);
 
   // Edit 모드일 때 기존 답변 데이터 조회
-  const { data: existingAnswer, isLoading: isLoadingAnswer } = useQuery({
-    queryKey: ["answer", editAnswerId],
-    queryFn: () => fetchAPI(`/api/answers/${editAnswerId}`, "GET"),
-    enabled: isEditMode && !!editAnswerId,
-  });
+  const { data: existingAnswer, isLoading: isLoadingAnswer } = useAnswerQuery(
+    isEditMode ? editAnswerId : null,
+  );
 
   // Edit 모드일 때 기존 이미지 데이터 조회
-  const { data: existingFiles } = useQuery({
-    queryKey: ["answer-files", editAnswerId, existingAnswer?.steps],
-    queryFn: async () => {
-      if (!existingAnswer?.steps) return [];
-
-      // 모든 step의 이미지 키를 수집
-      const allKeys: string[] = [];
-      existingAnswer.steps.forEach((step) => {
-        step.images.forEach((imageKey) => {
-          allKeys.push(
-            `answer/${editAnswerId}/step/${step.stepId}/${imageKey}`,
-          );
-        });
-      });
-
-      if (allKeys.length === 0) return [];
-      return fetchAPI("/api/files", "GET", { keys: allKeys });
-    },
-    enabled: isEditMode && !!existingAnswer?.steps,
-  });
+  const existingFileKeys =
+    existingAnswer?.steps?.flatMap((step: any) =>
+      (step.images ?? []).map(
+        (imageKey: string) =>
+          `answer/${editAnswerId}/step/${step.stepId}/${imageKey}`,
+      ),
+    ) ?? [];
+  const { data: existingFiles } = useFilesQuery({ keys: existingFileKeys });
 
   // Edit 모드일 때 로그인 및 권한 체크
   useEffect(() => {
@@ -157,21 +143,7 @@ export const useAnswerForm = ({ questionId }: UseAnswerFormProps) => {
   }, [isEditMode, existingFiles, existingAnswer]);
 
   // 답변 등록/수정 mutation
-  const mutation = useMutation({
-    mutationFn: (formData: AnswerFormData) => {
-      if (isEditMode && editAnswerId) {
-        return fetchAPI(`/api/answers/${editAnswerId}`, "PUT", {
-          questionId,
-          steps,
-        });
-      } else {
-        return fetchAPI("/api/answers", "POST", {
-          ...formData,
-          questionId,
-          steps,
-        });
-      }
-    },
+  const mutation = useSaveAnswerMutation({
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["question", questionId] });
       queryClient.invalidateQueries({ queryKey: ["answers", questionId] });
@@ -216,7 +188,11 @@ export const useAnswerForm = ({ questionId }: UseAnswerFormProps) => {
       }
     }
 
-    mutation.mutate(data);
+    mutation.mutate({
+      questionId,
+      steps,
+      answerId: isEditMode ? editAnswerId : null,
+    });
   };
 
   const handleRightButtonClick = () => {

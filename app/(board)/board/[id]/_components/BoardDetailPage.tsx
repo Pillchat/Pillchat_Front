@@ -9,7 +9,6 @@ import {
 } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { fetchAPI } from "@/lib/client/fetch";
 import { formatDiffDate } from "@/lib/shared/date";
 import {
   buildFileUrlMap,
@@ -22,10 +21,22 @@ import {
   shouldSkipBoardViewOnLoad,
 } from "@/lib/client/boardView";
 import { syncViewCountInQueryData } from "@/lib/shared/syncViewCount";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/lib/navigation";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useLikeStatus } from "@/hooks/useLikeStatus";
+import {
+  useBoardCommentsQuery,
+  useBoardQuery,
+  useFilesQuery,
+} from "@/hooks/queries";
+import {
+  useCreateBoardCommentMutation,
+  useDeleteBoardCommentMutation,
+  useDeleteBoardMutation,
+  useToggleBoardCommentLikeMutation,
+  useUpdateBoardCommentMutation,
+} from "@/hooks/mutations";
 import { BoardTitleSection } from "./BoardTitleSection";
 import { BoardContents } from "./BoardContents";
 
@@ -82,16 +93,15 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     number | null
   >(null);
 
-  const { data: boardData, isLoading: boardLoading } = useQuery({
-    queryKey: ["board", boardId, skipView],
-    queryFn: () =>
-      fetchAPI(`/api/boards/${boardId}`, "GET", {
-        skipView: String(skipView),
-      }),
-    enabled: !!boardId,
-    staleTime: skipView ? 60 * 1000 : 0,
-    refetchOnMount: skipView ? true : "always",
-  });
+  const { data: boardData, isLoading: boardLoading } = useBoardQuery(
+    boardId,
+    { skipView },
+    {
+      enabled: !!boardId,
+      staleTime: skipView ? 60 * 1000 : 0,
+      refetchOnMount: skipView ? true : "always",
+    },
+  );
 
   useEffect(() => {
     if (boardData?.viewCount === undefined || boardData?.viewCount === null) {
@@ -118,19 +128,8 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
       .filter(Boolean);
   }, [boardData?.images]);
 
-  const { data: filesData, isLoading: filesLoading } = useQuery({
-    queryKey: ["board-files", boardData?.id, boardFileKeys],
-    queryFn: async () => {
-      if (boardFileKeys.length === 0) return [];
-
-      const params = new URLSearchParams();
-      boardFileKeys.forEach((key) => {
-        params.append("keys", key);
-      });
-
-      return fetchAPI(`/api/files?${params.toString()}`, "GET");
-    },
-    enabled: boardFileKeys.length > 0,
+  const { data: filesData, isLoading: filesLoading } = useFilesQuery({
+    keys: boardFileKeys,
   });
 
   const fileUrlMap = useMemo(
@@ -155,11 +154,8 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const pdfUrl = pdfKey ? (fileUrlMap[pdfKey] ?? "") : "";
   const pdfName = pdfKey.split("/").pop() ?? "";
 
-  const { data: commentsData, isLoading: commentsLoading } = useQuery({
-    queryKey: ["board-comments", boardId],
-    queryFn: () => fetchAPI(`/api/boards/${boardId}/comments`, "GET"),
-    enabled: !!boardId,
-  });
+  const { data: commentsData, isLoading: commentsLoading } =
+    useBoardCommentsQuery(boardId);
 
   const comments = useMemo(() => {
     const raw = Array.isArray(commentsData)
@@ -231,8 +227,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     currentUserId &&
     (boardData.userId ? boardData.userId === currentUserId : false);
 
-  const deleteMutation = useMutation({
-    mutationFn: () => fetchAPI(`/api/boards/${boardId}`, "DELETE"),
+  const deleteMutation = useDeleteBoardMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["boards"] });
       queryClient.invalidateQueries({ queryKey: ["board", boardId] });
@@ -244,16 +239,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     },
   });
 
-  const likeCommentMutation = useMutation({
-    mutationFn: async (payload: { commentId: number; nextLiked: boolean }) => {
-      const { commentId, nextLiked } = payload;
-
-      if (nextLiked) {
-        return fetchAPI(`/api/boards/comments/${commentId}/like`, "POST");
-      }
-
-      return fetchAPI(`/api/boards/comments/${commentId}/like`, "DELETE");
-    },
+  const likeCommentMutation = useToggleBoardCommentLikeMutation({
     onMutate: ({ commentId, nextLiked }) => {
       setCommentLikePendingId(commentId);
       setCommentLikeOverrides((prev) => ({
@@ -278,11 +264,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     },
   });
 
-  const commentMutation = useMutation({
-    mutationFn: () =>
-      fetchAPI(`/api/boards/${boardId}/comments`, "POST", {
-        content: commentValue.trim(),
-      }),
+  const commentMutation = useCreateBoardCommentMutation({
     onSuccess: () => {
       setCommentValue("");
       queryClient.invalidateQueries({ queryKey: ["board-comments", boardId] });
@@ -293,11 +275,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     },
   });
 
-  const updateCommentMutation = useMutation({
-    mutationFn: (payload: { commentId: number; content: string }) =>
-      fetchAPI(`/api/boards/comments/${payload.commentId}`, "PUT", {
-        content: payload.content.trim(),
-      }),
+  const updateCommentMutation = useUpdateBoardCommentMutation({
     onSuccess: () => {
       setEditingCommentId(null);
       setEditingCommentValue("");
@@ -309,9 +287,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     },
   });
 
-  const deleteCommentMutation = useMutation({
-    mutationFn: (commentId: number) =>
-      fetchAPI(`/api/boards/comments/${commentId}`, "DELETE"),
+  const deleteCommentMutation = useDeleteBoardCommentMutation({
     onSuccess: () => {
       setDeletingCommentId(null);
       queryClient.invalidateQueries({ queryKey: ["board-comments", boardId] });
@@ -330,13 +306,16 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   };
 
   const confirmDelete = () => {
-    deleteMutation.mutate();
+    deleteMutation.mutate(boardId);
     setShowDeleteConfirm(false);
   };
 
   const handleCommentSubmit = () => {
     if (!commentValue.trim() || commentMutation.isPending) return;
-    commentMutation.mutate();
+    commentMutation.mutate({
+      boardId,
+      content: commentValue,
+    });
   };
 
   const startEditComment = (comment: any) => {

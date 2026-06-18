@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
 import { useSubjects } from "@/hooks";
-import { fetchAPI } from "@/lib/client/fetch";
+import { useSubjectQuery } from "@/hooks/queries";
 
 export type UploadFormData = {
   title: string;
@@ -41,19 +40,12 @@ export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
   });
 
   const selectedSubject = watch("subject");
+  const selectedSubjectCode = getSubjectCodeByLabel(selectedSubject);
   const subjectId = watch("subjectId");
   const title = watch("title");
   const content = watch("content");
 
-  const { data } = useQuery({
-    queryKey: ["subjects", selectedSubject],
-    queryFn: () =>
-      fetchAPI(
-        `/api/subjects/${getSubjectCodeByLabel(selectedSubject)}`,
-        "GET",
-      ),
-    enabled: !!selectedSubject,
-  });
+  const { data } = useSubjectQuery(selectedSubjectCode);
 
   useEffect(() => {
     if (data?.id) {

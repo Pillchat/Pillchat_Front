@@ -175,7 +175,12 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
               href="/"
               className="flex h-[3.625rem] cursor-pointer items-center"
             >
-              <img src="/brand/PillChat.svg" alt="logo" width={82} height={32} />
+              <img
+                src="/brand/PillChat.svg"
+                alt="logo"
+                width={82}
+                height={32}
+              />
             </Link>
 
             <div className="flex items-center gap-4">

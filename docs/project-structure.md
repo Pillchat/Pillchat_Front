@@ -47,6 +47,8 @@ components/
   icons/                 React icon component
 
 hooks/                   여러 route에서 쓰는 client hook
+  queries/               GET 기반 server-state hook
+  mutations/             POST, PUT, DELETE 기반 server-state hook
 lib/
   client/                browser/localStorage/FormData 의존 helper
   server/                Next route handler 전용 server helper

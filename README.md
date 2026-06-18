@@ -3,6 +3,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 ## Project Structure
 
 Directory rules and the rationale for the current App Router layout are documented in [docs/project-structure.md](docs/project-structure.md).
+API query/mutation hook rules are documented in [docs/api-query-mutation-structure.md](docs/api-query-mutation-structure.md).
 
 ## Getting Started
 
