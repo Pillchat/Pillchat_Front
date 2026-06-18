@@ -6,9 +6,7 @@ import {
   QuestionListCard,
   TabsWithUnderline,
 } from "@/components/molecules";
-import { fetchAPI } from "@/lib/client/fetch";
 import { formatDiffDate } from "@/lib/shared/date";
-import { useQuery } from "@tanstack/react-query";
 import { FC, Fragment, useMemo } from "react";
 import { useQnaTabState } from "./_hooks";
 import { map } from "lodash";
@@ -17,6 +15,7 @@ import { useRouter } from "@/lib/navigation";
 import { useSearchParams } from "next/navigation";
 import { FloatingActionButton } from "@/components/atoms";
 import { QuestionWithBubble } from "@/components/icons";
+import { useQuestionsQuery } from "@/hooks/queries";
 
 const TABS = [
   { value: "pending", label: "답변을 기다리는 질문" },
@@ -29,10 +28,7 @@ const QnaPage: FC = () => {
   const searchParams = useSearchParams();
   const q = (searchParams.get("q") ?? "").trim();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["questions", currentStatus],
-    queryFn: () => fetchAPI(`/api/questions?status=${currentStatus}`, "GET"),
-  });
+  const { data, isLoading } = useQuestionsQuery(currentStatus);
 
   const list = useMemo(() => {
     if (!Array.isArray(data)) return [];

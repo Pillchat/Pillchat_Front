@@ -1,31 +1,7 @@
-import { fetchAPI } from "@/lib/client/fetch";
-import { useQuery } from "@tanstack/react-query";
-
-// API 데이터 타입 정의
-export type SubjectItem = {
-  code: string;
-  label: string;
-};
-
-export type SubjectSection = {
-  sectionCode: string;
-  sectionTitle: string;
-  items: SubjectItem[];
-};
-
-export type SubjectsResponse = {
-  sections: SubjectSection[];
-};
+import { SubjectItem, useSubjectsQuery } from "@/hooks/queries";
 
 export const useSubjects = () => {
-  const {
-    data: response,
-    isLoading,
-    error,
-  } = useQuery<SubjectsResponse>({
-    queryKey: ["subjects"],
-    queryFn: () => fetchAPI("/api/subjects", "GET"),
-  });
+  const { data: response, isLoading, error } = useSubjectsQuery();
 
   const subjects = response?.sections;
 

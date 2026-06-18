@@ -7,13 +7,14 @@ import {
   SelectModal,
 } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
-import { fetchAPI } from "@/lib/client/fetch";
 import { getCurrentUserId } from "@/lib/client/auth";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/lib/navigation";
 import { FC, useMemo, useState } from "react";
 import { MaterialTitleSection } from "./MaterialTitleSection";
 import { MaterialContents } from "./MaterialContents";
+import { useFilesQuery, useMaterialQuery } from "@/hooks/queries";
+import { useDeleteMaterialMutation } from "@/hooks/mutations";
 
 const resolveMaterialKey = (value: any, materialId: string | number) => {
   const raw =
@@ -33,11 +34,8 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
   const currentUserId = getCurrentUserId();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const { data: materialData, isLoading: materialLoading } = useQuery({
-    queryKey: ["material", materialId],
-    queryFn: () => fetchAPI(`/api/materials/${materialId}`, "GET"),
-    enabled: !!materialId,
-  });
+  const { data: materialData, isLoading: materialLoading } =
+    useMaterialQuery(materialId);
 
   const fileKeys = useMemo(() => {
     if (!materialData?.id) return [];
@@ -57,19 +55,8 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
     return [...new Set([...imageKeys, ...pdfKeys])];
   }, [materialData]);
 
-  const { data: filesData, isLoading: filesLoading } = useQuery({
-    queryKey: ["material-files", materialData?.id, fileKeys],
-    queryFn: async () => {
-      if (fileKeys.length === 0) return [];
-
-      const params = new URLSearchParams();
-      fileKeys.forEach((key) => {
-        params.append("keys", key);
-      });
-
-      return fetchAPI(`/api/files?${params.toString()}`, "GET");
-    },
-    enabled: fileKeys.length > 0,
+  const { data: filesData, isLoading: filesLoading } = useFilesQuery({
+    keys: fileKeys,
   });
 
   const fileUrlMap = useMemo(() => {
@@ -122,8 +109,7 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
       ? Number(materialData.userId) === Number(currentUserId)
       : false);
 
-  const deleteMutation = useMutation({
-    mutationFn: () => fetchAPI(`/api/materials/${materialId}`, "DELETE"),
+  const deleteMutation = useDeleteMaterialMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["material", materialId] });
       queryClient.invalidateQueries({ queryKey: ["materials"] });
@@ -141,7 +127,7 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
     router.push(`/reports?type=MATERIAL&id=${materialId}`);
 
   const confirmDelete = () => {
-    deleteMutation.mutate();
+    deleteMutation.mutate(materialId);
     setShowDeleteConfirm(false);
   };
 

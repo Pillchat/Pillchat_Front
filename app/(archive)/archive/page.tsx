@@ -3,7 +3,6 @@
 type ArchiveTabKey = /*"my-questions" | */ "my-study" | "my-note" | "my-post";
 
 import { FC, Fragment, useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "@/lib/navigation";
 import {
   AlarmHeader,
@@ -17,12 +16,13 @@ import {
   useMyQuestions,
 } from "@/app/(archive)/archive/_hooks/";
 import { Separator } from "@/components/ui/separator";
-import { fetchAPI } from "@/lib/client/fetch";
+import { fetchAPI, getToken } from "@/lib/client/fetch";
 import { formatDiffDate } from "@/lib/shared/date";
 import { getCurrentUserId } from "@/lib/client/auth";
 import { markBoardViewIntent } from "@/lib/client/boardView";
 import { map } from "lodash";
 import { useSubjects } from "@/hooks";
+import { useFilesQuery } from "@/hooks/queries";
 import { FloatingActionButton } from "@/components/atoms";
 import WrongNoteCard from "@/app/(wrongnote)/wrongnote/_components/WrongNoteCard";
 import type {
@@ -200,20 +200,7 @@ const ArchivePage: FC = () => {
     return [];
   }, [currentStatus, myPosts, filteredMaterials]);
 
-  const { data: previewFilesData } = useQuery({
-    queryKey: ["archive-preview-files", currentStatus, previewFileKeys],
-    queryFn: async () => {
-      if (previewFileKeys.length === 0) return [];
-
-      const params = new URLSearchParams();
-      previewFileKeys.forEach((key) => {
-        params.append("keys", key);
-      });
-
-      return fetchAPI(`/api/files?${params.toString()}`, "GET");
-    },
-    enabled: previewFileKeys.length > 0,
-  });
+  const { data: previewFilesData } = useFilesQuery({ keys: previewFileKeys });
 
   const previewImageUrlMap = useMemo(() => {
     if (!Array.isArray(previewFilesData)) return {};

@@ -3,7 +3,6 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import { map } from "lodash";
 
 import {
@@ -15,7 +14,6 @@ import {
 } from "@/components/molecules";
 import { CircleButton } from "@/components/molecules/board";
 import { Separator } from "@/components/ui/separator";
-import { fetchAPI } from "@/lib/client/fetch";
 import { formatDiffDate } from "@/lib/shared/date";
 import {
   getRememberedBoardViewCounts,
@@ -23,6 +21,11 @@ import {
 } from "@/lib/client/boardView";
 import { useBoardTabState } from "./_hooks";
 import { useSubjects } from "@/hooks";
+import {
+  useBoardsQuery,
+  useFilesQuery,
+  useMaterialsQuery,
+} from "@/hooks/queries";
 import { cn } from "@/lib/utils";
 
 const resolveMaterialKey = (value: any, materialId: string | number) => {
@@ -112,13 +115,12 @@ const BoardClient = () => {
     };
   }, [isStudyTab]);
 
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: isStudyTab ? ["materials", "all"] : ["boards", currentStatus],
-    queryFn: () =>
-      isStudyTab
-        ? fetchAPI("/api/materials/all", "GET")
-        : fetchAPI(`/api/boards?status=${currentStatus}`, "GET"),
+  const materialsQuery = useMaterialsQuery({ enabled: isStudyTab });
+  const boardsQuery = useBoardsQuery(currentStatus, {
+    enabled: !isStudyTab,
   });
+  const activeQuery = isStudyTab ? materialsQuery : boardsQuery;
+  const { data, isLoading, isError, error } = activeQuery;
 
   const rawList = useMemo(() => {
     if (Array.isArray(data)) return data;
@@ -196,20 +198,7 @@ const BoardClient = () => {
     ];
   }, [isStudyTab, list]);
 
-  const { data: previewFilesData } = useQuery({
-    queryKey: ["list-preview-files", isStudyTab, previewFileKeys],
-    queryFn: async () => {
-      if (previewFileKeys.length === 0) return [];
-
-      const params = new URLSearchParams();
-      previewFileKeys.forEach((key) => {
-        params.append("keys", key);
-      });
-
-      return fetchAPI(`/api/files?${params.toString()}`, "GET");
-    },
-    enabled: previewFileKeys.length > 0,
-  });
+  const { data: previewFilesData } = useFilesQuery({ keys: previewFileKeys });
 
   const previewImageUrlMap = useMemo(() => {
     if (!Array.isArray(previewFilesData)) return {};

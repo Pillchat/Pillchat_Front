@@ -15,10 +15,10 @@ import {
 import { useRouter } from "@/lib/navigation";
 import { useSearchParams } from "next/navigation";
 import { useState, ChangeEvent, useEffect, useMemo, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { SelectCategoryModal } from "./SelectCategoryModal";
 import { fetchAPI } from "@/lib/client/fetch";
 import { uploadBoard } from "@/lib/client/upload";
+import { useBoardQuery, useFilesQuery } from "@/hooks/queries";
 
 const buildQueryParams = (
   params: Record<
@@ -214,25 +214,12 @@ const PostPage = () => {
     }
   }, [draftKey, setStep, setFormValues]);
 
-  const { data: boardData } = useQuery({
-    queryKey: ["board-edit", editId],
-    queryFn: () => fetchAPI(`/api/boards/${editId}`, "GET"),
+  const { data: boardData } = useBoardQuery(editId, undefined, {
     enabled: isEditMode,
   });
 
-  const { data: filesData } = useQuery({
-    queryKey: ["board-edit-files", editId, boardData?.images],
-    queryFn: async () => {
-      if (!boardData?.images || boardData.images.length === 0) return [];
-
-      const params = new URLSearchParams();
-      boardData.images.forEach((image: any) => {
-        params.append("keys", image.urlKey);
-      });
-
-      return fetchAPI(`/api/files?${params.toString()}`, "GET");
-    },
-    enabled: !!boardData?.images?.length,
+  const { data: filesData } = useFilesQuery({
+    keys: boardData?.images?.map((image: any) => image.urlKey) ?? [],
   });
 
   useEffect(() => {
