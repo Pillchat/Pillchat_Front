@@ -9,7 +9,6 @@ import {
   currentQuestionAtom,
   applyGradeResultAtom,
   nextQuestionAtom,
-  skipQuestionAtom,
   choiceIdToText,
 } from "@/store/quizSession";
 import { CustomHeader } from "@/components/molecules";
@@ -20,7 +19,6 @@ import TrueFalseButtons from "../_components/TrueFalseButtons";
 import ShortAnswerInput from "../_components/ShortAnswerInput";
 import FillInBlankInput from "../_components/FillInBlankInput";
 import ExplanationPanel from "../_components/ExplanationPanel";
-import Watermark from "../_components/Watermark";
 import type { SubmitAnswerResponse } from "@/types/questionbank";
 
 const SolvePage = () => {
@@ -29,7 +27,6 @@ const SolvePage = () => {
   const currentQuestion = useAtomValue(currentQuestionAtom);
   const applyGrade = useSetAtom(applyGradeResultAtom);
   const nextAction = useSetAtom(nextQuestionAtom);
-  const skipAction = useSetAtom(skipQuestionAtom);
   const gradingRef = useRef(false);
 
   // 세션 없으면 진입 화면으로
@@ -117,6 +114,25 @@ const SolvePage = () => {
     }
   };
 
+  const handleRevealAnswer = () => {
+    if (gradingRef.current) return;
+
+    const correctAnswer = currentQuestion.correctAnswer?.trim();
+
+    if (!correctAnswer) {
+      alert("정답 정보를 불러올 수 없습니다. 채점하기를 이용해주세요.");
+      return;
+    }
+
+    applyGrade({
+      questionId: currentQuestion.id,
+      isCorrect: false,
+      correctAnswer,
+      explanation: currentQuestion.explanation ?? "",
+      userAnswer: getUserAnswer() ?? "",
+    });
+  };
+
   const handleMainButton = () => {
     if (gradingState === "graded") {
       nextAction();
@@ -155,7 +171,6 @@ const SolvePage = () => {
 
   return (
     <div className="flex h-screen select-none flex-col">
-      <Watermark />
       <CustomHeader title={session.title} showIcon />
       <QuizProgressBar />
 
@@ -174,7 +189,7 @@ const SolvePage = () => {
         {gradingState !== "graded" && (
           <button
             className="mb-3 w-full text-center text-sm text-muted-foreground underline"
-            onClick={() => skipAction()}
+            onClick={handleRevealAnswer}
           >
             잘 모르겠어요
           </button>

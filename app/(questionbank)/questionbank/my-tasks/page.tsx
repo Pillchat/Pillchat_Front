@@ -10,7 +10,11 @@ import { FloatingActionButton } from "@/components/atoms";
 import TaskItem from "../_components/TaskItem";
 import LoadingOverlay from "../_components/LoadingOverlay";
 import { cn } from "@/lib/utils";
-import type { MyTaskItem, QuizStartResponse } from "@/types/questionbank";
+import type {
+  MyTaskItem,
+  QuizStartResponse,
+  ServerQuestion,
+} from "@/types/questionbank";
 
 const MyTasksPage = () => {
   const router = useRouter();
@@ -51,6 +55,18 @@ const MyTasksPage = () => {
   const handleTaskClick = async (task: MyTaskItem) => {
     setStarting(true);
     try {
+      const resultRaw = await fetchAPI(
+        `/api/questionbank/ai-questions/result/${task.taskId}`,
+        "GET",
+      );
+      const resultQuestions: ServerQuestion[] =
+        resultRaw.questions ?? resultRaw.data?.questions ?? resultRaw;
+      const answerByQuestionId = new Map(
+        (Array.isArray(resultQuestions) ? resultQuestions : []).map(
+          (question) => [question.id, question],
+        ),
+      );
+
       const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", {
         type: "PDF",
         taskId: task.taskId,
@@ -61,14 +77,29 @@ const MyTasksPage = () => {
         sessionId: quizData.sessionId,
         sourceType: "PDF",
         title: task.title,
-        questions: quizData.questions.map((q) => ({
-          id: q.id,
-          questionType: q.type,
-          passage: q.content,
-          choices: mapChoices(q.choices),
-          subject: q.subject,
-          hint: q.hint,
-        })),
+        questions: quizData.questions.map((q) => {
+          const answer = answerByQuestionId.get(q.id);
+          const quizQuestion = q as typeof q & {
+            answer?: string;
+            correctAnswer?: string;
+            explanation?: string | null;
+          };
+
+          return {
+            id: q.id,
+            questionType: q.type,
+            passage: q.content,
+            choices: mapChoices(q.choices),
+            subject: q.subject,
+            hint: q.hint,
+            correctAnswer:
+              answer?.answer ??
+              quizQuestion.answer ??
+              quizQuestion.correctAnswer,
+            explanation:
+              answer?.explanation ?? quizQuestion.explanation ?? undefined,
+          };
+        }),
       });
       router.push("/questionbank/solve");
     } catch {

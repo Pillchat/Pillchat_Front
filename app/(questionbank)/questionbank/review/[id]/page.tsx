@@ -91,6 +91,9 @@ const ReviewDetailPage = () => {
 
       const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", body);
       const quizData: QuizStartResponse = quizRaw.data ?? quizRaw;
+      const answerByQuestionId = new Map(
+        result.answers.map((answer) => [answer.questionId, answer]),
+      );
 
       initQuiz({
         sessionId: quizData.sessionId,
@@ -98,14 +101,29 @@ const ReviewDetailPage = () => {
           { all: "PDF", wrong: "REVIEW", bookmarked: "BOOKMARK" } as const
         )[mode],
         title: "복습 다시 풀기",
-        questions: quizData.questions.map((q) => ({
-          id: q.id,
-          questionType: q.type,
-          passage: q.content,
-          choices: mapChoices(q.choices),
-          subject: q.subject,
-          hint: q.hint,
-        })),
+        questions: quizData.questions.map((q) => {
+          const answer = answerByQuestionId.get(q.id);
+          const quizQuestion = q as typeof q & {
+            answer?: string;
+            correctAnswer?: string;
+            explanation?: string | null;
+          };
+
+          return {
+            id: q.id,
+            questionType: q.type,
+            passage: q.content,
+            choices: mapChoices(q.choices),
+            subject: q.subject,
+            hint: q.hint,
+            correctAnswer:
+              answer?.correctAnswer ??
+              quizQuestion.answer ??
+              quizQuestion.correctAnswer,
+            explanation:
+              answer?.explanation ?? quizQuestion.explanation ?? undefined,
+          };
+        }),
       });
 
       router.push("/questionbank/solve");

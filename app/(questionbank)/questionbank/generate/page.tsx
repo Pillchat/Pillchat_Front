@@ -7,6 +7,7 @@ import { fetchAPI } from "@/lib/client/fetch";
 import { initQuizSessionAtom, mapChoices } from "@/store/quizSession";
 import { CustomHeader } from "@/components/molecules";
 import { SolidButton } from "@/components/atoms";
+import { getToken } from "@/lib/functions";
 import LoadingOverlay from "../_components/LoadingOverlay";
 import type {
   PdfUploadResponse,
@@ -123,20 +124,41 @@ const GeneratePage = () => {
         taskId: extractResult.taskId,
       });
       const quizData: QuizStartResponse = quizRaw.data ?? quizRaw;
+      const answerByQuestionId = new Map(
+        (extractResult.questions ?? []).map((question) => [
+          question.id,
+          question,
+        ]),
+      );
 
       // 4) 세션 초기화 → 풀이 화면 이동
       initSession({
         sessionId: quizData.sessionId,
         sourceType: "PDF",
         title: "내 강의자료로 문제 생성",
-        questions: quizData.questions.map((q) => ({
-          id: q.id,
-          questionType: q.type,
-          passage: q.content,
-          choices: mapChoices(q.choices),
-          subject: q.subject,
-          hint: q.hint,
-        })),
+        questions: quizData.questions.map((q) => {
+          const answer = answerByQuestionId.get(q.id);
+          const quizQuestion = q as typeof q & {
+            answer?: string;
+            correctAnswer?: string;
+            explanation?: string | null;
+          };
+
+          return {
+            id: q.id,
+            questionType: q.type,
+            passage: q.content,
+            choices: mapChoices(q.choices),
+            subject: q.subject,
+            hint: q.hint,
+            correctAnswer:
+              answer?.answer ??
+              quizQuestion.answer ??
+              quizQuestion.correctAnswer,
+            explanation:
+              answer?.explanation ?? quizQuestion.explanation ?? undefined,
+          };
+        }),
       });
       router.push("/questionbank/solve");
     } catch (err: any) {
