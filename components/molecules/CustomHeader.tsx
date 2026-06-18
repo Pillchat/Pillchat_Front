@@ -1,9 +1,11 @@
 "use client";
 
+import { FC } from "react";
+
 import { LeftArrowButton, TextButton } from "@/components/atoms";
 import { useRouter } from "@/lib/navigation";
+
 import { Button } from "../ui/button";
-import { FC } from "react";
 
 interface CustomHeaderProps {
   title: string;
@@ -23,25 +25,12 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-10 flex w-full items-center justify-between bg-white px-6 py-4">
-      <LeftArrowButton
-        onClick={() => {
-          router.back();
-        }}
-      />
-      <p className="text-lg font-semibold">{title}</p>
-      {showIcon ? (
-        <Button variant="textOnly" size="icon" onClick={() => router.push("/")}>
-          <img src="/icons/Home.svg" alt="arrow-left" width={32} height={32} />
-        </Button>
-      ) : (
-        <TextButton
-          label={rightButtonLabel}
-          variant="textOnly"
-          onClick={onRightButtonClick}
-          className={`text-md p-0 ${
-            isActive ? "text-foreground" : "text-muted-foreground"
-          }`}
+    <>
+      <header className="sticky top-0 z-10 flex w-full items-center justify-between bg-white px-6 py-4">
+        <LeftArrowButton
+          onClick={() => {
+            router.back();
+          }}
         />
         <p className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-lg font-semibold">
           {title}
@@ -52,7 +41,7 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
             size="icon"
             onClick={() => router.push("/")}
           >
-            <img src="/Home.svg" alt="arrow-left" width={32} height={32} />
+            <img src="/icons/Home.svg" alt="home" width={32} height={32} />
           </Button>
         ) : rightButtonLabel ? (
           <TextButton
@@ -67,7 +56,6 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
           <div aria-hidden="true" className="h-9 w-9" />
         )}
       </header>
-      <div aria-hidden="true" className="h-[90px] shrink-0" />
     </>
   );
 };
