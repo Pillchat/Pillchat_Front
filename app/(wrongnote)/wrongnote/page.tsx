@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { fetchAPI } from "@/lib/client/fetch";
+import { getCurrentUserId } from "@/lib/client/auth";
 import { CustomHeader, TabsWithUnderline } from "@/components/molecules";
 import { FloatingActionButton } from "@/components/atoms";
 import WrongNoteCard from "./_components/WrongNoteCard";

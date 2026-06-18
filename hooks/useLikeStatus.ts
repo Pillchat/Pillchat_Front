@@ -1,65 +1,62 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { fetchAPI } from "@/lib/client/fetch";
-
-type LikeTargetType = "questions" | "answers" | "boards";
+import { useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  LikeStatus,
+  LikeTargetType,
+  likeStatusQueryKey,
+  useLikeStatusQuery,
+} from "@/hooks/queries";
+import { useToggleLikeMutation } from "@/hooks/mutations";
 
 export const useLikeStatus = (
   id: string,
   type: LikeTargetType = "questions",
 ) => {
-  const [isLiked, setIsLiked] = useState<boolean>(false);
-  const [likeCount, setLikeCount] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const queryClient = useQueryClient();
+  const queryKey = likeStatusQueryKey(type, id);
+  const { data, isLoading } = useLikeStatusQuery(id, type);
+  const toggleMutation = useToggleLikeMutation();
 
-  useEffect(() => {
-    const loadLikeStatus = async () => {
-      if (!id) return;
-
-      try {
-        setIsLoading(true);
-        const response = await fetchAPI(`/api/${type}/${id}/likeCount`, "GET");
-
-        setIsLiked(Boolean(response?.likeWhether ?? response?.liked ?? false));
-        setLikeCount(Number(response?.likeCount ?? response?.likes ?? 0));
-      } catch (error) {
-        console.error("좋아요 상태 로드 실패:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadLikeStatus();
-  }, [id, type]);
+  const isLiked = data?.isLiked ?? false;
+  const likeCount = data?.likeCount ?? 0;
 
   const toggleLike = useCallback(async (): Promise<boolean> => {
     if (!id) return false;
 
-    const prevLiked = isLiked;
-    const prevCount = likeCount;
-    const nextLiked = !prevLiked;
+    const previous = queryClient.getQueryData<LikeStatus>(queryKey) ?? {
+      isLiked,
+      likeCount,
+    };
+    const nextLiked = !previous.isLiked;
+    const nextStatus = {
+      isLiked: nextLiked,
+      likeCount: nextLiked
+        ? previous.likeCount + 1
+        : Math.max(0, previous.likeCount - 1),
+    };
 
     try {
-      setIsLiked(nextLiked);
-      setLikeCount(nextLiked ? prevCount + 1 : prevCount - 1);
-
-      const method = prevLiked ? "DELETE" : "POST";
-      await fetchAPI(`/api/${type}/${id}/like`, method);
+      queryClient.setQueryData(queryKey, nextStatus);
+      await toggleMutation.mutateAsync({
+        id,
+        type,
+        isLiked: previous.isLiked,
+      });
 
       return true;
     } catch (error) {
-      setIsLiked(prevLiked);
-      setLikeCount(prevCount);
+      queryClient.setQueryData(queryKey, previous);
       console.error("좋아요 요청 실패:", error);
       return false;
     }
-  }, [id, type, isLiked, likeCount]);
+  }, [id, type, isLiked, likeCount, queryClient, queryKey, toggleMutation]);
 
   return {
     isLiked,
     likeCount,
-    isLoading,
+    isLoading: isLoading || toggleMutation.isPending,
     toggleLike,
   };
 };

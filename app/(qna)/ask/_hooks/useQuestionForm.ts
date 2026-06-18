@@ -1,17 +1,18 @@
 import { useForm } from "react-hook-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/lib/navigation";
 import { useSearchParams } from "next/navigation";
-import {
-  QuestionCreateRequest,
-  QuestionFormData,
-  QuestionResponse,
-} from "@/types/question";
-import { fetchAPI } from "@/lib/client/fetch";
+import { QuestionCreateRequest, QuestionFormData } from "@/types/question";
 import { getCurrentUserId } from "@/lib/client/auth";
 import { useState, useRef, useEffect } from "react";
 import { ImageButtonRef } from "@/components/atoms/ImageButton";
 import { useSubjects } from "@/hooks";
+import {
+  useFilesQuery,
+  useQuestionQuery,
+  useSubjectQuery,
+} from "@/hooks/queries";
+import { useSaveQuestionMutation } from "@/hooks/mutations";
 
 const DEFAULT_VALUES: QuestionFormData = {
   title: "",
@@ -52,50 +53,22 @@ export const useQuestionForm = () => {
   });
 
   const selectedSubject = watch("subject");
+  const selectedSubjectCode = getSubjectCodeByLabel(selectedSubject);
 
   // Edit 모드일 때 기존 질문 데이터 조회
   const { data: existingQuestion, isLoading: isLoadingQuestion } =
-    useQuery<QuestionResponse>({
-      queryKey: ["question", editQuestionId],
-      queryFn: () => fetchAPI(`/api/questions/${editQuestionId}`, "GET"),
-      enabled: isEditMode && !!editQuestionId,
-    });
+    useQuestionQuery(isEditMode ? editQuestionId : null);
 
   // Edit 모드일 때 기존 이미지 데이터 조회
-  const { data: existingFiles } = useQuery({
-    queryKey: ["files", editQuestionId, existingQuestion?.images],
-    queryFn: async () => {
-      if (!existingQuestion?.images || existingQuestion.images.length === 0) {
-        return [];
-      }
+  const existingFileKeys =
+    existingQuestion?.images?.map((image) =>
+      image.urlKey.includes("/")
+        ? image.urlKey
+        : `question/${editQuestionId}/${image.urlKey}`,
+    ) ?? [];
+  const { data: existingFiles } = useFilesQuery({ keys: existingFileKeys });
 
-      // questionData.images 배열의 urlKey를 바탕으로 keys 배열 생성
-      const keys = existingQuestion.images.map((image) => {
-        // urlKey가 이미 전체 경로인 경우와 파일명만인 경우를 모두 처리
-        if (image.urlKey.includes("/")) {
-          return image.urlKey; // 이미 전체 경로
-        } else {
-          return `question/${editQuestionId}/${image.urlKey}`; // 파일명만 있는 경우
-        }
-      });
-
-      return fetchAPI("/api/files", "GET", { keys });
-    },
-    enabled:
-      isEditMode &&
-      !!existingQuestion?.images &&
-      existingQuestion.images.length > 0,
-  });
-
-  const { data } = useQuery({
-    queryKey: ["subjects", selectedSubject],
-    queryFn: () =>
-      fetchAPI(
-        `/api/subjects/${getSubjectCodeByLabel(selectedSubject)}`,
-        "GET",
-      ),
-    enabled: !!selectedSubject,
-  });
+  const { data } = useSubjectQuery(selectedSubjectCode);
 
   // Edit 모드일 때 로그인 및 권한 체크
   useEffect(() => {
@@ -162,21 +135,7 @@ export const useQuestionForm = () => {
     }
   }, [data, setValue]);
 
-  const mutation = useMutation({
-    mutationFn: (data: QuestionCreateRequest) => {
-      if (isEditMode) {
-        // Edit 모드일 때는 PUT 요청 (keys 포함)
-        return fetchAPI(`/api/questions/${editQuestionId}`, "PUT", {
-          title: data.title,
-          content: data.content,
-          subjectId: data.subjectId,
-          keys: data.keys, // 기존 이미지 + 새 이미지 keys
-        });
-      } else {
-        // 새 질문 등록일 때는 POST 요청
-        return fetchAPI("/api/questions", "POST", data);
-      }
-    },
+  const mutation = useSaveQuestionMutation({
     onSuccess: async (response) => {
       if (isEditMode) {
         // Edit 모드에서도 새로운 이미지가 있으면 업로드
@@ -229,7 +188,10 @@ export const useQuestionForm = () => {
       keys: uploadedImages,
     };
 
-    mutation.mutate(submitData);
+    mutation.mutate({
+      data: submitData,
+      questionId: isEditMode ? editQuestionId : null,
+    });
   };
 
   const handleImagesChange = (images: any[]) => {

@@ -7,8 +7,7 @@ import {
   QuestionListCard,
 } from "@/components/molecules";
 import { useRouter } from "@/lib/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { fetchAPI } from "@/lib/client/fetch";
+import { getValidAccessToken } from "@/lib/client/fetch";
 import { formatDiffDate } from "@/lib/shared/date";
 import {
   getRememberedBoardViewCounts,
@@ -23,6 +22,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
+import { useBoardsQuery, useFilesQuery } from "@/hooks/queries";
 
 const Home: FC = () => {
   const router = useRouter();
@@ -33,9 +33,7 @@ const Home: FC = () => {
   >({});
   const userInfo = getCurrentUserInfo();
 
-  const { data: boards, isLoading: isBoardsLoading } = useQuery({
-    queryKey: ["home-boards-best"],
-    queryFn: () => fetchAPI("/api/boards?status=best", "GET"),
+  const { data: boards, isLoading: isBoardsLoading } = useBoardsQuery("best", {
     enabled: isAuthenticated === true,
   });
 
@@ -126,19 +124,8 @@ const Home: FC = () => {
     ];
   }, [boardList]);
 
-  const { data: boardFilesData } = useQuery({
-    queryKey: ["home-board-files", boardImageKeys],
-    queryFn: async () => {
-      if (boardImageKeys.length === 0) return [];
-
-      const params = new URLSearchParams();
-      boardImageKeys.forEach((key) => {
-        params.append("keys", key);
-      });
-
-      return fetchAPI(`/api/files?${params.toString()}`, "GET");
-    },
-    enabled: isAuthenticated === true && boardImageKeys.length > 0,
+  const { data: boardFilesData } = useFilesQuery({
+    keys: isAuthenticated === true ? boardImageKeys : [],
   });
 
   const boardImageUrlMap = useMemo(() => {

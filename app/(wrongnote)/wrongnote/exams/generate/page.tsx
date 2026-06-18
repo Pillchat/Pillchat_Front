@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { fetchAPI } from "@/lib/client/fetch";
+import { getCurrentUserId } from "@/lib/client/auth";
 import { CustomHeader } from "@/components/molecules";
 import { SolidButton } from "@/components/atoms";
 import type {

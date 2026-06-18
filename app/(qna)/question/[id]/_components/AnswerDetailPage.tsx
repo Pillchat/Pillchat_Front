@@ -239,11 +239,12 @@ import {
   SelectModal,
   UserInfoField,
 } from "@/components/molecules";
-import { fetchAPI } from "@/lib/client/fetch";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { FC, useState, useEffect } from "react";
-import { AnswerListResponse, Answer } from "@/types/question";
+import { Answer } from "@/types/question";
 import { useFetchImage, useAnswerAccept } from "@/hooks";
+import { useDeleteAnswerMutation } from "@/hooks/mutations";
+import { useAnswersQuery } from "@/hooks/queries";
 import { useLikeStatus } from "@/hooks/useLikeStatus";
 import { Image, LikeButton, TextButton } from "@/components/atoms";
 import { Button } from "@/components/ui/button";
@@ -280,8 +281,7 @@ const AnswerItem: FC<{
 
   // 답변 삭제 mutation
   const queryClient = useQueryClient();
-  const deleteMutation = useMutation({
-    mutationFn: () => fetchAPI(`/api/answers/${answer.id}`, "DELETE"),
+  const deleteMutation = useDeleteAnswerMutation({
     onSuccess: () => {
       alert("답변이 삭제되었습니다.");
       queryClient.invalidateQueries({ queryKey: ["answers", questionId] });
@@ -294,7 +294,7 @@ const AnswerItem: FC<{
 
   const handleDelete = () => {
     if (confirm("정말로 이 답변을 삭제하시겠습니까?")) {
-      deleteMutation.mutate();
+      deleteMutation.mutate(answer.id);
     }
   };
 
@@ -408,15 +408,7 @@ export const AnswerDetailPage: FC<{
     data: answerData,
     isLoading: answerLoading,
     isFetching,
-  } = useQuery<AnswerListResponse>({
-    queryKey: ["answers", questionId, page],
-    queryFn: () =>
-      fetchAPI(
-        `/api/answers/cards?questionId=${questionId}&page=${page}&size=${pageSize}`,
-        "GET",
-      ),
-    enabled: !!questionId,
-  });
+  } = useAnswersQuery(questionId, page, pageSize);
 
   useEffect(() => {
     if (answerData?.items) {

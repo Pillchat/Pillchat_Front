@@ -2,6 +2,7 @@
 
 import { FC, useState, useEffect, useCallback } from "react";
 import { fetchAPI } from "@/lib/client/fetch";
+import { getCurrentUserId } from "@/lib/client/auth";
 import type {
   WrongNoteListItem,
   WrongNoteListResponse,

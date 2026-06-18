@@ -12,9 +12,8 @@ import { SelectModal } from "../SelectModal";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useParams } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import { fetchAPI } from "@/lib/client/fetch";
 import { useLogout } from "@/app/(setting)/mypage/_hooks/useLogout";
+import { useSaveOnboardingMutation } from "@/hooks/mutations";
 
 type OnboardingFooterProps = {
   role?: string;
@@ -81,12 +80,7 @@ export const OnboardingFooter: FC<OnboardingFooterProps> = ({
     return typeof limit === "number" ? uniq.slice(0, limit) : uniq;
   };
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (onboardingData: any) => {
-      const endpoint = `/api/onboarding/${currentRole}`;
-      const response = await fetchAPI(endpoint, "PUT", onboardingData);
-      return (response as any)?.data ?? response;
-    },
+  const { mutate, isPending } = useSaveOnboardingMutation({
     onSuccess: () => {
       setOpenModal(null);
       onLogout();
@@ -180,7 +174,10 @@ export const OnboardingFooter: FC<OnboardingFooterProps> = ({
         onClose={() => setOpenModal(null)}
         onConfirm={() => {
           if (isPending) return;
-          mutate(prepareOnboardingData());
+          mutate({
+            role: currentRole,
+            data: prepareOnboardingData(),
+          });
         }}
         title="로그인 화면으로 가기"
         message="로그인 화면으로 가기 선택 시 로그아웃됩니다."
