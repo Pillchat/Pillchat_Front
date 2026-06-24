@@ -392,6 +392,12 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                 userName={boardData.nickname}
                 viewCount={boardData.viewCount}
                 createdAt={boardData.createdAt}
+                onUserClick={
+                  boardData.userId &&
+                  String(boardData.userId) !== String(currentUserId)
+                    ? () => router.push(`/profile/${boardData.userId}`)
+                    : undefined
+                }
               />
               <BoardContents
                 content={boardData.content}
@@ -471,11 +477,16 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                       const commentId = Number(
                         comment?.id ?? comment?.commentId,
                       );
-                      const commentAuthorId = Number(
-                        comment?.userId ?? comment?.writerId,
-                      );
+                      const rawCommentAuthorId =
+                        comment?.userId ?? comment?.writerId;
+                      const commentAuthorId = Number(rawCommentAuthorId);
                       const isCommentAuthor =
                         Number(currentUserId) === commentAuthorId;
+                      const commentAuthorName =
+                        comment?.nickname ?? comment?.userNickname ?? "익명";
+                      const canOpenCommentAuthorProfile =
+                        rawCommentAuthorId &&
+                        String(rawCommentAuthorId) !== String(currentUserId);
 
                       const commentMenuItems: ActionMenuItem[] = isCommentAuthor
                         ? [
@@ -548,11 +559,23 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                           <div className="relative flex min-h-[60px] min-w-0 flex-1">
                             <div className="flex min-h-[60px] min-w-0 flex-1 flex-col gap-2 pr-10">
                               <div className="flex items-center gap-2 text-xs">
-                                <span className="font-semibold text-[#111111]">
-                                  {comment?.nickname ??
-                                    comment?.userNickname ??
-                                    "익명"}
-                                </span>
+                                {canOpenCommentAuthorProfile ? (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      router.push(
+                                        `/profile/${rawCommentAuthorId}`,
+                                      )
+                                    }
+                                    className="font-semibold text-[#111111]"
+                                  >
+                                    {commentAuthorName}
+                                  </button>
+                                ) : (
+                                  <span className="font-semibold text-[#111111]">
+                                    {commentAuthorName}
+                                  </span>
+                                )}
                                 <span className="text-[#999999]">
                                   {formatDiffDate(
                                     comment?.createdAt ??
