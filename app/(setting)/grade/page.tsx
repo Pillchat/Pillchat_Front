@@ -1,99 +1,94 @@
 "use client";
 
-import { FC, useState, useEffect } from "react";
-import { useRouter } from "@/lib/navigation";
-import { RankIndicator } from "@/components/atoms";
-import { InfoHeader, GeneralModal } from "@/components/molecules";
-import { usePromotion } from "./_hooks/usePromotion";
+import { useEffect, useState } from "react";
+import { CustomHeader } from "@/components/molecules";
 
-const grade: FC = () => {
-  const [open, setOpen] = useState(false);
-  const router = useRouter();
-  const { fetchPromotion, promotionData, isLoading, error } = usePromotion();
+const SELECTED_BADGE_STORAGE_KEY = "yakchat:selected-badge-id";
+
+const temporaryBadges = [
+  { id: "badge-1", name: "질문 마스터", icon: "/BadgeIcon1.svg" },
+  { id: "badge-2", name: "자료 장인", icon: "/BadgeIcon2.svg" },
+  { id: "badge-3", name: "오답 수집가", icon: "/BadgeIcon3.svg" },
+  { id: "badge-4", name: "병원 실습 완료", icon: "/BadgeIcon4.svg" },
+  { id: "badge-5", name: "국시패스", icon: "/BadgeIcon5.svg" },
+];
+
+export default function BadgeSettingPage() {
+  const [selectedBadgeId, setSelectedBadgeId] = useState(temporaryBadges[0].id);
+  const [pendingBadgeId, setPendingBadgeId] = useState(temporaryBadges[0].id);
 
   useEffect(() => {
-    fetchPromotion();
-  }, [fetchPromotion]);
+    const savedBadgeId = window.localStorage.getItem(
+      SELECTED_BADGE_STORAGE_KEY,
+    );
+    if (
+      savedBadgeId &&
+      temporaryBadges.some((badge) => badge.id === savedBadgeId)
+    ) {
+      setSelectedBadgeId(savedBadgeId);
+      setPendingBadgeId(savedBadgeId);
+    }
+  }, []);
 
-  // 승급 조건 달성 여부 확인
-  const isPromotionAchieved =
-    (promotionData?.progress || 0) >= (promotionData?.target || 100);
+  const handleSave = () => {
+    window.localStorage.setItem(SELECTED_BADGE_STORAGE_KEY, pendingBadgeId);
+    setSelectedBadgeId(pendingBadgeId);
+  };
 
   return (
-    <div className="flex min-h-screen flex-col items-center">
-      <InfoHeader
-        title="승급 정보"
-        infoIconSrc="/icons/Info.svg"
-        infoIconSize="2rem"
-        infoIconOnClick={() => router.push("/gradeInfo")}
-        isActive
-      />
+    <div className="mx-auto flex min-h-dvh w-full max-w-screen-sm flex-col bg-white">
+      <CustomHeader title="뱃지 설정" />
 
-      <div className="flex w-[90%] flex-col items-center justify-center">
-        <p className="text-2xl font-bold">현재 내 등급</p>
-        <div className="mt-3">
-          <RankIndicator
-            currentRank={
-              promotionData?.currentGrade?.toLowerCase() || "saessak"
-            }
-          />
+      <main className="flex-1 px-6 pb-32 pt-12">
+        <div className="grid grid-cols-3 gap-x-4 gap-y-6">
+          {temporaryBadges.map((badge) => {
+            const isSelected = pendingBadgeId === badge.id;
+            const isRepresented = selectedBadgeId === badge.id;
 
-          <div className="mt-6 flex flex-col">
-            <div className="flex flex-row items-center gap-1">
-              <img src={"/icons/UncheckedIcon.svg"} />
-              <p>매월 1일 추가 답변 열람권 2장 증정!</p>
-            </div>
-
-            <div className="flex flex-row items-center gap-1">
-              <img src={"/icons/UncheckedIcon.svg"} />
-              <p>학습자료 구매권 10% 할인 쿠폰 1장 증정!</p>
-            </div>
-          </div>
+            return (
+              <button
+                key={badge.id}
+                type="button"
+                onClick={() => setPendingBadgeId(badge.id)}
+                className="flex min-w-0 flex-col items-center text-center"
+                aria-pressed={isSelected}
+              >
+                <span
+                  className={`relative flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-full ${
+                    isSelected
+                      ? "ring-2 ring-brand ring-offset-2"
+                      : "ring-1 ring-transparent"
+                  }`}
+                >
+                  <img
+                    src={badge.icon}
+                    alt=""
+                    className="h-[4.25rem] w-[4.25rem]"
+                  />
+                  {isRepresented && (
+                    <span className="absolute -bottom-1 rounded-full bg-brand px-2 py-0.5 text-[0.625rem] font-semibold leading-none text-white">
+                      대표
+                    </span>
+                  )}
+                </span>
+                <span className="mt-3 min-h-10 text-sm font-medium leading-5 text-[#333]">
+                  {badge.name}
+                </span>
+              </button>
+            );
+          })}
         </div>
-      </div>
+      </main>
 
-      <div className="mt-8 h-[1rem] w-full bg-[#FFF6F5]" />
-      <p className="mt-10 text-2xl font-bold">다음 승급 조건</p>
-
-      <div className="mt-5 flex w-[90%] flex-row items-center justify-between gap-1">
-        <div className="flex flex-row items-center gap-1">
-          <img
-            src={
-              isPromotionAchieved
-                ? "/icons/CheckedIcon.svg"
-                : "/icons/UncheckIcon.svg"
-            }
-          />
-          <p style={{ color: isPromotionAchieved ? "#FF412E" : "inherit" }}>
-            질문 및 답변 합산 100개 이상
-          </p>
-        </div>
-        <p
-          style={{ color: isPromotionAchieved ? "#FF412E" : "inherit" }}
-          className={!isPromotionAchieved ? "text-muted-foreground" : ""}
+      <div className="fixed bottom-0 left-1/2 w-full max-w-screen-sm -translate-x-1/2 bg-white px-6 pb-10 pt-3">
+        <button
+          type="button"
+          onClick={handleSave}
+          className="h-14 w-full rounded-2xl bg-brand text-lg font-semibold text-white"
         >
-          {promotionData?.progress || 0} / {promotionData?.target || 100}
-        </p>
+          이 뱃지로 설정하기
+        </button>
       </div>
-
-      <div className="mt-4 flex w-full flex-col items-center text-sm text-muted-foreground">
-        <p>· 각 승급 조건 중 하나를 달성하면 다음 등급으로 승급합니다.</p>
-        <p>· 회원 등급은 매일 00시에 자동 갱신됩니다.</p>
-      </div>
-
-      <GeneralModal
-        isOpen={open}
-        onClose={() => setOpen(false)}
-        onConfirm={() => {
-          setOpen(false);
-        }}
-        title="축하합니다!"
-        message="'고수' 등급으로 등업하셨어요!
-                        앞으로 더 열심히 활동하셔서
-                        높은 등급을 노려보세요!"
-      />
     </div>
   );
-};
-
-export default grade;
+}
