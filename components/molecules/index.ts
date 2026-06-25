@@ -8,6 +8,7 @@ export * from "./StepHeader";
 export * from "./GeneralHeader";
 export * from "./TabsWithUnderline";
 export * from "./BottomNavbar";
+export * from "./AppShell";
 export * from "./ListCard";
 export * from "./QuestionListCard";
 export * from "./InfoHeader";

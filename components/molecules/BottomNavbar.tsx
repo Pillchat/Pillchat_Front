@@ -1,52 +1,54 @@
 "use client";
 
 import Link from "next/link";
-import { FC, useEffect, useState } from "react";
-import HomeIcon from "@/public/icons/Home.svg";
-import CommunityIcon from "@/public/icons/Community.svg";
-import QnaIcon from "@/public/icons/Qna.svg";
-import Board from "@/public/icons/Board.svg";
-import QuestionBankIcon from "@/public/icons/Questionbank.svg";
-import ArchiveIcon from "@/public/icons/Archive.svg";
-import MyPageIcon from "@/public/icons/Mypage.svg";
+import { FC } from "react";
+import {
+  Flame,
+  GraduationCap,
+  Home,
+  LayoutGrid,
+  ShoppingBag,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
+
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   {
     href: "/",
-    icon: HomeIcon,
+    icon: Home,
     label: "홈",
+    isActive: (pathname: string) => pathname === "/",
   },
-  // {
-  //   href: "#",
-  //   icon: CommunityIcon,
-  //   label: "커뮤니티",
-  // },
-  // {
-  //   href: "/qna",
-  //   icon: QnaIcon,
-  //   label: "질문광장",
-  // },
   {
-    href: "/board",
-    icon: Board,
+    href: "/learn",
+    icon: GraduationCap,
+    label: "학습",
+    badge: "9월",
+    isActive: (pathname: string) => pathname.startsWith("/learn"),
+  },
+  {
+    href: "/boards",
+    icon: LayoutGrid,
     label: "게시판",
+    isActive: (pathname: string) =>
+      pathname.startsWith("/boards") ||
+      pathname.startsWith("/board") ||
+      pathname.startsWith("/tips") ||
+      pathname.startsWith("/reviews"),
   },
   {
-    href: "/questionbank",
-    icon: QuestionBankIcon,
-    label: "문제은행",
+    href: "/cheer",
+    icon: Flame,
+    label: "응원방",
+    isActive: (pathname: string) => pathname.startsWith("/cheer"),
   },
   {
-    href: "/archive",
-    icon: ArchiveIcon,
-    label: "아카이브",
-  },
-  {
-    href: "/mypage",
-    icon: MyPageIcon,
-    label: "마이 페이지",
+    href: "/market",
+    icon: ShoppingBag,
+    label: "마켓",
+    isActive: (pathname: string) =>
+      pathname.startsWith("/market") || pathname.startsWith("/materials"),
   },
 ];
 
@@ -56,41 +58,41 @@ interface BottomNavbarProps {
 
 export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
   const pathname = usePathname();
-  const [activeHref, setActiveHref] = useState(pathname);
-
-  useEffect(() => {
-    setActiveHref(pathname);
-  }, [pathname]);
 
   return (
     <nav
+      aria-label="하단 네비게이션"
       className={cn(
-        "shadow-t dark:shadow-t-gray-800 fixed bottom-0 left-1/2 z-50 flex h-[calc(6.75rem+env(safe-area-inset-bottom))] w-full max-w-screen-sm -translate-x-1/2 items-start justify-between border-t-[1px] border-[#E2E2E2] bg-background px-3 pb-[env(safe-area-inset-bottom)] pt-4 transition-all duration-200 sm:px-6 md:max-w-none md:px-10",
+        "fixed bottom-0 left-1/2 z-50 flex h-[calc(5.75rem+env(safe-area-inset-bottom))] w-full max-w-[480px] -translate-x-1/2 items-start justify-between border-t border-border bg-background px-3 pb-[env(safe-area-inset-bottom)] pt-3 shadow-[0_-8px_24px_rgba(17,17,17,0.04)]",
         className,
       )}
     >
       {NAV_ITEMS.map((item) => {
-        const IconComponent = item.icon;
-        const isActive = activeHref === item.href;
+        const Icon = item.icon;
+        const isActive = item.isActive(pathname);
 
         return (
           <Link
-            key={`${item.href}-${item.label}`}
+            key={item.href}
             href={item.href}
-            onClick={() => setActiveHref(item.href)}
             className={cn(
-              "flex h-[3.125rem] w-[3.125rem] flex-col items-center justify-center text-border transition-colors hover:text-brand focus:text-brand",
+              "relative flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg text-muted-foreground transition-colors active:scale-95",
               isActive && "text-brand",
             )}
             prefetch={false}
+            aria-current={isActive ? "page" : undefined}
           >
-            <IconComponent
-              className={cn(
-                "h-8 w-8 focus:text-brand",
-                isActive && "text-brand",
+            <span className="relative">
+              <Icon aria-hidden="true" className="h-6 w-6" />
+              {item.badge && (
+                <span className="absolute -right-4 -top-2 rounded-full bg-brand px-1.5 py-0.5 text-[0.5rem] font-semibold leading-none text-white">
+                  {item.badge}
+                </span>
               )}
-            />
-            <span className="text-[0.625rem]">{item.label}</span>
+            </span>
+            <span className="text-[0.6875rem] font-medium leading-none">
+              {item.label}
+            </span>
           </Link>
         );
       })}
