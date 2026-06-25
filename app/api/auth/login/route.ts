@@ -11,35 +11,61 @@ const pickToken = (data: any, keys: string[]) => {
   return undefined;
 };
 
+const readResponseBody = async (response: Response) => {
+  const text = await response.text();
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { message: text };
+  }
+};
+
+const pickMessage = (data: any, fallback: string) => {
+  for (const key of ["message", "detail", "title", "error"]) {
+    const message = data?.[key];
+    if (typeof message === "string" && message) return message;
+  }
+
+  return fallback;
+};
+
 export const POST = async (request: NextRequest) => {
   try {
     const { email, password } = await request.json();
+    const apiHost = process.env.NEXT_PUBLIC_API_HOST;
 
-    // 백엔드 API 호출
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}/api/auth/login`,
-      {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-        headers: {
-          "Content-Type": "application/json",
+    if (!apiHost) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "API 서버 주소가 설정되지 않았습니다.",
         },
-      },
-    );
+        { status: 500 },
+      );
+    }
 
-    const data = await response?.json();
+    const response = await fetch(`${apiHost}/api/auth/login`, {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await readResponseBody(response);
 
     if (!response.ok) {
       return NextResponse.json(
         {
           success: false,
-          message: data.message || "로그인에 실패했습니다.",
+          message: pickMessage(data, "로그인에 실패했습니다."),
         },
         { status: response.status },
       );
     }
 
-    // 성공 응답
     return NextResponse.json({
       success: true,
       data: {
@@ -56,12 +82,14 @@ export const POST = async (request: NextRequest) => {
       },
     });
   } catch (error) {
+    console.error("Login API proxy error:", error);
+
     return NextResponse.json(
       {
         success: false,
-        message: "서버 오류가 발생했습니다.",
+        message: "로그인 서버 요청에 실패했습니다.",
       },
-      { status: 500 },
+      { status: 502 },
     );
   }
 };
