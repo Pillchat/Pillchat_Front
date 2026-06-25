@@ -71,7 +71,7 @@ export default function MarketPage() {
                 className={`h-9 shrink-0 rounded-full px-4 text-sm font-medium ${
                   selectedGrade === grade
                     ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-foreground"
+                    : "bg-secondary text-gray-800"
                 }`}
               >
                 {grade}
@@ -119,7 +119,7 @@ export default function MarketPage() {
                 href={`/market/${item.id}`}
                 className="flex gap-4 rounded-lg border border-border bg-card p-4 active:scale-[0.98]"
               >
-                <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-accent text-3xl">
+                <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-primary-980 text-3xl">
                   {item.emoji}
                 </span>
                 <span className="min-w-0 flex-1">

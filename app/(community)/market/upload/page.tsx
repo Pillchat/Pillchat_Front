@@ -69,7 +69,7 @@ export default function MarketUploadPage() {
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="h-12 rounded-xl border border-input bg-background px-4 text-sm outline-none focus:border-brand"
+              className="h-12 rounded-xl border border-input bg-card px-4 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-ring"
               placeholder="자료 제목을 입력해주세요"
               aria-invalid={title.trim().length === 0}
             />
@@ -86,7 +86,7 @@ export default function MarketUploadPage() {
                   className={`flex h-10 items-center justify-center rounded-xl text-sm font-medium ${
                     category === item
                       ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-foreground"
+                      : "bg-secondary text-gray-800"
                   }`}
                 >
                   <input
@@ -112,7 +112,7 @@ export default function MarketUploadPage() {
               min={0}
               value={price}
               onChange={(event) => setPrice(event.target.value)}
-              className="h-12 rounded-xl border border-input bg-background px-4 text-sm outline-none focus:border-brand"
+              className="h-12 rounded-xl border border-input bg-card px-4 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-ring"
               placeholder="0원은 무료 자료로 등록됩니다"
               aria-invalid={
                 price !== "" &&
@@ -152,7 +152,7 @@ export default function MarketUploadPage() {
                   onClick={() => toggleTag(tag)}
                   className={`h-8 rounded-full border px-3 text-xs font-medium ${
                     selectedTags.includes(tag)
-                      ? "border-brand bg-accent text-brand"
+                      ? "border-brand bg-primary-980 text-brand"
                       : "border-border text-muted-foreground"
                   }`}
                 >
@@ -167,7 +167,7 @@ export default function MarketUploadPage() {
                 onCompositionStart={() => setIsComposing(true)}
                 onCompositionEnd={() => setIsComposing(false)}
                 onKeyDown={handleTagKeyDown}
-                className="h-10 min-w-0 flex-1 rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-brand"
+                className="h-10 min-w-0 flex-1 rounded-xl border border-input bg-card px-3 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-ring"
                 placeholder="태그 직접 입력"
               />
               <button
@@ -192,7 +192,7 @@ export default function MarketUploadPage() {
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              className="min-h-32 rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none focus:border-brand"
+              className="min-h-32 rounded-xl border border-input bg-card px-4 py-3 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-ring"
               placeholder="간단한 강의도 판매할 수 있어요. 아이패드 화면 녹화 자료, 풀이 영상 등 자료 구성을 설명해주세요."
             />
             <span className="self-end text-xs text-muted-foreground">
@@ -203,7 +203,7 @@ export default function MarketUploadPage() {
           <button
             type="submit"
             disabled={!formValid}
-            className="h-14 rounded-xl bg-primary text-base font-semibold text-primary-foreground active:scale-[0.98] disabled:bg-muted disabled:text-muted-foreground"
+            className="h-14 rounded-xl bg-primary text-base font-semibold text-primary-foreground active:scale-[0.98] disabled:bg-muted disabled:text-gray-500"
           >
             자료 등록하기
           </button>

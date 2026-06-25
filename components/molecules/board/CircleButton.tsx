@@ -38,7 +38,7 @@ export const CircleButton = ({
               onClick={onUploadPost}
               className="absolute right-0 top-0 h-[56px] w-[148px] rounded-[12px] bg-primary"
             >
-              <div className="flex items-center px-5 py-3 font-['Pretendard'] text-[14px] font-medium text-white">
+              <div className="flex items-center px-5 py-3 font-['Pretendard'] text-[14px] font-medium text-primary-foreground">
                 <img src="/icons/Circle+.svg" alt="게시물 올리기" />
                 <span>게시물 올리기</span>
               </div>
@@ -49,7 +49,7 @@ export const CircleButton = ({
               onClick={onUploadStudy}
               className="absolute bottom-0 right-0 h-[56px] w-[160px] rounded-[12px] bg-primary"
             >
-              <div className="flex items-center px-5 py-3 font-['Pretendard'] text-[14px] font-medium text-white">
+              <div className="flex items-center px-5 py-3 font-['Pretendard'] text-[14px] font-medium text-primary-foreground">
                 <img src="/icons/Data.svg" alt="학습자료 올리기" />
                 <span>학습자료 올리기</span>
               </div>
@@ -67,8 +67,8 @@ export const CircleButton = ({
           "h-[64px] w-[64px] rounded-full",
           "grid place-items-center",
           open
-            ? "rotate-45 bg-white text-primary"
-            : "rotate-0 bg-primary text-white",
+            ? "rotate-45 bg-card text-primary"
+            : "rotate-0 bg-primary text-primary-foreground",
           "transition-transform duration-200",
           className,
         )}

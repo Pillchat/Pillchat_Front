@@ -65,7 +65,7 @@ export function PreviewModal({ title, priceLabel }: PreviewModalProps) {
       <DialogTrigger asChild>
         <button
           type="button"
-          className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-background px-5 text-sm font-semibold text-brand active:scale-[0.98]"
+          className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-card px-5 text-sm font-semibold text-brand active:scale-[0.98]"
         >
           맛보기 보기
         </button>
@@ -103,8 +103,8 @@ export function PreviewModal({ title, priceLabel }: PreviewModalProps) {
             </div>
 
             {page.locked && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-background/85 px-8 text-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-brand">
+              <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-card/85 px-8 text-center">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-980 text-brand">
                   <Lock aria-hidden="true" className="h-5 w-5" />
                 </span>
                 <strong className="mt-4 text-base font-semibold text-foreground">

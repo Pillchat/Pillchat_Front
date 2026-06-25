@@ -30,7 +30,7 @@ export default async function MarketDetailPage({
       <CustomHeader title="자료 상세" />
 
       <main className="px-6 pb-8 pt-4">
-        <section className="rounded-lg bg-accent px-6 py-10 text-center">
+        <section className="rounded-lg bg-primary-980 px-6 py-10 text-center">
           <div className="text-5xl">📚</div>
           <h1 className="mt-5 text-xl font-bold text-foreground">
             학습자료 미리보기
@@ -103,7 +103,7 @@ export default async function MarketDetailPage({
                   ))}
                 </div>
                 <textarea
-                  className="mt-3 min-h-24 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none focus:border-brand"
+                  className="mt-3 min-h-24 w-full rounded-xl border border-input bg-card px-4 py-3 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-ring"
                   placeholder="자료를 사용한 후기를 남겨주세요."
                 />
                 <button
@@ -152,7 +152,7 @@ export default async function MarketDetailPage({
         </Tabs>
       </main>
 
-      <div className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-[480px] -translate-x-1/2 bg-background px-6 py-3">
+      <div className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-[480px] -translate-x-1/2 bg-card px-6 py-3">
         <button
           type="button"
           className="h-14 w-full rounded-xl bg-primary text-base font-semibold text-primary-foreground active:scale-[0.98]"

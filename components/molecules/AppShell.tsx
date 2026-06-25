@@ -31,7 +31,7 @@ export function AppShell({
   return (
     <div
       className={cn(
-        "mx-auto min-h-dvh w-full max-w-[480px] bg-background",
+        "mx-auto min-h-dvh w-full max-w-[480px] bg-card text-card-foreground",
         bottomSpacingClass[bottomSpacing],
         className,
       )}

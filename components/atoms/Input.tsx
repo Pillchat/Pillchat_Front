@@ -25,7 +25,7 @@ export function Input({
 }: Options) {
   return (
     <input
-      className="h-[52px] w-full rounded-[12px] border border-[#C4C4C4] bg-white pl-[1rem] font-[pretendard] text-[15px] font-medium"
+      className="h-[52px] w-full rounded-[12px] border border-input bg-card pl-[1rem] font-[pretendard] text-[15px] font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:border-gray-300 disabled:bg-muted disabled:text-gray-500"
       placeholder={placeholder}
       type={type}
       value={value}

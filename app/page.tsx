@@ -292,7 +292,7 @@ const Home: FC = () => {
           </div>
         </section>
 
-        <div className="border-t-[12px] border-t-[#FFF6F5] py-5" />
+        <div className="border-t-[12px] border-t-primary-980 py-5" />
 
         {/*
         <div className="mb-6">

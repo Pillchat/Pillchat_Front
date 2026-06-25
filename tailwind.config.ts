@@ -22,7 +22,17 @@ export default {
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
+          "600": "hsl(var(--primary-600))",
+          "800": "hsl(var(--primary-800))",
+          "900": "hsl(var(--primary-900))",
+          "980": "hsl(var(--primary-980))",
           foreground: "hsl(var(--primary-foreground))",
+        },
+        gray: {
+          "100": "hsl(var(--gray-100))",
+          "300": "hsl(var(--gray-300))",
+          "500": "hsl(var(--gray-500))",
+          "800": "hsl(var(--gray-800))",
         },
         card: {
           DEFAULT: "hsl(var(--card))",
@@ -59,6 +69,7 @@ export default {
         button: {
           foreground: "hsl(var(--button-foreground))",
         },
+        teritary: "hsl(var(--teritary))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

@@ -63,7 +63,7 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
     <nav
       aria-label="하단 네비게이션"
       className={cn(
-        "fixed bottom-0 left-1/2 z-50 flex h-[calc(5.75rem+env(safe-area-inset-bottom))] w-full max-w-[480px] -translate-x-1/2 items-start justify-between border-t border-border bg-background px-3 pb-[env(safe-area-inset-bottom)] pt-3 shadow-[0_-8px_24px_rgba(17,17,17,0.04)]",
+        "fixed bottom-0 left-1/2 z-50 flex h-[calc(5.75rem+env(safe-area-inset-bottom))] w-full max-w-[480px] -translate-x-1/2 items-start justify-between border-t border-border bg-card px-3 pb-[env(safe-area-inset-bottom)] pt-3 shadow-[0_-8px_24px_rgba(17,17,17,0.04)]",
         className,
       )}
     >
@@ -85,7 +85,7 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
             <span className="relative">
               <Icon aria-hidden="true" className="h-6 w-6" />
               {item.badge && (
-                <span className="absolute -right-4 -top-2 rounded-full bg-brand px-1.5 py-0.5 text-[0.5rem] font-semibold leading-none text-white">
+                <span className="absolute -right-4 -top-2 rounded-full bg-primary-600 px-1.5 py-0.5 text-[0.5rem] font-semibold leading-none text-primary-foreground">
                   {item.badge}
                 </span>
               )}
