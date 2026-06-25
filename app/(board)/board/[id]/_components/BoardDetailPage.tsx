@@ -8,6 +8,7 @@ import {
   SelectModal,
 } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDiffDate } from "@/lib/shared/date";
 import {
@@ -24,7 +25,9 @@ import { syncViewCountInQueryData } from "@/lib/shared/syncViewCount";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/lib/navigation";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { Bookmark } from "lucide-react";
 import { useLikeStatus } from "@/hooks/useLikeStatus";
+import { useBoardScrapStatus } from "@/hooks/useBoardScrapStatus";
 import {
   useBoardCommentsQuery,
   useBoardQuery,
@@ -69,6 +72,12 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { isLiked, likeCount, toggleLike } = useLikeStatus(boardId, "boards");
+  const {
+    isScrapped,
+    scrapCount,
+    isLoading: scrapLoading,
+    toggleScrap,
+  } = useBoardScrapStatus(boardId);
   const currentUserId = getCurrentUserId();
   const commentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const editingCommentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -76,6 +85,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [commentValue, setCommentValue] = useState("");
+  const [commentAnonymous, setCommentAnonymous] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
   const [commentBarHeight, setCommentBarHeight] = useState(112);
 
@@ -222,6 +232,13 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     await toggleLike();
   };
 
+  const handleScrapClick = async () => {
+    const success = await toggleScrap();
+    if (!success) {
+      alert("게시글 스크랩 처리에 실패했습니다.");
+    }
+  };
+
   const isAuthor =
     boardData &&
     currentUserId &&
@@ -267,6 +284,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const commentMutation = useCreateBoardCommentMutation({
     onSuccess: () => {
       setCommentValue("");
+      setCommentAnonymous(false);
       queryClient.invalidateQueries({ queryKey: ["board-comments", boardId] });
     },
     onError: (error) => {
@@ -315,6 +333,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     commentMutation.mutate({
       boardId,
       content: commentValue,
+      isAnonymous: commentAnonymous,
     });
   };
 
@@ -408,12 +427,33 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <LikeButton
-                onClick={handleLikeClick}
-                likeCount={likeCount}
-                isLiked={isLiked}
-              />
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <LikeButton
+                  onClick={handleLikeClick}
+                  likeCount={likeCount}
+                  isLiked={isLiked}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label={isScrapped ? "스크랩 취소" : "스크랩"}
+                  disabled={scrapLoading}
+                  className={
+                    isScrapped
+                      ? "h-14 w-auto rounded-full border border-primary bg-accent px-4 py-2 text-primary disabled:opacity-60"
+                      : "h-14 w-auto rounded-full border px-4 py-2 disabled:opacity-60"
+                  }
+                  onClick={handleScrapClick}
+                >
+                  <Bookmark
+                    className="h-7 w-7"
+                    fill={isScrapped ? "currentColor" : "none"}
+                  />
+                  <span className="text-base font-medium">{scrapCount}</span>
+                </Button>
+              </div>
               <ActionMenu
                 trigger={
                   <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -718,8 +758,19 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
             </button>
           </div>
 
-          <div className="text-right text-xs text-[#999999]">
-            {commentValue.length}/{1000}
+          <div className="flex items-center justify-between text-xs text-[#999999]">
+            <label className="flex items-center gap-2 text-sm font-medium text-[#5C5554]">
+              <Checkbox
+                checked={commentAnonymous}
+                onCheckedChange={(checked) =>
+                  setCommentAnonymous(checked === true)
+                }
+              />
+              익명
+            </label>
+            <span>
+              {commentValue.length}/{1000}
+            </span>
           </div>
         </div>
       </div>
