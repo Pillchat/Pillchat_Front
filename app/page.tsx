@@ -1,7 +1,15 @@
 "use client";
 
 import { FC, Fragment, useEffect, useMemo, useState } from "react";
-import { BookOpenCheck, MessageCircle, ShoppingBag, Star } from "lucide-react";
+import {
+  BookOpenCheck,
+  CalendarDays,
+  GraduationCap,
+  MessageCircle,
+  ShoppingBag,
+  Star,
+  UserRound,
+} from "lucide-react";
 import {
   BottomNavbar,
   AlarmHeader,
@@ -30,12 +38,51 @@ import {
 } from "@/components/ui/carousel";
 import { useBoardsQuery, useFilesQuery } from "@/hooks/queries";
 
+const DDAY_STORAGE_KEY = "yakchat:national-exam-date";
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const calculateDday = (dateValue: string) => {
+  const [year, month, day] = dateValue.split("-").map(Number);
+
+  if (!year || !month || !day) return null;
+
+  const now = new Date();
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = Date.UTC(year, month - 1, day);
+
+  return Math.ceil((target - today) / MS_PER_DAY);
+};
+
+const formatDday = (days: number | null) => {
+  if (days === null) return "미설정";
+  if (days === 0) return "D-Day";
+  if (days > 0) return `D-${days}`;
+  return `D+${Math.abs(days)}`;
+};
+
+const formatExamDate = (dateValue: string) => {
+  const [year, month, day] = dateValue.split("-").map(Number);
+
+  if (!year || !month || !day) return "시험일 미설정";
+
+  return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(
+    2,
+    "0",
+  )}`;
+};
+
 const quickLinks = [
   {
     label: "자료마켓",
     description: "요약 노트와 문제집",
     href: "/market",
     icon: ShoppingBag,
+  },
+  {
+    label: "학습",
+    description: "문제은행과 AI 생성",
+    href: "/learn",
+    icon: GraduationCap,
   },
   {
     label: "꿀팁",
@@ -61,12 +108,20 @@ const Home: FC = () => {
   const router = useRouter();
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isDdayReady, setIsDdayReady] = useState(false);
+  const [examDate, setExamDate] = useState("");
+  const [draftExamDate, setDraftExamDate] = useState("");
   const [viewCountOverrides, setViewCountOverrides] = useState<
     Record<string, number>
   >({});
   const userInfo = getCurrentUserInfo();
 
-  const { data: boards, isLoading: isBoardsLoading } = useBoardsQuery("best", {
+  const {
+    data: boards,
+    isLoading: isBoardsLoading,
+    isError: isBoardsError,
+    refetch: refetchBoards,
+  } = useBoardsQuery("best", {
     enabled: isAuthenticated === true,
   });
 
@@ -80,10 +135,19 @@ const Home: FC = () => {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated === false) {
-      router.replace("/login");
-    }
-  }, [isAuthenticated, router]);
+    const savedExamDate = window.localStorage.getItem(DDAY_STORAGE_KEY) ?? "";
+
+    setExamDate(savedExamDate);
+    setDraftExamDate(savedExamDate);
+    setIsDdayReady(true);
+  }, []);
+
+  // TODO: 임시로 미로그인 사용자도 홈 화면에 접근 가능하게 둔다.
+  // useEffect(() => {
+  //   if (isAuthenticated === false) {
+  //     router.replace("/login");
+  //   }
+  // }, [isAuthenticated, router]);
 
   useEffect(() => {
     const syncRememberedViewCounts = () => {
@@ -120,6 +184,20 @@ const Home: FC = () => {
     markBoardViewIntent(boardId);
     router.push(`/board/${boardId}`);
   };
+
+  const handleSaveExamDate = () => {
+    const nextExamDate = draftExamDate.trim();
+
+    if (nextExamDate) {
+      window.localStorage.setItem(DDAY_STORAGE_KEY, nextExamDate);
+    } else {
+      window.localStorage.removeItem(DDAY_STORAGE_KEY);
+    }
+
+    setExamDate(nextExamDate);
+  };
+
+  const dday = useMemo(() => calculateDday(examDate), [examDate]);
 
   const rawBoardList = useMemo(() => {
     if (Array.isArray(boards)) return boards;
@@ -179,34 +257,25 @@ const Home: FC = () => {
             <CarouselContent>
               <CarouselItem>
                 <Card
-                  className="cursor-pointer border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 transition-shadow hover:shadow-md"
+                  className="cursor-pointer border-primary-900 bg-primary-980 transition-shadow hover:shadow-md"
                   onClick={handleViewAllBoards}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h2 className="mb-2 text-xl font-bold text-gray-900">
+                        <h2 className="mb-2 text-xl font-bold text-foreground">
                           게시판 둘러보기
                         </h2>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           인기 게시글과 다양한 글을 확인하기
                         </p>
                       </div>
                       <div className="flex-shrink-0">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500">
-                          <svg
-                            className="h-6 w-6 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
-                            />
-                          </svg>
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                          <MessageCircle
+                            aria-hidden="true"
+                            className="h-6 w-6"
+                          />
                         </div>
                       </div>
                     </div>
@@ -216,34 +285,22 @@ const Home: FC = () => {
 
               <CarouselItem>
                 <Card
-                  className="cursor-pointer border-purple-200 bg-gradient-to-r from-purple-50 to-violet-50 transition-shadow hover:shadow-md"
+                  className="cursor-pointer border-border bg-card transition-shadow hover:shadow-md"
                   onClick={() => router.push("/archive")}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h2 className="mb-2 text-xl font-bold text-gray-900">
+                        <h2 className="mb-2 text-xl font-bold text-foreground">
                           내 활동 확인하기
                         </h2>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           내가 작성한 게시글과 오답노트 관리하기
                         </p>
                       </div>
                       <div className="flex-shrink-0">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500">
-                          <svg
-                            className="h-6 w-6 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                            />
-                          </svg>
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent text-brand">
+                          <UserRound aria-hidden="true" className="h-6 w-6" />
                         </div>
                       </div>
                     </div>
@@ -255,13 +312,54 @@ const Home: FC = () => {
         </div>
 
         <div className="px-6 py-5">
-          <h2 className="mb-2 text-xl font-bold text-gray-900">
+          <h2 className="mb-2 text-xl font-bold text-foreground">
             안녕하세요, {userInfo?.username}님!
           </h2>
-          <h2 className="mb-2 text-xl font-bold text-gray-900">
+          <h2 className="mb-2 text-xl font-bold text-foreground">
             오늘도 필챗과 함께하고 계세요!
           </h2>
         </div>
+
+        <section className="px-6 pb-6" aria-label="국가고시 D-Day">
+          <div className="rounded-lg border border-primary-900 bg-primary-980 p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white text-primary">
+                  <CalendarDays aria-hidden="true" className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">
+                    국가고시 D-Day
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {isDdayReady ? formatExamDate(examDate) : "계산 중"}
+                  </p>
+                </div>
+              </div>
+              <strong className="shrink-0 text-2xl font-bold text-primary">
+                {isDdayReady ? formatDday(dday) : "-"}
+              </strong>
+            </div>
+
+            <div className="mt-4 flex items-center gap-2">
+              <input
+                type="date"
+                value={draftExamDate}
+                onChange={(event) => setDraftExamDate(event.target.value)}
+                aria-label="국가고시 날짜"
+                className="h-11 min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 text-sm text-foreground outline-none focus:border-primary-800"
+              />
+              <button
+                type="button"
+                onClick={handleSaveExamDate}
+                disabled={!isDdayReady}
+                className="h-11 shrink-0 rounded-lg bg-primary px-4 text-sm font-semibold text-white disabled:bg-gray-100 disabled:text-gray-500"
+              >
+                저장
+              </button>
+            </div>
+          </div>
+        </section>
 
         <section className="px-6 pb-6" aria-label="빠른 진입">
           <div className="grid grid-cols-2 gap-3">
@@ -370,6 +468,18 @@ const Home: FC = () => {
                 </div>
               ))}
             </div>
+          ) : isBoardsError ? (
+            <Card className="p-6 text-center">
+              <p className="mb-4 text-gray-500">
+                인기 게시글을 불러오지 못했습니다
+              </p>
+              <button
+                onClick={() => void refetchBoards()}
+                className="font-medium text-primary hover:text-primary-800"
+              >
+                다시 시도
+              </button>
+            </Card>
           ) : boardList.length > 0 ? (
             <div className="space-y-4">
               {boardList.map((board: any, index: number) => {

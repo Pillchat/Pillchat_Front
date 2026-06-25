@@ -25,7 +25,8 @@ const NAV_ITEMS = [
     icon: GraduationCap,
     label: "학습",
     badge: "9월",
-    isActive: (pathname: string) => pathname.startsWith("/learn"),
+    isActive: (pathname: string) =>
+      pathname.startsWith("/learn") || pathname.startsWith("/questionbank"),
   },
   {
     href: "/boards",
@@ -34,6 +35,8 @@ const NAV_ITEMS = [
     isActive: (pathname: string) =>
       pathname.startsWith("/boards") ||
       pathname.startsWith("/board") ||
+      pathname.startsWith("/materials") ||
+      pathname.startsWith("/upload") ||
       pathname.startsWith("/tips") ||
       pathname.startsWith("/reviews"),
   },
@@ -47,8 +50,7 @@ const NAV_ITEMS = [
     href: "/market",
     icon: ShoppingBag,
     label: "마켓",
-    isActive: (pathname: string) =>
-      pathname.startsWith("/market") || pathname.startsWith("/materials"),
+    isActive: (pathname: string) => pathname.startsWith("/market"),
   },
 ];
 

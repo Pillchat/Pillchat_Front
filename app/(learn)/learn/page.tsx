@@ -2,7 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Bell, Brain, ClipboardList, ImageIcon } from "lucide-react";
+import {
+  ArrowRight,
+  Bell,
+  BookOpenCheck,
+  Brain,
+  ClipboardList,
+  FileQuestion,
+  ImageIcon,
+  RotateCcw,
+} from "lucide-react";
 import { useState } from "react";
 
 import { Toast } from "@/components/atoms";
@@ -24,6 +33,27 @@ const previewItems = [
     title: "서술형 메이커",
     description: "키워드와 이미지로 정리하는 암기 보조",
     icon: ImageIcon,
+  },
+];
+
+const learningTools = [
+  {
+    title: "문제은행",
+    description: "기존 문제 풀이와 복습 화면으로 바로 이동해요.",
+    href: "/questionbank",
+    icon: BookOpenCheck,
+  },
+  {
+    title: "AI 문제 생성",
+    description: "PDF 강의자료를 업로드해 문제를 만들 수 있어요.",
+    href: "/questionbank/generate",
+    icon: FileQuestion,
+  },
+  {
+    title: "복습하기",
+    description: "이미 풀었던 문제를 다시 확인하고 이어서 풀어요.",
+    href: "/questionbank/review",
+    icon: RotateCcw,
   },
 ];
 
@@ -56,12 +86,59 @@ export default function LearnPage() {
             9월 전격 출시!
           </h1>
           <p className="mt-4 text-base font-medium leading-7 text-muted-foreground">
-            약대생의 복습, 기출 풀이, 서술형 암기를 한 흐름으로 이어주는
-            학습 탭을 준비하고 있어요.
+            약대생의 복습, 기출 풀이, 서술형 암기를 한 흐름으로 이어주는 학습
+            탭을 준비하고 있어요.
           </p>
         </section>
 
-        <section className="mt-12 flex flex-col gap-3" aria-label="출시 예정 기능">
+        <section className="mt-9" aria-label="현재 이용 가능한 학습 도구">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-foreground">학습 도구</h2>
+              <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                문제은행과 AI 문제 생성은 학습 탭에서 이어갈 수 있어요.
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full bg-primary-980 px-2.5 py-1 text-xs font-semibold text-brand">
+              beta
+            </span>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-3">
+            {learningTools.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-transform active:scale-[0.98]"
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-accent text-brand">
+                    <Icon aria-hidden="true" className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <strong className="block text-base font-semibold text-foreground">
+                      {item.title}
+                    </strong>
+                    <span className="mt-1 block text-sm leading-5 text-muted-foreground">
+                      {item.description}
+                    </span>
+                  </span>
+                  <ArrowRight
+                    aria-hidden="true"
+                    className="h-5 w-5 shrink-0 text-muted-foreground"
+                  />
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        <section
+          className="mt-10 flex flex-col gap-3"
+          aria-label="출시 예정 기능"
+        >
           {previewItems.map((item) => {
             const Icon = item.icon;
 
@@ -103,7 +180,6 @@ export default function LearnPage() {
         onClose={() => setToastOpen(false)}
         message="알림 신청이 완료되었습니다! 9월 오픈 시 가장 먼저 안내해 드립니다."
       />
-
     </AppShell>
   );
 }

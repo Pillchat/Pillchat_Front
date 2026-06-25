@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpenCheck, MessageCircle, Star } from "lucide-react";
+import { BookOpenCheck, FileText, MessageCircle, Star } from "lucide-react";
 
 import { AppShell, MeaninglessHeader } from "@/components/molecules";
 
@@ -25,6 +25,13 @@ const boards = [
     icon: Star,
     meta: "강의/자료/실습",
   },
+  {
+    href: "/upload",
+    title: "학습자료 공유",
+    description: "요약본, 실습 자료, 강의자료 공유는 커뮤니티 안에서 이어가요.",
+    icon: FileText,
+    meta: "자료 공유",
+  },
 ];
 
 export default function BoardsHubPage() {
@@ -38,7 +45,7 @@ export default function BoardsHubPage() {
           <h1 className="mt-2 text-2xl font-bold leading-9 text-foreground">
             필요한 이야기를
             <br />
-            게시판별로 빠르게 찾아보세요
+            게시판과 자료에서 찾아보세요
           </h1>
         </section>
 
@@ -71,7 +78,6 @@ export default function BoardsHubPage() {
           })}
         </section>
       </main>
-
     </AppShell>
   );
 }
