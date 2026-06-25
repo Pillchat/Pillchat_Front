@@ -1,6 +1,7 @@
 "use client";
 
 import { FC, Fragment, useEffect, useMemo, useState } from "react";
+import { BookOpenCheck, MessageCircle, ShoppingBag, Star } from "lucide-react";
 import {
   BottomNavbar,
   AlarmHeader,
@@ -28,6 +29,33 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import { useBoardsQuery, useFilesQuery } from "@/hooks/queries";
+
+const quickLinks = [
+  {
+    label: "자료마켓",
+    description: "요약 노트와 문제집",
+    href: "/market",
+    icon: ShoppingBag,
+  },
+  {
+    label: "꿀팁",
+    description: "시험과 실습 노하우",
+    href: "/tips",
+    icon: BookOpenCheck,
+  },
+  {
+    label: "자유",
+    description: "약대생 이야기",
+    href: "/board",
+    icon: MessageCircle,
+  },
+  {
+    label: "후기",
+    description: "강의와 자료 후기",
+    href: "/reviews",
+    icon: Star,
+  },
+];
 
 const Home: FC = () => {
   const router = useRouter();
@@ -234,6 +262,35 @@ const Home: FC = () => {
             오늘도 필챗과 함께하고 계세요!
           </h2>
         </div>
+
+        <section className="px-6 pb-6" aria-label="빠른 진입">
+          <div className="grid grid-cols-2 gap-3">
+            {quickLinks.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <button
+                  key={item.href}
+                  type="button"
+                  onClick={() => router.push(item.href)}
+                  className="flex min-h-24 items-center gap-3 rounded-lg border border-border bg-card p-4 text-left active:scale-[0.98]"
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent text-brand">
+                    <Icon aria-hidden="true" className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0">
+                    <strong className="block text-sm font-semibold text-foreground">
+                      {item.label}
+                    </strong>
+                    <span className="mt-1 block text-xs leading-4 text-muted-foreground">
+                      {item.description}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
         <div className="border-t-[12px] border-t-[#FFF6F5] py-5" />
 
