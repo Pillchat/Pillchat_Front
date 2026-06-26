@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { useRouter } from "@/lib/navigation";
 import { BottomNavbar, MeaninglessHeader } from "@/components/molecules";
 import { fetchAPI } from "@/lib/client/fetch";
@@ -21,16 +21,6 @@ const gradeColors: Record<string, string> = {
   GOSU: "#ff412e",
   MYEONGYAK: "#9f1004",
 };
-
-const SELECTED_BADGE_STORAGE_KEY = "yakchat:selected-badge-id";
-
-const temporaryBadges = [
-  { id: "badge-1", name: "질문 마스터", icon: "/BadgeIcon1.svg" },
-  { id: "badge-2", name: "자료 장인", icon: "/BadgeIcon2.svg" },
-  { id: "badge-3", name: "오답 수집가", icon: "/BadgeIcon3.svg" },
-  { id: "badge-4", name: "병원 실습 완료", icon: "/BadgeIcon4.svg" },
-  { id: "badge-5", name: "국시패스", icon: "/BadgeIcon5.svg" },
-];
 
 interface ActionItemProps {
   icon: string;
@@ -153,30 +143,14 @@ function BenefitItem({
 export default function MyPage() {
   const router = useRouter();
   const { onMyProfile, isLoading, error, profile } = useMyProfile();
-  const [selectedBadgeId, setSelectedBadgeId] = useState(temporaryBadges[0].id);
 
   useEffect(() => {
     onMyProfile();
   }, [onMyProfile]);
 
-  useEffect(() => {
-    const savedBadgeId = window.localStorage.getItem(
-      SELECTED_BADGE_STORAGE_KEY,
-    );
-    if (
-      savedBadgeId &&
-      temporaryBadges.some((badge) => badge.id === savedBadgeId)
-    ) {
-      setSelectedBadgeId(savedBadgeId);
-    }
-  }, []);
-
   const isProfessional = profile.userType === "PROFESSIONAL";
   const displayName = profile.nickname || "닉네임";
   const profileImage = profile.profileImg || "/icons/defaultProfile.svg";
-  const selectedBadge =
-    temporaryBadges.find((badge) => badge.id === selectedBadgeId) ??
-    temporaryBadges[0];
   const gradeLabel = profile.grade
     ? gradeLabels[profile.grade] || profile.grade
     : "";
@@ -228,18 +202,6 @@ export default function MyPage() {
                   alt={`${displayName} 프로필`}
                   className="h-full w-full rounded-full object-cover"
                 />
-                {selectedBadge && (
-                  <span
-                    className="absolute -bottom-0.5 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-[0_0_0_2px_#fff]"
-                    aria-label={`대표 뱃지: ${selectedBadge.name}`}
-                  >
-                    <img
-                      src={selectedBadge.icon}
-                      alt=""
-                      className="h-full w-full"
-                    />
-                  </span>
-                )}
               </div>
 
               <div className="mt-3 flex min-h-7 items-center justify-center gap-2">

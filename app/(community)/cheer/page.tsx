@@ -4,6 +4,11 @@ import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Send } from "lucide-react";
 
 import { AppShell } from "@/components/molecules";
+import {
+  calculateDday,
+  formatDday,
+  getNextJanuaryFourthFridayDate,
+} from "@/lib/shared/dday";
 
 type CheerMessage = {
   id: number;
@@ -45,6 +50,9 @@ export default function CheerPage() {
   const [message, setMessage] = useState("");
   const [isComposing, setIsComposing] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
+  const nationalExamDday = formatDday(
+    calculateDday(getNextJanuaryFourthFridayDate()),
+  );
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -91,7 +99,9 @@ export default function CheerPage() {
             <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-brand">
               LIVE 128
             </span>
-            <p className="mt-2 text-xs text-muted-foreground">국시 D-184</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              국시 {nationalExamDday}
+            </p>
           </div>
         </div>
       </header>

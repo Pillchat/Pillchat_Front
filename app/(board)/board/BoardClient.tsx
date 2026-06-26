@@ -94,6 +94,12 @@ type BoardClientProps = {
   kind?: BoardPageKind;
 };
 
+const BOARD_CATEGORY_BY_KIND: Record<BoardPageKind, string> = {
+  free: "FREE",
+  tips: "TIP",
+  reviews: "REVIEW",
+};
+
 const BoardClient = ({ kind = "free" }: BoardClientProps) => {
   const config = BOARD_PAGE_CONFIG[kind];
   const router = useRouter();
@@ -128,8 +134,12 @@ const BoardClient = ({ kind = "free" }: BoardClientProps) => {
     };
   }, []);
 
-  const boardListParams =
-    kind === "tips" ? { sort: "popular", page: 0, size: 20 } : undefined;
+  const boardListParams = {
+    category: BOARD_CATEGORY_BY_KIND[kind],
+    ...(kind === "tips" ? { sort: "popular" } : {}),
+    page: 0,
+    size: 20,
+  };
   const shouldPreserveServerOrder = kind === "tips";
   const boardsQuery = useBoardsQuery("latest", boardListParams);
   const { data, isLoading, isError, error } = boardsQuery;

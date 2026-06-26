@@ -6,6 +6,8 @@ const REFRESH_TOKEN_KEY = "refresh_token";
 
 const isBrowser = () => typeof window !== "undefined";
 
+const normalizeToken = (token: string) => token.replace(/^Bearer\s+/i, "");
+
 const getTokenExpiryTime = (token: string): number | null => {
   try {
     const payload = token.split(".")[1];
@@ -51,21 +53,24 @@ const getStoredToken = (key: string) => {
   const mode = getStoredAuthMode();
   if (mode) {
     const token = getStorage(mode)?.getItem(key);
-    if (token) return token;
+    if (token) return normalizeToken(token);
   }
 
-  return window.sessionStorage.getItem(key) ?? window.localStorage.getItem(key);
+  const token =
+    window.sessionStorage.getItem(key) ?? window.localStorage.getItem(key);
+  return token ? normalizeToken(token) : null;
 };
 
 const setAccessTokenCookie = (accessToken: string, rememberMe: boolean) => {
   if (!isBrowser()) return;
 
-  const expiresAt = getTokenExpiryTime(accessToken);
+  const normalizedAccessToken = normalizeToken(accessToken);
+  const expiresAt = getTokenExpiryTime(normalizedAccessToken);
   const maxAgeSeconds = expiresAt
     ? Math.max(0, Math.floor((expiresAt - Date.now()) / 1000))
     : 24 * 3600;
   const maxAge = rememberMe ? `; max-age=${maxAgeSeconds}` : "";
-  document.cookie = `access_token=${accessToken}; path=/${maxAge}; SameSite=Lax`;
+  document.cookie = `access_token=${normalizedAccessToken}; path=/${maxAge}; SameSite=Lax`;
 };
 
 export const getToken = () => getStoredToken(ACCESS_TOKEN_KEY);
@@ -91,6 +96,8 @@ export const setTokens = (
 ) => {
   if (!isBrowser()) return;
 
+  const normalizedAccessToken = normalizeToken(accessToken);
+  const normalizedRefreshToken = normalizeToken(refreshToken);
   const mode: AuthStorageMode = rememberMe ? "local" : "session";
   const targetStorage = getStorage(mode);
   const otherStorage = getStorage(rememberMe ? "session" : "local");
@@ -99,11 +106,11 @@ export const setTokens = (
   otherStorage?.removeItem(REFRESH_TOKEN_KEY);
   otherStorage?.removeItem(AUTH_STORAGE_MODE_KEY);
 
-  targetStorage?.setItem(ACCESS_TOKEN_KEY, accessToken);
-  targetStorage?.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  targetStorage?.setItem(ACCESS_TOKEN_KEY, normalizedAccessToken);
+  targetStorage?.setItem(REFRESH_TOKEN_KEY, normalizedRefreshToken);
   targetStorage?.setItem(AUTH_STORAGE_MODE_KEY, mode);
 
-  setAccessTokenCookie(accessToken, rememberMe);
+  setAccessTokenCookie(normalizedAccessToken, rememberMe);
 };
 
 export const clearTokens = () => {
@@ -175,18 +182,23 @@ export const fetchPost = async (url: string, data: any) => {
   let response = await fetch(url, {
     method: "POST",
     body: JSON.stringify(data),
+    credentials: "same-origin",
     headers: {
       "Content-Type": "application/json",
       ...headers,
     },
   });
 
-  if (response.status === 401 && url !== "/api/auth/login") {
+  if (
+    (response.status === 401 || response.status === 403) &&
+    url !== "/api/auth/login"
+  ) {
     const refreshed = await refreshTokens();
     if (refreshed) {
       response = await fetch(url, {
         method: "POST",
         body: JSON.stringify(data),
+        credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${refreshed.access_token}`,
@@ -239,11 +251,12 @@ export const fetchAPI = async (url: string, method: string, data?: any) => {
     method,
     body: requestBody,
     headers,
+    credentials: "same-origin",
   };
 
   let response = await fetch(requestUrl, requestOptions);
 
-  if (response.status === 401 && !isAuthRequest) {
+  if ((response.status === 401 || response.status === 403) && !isAuthRequest) {
     const refreshed = await refreshTokens();
     if (refreshed) {
       response = await fetch(requestUrl, {

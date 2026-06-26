@@ -29,10 +29,18 @@ import {
   markBoardViewIntent,
 } from "@/lib/client/boardView";
 import { getCurrentUserInfo } from "@/lib/client/auth";
+import {
+  calculateDday,
+  formatDday,
+  getNextJanuaryFourthFridayDate,
+} from "@/lib/shared/dday";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useBoardsQuery, useFilesQuery } from "@/hooks/queries";
-import { MARKET_ITEMS } from "@/lib/market/mock";
+import {
+  useBoardsQuery,
+  useFilesQuery,
+  useMaterialsQuery,
+} from "@/hooks/queries";
 
 type DDayItem = {
   id: string;
@@ -65,34 +73,17 @@ const DDAY_ACTIVE_STORAGE_KEY = "yakchat:active-dday-id";
 const NATIONAL_EXAM_CACHE_STORAGE_KEY = "yakchat:khp-national-exam-cache";
 const STUDY_CERT_STORAGE_KEY = "yakchat:study-certified-date";
 const STUDY_COUNT_STORAGE_KEY = "yakchat:study-count";
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const NATIONAL_EXAM_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const NATIONAL_EXAM_RETRY_COOLDOWN_MS = 60 * 60 * 1000;
+const PREVIOUS_DEFAULT_NATIONAL_EXAM_DATES = ["2027-01-15"];
 
 const DEFAULT_DDAYS: DDayItem[] = [
-  { id: "guksi", label: "약사 국시", date: "2027-01-15" },
-  { id: "midterm", label: "중간고사", date: "2026-10-20" },
-  { id: "final", label: "기말고사", date: "2026-12-15" },
+  {
+    id: "guksi",
+    label: "약사 국시",
+    date: getNextJanuaryFourthFridayDate(),
+  },
 ];
-
-const calculateDday = (dateValue: string) => {
-  const [year, month, day] = dateValue.split("-").map(Number);
-
-  if (!year || !month || !day) return null;
-
-  const now = new Date();
-  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-  const target = Date.UTC(year, month - 1, day);
-
-  return Math.ceil((target - today) / MS_PER_DAY);
-};
-
-const formatDday = (days: number | null) => {
-  if (days === null) return "미설정";
-  if (days === 0) return "D-Day";
-  if (days > 0) return `D-${days}`;
-  return `D+${Math.abs(days)}`;
-};
 
 const formatExamDate = (dateValue: string) => {
   const [year, month, day] = dateValue.split("-").map(Number);
@@ -133,12 +124,24 @@ const upsertNationalExamDday = (items: DDayItem[], exam: DDayItem) => [
 
 const sanitizeNationalExamDday = (items: DDayItem[]) => {
   const nationalExam = items.find((item) => item.id === "guksi");
+  const defaultNationalExam = DEFAULT_DDAYS[0];
 
-  if (!nationalExam || isUpcomingDate(nationalExam.date)) {
+  if (!nationalExam) {
+    return upsertNationalExamDday(items, defaultNationalExam);
+  }
+
+  if (isUpcomingDate(nationalExam.date)) {
+    if (
+      !nationalExam.source &&
+      PREVIOUS_DEFAULT_NATIONAL_EXAM_DATES.includes(nationalExam.date)
+    ) {
+      return upsertNationalExamDday(items, defaultNationalExam);
+    }
+
     return items;
   }
 
-  return upsertNationalExamDday(items, DEFAULT_DDAYS[0]);
+  return upsertNationalExamDday(items, defaultNationalExam);
 };
 
 const readNationalExamCache = () => {
@@ -222,6 +225,25 @@ const isFreeBoard = (item: any) => {
   return hasCategoryAlias(item, ["FREE", "자유", "자유게시판"]);
 };
 
+const getCommentCount = (item: any) =>
+  item?.answerCount ??
+  item?.commentCount ??
+  item?.commentsCount ??
+  item?.replyCount ??
+  item?.repliesCount ??
+  0;
+
+const getMaterialList = (data: any) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.content)) return data.content;
+  if (Array.isArray(data?.data?.content)) return data.data.content;
+  return [];
+};
+
+const getMaterialPrice = (item: any) =>
+  Number(item?.price ?? item?.amount ?? item?.cost ?? 0);
+
 const HomeSection: FC<{
   title: string;
   subtitle?: string;
@@ -260,7 +282,7 @@ const Home: FC = () => {
   const [isDdayEditorOpen, setIsDdayEditorOpen] = useState(false);
   const [newDdayLabel, setNewDdayLabel] = useState("");
   const [newDdayDate, setNewDdayDate] = useState("");
-  const [studyCount, setStudyCount] = useState(1240);
+  const [studyCount, setStudyCount] = useState(0);
   const [isStudyCertified, setIsStudyCertified] = useState(false);
   const [viewCountOverrides, setViewCountOverrides] = useState<
     Record<string, number>
@@ -275,6 +297,10 @@ const Home: FC = () => {
   } = useBoardsQuery("latest", {
     enabled: isAuthenticated === true,
   });
+  const { data: materialsData, isLoading: isMaterialsLoading } =
+    useMaterialsQuery({
+      enabled: isAuthenticated === true,
+    });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -394,12 +420,11 @@ const Home: FC = () => {
     window.localStorage.setItem(DDAY_ACTIVE_STORAGE_KEY, activeDdayId);
   }, [activeDdayId, isDdayReady]);
 
-  // TODO: 임시로 미로그인 사용자도 홈 화면에 접근 가능하게 둔다.
-  // useEffect(() => {
-  //   if (isAuthenticated === false) {
-  //     router.replace("/login");
-  //   }
-  // }, [isAuthenticated, router]);
+  useEffect(() => {
+    if (isAuthenticated === false) {
+      router.replace("/login");
+    }
+  }, [isAuthenticated, router]);
 
   useEffect(() => {
     const syncRememberedViewCounts = () => {
@@ -498,6 +523,11 @@ const Home: FC = () => {
     return [];
   }, [boards]);
 
+  const materialPreviewItems = useMemo(
+    () => getMaterialList(materialsData).slice(0, 4),
+    [materialsData],
+  );
+
   const boardList = useMemo(() => {
     return [...rawBoardList]
       .sort((a: any, b: any) => {
@@ -530,14 +560,6 @@ const Home: FC = () => {
     ],
     [boardList, freePreviewBoards, tipsPreviewBoards, reviewPreviewBoards],
   );
-
-  const getCommentCount = (item: any) =>
-    item?.answerCount ??
-    item?.commentCount ??
-    item?.commentsCount ??
-    item?.replyCount ??
-    item?.repliesCount ??
-    0;
 
   const boardImageKeys = useMemo(() => {
     return [
@@ -754,30 +776,57 @@ const Home: FC = () => {
           subtitle="밤새워 만든 고퀄리티 전공 요약본"
           href="/market"
         >
-          <div className="-mx-6 flex gap-4 overflow-x-auto px-6 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {MARKET_ITEMS.slice(0, 4).map((item) => (
-              <Link
-                key={item.id}
-                href={`/market/${item.id}`}
-                className="w-40 shrink-0 overflow-hidden rounded-lg border border-border bg-card active:scale-[0.98]"
-              >
-                <div className="flex h-24 items-center justify-center bg-primary-980 text-headline-large">
-                  {item.icon}
-                </div>
-                <div className="px-3 py-2.5">
-                  <p className="text-label-small font-medium text-brand">
-                    {item.subject}
-                  </p>
-                  <p className="mt-1 line-clamp-1 text-label-medium text-foreground">
-                    {item.title}
-                  </p>
-                  <p className="mt-1 text-label-medium font-semibold text-primary">
-                    {item.price.toLocaleString("ko-KR")}원
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {isMaterialsLoading ? (
+            <div className="-mx-6 flex gap-4 overflow-x-auto px-6 pb-1">
+              {[...Array(3)].map((_, index) => (
+                <div
+                  key={index}
+                  className="h-40 w-40 shrink-0 animate-pulse rounded-lg bg-primary-980"
+                />
+              ))}
+            </div>
+          ) : materialPreviewItems.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-body-medium text-muted-foreground">
+              등록된 자료가 없습니다.
+            </div>
+          ) : (
+            <div className="-mx-6 flex gap-4 overflow-x-auto px-6 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {materialPreviewItems.map((item: any) => {
+                const price = getMaterialPrice(item);
+                const title = item?.title ?? "제목 없음";
+                const subject =
+                  item?.subjectName ??
+                  item?.subject?.name ??
+                  item?.category ??
+                  "";
+
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/materials/${item.id}`}
+                    className="w-40 shrink-0 overflow-hidden rounded-lg border border-border bg-card active:scale-[0.98]"
+                  >
+                    <div className="flex h-24 items-center justify-center bg-primary-980 px-3 text-center text-title-small text-primary">
+                      자료
+                    </div>
+                    <div className="px-3 py-2.5">
+                      <p className="truncate text-label-small font-medium text-brand">
+                        {subject || "학습자료"}
+                      </p>
+                      <p className="mt-1 line-clamp-1 text-label-medium text-foreground">
+                        {title}
+                      </p>
+                      <p className="mt-1 text-label-medium font-semibold text-primary">
+                        {price > 0
+                          ? `${price.toLocaleString("ko-KR")}원`
+                          : "무료"}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </HomeSection>
 
         <HomeSection

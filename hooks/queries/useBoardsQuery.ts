@@ -5,6 +5,7 @@ import type { UseQueryOptions } from "@tanstack/react-query";
 type BoardQueryOptions = Omit<UseQueryOptions<any>, "queryKey" | "queryFn">;
 
 type BoardListParams = {
+  category?: string;
   sort?: "latest" | "popular" | string;
   page?: number;
   size?: number;
@@ -18,13 +19,23 @@ const isBoardListParams = (
   value?: BoardListParams | BoardQueryOptions,
 ): value is BoardListParams => {
   if (!value) return false;
-  return "sort" in value || "page" in value || "size" in value;
+  return (
+    "category" in value || "sort" in value || "page" in value || "size" in value
+  );
 };
 
 export const boardsQueryKey = (
   status?: string | null,
   params?: BoardListParams,
-) => ["boards", status, params?.sort, params?.page, params?.size] as const;
+) =>
+  [
+    "boards",
+    status,
+    params?.category,
+    params?.sort,
+    params?.page,
+    params?.size,
+  ] as const;
 
 export const boardQueryKey = (
   boardId?: string | null,
@@ -34,14 +45,24 @@ export const boardQueryKey = (
 export const boardCommentsQueryKey = (boardId?: string | null) =>
   ["board-comments", boardId] as const;
 
-export const getBoards = (status: string, params?: BoardListParams) => {
-  const query = new URLSearchParams({ status });
+const getBoardSort = (status: string, params?: BoardListParams) => {
+  if (params?.sort) return params.sort;
+  if (status === "latest" || status === "popular") return status;
+  if (status === "best") return "popular";
+  return undefined;
+};
 
-  if (params?.sort) query.set("sort", params.sort);
+export const getBoards = (status: string, params?: BoardListParams) => {
+  const query = new URLSearchParams();
+  const sort = getBoardSort(status, params);
+
+  if (params?.category) query.set("category", params.category);
+  if (sort) query.set("sort", sort);
   if (params?.page !== undefined) query.set("page", String(params.page));
   if (params?.size !== undefined) query.set("size", String(params.size));
 
-  return fetchAPI(`/api/boards?${query.toString()}`, "GET");
+  const queryString = query.toString();
+  return fetchAPI(`/api/boards${queryString ? `?${queryString}` : ""}`, "GET");
 };
 
 export const getBoard = (boardId: string, params?: BoardQueryParams) => {
