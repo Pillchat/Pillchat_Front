@@ -12,13 +12,12 @@ export function middleware(request: NextRequest) {
   }
 
   // 쿠키에서 토큰 확인
-  // TODO: 임시로 미로그인 사용자도 접근 가능하게 둔다.
-  // const token = request.cookies.get("access_token")?.value;
-  //
-  // if (!token) {
-  //   const loginUrl = new URL("/login", request.url);
-  //   return NextResponse.redirect(loginUrl);
-  // }
+  const token = request.cookies.get("access_token")?.value;
+
+  if (!token) {
+    const loginUrl = new URL("/login", request.url);
+    return NextResponse.redirect(loginUrl);
+  }
 
   return NextResponse.next();
 }
