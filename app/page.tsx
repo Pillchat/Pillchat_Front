@@ -233,7 +233,9 @@ const HomeSection: FC<{
       <div>
         <h2 className="text-headline-small text-foreground">{title}</h2>
         {subtitle && (
-          <p className="mt-1 text-body-small text-muted-foreground">{subtitle}</p>
+          <p className="mt-1 text-body-small text-muted-foreground">
+            {subtitle}
+          </p>
         )}
       </div>
       <Link

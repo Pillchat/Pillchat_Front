@@ -35,13 +35,19 @@ export default async function MarketDetailPage({
           <h1 className="mt-5 text-headline-medium text-foreground">
             학습자료 미리보기
           </h1>
-          <p className="mt-2 text-body-medium text-muted-foreground">자료 ID: {id}</p>
+          <p className="mt-2 text-body-medium text-muted-foreground">
+            자료 ID: {id}
+          </p>
           <PreviewModal title="학습자료 미리보기" priceLabel="4,900원" />
         </section>
 
         <section className="mt-7 flex items-center justify-around border-y border-border py-4">
           <span className="flex items-center gap-1 text-title-small text-foreground">
-            <Star aria-hidden="true" className="h-4 w-4 text-brand" strokeWidth={1.5} />
+            <Star
+              aria-hidden="true"
+              className="h-4 w-4 text-brand"
+              strokeWidth={1.5}
+            />
             4.8
           </span>
           <span className="flex items-center gap-1 text-title-small text-foreground">
@@ -53,7 +59,11 @@ export default async function MarketDetailPage({
             후기 12
           </span>
           <span className="flex items-center gap-1 text-title-small text-foreground">
-            <Lock aria-hidden="true" className="h-4 w-4 text-brand" strokeWidth={1.5} />
+            <Lock
+              aria-hidden="true"
+              className="h-4 w-4 text-brand"
+              strokeWidth={1.5}
+            />
             구매 후 열람
           </span>
         </section>
@@ -79,9 +89,7 @@ export default async function MarketDetailPage({
             </section>
 
             <section className="mt-6 rounded-lg border border-border p-4">
-              <h3 className="text-title-large text-foreground">
-                포함 내용
-              </h3>
+              <h3 className="text-title-large text-foreground">포함 내용</h3>
               <ul className="mt-3 space-y-2 text-body-medium text-muted-foreground">
                 <li>핵심 개념 요약과 비교표</li>
                 <li>시험 전 확인용 체크 문항</li>

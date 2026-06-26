@@ -16,7 +16,8 @@ const buttonVariants = cva(
           "border border-gray-500 bg-card text-foreground active:bg-gray-100",
         secondary:
           "border border-primary bg-card text-primary active:bg-primary-980",
-        teritary: "border border-gray-500 bg-card text-foreground active:bg-gray-100",
+        teritary:
+          "border border-gray-500 bg-card text-foreground active:bg-gray-100",
         ghost: "active:bg-primary-980 active:text-accent-foreground",
         link: "text-primary underline-offset-4 active:underline",
         textOnly: "cursor-pointer bg-transparent active:opacity-70",
@@ -30,7 +31,8 @@ const buttonVariants = cva(
         sm: "h-8 rounded-xl px-3 py-1 text-label-medium [&_svg]:size-5",
         lg: "h-[3.625rem] px-8",
         icon: "h-9 w-9",
-        square: "h-11 w-11 rounded-xl px-5 py-4 text-label-medium [&_svg]:size-6",
+        square:
+          "h-11 w-11 rounded-xl px-5 py-4 text-label-medium [&_svg]:size-6",
         long: "h-[3.625rem] w-[10.625rem] rounded-xl py-3 text-label-large",
       },
     },

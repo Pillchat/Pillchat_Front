@@ -43,7 +43,11 @@ export const IconInput = forwardRef<HTMLInputElement, IconInputProps>(
       !iconSrc &&
       !!inputProps.onChange &&
       !!onClear;
-    const iconPadding = isLeft ? "pl-10 pr-4" : showClear || iconSrc ? "pr-10" : "";
+    const iconPadding = isLeft
+      ? "pl-10 pr-4"
+      : showClear || iconSrc
+        ? "pr-10"
+        : "";
 
     return (
       <div className="relative flex items-center">
@@ -52,10 +56,7 @@ export const IconInput = forwardRef<HTMLInputElement, IconInputProps>(
           {...inputProps}
           value={value}
           error={error}
-          className={cn(
-            iconPadding,
-            className,
-          )}
+          className={cn(iconPadding, className)}
         />
 
         {iconSrc && (

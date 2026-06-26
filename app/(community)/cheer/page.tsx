@@ -148,7 +148,6 @@ export default function CheerPage() {
           <Send aria-hidden="true" className="h-8 w-8" strokeWidth={1.5} />
         </button>
       </form>
-
     </AppShell>
   );
 }

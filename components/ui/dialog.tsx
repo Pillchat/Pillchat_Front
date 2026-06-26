@@ -93,10 +93,7 @@ const DialogTitle = forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn(
-      "text-headline-medium tracking-normal",
-      className,
-    )}
+    className={cn("text-headline-medium tracking-normal", className)}
     {...props}
   />
 ));

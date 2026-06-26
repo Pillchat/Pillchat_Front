@@ -417,7 +417,9 @@ const PostPage = () => {
             </div>
 
             <div className="px-6">
-              <p className="mb-3 font-[Pretendard] text-label-medium">업로드할 파일</p>
+              <p className="mb-3 font-[Pretendard] text-label-medium">
+                업로드할 파일
+              </p>
               <p className="mb-1 font-[Pretendard] text-body-small text-[#999]">
                 선택 사항입니다. 이미지 파일 최대 10장 또는 PDF 파일 1개 가능
               </p>
@@ -530,7 +532,7 @@ const PostPage = () => {
                   ? "게시글이 수정되었습니다."
                   : "게시글이 업로드되었습니다!"}
               </p>
-            <p className="text-body-medium">
+              <p className="text-body-medium">
                 {isEditMode
                   ? "수정된 게시글은 게시판에서 바로 확인할 수 있어요."
                   : `업로드한 게시글은 ${boardTarget.label} 게시판에서 바로 확인할 수 있어요.`}

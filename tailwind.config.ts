@@ -113,14 +113,8 @@ export default {
           { lineHeight: "1.125rem", fontWeight: "400" },
         ],
         "label-large": ["1rem", { lineHeight: "1.5rem", fontWeight: "600" }],
-        "label-medium": [
-          "0.75rem",
-          { lineHeight: "1rem", fontWeight: "500" },
-        ],
-        "label-small": [
-          "0.6875rem",
-          { lineHeight: "1rem", fontWeight: "400" },
-        ],
+        "label-medium": ["0.75rem", { lineHeight: "1rem", fontWeight: "500" }],
+        "label-small": ["0.6875rem", { lineHeight: "1rem", fontWeight: "400" }],
       },
       borderRadius: {
         lg: "var(--radius)",

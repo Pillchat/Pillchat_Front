@@ -76,9 +76,7 @@ export default function MarketUploadPage() {
           </label>
 
           <fieldset>
-            <legend className="text-title-small text-foreground">
-              분류
-            </legend>
+            <legend className="text-title-small text-foreground">분류</legend>
             <div className="mt-2 grid grid-cols-4 gap-2">
               {categories.map((item) => (
                 <label
@@ -104,9 +102,7 @@ export default function MarketUploadPage() {
           </fieldset>
 
           <label className="flex flex-col gap-2">
-            <span className="text-title-small text-foreground">
-              가격(원)
-            </span>
+            <span className="text-title-small text-foreground">가격(원)</span>
             <input
               type="number"
               min={0}
@@ -148,7 +144,11 @@ export default function MarketUploadPage() {
 
           <section>
             <div className="flex items-center gap-2 text-title-small text-foreground">
-              <Tags aria-hidden="true" className="h-4 w-4 text-brand" strokeWidth={1.5} />
+              <Tags
+                aria-hidden="true"
+                className="h-4 w-4 text-brand"
+                strokeWidth={1.5}
+              />
               태그
             </div>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -194,9 +194,7 @@ export default function MarketUploadPage() {
           </section>
 
           <label className="flex flex-col gap-2">
-            <span className="text-title-small text-foreground">
-              본문 설명
-            </span>
+            <span className="text-title-small text-foreground">본문 설명</span>
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}

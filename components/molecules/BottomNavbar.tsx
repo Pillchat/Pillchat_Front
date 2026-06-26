@@ -97,9 +97,7 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
                 </span>
               )}
             </span>
-            <span className="text-label-small">
-              {item.label}
-            </span>
+            <span className="text-label-small">{item.label}</span>
           </Link>
         );
       })}
