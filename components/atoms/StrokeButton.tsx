@@ -1,4 +1,5 @@
 import { Button, ButtonProps } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface StrokeBtnProps extends Omit<ButtonProps, "variant"> {
   content: string;
@@ -8,13 +9,17 @@ interface StrokeBtnProps extends Omit<ButtonProps, "variant"> {
 export function StrokeButton({
   content,
   variant = "stroke-gray",
+  className,
   ...props
 }: StrokeBtnProps) {
   return (
     <Button
       variant={variant}
       {...props}
-      className="h-[52px] w-full rounded-xl bg-white text-[1.125rem] font-medium"
+      className={cn(
+        "h-[3.625rem] w-full rounded-xl bg-card px-4 py-3 text-label-large",
+        className,
+      )}
     >
       {content}
     </Button>

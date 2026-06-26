@@ -141,7 +141,7 @@ export function PreviewModal({ title, priceLabel }: PreviewModalProps) {
             </button>
           </div>
 
-          <Button type="button" className="mt-5 h-12 w-full text-base">
+          <Button type="button" className="mt-5 w-full">
             {priceLabel} 구매하기
           </Button>
         </div>

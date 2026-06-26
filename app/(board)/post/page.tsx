@@ -1,6 +1,6 @@
 "use client";
 
-import { TextButton, SelectBox, TextareaWithLabel } from "@/components/atoms";
+import { TextButton, TextareaWithLabel } from "@/components/atoms";
 import { IconInputField, SelectModal } from "@/components/molecules";
 import { BoardHeader, BoardButton } from "@/components/molecules/board";
 import { Controller } from "react-hook-form";
@@ -9,13 +9,11 @@ import {
   useStep,
   usePostForm,
   usePostFiles,
-  CATEGORY_MAP,
   uploadBoardFiles,
 } from "./_hooks";
 import { useRouter } from "@/lib/navigation";
 import { useSearchParams } from "next/navigation";
-import { useState, ChangeEvent, useEffect, useMemo, useRef } from "react";
-import { SelectCategoryModal } from "./SelectCategoryModal";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { fetchAPI } from "@/lib/client/fetch";
 import { uploadBoard } from "@/lib/client/upload";
 import {
@@ -54,51 +52,61 @@ type PostDraft = {
   step: Step;
   title: string;
   content: string;
-  selectValue: string;
   selectedCategory: string;
   updatedAt: number;
 };
 
-const getPostDraftKey = (editId: string | null) =>
-  editId ? `board-post-draft:edit:${editId}` : "board-post-draft:create";
+const BOARD_TARGETS = {
+  free: {
+    label: "자유",
+    category: "FREE",
+    path: "/board",
+  },
+  tips: {
+    label: "꿀팁",
+    category: "TIP",
+    path: "/tips",
+  },
+  reviews: {
+    label: "후기",
+    category: "REVIEW",
+    path: "/reviews",
+  },
+} as const;
 
-const createBoard = async ({
-  title,
-  content,
-  category,
-  keys,
-}: {
-  title: string;
-  content: string;
-  category: string;
-  keys: string[];
-}) => {
-  const queryString = buildQueryParams({
-    title: title.trim(),
-    content: content.trim(),
-    category,
-    keys,
-  });
+type BoardTargetKey = keyof typeof BOARD_TARGETS;
 
-  return fetchAPI(`/api/boards?${queryString}`, "POST");
+const resolveBoardTargetKey = (value: string | null): BoardTargetKey => {
+  if (value === "tips" || value === "reviews" || value === "free") {
+    return value;
+  }
+
+  return "free";
 };
+
+const getPostDraftKey = (editId: string | null, target: BoardTargetKey) =>
+  editId
+    ? `board-post-draft:edit:${editId}`
+    : `board-post-draft:create:${target}`;
 
 const PostPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
   const isEditMode = !!editId;
+  const boardTargetKey = resolveBoardTargetKey(searchParams.get("board"));
+  const boardTarget = BOARD_TARGETS[boardTargetKey];
 
   const { step, nextStep, setStep } = useStep();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [categories, setCategories] = useState<string[]>(
-    Object.keys(CATEGORY_MAP),
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    boardTarget.category,
   );
-  const [selectValue, setSelectValue] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
-  const draftKey = useMemo(() => getPostDraftKey(editId), [editId]);
+  const draftKey = useMemo(
+    () => getPostDraftKey(editId, boardTargetKey),
+    [editId, boardTargetKey],
+  );
   const [draftReady, setDraftReady] = useState(false);
   const [hasDraftValues, setHasDraftValues] = useState(false);
 
@@ -136,11 +144,7 @@ const PostPage = () => {
     onSubmit: async (data) => {
       const trimmedTitle = data.title.trim();
       const trimmedContent = data.content.trim();
-      const hasAnyFiles = hasFiles || remainingExistingKeys.length > 0;
-
-      if (!selectedCategory) {
-        throw new Error("카테고리를 선택해주세요.");
-      }
+      const targetCategory = selectedCategory || boardTarget.category;
 
       if (!trimmedTitle) {
         throw new Error("제목을 입력해주세요.");
@@ -150,10 +154,6 @@ const PostPage = () => {
         throw new Error("내용이 필요합니다.");
       }
 
-      if (!hasAnyFiles) {
-        throw new Error("이미지 또는 PDF 파일을 1개 이상 업로드해주세요.");
-      }
-
       if (isEditMode) {
         // 수정 모드: 기존 presigned URL 방식 유지 (V2 수정 엔드포인트 미지원)
         const uploadedKeys = await uploadBoardFiles(imageFiles, pdfFile);
@@ -161,7 +161,7 @@ const PostPage = () => {
         const queryString = buildQueryParams({
           title: trimmedTitle,
           content: trimmedContent,
-          category: selectedCategory,
+          category: targetCategory,
           keys: [...remainingExistingKeys, ...uploadedKeys],
         });
 
@@ -173,7 +173,7 @@ const PostPage = () => {
       await uploadBoard({
         title: trimmedTitle,
         content: trimmedContent,
-        category: selectedCategory,
+        category: targetCategory,
         images: imageFiles.length > 0 ? imageFiles : undefined,
         pdf: pdfFile || undefined,
       });
@@ -199,25 +199,21 @@ const PostPage = () => {
         title: parsed.title ?? "",
         content: parsed.content ?? "",
       });
-      setSelectValue(parsed.selectValue ?? "");
-      setSelectedCategory(parsed.selectedCategory ?? "");
+      setSelectedCategory(parsed.selectedCategory ?? boardTarget.category);
 
       if (parsed.step && parsed.step !== Step.Complete) {
         setStep(parsed.step);
       }
 
       setHasDraftValues(
-        !!parsed.title ||
-          !!parsed.content ||
-          !!parsed.selectValue ||
-          !!parsed.selectedCategory,
+        !!parsed.title || !!parsed.content || !!parsed.selectedCategory,
       );
     } catch (error) {
       console.error("게시글 임시저장 복원 실패:", error);
     } finally {
       setDraftReady(true);
     }
-  }, [draftKey, setStep, setFormValues]);
+  }, [draftKey, setStep, setFormValues, boardTarget.category]);
 
   const { data: boardData } = useBoardQuery(editId, undefined, {
     enabled: isEditMode,
@@ -246,20 +242,25 @@ const PostPage = () => {
 
     didApplyEditDataRef.current = true;
 
-    const categoryLabel =
-      Object.entries(CATEGORY_MAP).find(
-        ([, value]) => value.value === boardData.category,
-      )?.[0] ??
-      boardData.categoryName ??
-      "";
-
     setFormValues({
       title: boardData.title ?? "",
       content: boardData.content ?? "",
     });
-    setSelectedCategory(boardData.category ?? "");
-    setSelectValue(categoryLabel);
-  }, [draftReady, isEditMode, boardData, hasDraftValues, setFormValues]);
+    setSelectedCategory(boardData.category ?? boardTarget.category);
+  }, [
+    draftReady,
+    isEditMode,
+    boardData,
+    hasDraftValues,
+    setFormValues,
+    boardTarget.category,
+  ]);
+
+  useEffect(() => {
+    if (isEditMode) return;
+
+    setSelectedCategory(boardTarget.category);
+  }, [boardTarget.category, isEditMode]);
 
   useEffect(() => {
     if (!isEditMode || !boardData?.images || !Array.isArray(filesData)) return;
@@ -286,17 +287,13 @@ const PostPage = () => {
   }, [isEditMode, boardData, existingFileUrlMap, setExistingPreviewItems]);
 
   const trimmedTitle = title?.trim() ?? "";
-  const hasAnyFiles = hasFiles || remainingExistingKeys.length > 0;
+  const trimmedContent = content?.trim() ?? "";
 
   useEffect(() => {
     if (!draftReady || step === Step.Complete) return;
 
     const hasAnyDraftData =
-      !!title ||
-      !!content ||
-      !!selectValue ||
-      !!selectedCategory ||
-      step !== Step.Upload;
+      !!title || !!content || !!selectedCategory || step !== Step.Upload;
 
     if (!hasAnyDraftData) {
       window.localStorage.removeItem(draftKey);
@@ -307,26 +304,17 @@ const PostPage = () => {
       step,
       title: title ?? "",
       content: content ?? "",
-      selectValue,
       selectedCategory,
       updatedAt: Date.now(),
     };
 
     window.localStorage.setItem(draftKey, JSON.stringify(draft));
-  }, [
-    draftKey,
-    draftReady,
-    step,
-    title,
-    content,
-    selectValue,
-    selectedCategory,
-  ]);
+  }, [draftKey, draftReady, step, title, content, selectedCategory]);
 
   const canSubmit =
-    !!selectedCategory &&
     trimmedTitle.length > 0 &&
-    hasAnyFiles &&
+    trimmedContent.length > 0 &&
+    !!selectedCategory &&
     !isSubmitting;
 
   const openConfirmModal = () => {
@@ -354,30 +342,8 @@ const PostPage = () => {
     window.localStorage.removeItem(draftKey);
     resetForm();
     clearFiles();
-    setSelectValue("");
-    setSelectedCategory("");
+    setSelectedCategory(boardTarget.category);
     setStep(Step.Upload);
-  };
-
-  const openCategory = () => {
-    setIsCategoryOpen(true);
-  };
-
-  const closeCategory = () => {
-    setIsCategoryOpen(false);
-  };
-
-  const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setSelectValue(value);
-    const mapped = CATEGORY_MAP[value as keyof typeof CATEGORY_MAP];
-    setSelectedCategory(mapped?.value || value);
-  };
-
-  const handleCategorySelect = (label: string, value: string) => {
-    setSelectValue(label);
-    setSelectedCategory(value);
-    setIsCategoryOpen(false);
   };
 
   return (
@@ -385,7 +351,9 @@ const PostPage = () => {
       {step === Step.Upload && (
         <div className="flex min-h-screen flex-col bg-white">
           <BoardHeader
-            title={isEditMode ? "게시글 수정" : "게시글 업로드"}
+            title={
+              isEditMode ? "게시글 수정" : `${boardTarget.label} 게시글 업로드`
+            }
             rightButtonLabel={
               isSubmitting
                 ? isEditMode
@@ -397,30 +365,10 @@ const PostPage = () => {
             }
             onRightButtonClick={openConfirmModal}
             isActive={canSubmit}
-            onLeftButtonClick={() => router.push("/board")}
+            onLeftButtonClick={() => router.push(boardTarget.path)}
           />
 
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-8">
-            <div className="mb-5 px-6">
-              <SelectBox
-                label="카테고리"
-                options={categories.map((type) => ({ key: type, value: type }))}
-                selectedValue={selectValue || ""}
-                placeholder="카테고리를 선택해주세요."
-                disabled={false}
-                handleChange={handleSelectChange}
-                onClick={openCategory}
-                selectClassName="border-[#C4C4C4] focus:border-[#C4C4C4]"
-              />
-            </div>
-
-            <SelectCategoryModal
-              isOpen={isCategoryOpen}
-              closeClick={closeCategory}
-              onSelect={handleCategorySelect}
-              setCategories={setCategories}
-            />
-
             <div className="mb-5 w-full px-6">
               <Controller
                 name="title"
@@ -469,12 +417,12 @@ const PostPage = () => {
             </div>
 
             <div className="px-6">
-              <p className="mb-3 font-[Pretendard] text-xs">업로드할 파일</p>
-              <p className="mb-1 font-[Pretendard] text-xs text-[#999]">
-                이미지 파일 (JPG, PNG 등) 최대 10장 또는 PDF 파일 1개 가능
+              <p className="mb-3 font-[Pretendard] text-label-medium">업로드할 파일</p>
+              <p className="mb-1 font-[Pretendard] text-body-small text-[#999]">
+                선택 사항입니다. 이미지 파일 최대 10장 또는 PDF 파일 1개 가능
               </p>
 
-              <div className="grid w-full grid-cols-2 gap-3">
+              <div className="grid w-full grid-cols-2 gap-4">
                 <BoardButton
                   imageSrc="/icons/Image.svg"
                   className="max-w-[168.5px]"
@@ -510,7 +458,7 @@ const PostPage = () => {
 
               {previewItems.length > 0 && (
                 <div className="mt-5 pb-2">
-                  <div className="grid max-h-[60dvh] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                  <div className="grid max-h-[60dvh] grid-cols-2 gap-4 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                     {previewItems.map((item) => (
                       <div
                         key={item.id}
@@ -537,10 +485,10 @@ const PostPage = () => {
                               type="application/pdf"
                               className="h-full w-full"
                             />
-                            <div className="absolute left-2 top-2 rounded bg-black/60 px-2 py-1 text-[10px] text-white">
+                            <div className="absolute left-2 top-2 rounded bg-black/60 px-2 py-1 text-label-small text-white">
                               PDF
                             </div>
-                            <div className="absolute bottom-0 left-0 right-0 truncate bg-black/55 px-2 py-1 text-[10px] text-white">
+                            <div className="absolute bottom-0 left-0 right-0 truncate bg-black/55 px-2 py-1 text-label-small text-white">
                               {item.name}
                             </div>
                           </>
@@ -577,15 +525,15 @@ const PostPage = () => {
                 width={72}
                 className="mb-2"
               />
-              <p className="text-2xl font-semibold">
+              <p className="text-headline-large">
                 {isEditMode
                   ? "게시글이 수정되었습니다."
                   : "게시글이 업로드되었습니다!"}
               </p>
-              <p className="text-sm">
+            <p className="text-body-medium">
                 {isEditMode
                   ? "수정된 게시글은 게시판에서 바로 확인할 수 있어요."
-                  : "업로드한 게시글은 게시판에서 바로 확인할 수 있어요."}
+                  : `업로드한 게시글은 ${boardTarget.label} 게시판에서 바로 확인할 수 있어요.`}
               </p>
             </div>
           </div>

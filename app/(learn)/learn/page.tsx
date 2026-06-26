@@ -115,7 +115,11 @@ export default function LearnPage() {
                   className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-transform active:scale-[0.98]"
                 >
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-accent text-brand">
-                    <Icon aria-hidden="true" className="h-5 w-5" />
+                    <Icon
+                      aria-hidden="true"
+                      className="h-8 w-8"
+                      strokeWidth={1.5}
+                    />
                   </span>
                   <span className="min-w-0 flex-1">
                     <strong className="block text-base font-semibold text-foreground">
@@ -128,6 +132,7 @@ export default function LearnPage() {
                   <ArrowRight
                     aria-hidden="true"
                     className="h-5 w-5 shrink-0 text-muted-foreground"
+                    strokeWidth={1.5}
                   />
                 </Link>
               );
@@ -148,7 +153,11 @@ export default function LearnPage() {
                 className="flex items-center gap-3 border-b border-border py-4 last:border-b-0"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-accent text-brand">
-                  <Icon aria-hidden="true" className="h-5 w-5" />
+                  <Icon
+                    aria-hidden="true"
+                    className="h-8 w-8"
+                    strokeWidth={1.5}
+                  />
                 </span>
                 <span className="min-w-0">
                   <strong className="block text-base font-semibold text-foreground">
@@ -170,7 +179,7 @@ export default function LearnPage() {
           className="h-14 w-full active:scale-[0.98]"
           onClick={() => setToastOpen(true)}
         >
-          <Bell aria-hidden="true" className="h-5 w-5" />
+          <Bell aria-hidden="true" className="h-8 w-8" strokeWidth={1.5} />
           오픈 알림 신청하고 혜택 받기
         </Button>
       </div>

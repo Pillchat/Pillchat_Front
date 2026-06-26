@@ -9,7 +9,7 @@ body {
 }
 
 body {
-  background: #eeeeee;
+  background: #fff;
   margin-left: auto;
   margin-right: auto;
 }
@@ -27,7 +27,7 @@ body {
 */
 @layer base {
   :root {
-    --background: 0 0% 93%;
+    --background: 0 0% 100%;
     --foreground: 0 0% 7%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 7%;
@@ -114,7 +114,7 @@ body {
     @apply border-border;
   }
   body {
-    @apply break-keep bg-background tracking-tight text-foreground;
+    @apply break-keep bg-background tracking-normal text-foreground;
   }
 }
 

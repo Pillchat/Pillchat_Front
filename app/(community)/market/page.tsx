@@ -5,110 +5,85 @@ import { Plus, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { AppShell, MeaninglessHeader } from "@/components/molecules";
-
-const grades = ["전체", "1학년", "2학년", "3학년", "4학년", "5학년", "6학년"];
-const categories = ["약물학", "유기화학", "약제학", "병태생리"];
-const materials = [
-  {
-    id: "pharm-101",
-    emoji: "💊",
-    title: "약물학 핵심 요약 노트",
-    author: "약대생 민지",
-    rating: 4.8,
-    price: 4900,
-    grade: "3학년",
-  },
-  {
-    id: "organic-quiz",
-    emoji: "🧪",
-    title: "유기화학 반응 문제집",
-    author: "익명_약대생",
-    rating: 4.6,
-    price: 0,
-    grade: "2학년",
-  },
-  {
-    id: "practice-pack",
-    emoji: "📚",
-    title: "실습 전 체크리스트 묶음",
-    author: "선배약사",
-    rating: 4.9,
-    price: 7900,
-    grade: "5학년",
-  },
-];
+import { MARKET_ITEMS, MARKET_SUBJECTS, MARKET_YEARS } from "@/lib/market/mock";
 
 export default function MarketPage() {
-  const [selectedGrade, setSelectedGrade] = useState("전체");
+  const [selectedSubject, setSelectedSubject] = useState("전체");
+  const [selectedYear, setSelectedYear] = useState("전체");
 
   const filteredMaterials = useMemo(() => {
-    if (selectedGrade === "전체") return materials;
-    return materials.filter((item) => item.grade === selectedGrade);
-  }, [selectedGrade]);
+    return MARKET_ITEMS.filter(
+      (item) =>
+        (selectedSubject === "전체" || item.subject === selectedSubject) &&
+        (selectedYear === "전체" || item.year === selectedYear),
+    );
+  }, [selectedSubject, selectedYear]);
+
+  const renderChips = (
+    items: readonly string[],
+    value: string,
+    onChange: (next: string) => void,
+  ) => (
+    <div className="flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {items.map((item) => (
+        <button
+          key={item}
+          type="button"
+          aria-pressed={value === item}
+          onClick={() => onChange(item)}
+          className={`h-8 shrink-0 rounded-full px-3 text-label-medium transition-colors ${
+            value === item
+              ? "bg-primary text-primary-foreground"
+              : "bg-primary-980 text-muted-foreground"
+          }`}
+        >
+          {item}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <AppShell>
       <MeaninglessHeader />
 
-      <main className="px-6 pb-8 pt-3">
-        <section>
-          <p className="text-sm font-semibold text-brand">Market</p>
-          <h1 className="mt-2 text-2xl font-bold leading-9 text-foreground">
+      <main className="pb-8 pt-3">
+        <section className="px-6">
+          <p className="text-label-medium text-brand">Market</p>
+          <h1 className="mt-2 text-headline-large text-foreground">
             필요한 학습자료를
             <br />
-            학년별로 찾아보세요
+            과목과 학년별로 찾아보세요
           </h1>
         </section>
 
-        <section className="mt-7" aria-label="학년 필터">
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {grades.map((grade, index) => (
-              <button
-                key={grade}
-                type="button"
-                aria-pressed={selectedGrade === grade}
-                onClick={() => setSelectedGrade(grade)}
-                className={`h-9 shrink-0 rounded-full px-4 text-sm font-medium ${
-                  selectedGrade === grade
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-gray-800"
-                }`}
-              >
-                {grade}
-              </button>
-            ))}
-          </div>
+        <section
+          className="sticky top-0 z-10 mt-6 space-y-2 bg-background/95 px-6 py-3 backdrop-blur"
+          aria-label="자료 필터"
+        >
+          {renderChips(MARKET_SUBJECTS, selectedSubject, setSelectedSubject)}
+          {renderChips(MARKET_YEARS, selectedYear, setSelectedYear)}
         </section>
 
-        <section className="mt-3" aria-label="과목 주제">
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <span
-                key={category}
-                className="h-8 rounded-full border border-border px-3 text-xs font-medium text-muted-foreground"
-              >
-                {category}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        <div className="mt-6 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-foreground">
-            {selectedGrade} 자료
+        <div className="mt-4 flex items-center justify-between px-6">
+          <h2 className="text-title-large text-foreground">
+            {selectedSubject === "전체" ? selectedYear : selectedSubject} 자료
           </h2>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-body-medium text-muted-foreground">
             {filteredMaterials.length}개
           </span>
         </div>
 
-        <section className="mt-7 flex flex-col gap-3" aria-label="자료 목록">
+        <section
+          className="mt-4 grid grid-cols-2 gap-4 px-6"
+          aria-label="자료 목록"
+        >
           {filteredMaterials.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border px-4 py-10 text-center">
-              <p className="text-sm font-medium text-foreground">
+            <div className="col-span-2 rounded-lg border border-dashed border-border px-4 py-10 text-center">
+              <p className="text-title-small text-foreground">
                 아직 등록된 자료가 없습니다.
               </p>
-              <p className="mt-2 text-xs text-muted-foreground">
+              <p className="mt-2 text-body-small text-muted-foreground">
                 다른 학년을 선택하거나 첫 자료를 등록해보세요.
               </p>
             </div>
@@ -117,34 +92,36 @@ export default function MarketPage() {
               <Link
                 key={item.id}
                 href={`/market/${item.id}`}
-                className="flex gap-4 rounded-lg border border-border bg-card p-4 active:scale-[0.98]"
+                className="overflow-hidden rounded-lg border border-border bg-card active:scale-[0.98]"
               >
-                <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-primary-980 text-3xl">
-                  {item.emoji}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="text-xs font-semibold text-brand">
-                    {item.grade}
+                <span className="relative flex h-24 items-center justify-center bg-primary-980 text-headline-large">
+                  {item.icon}
+                  <span className="absolute right-2 top-2 rounded-full bg-card/95 px-2 py-0.5 text-label-small font-medium text-primary">
+                    {item.price === 0
+                      ? "무료"
+                      : `${item.price.toLocaleString("ko-KR")}원`}
                   </span>
-                  <strong className="mt-1 block truncate text-base font-semibold text-foreground">
+                </span>
+                <span className="block px-3 py-3">
+                  <span className="text-label-small font-medium text-brand">
+                    {item.subject} · {item.year}
+                  </span>
+                  <strong className="mt-1 line-clamp-2 block min-h-10 text-label-medium text-foreground">
                     {item.title}
                   </strong>
-                  <span className="mt-1 block text-sm text-muted-foreground">
-                    {item.author}
-                  </span>
-                  <span className="mt-3 flex items-center justify-between">
-                    <span className="flex items-center gap-1 text-sm font-medium text-foreground">
+                  <span className="mt-2 flex items-center justify-between text-label-small text-muted-foreground">
+                    <span className="flex items-center gap-1">
                       <Star
                         aria-hidden="true"
-                        className="h-4 w-4 fill-brand text-brand"
+                        className="h-3.5 w-3.5 fill-brand text-brand"
+                        strokeWidth={1.5}
                       />
                       {item.rating}
                     </span>
-                    <span className="text-sm font-bold text-foreground">
-                      {item.price === 0
-                        ? "무료"
-                        : `${item.price.toLocaleString("ko-KR")}원`}
-                    </span>
+                    <span>{item.purchaseCount}회 구매</span>
+                  </span>
+                  <span className="mt-1 block truncate text-label-small font-medium text-muted-foreground">
+                    by @{item.author}
                   </span>
                 </span>
               </Link>
@@ -153,13 +130,15 @@ export default function MarketPage() {
         </section>
       </main>
 
-      <Link
-        href="/market/upload"
-        aria-label="자료 등록"
-        className="fixed bottom-[calc(6.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 ml-[156px] flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg active:scale-95"
-      >
-        <Plus aria-hidden="true" className="h-6 w-6" />
-      </Link>
+      <div className="pointer-events-none fixed bottom-[calc(6.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-full max-w-[480px] -translate-x-1/2 justify-end px-6">
+        <Link
+          href="/market/upload"
+          aria-label="자료 등록"
+          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg active:scale-95"
+        >
+          <Plus aria-hidden="true" className="h-8 w-8" strokeWidth={1.5} />
+        </Link>
+      </div>
     </AppShell>
   );
 }

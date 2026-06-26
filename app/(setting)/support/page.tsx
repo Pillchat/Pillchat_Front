@@ -243,7 +243,7 @@ const SupportPage = () => {
               {TEXT.attachmentGuide}
             </p>
 
-            <div className="grid w-full grid-cols-2 gap-3">
+            <div className="grid w-full grid-cols-2 gap-4">
               <BoardButton
                 imageSrc="/Image.svg"
                 text={TEXT.imageUpload}

@@ -448,8 +448,9 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                   onClick={handleScrapClick}
                 >
                   <Bookmark
-                    className="h-7 w-7"
+                    className="h-8 w-8"
                     fill={isScrapped ? "currentColor" : "none"}
+                    strokeWidth={1.5}
                   />
                   <span className="text-base font-medium">{scrapCount}</span>
                 </Button>

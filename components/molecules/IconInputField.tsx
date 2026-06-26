@@ -12,6 +12,7 @@ interface IconInputFieldProps {
   iconPosition?: "left" | "right";
   iconAsButton?: boolean;
   iconSize?: number;
+  clearable?: boolean;
   onIconClick?: () => void;
 
   placeholder?: string;
@@ -38,6 +39,7 @@ export const IconInputField = forwardRef<HTMLInputElement, IconInputFieldProps>(
       iconAlt,
       iconSize,
       iconAsButton,
+      clearable = true,
       iconPosition = "right",
       onIconClick,
       placeholder,
@@ -52,15 +54,28 @@ export const IconInputField = forwardRef<HTMLInputElement, IconInputFieldProps>(
     },
     ref,
   ) {
+    const showError = !!errorMessage;
+    const handleClear = () => {
+      if (!onChange) return;
+
+      onChange({
+        target: { value: "" },
+        currentTarget: { value: "" },
+      } as ChangeEvent<HTMLInputElement>);
+    };
+
     return (
-      <div className="flex flex-col gap-[4px]">
-        <p className={labelClassName ?? "text-sm"}>{content}</p>
+      <div className="flex flex-col gap-1">
+        <p className={labelClassName ?? "text-title-small text-foreground"}>
+          {content}
+        </p>
 
         <IconInput
           ref={ref}
           value={value ?? ""}
           disabled={disabled}
           className={inputClassName}
+          error={showError}
           type={type}
           inputMode={inputMode}
           iconSrc={iconSrc}
@@ -69,6 +84,8 @@ export const IconInputField = forwardRef<HTMLInputElement, IconInputFieldProps>(
           iconAsButton={iconAsButton}
           iconPosition={iconPosition}
           onIconClick={onIconClick}
+          clearable={clearable}
+          onClear={handleClear}
           onChange={onChange}
           onBlur={onBlur}
           placeholder={placeholder}
@@ -78,7 +95,7 @@ export const IconInputField = forwardRef<HTMLInputElement, IconInputFieldProps>(
         />
 
         {errorMessage && (
-          <p className="text-xs text-destructive">{errorMessage}</p>
+          <p className="text-label-small text-primary">{errorMessage}</p>
         )}
       </div>
     );

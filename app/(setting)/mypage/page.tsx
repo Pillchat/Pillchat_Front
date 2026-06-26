@@ -316,7 +316,7 @@ export default function MyPage() {
             <section className="mt-7">
               <h2 className="text-sm text-[#999]">팜머니 관리</h2>
               {isProfessional ? (
-                <div className="mt-2 grid grid-cols-2 gap-3">
+                <div className="mt-2 grid grid-cols-2 gap-4">
                   <button
                     type="button"
                     className="flex h-20 flex-col items-center justify-center gap-2 rounded-2xl bg-[#fff6f5]"

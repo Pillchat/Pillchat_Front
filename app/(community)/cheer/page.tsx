@@ -127,7 +127,7 @@ export default function CheerPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-full max-w-[480px] -translate-x-1/2 gap-2 border-t border-border bg-background px-4 py-3"
+        className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-full max-w-[480px] -translate-x-1/2 gap-4 border-t border-border bg-background px-6 py-3"
       >
         <input
           value={message}
@@ -145,7 +145,7 @@ export default function CheerPage() {
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground active:scale-95 disabled:opacity-50"
           disabled={!message.trim()}
         >
-          <Send aria-hidden="true" className="h-5 w-5" />
+          <Send aria-hidden="true" className="h-8 w-8" strokeWidth={1.5} />
         </button>
       </form>
 

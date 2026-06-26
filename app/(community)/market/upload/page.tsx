@@ -65,25 +65,25 @@ export default function MarketUploadPage() {
       <main className="px-6 pb-8 pt-4">
         <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
           <label className="flex flex-col gap-2">
-            <span className="text-sm font-semibold text-foreground">제목</span>
+            <span className="text-title-small text-foreground">제목</span>
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="h-12 rounded-xl border border-input bg-card px-4 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-ring"
+              className="h-12 rounded-xl border border-input bg-card px-4 text-body-medium outline-none focus:border-brand focus:ring-1 focus:ring-ring"
               placeholder="자료 제목을 입력해주세요"
               aria-invalid={title.trim().length === 0}
             />
           </label>
 
           <fieldset>
-            <legend className="text-sm font-semibold text-foreground">
+            <legend className="text-title-small text-foreground">
               분류
             </legend>
             <div className="mt-2 grid grid-cols-4 gap-2">
               {categories.map((item) => (
                 <label
                   key={item}
-                  className={`flex h-10 items-center justify-center rounded-xl text-sm font-medium ${
+                  className={`flex h-10 items-center justify-center rounded-xl text-label-medium ${
                     category === item
                       ? "bg-primary text-primary-foreground"
                       : "bg-secondary text-gray-800"
@@ -104,7 +104,7 @@ export default function MarketUploadPage() {
           </fieldset>
 
           <label className="flex flex-col gap-2">
-            <span className="text-sm font-semibold text-foreground">
+            <span className="text-title-small text-foreground">
               가격(원)
             </span>
             <input
@@ -112,7 +112,7 @@ export default function MarketUploadPage() {
               min={0}
               value={price}
               onChange={(event) => setPrice(event.target.value)}
-              className="h-12 rounded-xl border border-input bg-card px-4 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-ring"
+              className="h-12 rounded-xl border border-input bg-card px-4 text-body-medium outline-none focus:border-brand focus:ring-1 focus:ring-ring"
               placeholder="0원은 무료 자료로 등록됩니다"
               aria-invalid={
                 price !== "" &&
@@ -121,26 +121,34 @@ export default function MarketUploadPage() {
             />
           </label>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <button
               type="button"
-              className="flex h-24 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border text-sm font-medium text-muted-foreground"
+              className="flex h-24 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border text-label-medium text-muted-foreground"
             >
-              <ImagePlus aria-hidden="true" className="h-6 w-6 text-brand" />
+              <ImagePlus
+                aria-hidden="true"
+                className="h-8 w-8 text-brand"
+                strokeWidth={1.5}
+              />
               커버 이미지
             </button>
             <button
               type="button"
-              className="flex h-24 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border text-sm font-medium text-muted-foreground"
+              className="flex h-24 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border text-label-medium text-muted-foreground"
             >
-              <FileVideo aria-hidden="true" className="h-6 w-6 text-brand" />
+              <FileVideo
+                aria-hidden="true"
+                className="h-8 w-8 text-brand"
+                strokeWidth={1.5}
+              />
               PDF/이미지/영상
             </button>
           </div>
 
           <section>
-            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <Tags aria-hidden="true" className="h-4 w-4 text-brand" />
+            <div className="flex items-center gap-2 text-title-small text-foreground">
+              <Tags aria-hidden="true" className="h-4 w-4 text-brand" strokeWidth={1.5} />
               태그
             </div>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -150,7 +158,7 @@ export default function MarketUploadPage() {
                   type="button"
                   aria-pressed={selectedTags.includes(tag)}
                   onClick={() => toggleTag(tag)}
-                  className={`h-8 rounded-full border px-3 text-xs font-medium ${
+                  className={`h-8 rounded-full border px-3 text-label-medium ${
                     selectedTags.includes(tag)
                       ? "border-brand bg-primary-980 text-brand"
                       : "border-border text-muted-foreground"
@@ -167,35 +175,35 @@ export default function MarketUploadPage() {
                 onCompositionStart={() => setIsComposing(true)}
                 onCompositionEnd={() => setIsComposing(false)}
                 onKeyDown={handleTagKeyDown}
-                className="h-10 min-w-0 flex-1 rounded-xl border border-input bg-card px-3 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-ring"
+                className="h-10 min-w-0 flex-1 rounded-xl border border-input bg-card px-3 text-body-medium outline-none focus:border-brand focus:ring-1 focus:ring-ring"
                 placeholder="태그 직접 입력"
               />
               <button
                 type="button"
                 onClick={addCustomTag}
-                className="h-10 rounded-xl border border-border px-3 text-sm font-semibold text-foreground active:scale-[0.98]"
+                className="h-10 rounded-xl border border-border px-3 text-label-medium text-foreground active:scale-[0.98]"
               >
                 추가
               </button>
             </div>
             {selectedTags.length > 0 && (
-              <p className="mt-2 text-xs text-muted-foreground">
+              <p className="mt-2 text-body-small text-muted-foreground">
                 선택된 태그: {selectedTags.join(", ")}
               </p>
             )}
           </section>
 
           <label className="flex flex-col gap-2">
-            <span className="text-sm font-semibold text-foreground">
+            <span className="text-title-small text-foreground">
               본문 설명
             </span>
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              className="min-h-32 rounded-xl border border-input bg-card px-4 py-3 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-ring"
+              className="min-h-32 rounded-xl border border-input bg-card px-4 py-3 text-body-medium outline-none focus:border-brand focus:ring-1 focus:ring-ring"
               placeholder="간단한 강의도 판매할 수 있어요. 아이패드 화면 녹화 자료, 풀이 영상 등 자료 구성을 설명해주세요."
             />
-            <span className="self-end text-xs text-muted-foreground">
+            <span className="self-end text-body-small text-muted-foreground">
               {description.length}/500
             </span>
           </label>
@@ -203,7 +211,7 @@ export default function MarketUploadPage() {
           <button
             type="submit"
             disabled={!formValid}
-            className="h-14 rounded-xl bg-primary text-base font-semibold text-primary-foreground active:scale-[0.98] disabled:bg-muted disabled:text-gray-500"
+            className="h-[3.625rem] rounded-xl bg-primary text-label-large text-primary-foreground active:scale-[0.98] disabled:pointer-events-none disabled:bg-gray-100 disabled:text-gray-500"
           >
             자료 등록하기
           </button>

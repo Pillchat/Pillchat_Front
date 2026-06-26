@@ -40,19 +40,19 @@ export const ListCard: FC<{
         )}
         <div className="min-w-0 flex-1">
           <div className="flex flex-row items-center justify-between gap-3">
-            <div className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-base font-semibold">
+            <div className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-title-large">
               Q. {title}
             </div>
             {/* <div className="flex-shrink-0">
               <PharmMoney reward={reward} />
             </div> */}
           </div>
-          <div className="overflow-hidden text-ellipsis whitespace-nowrap pt-2 text-xs text-muted-foreground">
+          <div className="overflow-hidden text-ellipsis whitespace-nowrap pt-2 text-body-small text-muted-foreground">
             <span>{content}</span>
           </div>
         </div>
       </div>
-      <div className="mt-2 flex items-center justify-between gap-2 text-xs text-border">
+      <div className="mt-2 flex items-center justify-between gap-2 text-label-small text-border">
         <div className="flex-1">
           <span>{createdAt}</span>
         </div>

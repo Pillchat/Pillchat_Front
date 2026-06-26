@@ -6,4 +6,7 @@ export type ButtonVariant =
   | "ghost"
   | "link"
   | "textOnly"
+  | "brand"
+  | "stroke-gray"
+  | "stroke-brand"
   | "teritary";

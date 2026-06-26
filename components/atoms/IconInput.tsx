@@ -1,4 +1,5 @@
 import { forwardRef, InputHTMLAttributes } from "react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "../ui/input";
 
@@ -9,6 +10,9 @@ interface IconInputProps extends InputHTMLAttributes<HTMLInputElement> {
   iconAsButton?: boolean;
   iconSize?: number;
   onIconClick?: () => void;
+  error?: boolean;
+  clearable?: boolean;
+  onClear?: () => void;
 }
 
 export const IconInput = forwardRef<HTMLInputElement, IconInputProps>(
@@ -20,22 +24,36 @@ export const IconInput = forwardRef<HTMLInputElement, IconInputProps>(
       iconAsButton,
       iconSize = 20,
       onIconClick,
+      error,
+      clearable,
+      onClear,
       className,
+      value,
       ...inputProps
     },
     ref,
   ) {
     const IconWrapper = iconAsButton ? "button" : "div";
     const isLeft = iconPosition === "left";
-    const iconPadding = isLeft ? "pl-10 pr-4" : "pl-4 pr-10";
+    const hasValue = typeof value === "string" ? value.length > 0 : !!value;
+    const showClear =
+      clearable &&
+      hasValue &&
+      !inputProps.disabled &&
+      !iconSrc &&
+      !!inputProps.onChange &&
+      !!onClear;
+    const iconPadding = isLeft ? "pl-10 pr-4" : showClear || iconSrc ? "pr-10" : "";
 
     return (
       <div className="relative flex items-center">
         <Input
           ref={ref}
           {...inputProps}
+          value={value}
+          error={error}
           className={cn(
-            `h-[52px] w-full ${iconPadding} rounded-[12px] border border-input bg-card pl-[1rem] font-[pretendard] text-[15px] font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:border-gray-300 disabled:bg-muted disabled:text-gray-500`,
+            iconPadding,
             className,
           )}
         />
@@ -52,6 +70,17 @@ export const IconInput = forwardRef<HTMLInputElement, IconInputProps>(
               className={`w-[${iconSize}px] h-[${iconSize}px]`}
             />
           </IconWrapper>
+        )}
+
+        {showClear && (
+          <button
+            type="button"
+            aria-label="입력 내용 지우기"
+            onClick={onClear}
+            className="absolute right-3 flex h-5 w-5 items-center justify-center rounded-full bg-gray-300 text-primary-foreground active:scale-95"
+          >
+            <X aria-hidden="true" className="h-3.5 w-3.5" />
+          </button>
         )}
       </div>
     );

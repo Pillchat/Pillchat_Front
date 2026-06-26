@@ -1,5 +1,5 @@
 import { ChangeEvent, KeyboardEvent } from "react";
-import { Input } from "../atoms/Input";
+import { TextField } from "../atoms/TextField";
 
 export interface InputFieldProps {
   content: string;
@@ -12,6 +12,8 @@ export interface InputFieldProps {
   autoFocus?: boolean;
   maxLength?: number;
   minLength?: number;
+  helperText?: string;
+  errorMessage?: string;
 }
 
 export function InputField({
@@ -25,21 +27,23 @@ export function InputField({
   autoFocus,
   maxLength,
   minLength,
+  helperText,
+  errorMessage,
 }: InputFieldProps) {
   return (
-    <div className="flex flex-col gap-[4px]">
-      <p>{content}</p>
-      <Input
-        disabled={disabled}
-        placeholder={placeholder}
-        type={type}
-        value={value}
-        onChange={onChange}
-        onKeyDown={onKeyDown}
-        autoFocus={autoFocus}
-        maxLength={maxLength}
-        minLength={minLength}
-      />
-    </div>
+    <TextField
+      label={content}
+      disabled={disabled}
+      placeholder={placeholder}
+      type={type}
+      value={value}
+      onChange={onChange}
+      onKeyDown={onKeyDown}
+      autoFocus={autoFocus}
+      maxLength={maxLength}
+      minLength={minLength}
+      helperText={helperText}
+      errorMessage={errorMessage}
+    />
   );
 }

@@ -84,6 +84,44 @@ export default {
       fontFamily: {
         sans: ["var(--font-pretendard)"],
       },
+      fontSize: {
+        "headline-large": ["1.5rem", { lineHeight: "2rem", fontWeight: "700" }],
+        "headline-medium": [
+          "1.25rem",
+          { lineHeight: "1.75rem", fontWeight: "700" },
+        ],
+        "headline-small": [
+          "1.125rem",
+          { lineHeight: "1.625rem", fontWeight: "600" },
+        ],
+        "title-large": ["1rem", { lineHeight: "1.5rem", fontWeight: "600" }],
+        "title-medium": [
+          "0.9375rem",
+          { lineHeight: "1.375rem", fontWeight: "500" },
+        ],
+        "title-small": [
+          "0.875rem",
+          { lineHeight: "1.25rem", fontWeight: "500" },
+        ],
+        "body-large": ["1rem", { lineHeight: "1.5rem", fontWeight: "400" }],
+        "body-medium": [
+          "0.875rem",
+          { lineHeight: "1.25rem", fontWeight: "400" },
+        ],
+        "body-small": [
+          "0.75rem",
+          { lineHeight: "1.125rem", fontWeight: "400" },
+        ],
+        "label-large": ["1rem", { lineHeight: "1.5rem", fontWeight: "600" }],
+        "label-medium": [
+          "0.75rem",
+          { lineHeight: "1rem", fontWeight: "500" },
+        ],
+        "label-small": [
+          "0.6875rem",
+          { lineHeight: "1rem", fontWeight: "400" },
+        ],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

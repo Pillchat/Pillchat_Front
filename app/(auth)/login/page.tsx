@@ -138,6 +138,8 @@ const LoginPage: FC = () => {
             )}
 
             <Button
+              type="submit"
+              variant="brand"
               className="w-full"
               disabled={!isValid || isLoading || isCheckingAuth}
             >

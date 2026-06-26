@@ -2,6 +2,7 @@ export * from "./FloatingActionButton";
 export * from "./Logo";
 export * from "./RoundedCheckBox";
 export * from "./TextInput";
+export * from "./TextField";
 export * from "./TextButton";
 export * from "./LeftArrowButton";
 export * from "./ImageButton";

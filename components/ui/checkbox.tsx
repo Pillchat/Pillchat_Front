@@ -24,7 +24,7 @@ const Checkbox = forwardRef<
         "flex items-center justify-center text-border data-[state=checked]:text-white",
       )}
     >
-      <Check className="h-4 w-4" />
+      <Check className="h-4 w-4" strokeWidth={1.5} />
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
 ));

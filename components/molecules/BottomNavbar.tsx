@@ -35,8 +35,7 @@ const NAV_ITEMS = [
     isActive: (pathname: string) =>
       pathname.startsWith("/boards") ||
       pathname.startsWith("/board") ||
-      pathname.startsWith("/materials") ||
-      pathname.startsWith("/upload") ||
+      pathname.startsWith("/post") ||
       pathname.startsWith("/tips") ||
       pathname.startsWith("/reviews"),
   },
@@ -85,14 +84,20 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
             aria-current={isActive ? "page" : undefined}
           >
             <span className="relative">
-              <Icon aria-hidden="true" className="h-6 w-6" />
+              <Icon
+                aria-hidden="true"
+                strokeWidth={1.5}
+                className={cn(
+                  "h-8 w-8 fill-none stroke-current transition-colors",
+                )}
+              />
               {item.badge && (
-                <span className="absolute -right-4 -top-2 rounded-full bg-primary-600 px-1.5 py-0.5 text-[0.5rem] font-semibold leading-none text-primary-foreground">
+                <span className="absolute -right-4 -top-2 rounded-full bg-primary-600 px-1.5 py-0.5 text-label-small font-medium text-primary-foreground">
                   {item.badge}
                 </span>
               )}
             </span>
-            <span className="text-[0.6875rem] font-medium leading-none">
+            <span className="text-label-small">
               {item.label}
             </span>
           </Link>
