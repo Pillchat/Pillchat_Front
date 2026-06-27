@@ -64,7 +64,7 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
     <nav
       aria-label="하단 네비게이션"
       className={cn(
-        "fixed bottom-0 left-1/2 z-50 flex h-[calc(5.75rem+env(safe-area-inset-bottom))] w-full max-w-[480px] -translate-x-1/2 items-start justify-between border-t border-border bg-card px-3 pb-[env(safe-area-inset-bottom)] pt-3 shadow-[0_-8px_24px_rgba(17,17,17,0.04)]",
+        "fixed bottom-0 left-1/2 z-50 grid h-[calc(4.5rem+env(safe-area-inset-bottom))] w-full max-w-[480px] -translate-x-1/2 grid-cols-5 border-t border-gray-300 bg-white pb-[env(safe-area-inset-bottom)]",
         className,
       )}
     >
@@ -77,19 +77,17 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
             key={item.href}
             href={item.href}
             className={cn(
-              "relative flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg text-muted-foreground transition-colors active:scale-95",
-              isActive && "text-brand",
+              "relative flex h-[70px] w-full min-w-0 flex-col items-center justify-center gap-1 text-label-small text-gray-300 transition-colors active:scale-95",
+              isActive && "text-primary",
             )}
             prefetch={false}
             aria-current={isActive ? "page" : undefined}
           >
-            <span className="relative">
+            <span className="relative flex h-8 w-8 items-center justify-center">
               <Icon
                 aria-hidden="true"
                 strokeWidth={1.5}
-                className={cn(
-                  "h-8 w-8 fill-none stroke-current transition-colors",
-                )}
+                className="h-8 w-8 fill-none stroke-current transition-colors"
               />
               {item.badge && (
                 <span className="absolute -right-4 -top-2 rounded-full bg-primary-600 px-1.5 py-0.5 text-label-small font-medium text-primary-foreground">
@@ -97,7 +95,7 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
                 </span>
               )}
             </span>
-            <span className="text-label-small">{item.label}</span>
+            <span>{item.label}</span>
           </Link>
         );
       })}

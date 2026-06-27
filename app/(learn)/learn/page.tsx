@@ -173,7 +173,7 @@ export default function LearnPage() {
         </section>
       </main>
 
-      <div className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-[480px] -translate-x-1/2 bg-background px-6 py-3">
+      <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-[480px] -translate-x-1/2 bg-background px-6 py-3">
         <Button
           type="button"
           className="h-14 w-full active:scale-[0.98]"
