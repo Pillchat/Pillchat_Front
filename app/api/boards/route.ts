@@ -31,6 +31,14 @@ const getPageItems = (data: any) => {
   return [];
 };
 
+const getBoardCategoryText = (item: any) =>
+  String(item?.category ?? item?.categoryName ?? item?.boardType ?? "")
+    .trim()
+    .toUpperCase();
+
+const matchesCategory = (item: any, category: string) =>
+  getBoardCategoryText(item) === category.toUpperCase();
+
 const getErrorBody = (data: any, status: number) => {
   if (data && typeof data === "object") return data;
   if (typeof data === "string" && data.trim()) {
@@ -120,27 +128,64 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const fetchCategory = async (
+      item: string,
+      searchParams = request.nextUrl.searchParams,
+    ) => {
+      const backendUrl = new URL(`${API_BASE_URL}/api/boards/category/${item}`);
+      appendListParams(backendUrl, searchParams, item);
+
+      const response = await fetch(backendUrl.toString(), {
+        method: "GET",
+        headers: getAuthHeaders(accessToken),
+        cache: "no-store",
+      });
+      const data = await parseBackendResponse(response);
+
+      return { category: item, response, data };
+    };
+
     const responses = await Promise.all(
-      categories.map(async (item) => {
-        const backendUrl = new URL(
-          `${API_BASE_URL}/api/boards/category/${item}`,
-        );
-        appendListParams(backendUrl, request.nextUrl.searchParams, item);
-
-        const response = await fetch(backendUrl.toString(), {
-          method: "GET",
-          headers: getAuthHeaders(accessToken),
-          cache: "no-store",
-        });
-        const data = await parseBackendResponse(response);
-
-        return { category: item, response, data };
-      }),
+      categories.map((item) => fetchCategory(item)),
     );
 
     if (category) {
       const failed = responses.find(({ response }) => !response.ok);
       if (failed) {
+        if (failed.response.status === 401 || failed.response.status === 403) {
+          if (request.nextUrl.searchParams.has("sort")) {
+            const retryParams = new URLSearchParams(
+              request.nextUrl.searchParams,
+            );
+            retryParams.delete("sort");
+            retryParams.delete("status");
+
+            const retry = await fetchCategory(
+              category.toUpperCase(),
+              retryParams,
+            );
+
+            if (retry.response.ok) {
+              return NextResponse.json(getPageItems(retry.data));
+            }
+          }
+
+          const fallbackResponses = await Promise.all(
+            BOARD_CATEGORIES.map((item) => fetchCategory(item)),
+          );
+          const fallbackSuccessful = fallbackResponses.filter(
+            ({ response }) => response.ok,
+          );
+
+          if (fallbackSuccessful.length > 0) {
+            const fallbackData = fallbackSuccessful
+              .flatMap(({ data }) => getPageItems(data))
+              .filter((item) => matchesCategory(item, category));
+
+            return NextResponse.json(fallbackData);
+          }
+        }
+
         return NextResponse.json(
           getErrorBody(failed.data, failed.response.status),
           { status: failed.response.status },
