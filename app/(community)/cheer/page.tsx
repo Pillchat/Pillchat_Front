@@ -137,7 +137,7 @@ export default function CheerPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-full max-w-[480px] -translate-x-1/2 gap-4 border-t border-border bg-background px-6 py-3"
+        className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-full max-w-[480px] -translate-x-1/2 gap-4 border-t border-border bg-background px-6 pb-1 pt-3"
       >
         <input
           value={message}
