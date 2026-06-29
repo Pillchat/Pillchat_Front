@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpenCheck, MessageCircle, Star } from "lucide-react";
+import Image from "next/image";
 
 import { AppShell, MeaninglessHeader } from "@/components/molecules";
 
@@ -8,21 +8,21 @@ const boards = [
     href: "/tips",
     title: "꿀팁 게시판",
     description: "시험, 실습, 공부 루틴에 도움이 되는 노하우를 모아요.",
-    icon: BookOpenCheck,
+    iconSrc: "/Tip.svg",
     meta: "학습/시험 노하우",
   },
   {
     href: "/board",
     title: "자유 게시판",
     description: "약대 생활, 일상, 잡담을 가볍게 나누는 공간이에요.",
-    icon: MessageCircle,
+    iconSrc: "/Talk.svg",
     meta: "일상/잡담",
   },
   {
     href: "/reviews",
     title: "후기 게시판",
     description: "강의, 자료, 실습 경험을 기록하고 비교해요.",
-    icon: Star,
+    iconSrc: "/Star.svg",
     meta: "강의/자료/실습",
   },
 ];
@@ -43,36 +43,35 @@ export default function BoardsHubPage() {
         </section>
 
         <section className="mt-8 flex flex-col gap-4" aria-label="게시판 목록">
-          {boards.map((board) => {
-            const Icon = board.icon;
-
-            return (
-              <Link
-                key={board.href}
-                href={board.href}
-                className="flex items-center gap-4 rounded-lg border border-border bg-card p-4 transition-transform active:scale-[0.98]"
-              >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-accent text-brand">
-                  <Icon
-                    aria-hidden="true"
-                    className="h-8 w-8"
-                    strokeWidth={1.5}
-                  />
+          {boards.map((board) => (
+            <Link
+              key={board.href}
+              href={board.href}
+              className="flex items-center gap-4 rounded-lg border border-border bg-card p-4 transition-transform active:scale-[0.98]"
+            >
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-accent text-foreground">
+                <Image
+                  src={board.iconSrc}
+                  alt=""
+                  width={32}
+                  height={32}
+                  aria-hidden="true"
+                  className="h-8 w-8"
+                />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="text-label-medium text-brand">
+                  {board.meta}
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="text-label-medium text-brand">
-                    {board.meta}
-                  </span>
-                  <strong className="mt-1 block text-headline-small text-foreground">
-                    {board.title}
-                  </strong>
-                  <span className="mt-1 block text-body-medium text-muted-foreground">
-                    {board.description}
-                  </span>
+                <strong className="mt-1 block text-headline-small text-foreground">
+                  {board.title}
+                </strong>
+                <span className="mt-1 block text-body-medium text-muted-foreground">
+                  {board.description}
                 </span>
-              </Link>
-            );
-          })}
+              </span>
+            </Link>
+          ))}
         </section>
       </main>
     </AppShell>

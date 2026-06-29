@@ -2,13 +2,6 @@
 
 import Link from "next/link";
 import { FC } from "react";
-import {
-  Flame,
-  GraduationCap,
-  Home,
-  LayoutGrid,
-  ShoppingBag,
-} from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
@@ -16,21 +9,22 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   {
     href: "/",
-    icon: Home,
+    iconSrc: "/Home.svg",
     label: "홈",
     isActive: (pathname: string) => pathname === "/",
   },
   {
     href: "/learn",
-    icon: GraduationCap,
+    iconSrc: "/learn.svg",
     label: "학습",
-    badge: "9월",
     isActive: (pathname: string) =>
-      pathname.startsWith("/learn") || pathname.startsWith("/questionbank"),
+      pathname.startsWith("/learn") ||
+      pathname.startsWith("/flashcards") ||
+      pathname.startsWith("/questionbank"),
   },
   {
     href: "/boards",
-    icon: LayoutGrid,
+    iconSrc: "/Board.svg",
     label: "게시판",
     isActive: (pathname: string) =>
       pathname.startsWith("/boards") ||
@@ -41,13 +35,13 @@ const NAV_ITEMS = [
   },
   {
     href: "/cheer",
-    icon: Flame,
+    iconSrc: "/cheer.svg",
     label: "응원방",
     isActive: (pathname: string) => pathname.startsWith("/cheer"),
   },
   {
     href: "/market",
-    icon: ShoppingBag,
+    iconSrc: "/market.svg",
     label: "마켓",
     isActive: (pathname: string) => pathname.startsWith("/market"),
   },
@@ -69,7 +63,6 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
       )}
     >
       {NAV_ITEMS.map((item) => {
-        const Icon = item.icon;
         const isActive = item.isActive(pathname);
 
         return (
@@ -84,16 +77,20 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
             aria-current={isActive ? "page" : undefined}
           >
             <span className="relative flex h-8 w-8 items-center justify-center">
-              <Icon
+              <span
                 aria-hidden="true"
-                strokeWidth={1.5}
-                className="h-8 w-8 fill-none stroke-current transition-colors"
+                className="h-8 w-8 bg-current transition-colors"
+                style={{
+                  WebkitMaskImage: `url(${item.iconSrc})`,
+                  WebkitMaskPosition: "center",
+                  WebkitMaskRepeat: "no-repeat",
+                  WebkitMaskSize: "contain",
+                  maskImage: `url(${item.iconSrc})`,
+                  maskPosition: "center",
+                  maskRepeat: "no-repeat",
+                  maskSize: "contain",
+                }}
               />
-              {item.badge && (
-                <span className="absolute -right-4 -top-2 rounded-full bg-primary-600 px-1.5 py-0.5 text-label-small font-medium text-primary-foreground">
-                  {item.badge}
-                </span>
-              )}
             </span>
             <span>{item.label}</span>
           </Link>
