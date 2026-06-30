@@ -4,6 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 export type SubjectItem = {
   code: string;
   label: string;
+  id?: number | string;
+  subjectId?: number | string;
+  value?: number | string;
 };
 
 export type SubjectSection = {

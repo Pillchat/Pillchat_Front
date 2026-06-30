@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const NACHOCODE_API_URL = process.env.NACHOCODE_API_URL || "";
-const API_KEY = process.env.NACHOCODE_API_KEY || "";
-const SECRET_KEY = process.env.NACHOCODE_SECRET_KEY || "";
+import { enqueueAdminPushJob, normalizeUserIds } from "../_pushJob";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userIds, title, content, linkURL, imageURL } = body;
+    const { userIds, title, content } = body;
 
     if (!userIds || !title || !content) {
       return NextResponse.json(
@@ -16,37 +13,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`${NACHOCODE_API_URL}/api/push/v2/users`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": API_KEY,
-        "x-secret-key": SECRET_KEY,
-      },
-      body: JSON.stringify({
-        userIds,
-        title,
-        content,
-        linkURL,
-        imageURL,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+    if (!Array.isArray(userIds)) {
       return NextResponse.json(
-        { message: errorData.message || "푸시 발송 실패" },
-        { status: response.status },
+        { message: "userIds는 배열 형식이어야 합니다." },
+        { status: 400 },
       );
     }
 
-    const data = await response.text();
-    return NextResponse.json({ message: data });
-  } catch (error) {
+    const normalizedUserIds = normalizeUserIds(userIds);
+    if (normalizedUserIds.length !== userIds.length) {
+      return NextResponse.json(
+        { message: "유저 ID는 숫자만 입력할 수 있습니다." },
+        { status: 400 },
+      );
+    }
+
+    const data = await enqueueAdminPushJob(request, {
+      ...body,
+      userIds: normalizedUserIds,
+    });
+
+    return NextResponse.json(data);
+  } catch (error: any) {
     console.error("개인 푸시 발송 API 에러:", error);
+
+    let errorInfo: { message?: string; status?: number } = {};
+    try {
+      errorInfo = JSON.parse(error?.message || "{}");
+    } catch {
+      errorInfo = { message: error?.message };
+    }
+
     return NextResponse.json(
-      { message: "푸시 발송 중 오류가 발생했습니다." },
-      { status: 500 },
+      {
+        message:
+          errorInfo.message || "백엔드 PushJob 적재 중 오류가 발생했습니다.",
+      },
+      { status: errorInfo.status || 500 },
     );
   }
 }
