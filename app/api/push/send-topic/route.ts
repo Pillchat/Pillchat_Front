@@ -1,54 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const NACHOCODE_API_URL = process.env.NACHOCODE_API_URL || "";
-const API_KEY = process.env.NACHOCODE_API_KEY || "";
-const SECRET_KEY = process.env.NACHOCODE_SECRET_KEY || "";
-
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { topicName, title, content, linkURL, imageURL } = body;
+    await request.json().catch(() => ({}));
 
-    if (!topicName || !title || !content) {
-      return NextResponse.json(
-        { message: "topicName, title, content는 필수입니다." },
-        { status: 400 },
-      );
-    }
-
-    const payload: Record<string, any> = {
-      topicName,
-      title,
-      content,
-    };
-
-    if (linkURL) payload.linkURL = linkURL;
-    if (imageURL) payload.imageURL = imageURL;
-
-    const response = await fetch(`${NACHOCODE_API_URL}/api/push/v2/topic`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": API_KEY,
-        "x-secret-key": SECRET_KEY,
+    return NextResponse.json(
+      {
+        message:
+          "토픽 직접 발송은 알림 설정 필터를 우회하므로 지원하지 않습니다. 관심 과목 알림은 게시물/자료 등록 이벤트에서 백엔드 PushJob 파이프라인으로 발송됩니다.",
       },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return NextResponse.json(
-        { message: errorData.message || "토픽 푸시 발송 실패" },
-        { status: response.status },
-      );
-    }
-
-    const data = await response.json().catch(() => ({ message: "Success" }));
-    return NextResponse.json(data);
+      { status: 501 },
+    );
   } catch (error) {
     console.error("토픽 푸시 발송 API 에러:", error);
     return NextResponse.json(
-      { message: "토픽 푸시 발송 중 오류가 발생했습니다." },
+      { message: "토픽 푸시 발송을 처리할 수 없습니다." },
       { status: 500 },
     );
   }

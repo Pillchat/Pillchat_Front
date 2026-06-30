@@ -16,14 +16,18 @@ export const useSubjects = () => {
     return undefined;
   };
 
-  const getSubjectCodeByLabel = (label: string): string | undefined => {
+  const getSubjectByLabel = (label: string): SubjectItem | undefined => {
     if (!subjects) return undefined;
 
     for (const section of subjects) {
       const item = section.items.find((item) => item.label === label);
-      if (item) return item.code;
+      if (item) return item;
     }
     return undefined;
+  };
+
+  const getSubjectCodeByLabel = (label: string): string | undefined => {
+    return getSubjectByLabel(label)?.code;
   };
 
   // SectionWithChips용 데이터 형태로 변환
@@ -53,6 +57,7 @@ export const useSubjects = () => {
     isLoading,
     error,
     getSubjectByCode,
+    getSubjectByLabel,
     getSubjectCodeByLabel,
     getSubjectMapForChips,
     getSubjectLabelsByCodes,
