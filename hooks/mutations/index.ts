@@ -7,5 +7,7 @@ export * from "./useDeleteQuestionMutation";
 export * from "./useSaveAnswerMutation";
 export * from "./useSaveOnboardingMutation";
 export * from "./useSaveQuestionMutation";
+export * from "./useSetSubjectFollowMutation";
 export * from "./useToggleLikeMutation";
 export * from "./useToggleBoardScrapMutation";
+export * from "./useUpdateNotificationSettingsMutation";

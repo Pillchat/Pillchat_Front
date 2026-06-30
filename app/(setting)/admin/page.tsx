@@ -13,7 +13,11 @@ import { formatDiffDate } from "@/lib/shared/date";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAtom } from "jotai";
 import { pushHistoryAtom } from "@/store/notification";
-import { PushHistory, PushSendType } from "@/types/notification";
+import {
+  AdminPushNotificationType,
+  PushHistory,
+  PushSendType,
+} from "@/types/notification";
 import { Separator } from "@/components/ui/separator";
 
 const TABS = [
@@ -27,17 +31,27 @@ const PUSH_TYPE_LABELS: Record<PushSendType, string> = {
   topic: "토픽 발송",
 };
 
+type AdminPushSendType = Extract<PushSendType, "all" | "personal">;
+
+const SEND_PUSH_TYPES: AdminPushSendType[] = ["all", "personal"];
+
+const NOTIFICATION_TYPE_LABELS: Record<AdminPushNotificationType, string> = {
+  BENEFIT: "혜택/이벤트",
+  SYSTEM: "시스템",
+};
+
 const SendPushSection: FC<{
   onSent: (history: PushHistory) => void;
 }> = ({ onSent }) => {
   const router = useRouter();
   const { addNotification } = useNotifications();
-  const [pushType, setPushType] = useState<PushSendType>("all");
+  const [pushType, setPushType] = useState<AdminPushSendType>("all");
+  const [notificationType, setNotificationType] =
+    useState<AdminPushNotificationType>("BENEFIT");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [linkURL, setLinkURL] = useState("");
   const [userIds, setUserIds] = useState("");
-  const [topicName, setTopicName] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [result, setResult] = useState<{
@@ -56,13 +70,14 @@ const SendPushSection: FC<{
 
     try {
       let endpoint = "";
-      const payload: Record<string, any> = { title, content };
+      const payload: Record<string, any> = { title, content, notificationType };
 
       if (linkURL.trim()) payload.linkURL = linkURL;
 
       const historyEntry: PushHistory = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         sendType: pushType,
+        notificationType,
         title,
         content,
         linkURL: linkURL || undefined,
@@ -84,22 +99,12 @@ const SendPushSection: FC<{
           payload.userIds = userIds.split(",").map((id) => id.trim());
           historyEntry.targetUserIds = payload.userIds;
           break;
-        case "topic":
-          if (!topicName.trim()) {
-            setResult({ type: "error", message: "토픽 이름을 입력해주세요." });
-            setIsSending(false);
-            return;
-          }
-          endpoint = "/api/push/send-topic";
-          payload.topicName = topicName;
-          historyEntry.topicName = topicName;
-          break;
       }
 
       await fetchAPI(endpoint, "POST", payload);
 
       addNotification({
-        type: "SYSTEM",
+        type: notificationType,
         title,
         content,
         link: linkURL || undefined,
@@ -123,7 +128,7 @@ const SendPushSection: FC<{
       <div className="space-y-2">
         <Label>발송 타입</Label>
         <div className="flex gap-2">
-          {(Object.keys(PUSH_TYPE_LABELS) as PushSendType[]).map((type) => (
+          {SEND_PUSH_TYPES.map((type) => (
             <Button
               key={type}
               variant={pushType === type ? "brand" : "outline"}
@@ -131,6 +136,24 @@ const SendPushSection: FC<{
               onClick={() => setPushType(type)}
             >
               {PUSH_TYPE_LABELS[type]}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>알림 유형</Label>
+        <div className="flex gap-2">
+          {(
+            Object.keys(NOTIFICATION_TYPE_LABELS) as AdminPushNotificationType[]
+          ).map((type) => (
+            <Button
+              key={type}
+              variant={notificationType === type ? "brand" : "outline"}
+              size="sm"
+              onClick={() => setNotificationType(type)}
+            >
+              {NOTIFICATION_TYPE_LABELS[type]}
             </Button>
           ))}
         </div>
@@ -145,19 +168,6 @@ const SendPushSection: FC<{
             placeholder="user1, user2, user3"
             value={userIds}
             onChange={(e) => setUserIds(e.target.value)}
-          />
-        </div>
-      )}
-
-      {/* 토픽 발송 - 토픽 이름 */}
-      {pushType === "topic" && (
-        <div className="space-y-2">
-          <Label htmlFor="topicName">토픽 이름</Label>
-          <Input
-            id="topicName"
-            placeholder="TOPIC_NAME"
-            value={topicName}
-            onChange={(e) => setTopicName(e.target.value)}
           />
         </div>
       )}
@@ -274,6 +284,11 @@ const HistorySection: FC<{
                 <span className="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-muted-foreground">
                   {PUSH_TYPE_LABELS[item.sendType]}
                 </span>
+                {item.notificationType && (
+                  <span className="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                    {NOTIFICATION_TYPE_LABELS[item.notificationType]}
+                  </span>
+                )}
                 <span className="text-xs text-border">
                   {formatDiffDate(item.sentAt)}
                 </span>

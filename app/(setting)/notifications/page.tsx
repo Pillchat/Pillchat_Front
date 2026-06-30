@@ -10,6 +10,10 @@ import { Notification, NotificationType } from "@/types/notification";
 const NOTIFICATION_ICON: Record<NotificationType, string> = {
   ANSWER: "/icons/QuestionWithBubble.svg",
   ADOPT: "/icons/Like.svg",
+  SUBJECT_NEW_QUESTION: "/icons/QuestionWithBubble.svg",
+  SUBJECT_NEW_MATERIAL: "/icons/QuestionWithBubble.svg",
+  BENEFIT: "/icons/BellColor.svg",
+  EVENING_STUDY_REMINDER: "/icons/BellColor.svg",
   QUESTION: "/icons/QuestionWithBubble.svg",
   MATERIAL: "/icons/QuestionWithBubble.svg",
   SYSTEM: "/icons/BellColor.svg",
