@@ -1902,7 +1902,7 @@ function PillchatTabNav({
   return (
     <nav
       aria-label="필챗 탭"
-      className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 grid h-[4.75rem] w-full max-w-[480px] -translate-x-1/2 grid-cols-5 border-t border-border/50 bg-white/90 px-2 pb-2 pt-2 backdrop-blur-xl"
+      className="sticky top-[5.625rem] z-30 grid h-[4.75rem] w-full grid-cols-5 border-b border-border/50 bg-white/95 px-2 py-2 backdrop-blur-xl"
     >
       {tabItems.map((item) => {
         const Icon = item.icon;
@@ -1973,11 +1973,9 @@ export function FlashcardApp() {
   }
 
   return (
-    <AppShell
-      bottomSpacing="none"
-      className="pb-[calc(10.5rem+env(safe-area-inset-bottom))]"
-    >
+    <AppShell bottomSpacing="nav">
       <FlashcardShellHeader />
+      <PillchatTabNav activeTab={activeTab} onChange={setActiveTab} />
 
       <main className="px-6 pt-5">
         <section className="pb-5">
@@ -2034,8 +2032,6 @@ export function FlashcardApp() {
           )}
         </Fragment>
       </main>
-
-      <PillchatTabNav activeTab={activeTab} onChange={setActiveTab} />
 
       <Toast open={!!toast} message={toast} onClose={() => setToast("")} />
     </AppShell>

@@ -19,6 +19,7 @@ const previewItems = [
   {
     title: "CBT 기출 플레이어",
     description: "국시 유형을 실전처럼 풀어보는 문제 환경",
+    href: "/learn/cbt",
     iconSrc: "/CBT.svg",
   },
   {

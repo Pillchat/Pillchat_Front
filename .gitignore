@@ -31,6 +31,7 @@ yarn-error.log*
 .pnpm-debug.log*
 dev-server*.log
 tmp-next-*.log
+*.log
 
 # env files (can opt-in for committing if needed)
 .env*
@@ -41,3 +42,6 @@ tmp-next-*.log
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# md
+AGENT.md

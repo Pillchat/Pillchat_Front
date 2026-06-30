@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type {
   ChangeEvent,
   DragEvent,
@@ -8,6 +9,7 @@ import type {
 } from "react";
 import { useMemo, useState } from "react";
 import {
+  ArrowLeft,
   ClipboardCheck,
   FileText,
   GraduationCap,
@@ -240,12 +242,14 @@ export default function IpadExamManagerPage() {
     <main className="min-h-screen bg-white text-foreground">
       <header className="border-b border-gray-100 bg-white px-4 py-4">
         <div className="mx-auto flex w-full max-w-[834px] items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand text-white shadow-[0_8px_18px_rgba(255,65,46,0.18)]">
-            <GraduationCap
-              aria-hidden="true"
-              className="h-6 w-6"
-              strokeWidth={1.8}
-            />
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-bran shadow-[0_8px_18px_rgba(255,65,46,0.18)]">
+            <Link
+            href="/questionbank"
+            aria-label="학습 페이지로 이동"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-white active:scale-[0.98]"
+          >
+            <ArrowLeft aria-hidden="true" className="h-5 w-5" />
+          </Link>
           </div>
           <div>
             <h1 className="text-[19px] font-extrabold tracking-normal">
