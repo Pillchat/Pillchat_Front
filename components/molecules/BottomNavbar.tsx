@@ -1,52 +1,49 @@
 "use client";
 
 import Link from "next/link";
-import { FC, useEffect, useState } from "react";
-import HomeIcon from "@/public/icons/Home.svg";
-import CommunityIcon from "@/public/icons/Community.svg";
-import QnaIcon from "@/public/icons/Qna.svg";
-import Board from "@/public/icons/Board.svg";
-import QuestionBankIcon from "@/public/icons/Questionbank.svg";
-import ArchiveIcon from "@/public/icons/Archive.svg";
-import MyPageIcon from "@/public/icons/Mypage.svg";
+import { FC } from "react";
 import { usePathname } from "next/navigation";
+
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   {
     href: "/",
-    icon: HomeIcon,
+    iconSrc: "/Home.svg",
     label: "홈",
+    isActive: (pathname: string) => pathname === "/",
   },
-  // {
-  //   href: "#",
-  //   icon: CommunityIcon,
-  //   label: "커뮤니티",
-  // },
-  // {
-  //   href: "/qna",
-  //   icon: QnaIcon,
-  //   label: "질문광장",
-  // },
   {
-    href: "/board",
-    icon: Board,
+    href: "/learn",
+    iconSrc: "/learn.svg",
+    label: "학습",
+    isActive: (pathname: string) =>
+      pathname.startsWith("/learn") ||
+      pathname.startsWith("/flashcards") ||
+      pathname.startsWith("/questionbank"),
+  },
+  {
+    href: "/boards",
+    iconSrc: "/Board.svg",
     label: "게시판",
+    isActive: (pathname: string) =>
+      pathname.startsWith("/boards") ||
+      pathname.startsWith("/board") ||
+      pathname.startsWith("/post") ||
+      pathname.startsWith("/tips") ||
+      pathname.startsWith("/reviews"),
   },
   {
-    href: "/questionbank",
-    icon: QuestionBankIcon,
-    label: "문제은행",
+    href: "/cheer",
+    iconSrc: "/cheer.svg",
+    label: "응원방",
+    isActive: (pathname: string) => pathname.startsWith("/cheer"),
   },
   {
-    href: "/archive",
-    icon: ArchiveIcon,
-    label: "아카이브",
-  },
-  {
-    href: "/mypage",
-    icon: MyPageIcon,
-    label: "마이 페이지",
+    href: "/market",
+    iconSrc: "/market.svg",
+    label: "마켓",
+    isActive: (pathname: string) => pathname.startsWith("/market"),
   },
 ];
 
@@ -56,41 +53,46 @@ interface BottomNavbarProps {
 
 export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
   const pathname = usePathname();
-  const [activeHref, setActiveHref] = useState(pathname);
-
-  useEffect(() => {
-    setActiveHref(pathname);
-  }, [pathname]);
 
   return (
     <nav
+      aria-label="하단 네비게이션"
       className={cn(
-        "shadow-t dark:shadow-t-gray-800 fixed bottom-0 left-1/2 z-50 flex h-[calc(6.75rem+env(safe-area-inset-bottom))] w-full max-w-screen-sm -translate-x-1/2 items-start justify-between border-t-[1px] border-[#E2E2E2] bg-background px-3 pb-[env(safe-area-inset-bottom)] pt-4 transition-all duration-200 sm:px-6 md:max-w-none md:px-10",
+        "fixed bottom-0 left-1/2 z-50 grid h-[calc(4.5rem+env(safe-area-inset-bottom))] w-full max-w-[480px] -translate-x-1/2 grid-cols-5 border-t border-gray-300 bg-white pb-[env(safe-area-inset-bottom)]",
         className,
       )}
     >
       {NAV_ITEMS.map((item) => {
-        const IconComponent = item.icon;
-        const isActive = activeHref === item.href;
+        const isActive = item.isActive(pathname);
 
         return (
           <Link
-            key={`${item.href}-${item.label}`}
+            key={item.href}
             href={item.href}
-            onClick={() => setActiveHref(item.href)}
             className={cn(
-              "flex h-[3.125rem] w-[3.125rem] flex-col items-center justify-center text-border transition-colors hover:text-brand focus:text-brand",
-              isActive && "text-brand",
+              "relative flex h-[70px] w-full min-w-0 flex-col items-center justify-center gap-1 text-label-small text-gray-300 transition-colors active:scale-95",
+              isActive && "text-primary",
             )}
             prefetch={false}
+            aria-current={isActive ? "page" : undefined}
           >
-            <IconComponent
-              className={cn(
-                "h-8 w-8 focus:text-brand",
-                isActive && "text-brand",
-              )}
-            />
-            <span className="text-[0.625rem]">{item.label}</span>
+            <span className="relative flex h-8 w-8 items-center justify-center">
+              <span
+                aria-hidden="true"
+                className="h-8 w-8 bg-current transition-colors"
+                style={{
+                  WebkitMaskImage: `url(${item.iconSrc})`,
+                  WebkitMaskPosition: "center",
+                  WebkitMaskRepeat: "no-repeat",
+                  WebkitMaskSize: "contain",
+                  maskImage: `url(${item.iconSrc})`,
+                  maskPosition: "center",
+                  maskRepeat: "no-repeat",
+                  maskSize: "contain",
+                }}
+              />
+            </span>
+            <span>{item.label}</span>
           </Link>
         );
       })}

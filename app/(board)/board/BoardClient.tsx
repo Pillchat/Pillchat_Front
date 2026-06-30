@@ -1,16 +1,12 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { useRouter } from "@/lib/navigation";
 import { useSearchParams } from "next/navigation";
-import { map } from "lodash";
 
 import {
-  ArrayList,
   BottomNavbar,
   GeneralHeader,
   QuestionListCard,
-  ExpandableChipSection,
 } from "@/components/molecules";
 import { CircleButton } from "@/components/molecules/board";
 import { Separator } from "@/components/ui/separator";
@@ -24,80 +20,92 @@ import {
   getRememberedBoardViewCounts,
   markBoardViewIntent,
 } from "@/lib/client/boardView";
-import { useBoardTabState } from "./_hooks";
-import { useSubjects } from "@/hooks";
-import {
-  useBoardsQuery,
-  useFilesQuery,
-  useMaterialsQuery,
-} from "@/hooks/queries";
+import { useRouter } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
+import { useBoardsQuery, useFilesQuery } from "@/hooks/queries";
 
-const resolveMaterialKey = (value: any, materialId: string | number) => {
-  const raw =
-    typeof value === "string"
-      ? value
-      : (value?.urlKey ?? value?.key ?? value?.fileKey ?? value?.name ?? "");
+export type BoardPageKind = "free" | "tips" | "reviews";
 
-  if (!raw) return "";
-  return raw.includes("/") ? raw : `material/${materialId}/${raw}`;
+const BOARD_PAGE_CONFIG: Record<
+  BoardPageKind,
+  {
+    title: string;
+    path: string;
+    uploadTarget: string;
+    emptyText: string;
+    aliases: string[];
+  }
+> = {
+  free: {
+    title: "자유 게시판",
+    path: "/board",
+    uploadTarget: "free",
+    emptyText: "아직 등록된 자유 게시글이 없습니다.",
+    aliases: ["FREE", "자유", "자유게시판"],
+  },
+  tips: {
+    title: "꿀팁 게시판",
+    path: "/tips",
+    uploadTarget: "tips",
+    emptyText: "아직 등록된 꿀팁 게시글이 없습니다.",
+    aliases: ["TIP", "TIPS", "꿀팁", "꿀팁게시판", "꿀팁 게시판"],
+  },
+  reviews: {
+    title: "후기 게시판",
+    path: "/reviews",
+    uploadTarget: "reviews",
+    emptyText: "아직 등록된 후기 게시글이 없습니다.",
+    aliases: ["REVIEW", "REVIEWS", "후기", "후기게시판", "후기 게시판"],
+  },
 };
 
-const BoardClient = () => {
-  const { currentStatus, handleTabChange } = useBoardTabState();
+const getCategoryText = (item: any) =>
+  String(item?.category ?? item?.categoryName ?? item?.boardType ?? "").trim();
+
+const matchesBoardKind = (item: any, kind: BoardPageKind) => {
+  const category = getCategoryText(item);
+
+  if (!category) {
+    return kind === "free";
+  }
+
+  const aliases = BOARD_PAGE_CONFIG[kind].aliases;
+  return aliases.some(
+    (alias) => category === alias || category.includes(alias),
+  );
+};
+
+const getCommentCount = (item: any) =>
+  item?.answerCount ??
+  item?.commentCount ??
+  item?.commentsCount ??
+  item?.replyCount ??
+  item?.repliesCount ??
+  0;
+
+const getBoardAttachmentKeys = (item: any): string[] =>
+  Array.isArray(item?.images)
+    ? item.images
+        .map((image: any) => getFileKey(image))
+        .filter((key: unknown): key is string => typeof key === "string")
+    : [];
+
+type BoardClientProps = {
+  kind?: BoardPageKind;
+};
+
+const BoardClient = ({ kind = "free" }: BoardClientProps) => {
+  const config = BOARD_PAGE_CONFIG[kind];
   const router = useRouter();
   const searchParams = useSearchParams();
   const q = (searchParams.get("q") ?? "").trim();
 
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [viewCountOverrides, setViewCountOverrides] = useState<
     Record<string, number>
   >({});
 
-  const { getSubjectMapForChips } = useSubjects();
-
-  const subjectMap = useMemo(
-    () => getSubjectMapForChips(),
-    [getSubjectMapForChips],
-  );
-
-  const allSubjects = useMemo(
-    () => ({
-      "과목 선택": [...new Set(Object.values(subjectMap).flat())],
-    }),
-    [subjectMap],
-  );
-
-  const handleSubjectToggle = (item: string) => {
-    setSelectedSubjects((prev) =>
-      prev.includes(item) ? prev.filter((v) => v !== item) : [...prev, item],
-    );
-  };
-
-  const handleBoardClick = (boardId: string | number) => {
-    markBoardViewIntent(boardId);
-    router.push(`/board/${boardId}`);
-  };
-
-  const getCommentCount = (item: any) =>
-    item?.answerCount ??
-    item?.commentCount ??
-    item?.commentsCount ??
-    item?.replyCount ??
-    item?.repliesCount ??
-    0;
-
-  const getBoardAttachmentKeys = (item: any) =>
-    Array.isArray(item?.images)
-      ? item.images.map((image: any) => getFileKey(image)).filter(Boolean)
-      : [];
-
-  const isStudyTab = currentStatus === "study";
-
   useEffect(() => {
-    if (isStudyTab) return;
-
     const syncRememberedViewCounts = () => {
       setViewCountOverrides(getRememberedBoardViewCounts());
     };
@@ -118,14 +126,10 @@ const BoardClient = () => {
       window.removeEventListener("popstate", syncRememberedViewCounts);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [isStudyTab]);
+  }, []);
 
-  const materialsQuery = useMaterialsQuery({ enabled: isStudyTab });
-  const boardsQuery = useBoardsQuery(currentStatus, {
-    enabled: !isStudyTab,
-  });
-  const activeQuery = isStudyTab ? materialsQuery : boardsQuery;
-  const { data, isLoading, isError, error } = activeQuery;
+  const boardsQuery = useBoardsQuery("latest");
+  const { data, isLoading, isError, error } = boardsQuery;
 
   const rawList = useMemo(() => {
     if (Array.isArray(data)) return data;
@@ -134,7 +138,7 @@ const BoardClient = () => {
   }, [data]);
 
   const list = useMemo(() => {
-    let filtered = [...rawList];
+    let filtered = rawList.filter((item: any) => matchesBoardKind(item, kind));
 
     if (q) {
       const terms = q
@@ -143,66 +147,31 @@ const BoardClient = () => {
         .map((t) => t.toLowerCase());
 
       filtered = filtered.filter((item: any) => {
-        const searchable = isStudyTab
-          ? `${item.title ?? ""} ${item.subjectName ?? ""} ${item.subject?.name ?? ""} ${item.nickname ?? ""}`.toLowerCase()
-          : `${item.title ?? ""} ${item.content ?? ""} ${item.categoryName ?? ""} ${item.nickname ?? ""}`.toLowerCase();
+        const searchable =
+          `${item.title ?? ""} ${item.content ?? ""} ${item.categoryName ?? ""} ${item.nickname ?? ""}`.toLowerCase();
 
         return terms.every((t) => searchable.includes(t));
       });
     }
 
-    if (isStudyTab && selectedSubjects.length > 0) {
-      filtered = filtered.filter((item: any) => {
-        const subjectName =
-          item?.subjectName ?? item?.subject?.name ?? item?.name ?? "";
-        return selectedSubjects.includes(subjectName);
-      });
-    }
+    return [...filtered].sort((a: any, b: any) => {
+      const left = new Date(a?.createdAt ?? 0).getTime();
+      const right = new Date(b?.createdAt ?? 0).getTime();
+      return right - left;
+    });
+  }, [rawList, q, kind]);
 
-    if (!isStudyTab && currentStatus === "column") {
-      filtered = filtered.filter(
-        (item: any) =>
-          item?.category === "COLUMN" || item?.categoryName === "칼럼",
-      );
-    }
-
-    if (!isStudyTab && currentStatus === "promo") {
-      filtered = filtered.filter(
-        (item: any) =>
-          item?.category === "PROMOTION" || item?.categoryName === "홍보게시판",
-      );
-    }
-
-    if (!isStudyTab && currentStatus === "best") {
-      filtered.sort(
-        (a: any, b: any) => (b?.likeCount ?? 0) - (a?.likeCount ?? 0),
-      );
-    }
-
-    return filtered;
-  }, [rawList, q, currentStatus, isStudyTab, selectedSubjects]);
-
-  const previewFileKeys = useMemo(() => {
-    return [
-      ...new Set(
-        list.flatMap((item: any) => {
-          if (isStudyTab) {
-            if (!item?.id || !Array.isArray(item?.images)) return [];
-            return item.images
-              .map((value: any) => resolveMaterialKey(value, item.id))
-              .filter(Boolean);
-          }
-
-          return Array.isArray(item?.images)
-            ? item.images
-                .map((image: any) => getFileKey(image))
-                .filter(Boolean)
-                .filter((key: string) => !isPdfFileKey(key))
-            : [];
-        }),
+  const previewFileKeys = useMemo<string[]>(() => {
+    return Array.from(
+      new Set<string>(
+        list.flatMap((item: any): string[] =>
+          getBoardAttachmentKeys(item).filter(
+            (key: string) => !isPdfFileKey(key),
+          ),
+        ),
       ),
-    ];
-  }, [isStudyTab, list]);
+    );
+  }, [list]);
 
   const { data: previewFilesData } = useFilesQuery({ keys: previewFileKeys });
 
@@ -211,11 +180,12 @@ const BoardClient = () => {
     [previewFilesData, previewFileKeys],
   );
 
-  const emptyText = q
-    ? `"${q}" 검색 결과가 없습니다.`
-    : isStudyTab
-      ? "아직 등록된 학습자료가 없습니다."
-      : "아직 등록된 게시글이 없습니다.";
+  const handleBoardClick = (boardId: string | number) => {
+    markBoardViewIntent(boardId);
+    router.push(`/board/${boardId}`);
+  };
+
+  const emptyText = q ? `"${q}" 검색 결과가 없습니다.` : config.emptyText;
 
   const mobileFixedHidden = isSearchOpen
     ? "translate-y-[140%] opacity-0 pointer-events-none"
@@ -225,37 +195,20 @@ const BoardClient = () => {
     <div className="flex min-h-screen flex-col">
       <GeneralHeader
         currentQ={q}
-        currentStatus={currentStatus}
-        searchBasePath="/board"
+        searchBasePath={config.path}
         hideBottomBorder
         onSearchOpenChange={setIsSearchOpen}
       />
 
-      <ArrayList
-        value={currentStatus}
-        onChange={handleTabChange}
-        innerClassName="px-6 md:px-10"
-      />
-
-      {currentStatus === "study" && (
-        <div className="px-6 pt-4">
-          <ExpandableChipSection
-            data={allSubjects}
-            expandedData={subjectMap}
-            selectedItems={selectedSubjects}
-            onItemToggle={handleSubjectToggle}
-            showDropdown
-            showDropdownButton
-            categoryTitleClassName="text-sm font-medium text-pretendard text-[#111]"
-            buttonSize="sm"
-            className="gap-0"
-          />
-        </div>
-      )}
+      <div className="px-6 pb-2 pt-1">
+        <p className="text-label-medium text-brand">Community</p>
+        <h1 className="mt-1 text-headline-large text-foreground">
+          {config.title}
+        </h1>
+      </div>
 
       <CircleButton
-        onUploadPost={() => router.push("/post")}
-        onUploadStudy={() => router.push("/upload")}
+        onUploadPost={() => router.push(`/post?board=${config.uploadTarget}`)}
         className={mobileFixedHidden}
       />
 
@@ -267,94 +220,56 @@ const BoardClient = () => {
       >
         {isLoading ? (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-border">불러오는 중...</span>
+            <span className="text-body-medium text-border">불러오는 중...</span>
           </div>
         ) : isError ? (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-red-500">
+            <div className="text-body-medium text-primary">
               {error instanceof Error
                 ? error.message
-                : isStudyTab
-                  ? "학습자료를 불러오지 못했습니다."
-                  : "게시글을 불러오지 못했습니다."}
+                : "게시글을 불러오지 못했습니다."}
             </div>
           </div>
         ) : list.length > 0 ? (
           <div className="mx-6 py-5 pb-[5.625rem]">
             <div className="flex flex-col gap-5">
-              {map(list, (item: any) => {
-                const attachmentKeys = isStudyTab
-                  ? item?.id && Array.isArray(item?.images)
-                    ? item.images
-                        .map((value: any) => resolveMaterialKey(value, item.id))
-                        .filter(Boolean)
-                    : []
-                  : getBoardAttachmentKeys(item);
-
-                const imageKeys = isStudyTab
-                  ? attachmentKeys
-                  : attachmentKeys.filter((key: string) => !isPdfFileKey(key));
+              {list.map((item: any, index: number) => {
+                const imageKeys = getBoardAttachmentKeys(item).filter(
+                  (key: string) => !isPdfFileKey(key),
+                );
 
                 const imageUrls = imageKeys
                   .map((key: string) => previewImageUrlMap[key])
                   .filter(Boolean);
 
-                const materialPreviewContent = item?.pdfKey
-                  ? "PDF 첨부"
-                  : imageUrls.length > 0
-                    ? "이미지 첨부"
-                    : "첨부 파일 없음";
-
-                const boardPreviewContent =
+                const previewContent =
                   typeof item?.content === "string" && item.content.trim()
                     ? item.content.trim()
                     : imageUrls.length > 0
                       ? "이미지 첨부"
                       : "첨부 파일 없음";
 
-                const cardData = isStudyTab
-                  ? {
-                      id: String(item?.id ?? ""),
-                      title: item?.title ?? "제목 없음",
-                      content: materialPreviewContent,
-                      userNickname:
-                        item?.userNickname ?? item?.nickname ?? "익명",
-                      subjectName:
-                        item?.subjectName ?? item?.subject?.name ?? "",
-                      answerCount: getCommentCount(item),
-                      likeCount: item?.likeCount ?? 0,
-                      viewCount: item?.viewCount ?? 0,
-                      createdAt: formatDiffDate(item?.createdAt),
-                      images: imageUrls,
-                    }
-                  : {
-                      ...item,
-                      content: boardPreviewContent,
-                      viewCount: Math.max(
-                        Number(item?.viewCount ?? 0),
-                        viewCountOverrides[String(item?.id ?? "")] ?? 0,
-                      ),
-                      userNickname:
-                        item?.userNickname ?? item?.nickname ?? "익명",
-                      subjectName:
-                        item?.subjectName ?? item?.categoryName ?? "",
-                      answerCount: getCommentCount(item),
-                      createdAt: formatDiffDate(item?.createdAt),
-                      images: imageUrls,
-                    };
+                const cardData = {
+                  ...item,
+                  content: previewContent,
+                  viewCount: Math.max(
+                    Number(item?.viewCount ?? 0),
+                    viewCountOverrides[String(item?.id ?? "")] ?? 0,
+                  ),
+                  userNickname: item?.userNickname ?? item?.nickname ?? "익명",
+                  subjectName: item?.subjectName ?? item?.categoryName ?? "",
+                  answerCount: getCommentCount(item),
+                  createdAt: formatDiffDate(item?.createdAt),
+                  images: imageUrls,
+                };
 
                 return (
                   <Fragment key={item?.id}>
                     <QuestionListCard
                       question={cardData}
-                      hideStats={isStudyTab}
-                      onClick={() =>
-                        isStudyTab
-                          ? router.push(`/materials/${item.id}`)
-                          : handleBoardClick(item.id)
-                      }
+                      onClick={() => handleBoardClick(item.id)}
                     />
-                    <Separator className="last:hidden" />
+                    {index < list.length - 1 && <Separator />}
                   </Fragment>
                 );
               })}
@@ -362,7 +277,7 @@ const BoardClient = () => {
           </div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center pb-[5.625rem]">
-            <div className="text-border">{emptyText}</div>
+            <div className="text-body-medium text-border">{emptyText}</div>
           </div>
         )}
       </div>

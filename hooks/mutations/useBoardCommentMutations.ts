@@ -10,6 +10,7 @@ type ToggleBoardCommentLikePayload = {
 type CreateBoardCommentPayload = {
   boardId: string;
   content: string;
+  isAnonymous?: boolean;
 };
 
 type UpdateBoardCommentPayload = {
@@ -28,9 +29,11 @@ export const toggleBoardCommentLike = ({
 export const createBoardComment = ({
   boardId,
   content,
+  isAnonymous = false,
 }: CreateBoardCommentPayload) => {
   return fetchAPI(`/api/boards/${boardId}/comments`, "POST", {
     content: content.trim(),
+    isAnonymous,
   });
 };
 

@@ -41,8 +41,16 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
     return "/qna";
   }, [pathname, searchBasePath]);
 
+  const isSearchablePath = useMemo(
+    () =>
+      Boolean(searchBasePath) ||
+      pathname.startsWith("/qna") ||
+      pathname.startsWith("/board"),
+    [pathname, searchBasePath],
+  );
+
   useEffect(() => {
-    if (!(pathname.startsWith("/qna") || pathname.startsWith("/board"))) {
+    if (!isSearchablePath) {
       return;
     }
 
@@ -53,17 +61,17 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
     if (trimmed) {
       setOpen(true);
     }
-  }, [pathname, currentQ]);
+  }, [isSearchablePath, currentQ]);
 
   useEffect(() => {
-    if (!(pathname.startsWith("/qna") || pathname.startsWith("/board"))) {
+    if (!isSearchablePath) {
       return;
     }
 
     if (!isInputFocused && !currentQ.trim()) {
       setOpen(false);
     }
-  }, [pathname, currentQ, isInputFocused]);
+  }, [isSearchablePath, currentQ, isInputFocused]);
 
   useEffect(() => {
     if (open) {
@@ -86,7 +94,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
   }, [value, isComposing]);
 
   useEffect(() => {
-    if (!(pathname.startsWith("/qna") || pathname.startsWith("/board"))) return;
+    if (!isSearchablePath) return;
 
     const trimmed = debouncedValue.trim();
     const currentTrimmed = currentQ.trim();
@@ -111,6 +119,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
     debouncedValue,
     currentQ,
     currentStatus,
+    isSearchablePath,
     pathname,
     resolvedBasePath,
     router,
@@ -158,7 +167,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
                 }
               }}
               placeholder="검색어 입력"
-              className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-brand/40"
+              className="h-10 w-full rounded-md border border-border bg-background px-3 text-label-medium outline-none focus:ring-2 focus:ring-brand/40"
             />
             <button
               type="button"
@@ -166,7 +175,12 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => inputRef.current?.focus()}
             >
-              <img src="/icons/search.svg" alt="search" width={32} height={32} />
+              <img
+                src="/icons/search.svg"
+                alt="search"
+                width={32}
+                height={32}
+              />
             </button>
           </div>
         ) : (

@@ -1,8 +1,8 @@
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ComponentProps, FC } from "react";
 
-type TextInputProps = ComponentProps<typeof Input> & {
+import { TextField } from "./TextField";
+
+type TextInputProps = ComponentProps<typeof TextField> & {
   label?: string;
   errorMessage?: string;
 };
@@ -10,27 +10,15 @@ type TextInputProps = ComponentProps<typeof Input> & {
 export const TextInput: FC<TextInputProps> = ({
   label,
   errorMessage,
-  id,
   className,
-  error,
   ...props
 }) => {
   return (
-    <div className="w-full space-y-1">
-      {label && (
-        <Label htmlFor={id} className="text-xs font-normal">
-          {label}
-        </Label>
-      )}
-      <Input
-        id={id}
-        error={!!errorMessage || error}
-        className={className}
-        {...props}
-      />
-      {errorMessage && (
-        <p className="text-sm text-destructive">{errorMessage}</p>
-      )}
-    </div>
+    <TextField
+      label={label}
+      errorMessage={errorMessage}
+      inputClassName={className}
+      {...props}
+    />
   );
 };

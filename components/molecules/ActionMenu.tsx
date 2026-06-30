@@ -80,7 +80,7 @@ export const ActionMenu: FC<ActionMenuProps> = ({
     <>
       {/* 백드롭 오버레이 */}
       {showBackdrop && isOpen && (
-        <div className="fixed inset-0 z-40 bg-black/40" />
+        <div className="fixed inset-0 z-[100] bg-black/40" />
       )}
 
       <div className={cn(className)}>
@@ -89,7 +89,7 @@ export const ActionMenu: FC<ActionMenuProps> = ({
           <DropdownMenuContent
             align={align}
             side={side}
-            className={cn("z-50 min-w-[160px]", contentClassName)}
+            className={cn("z-[110] min-w-[160px]", contentClassName)}
           >
             {renderItems()}
           </DropdownMenuContent>

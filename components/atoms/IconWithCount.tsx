@@ -7,7 +7,7 @@ export const IconWithCount: FC<{ src: string; count: number }> = ({
   return (
     <span className="flex flex-row items-center">
       <img src={src} alt="eye" className="h-5 w-5" />
-      <span>{count}</span>
+      <span className="text-label-small">{count}</span>
     </span>
   );
 };

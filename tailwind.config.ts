@@ -22,7 +22,17 @@ export default {
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
+          "600": "hsl(var(--primary-600))",
+          "800": "hsl(var(--primary-800))",
+          "900": "hsl(var(--primary-900))",
+          "980": "hsl(var(--primary-980))",
           foreground: "hsl(var(--primary-foreground))",
+        },
+        gray: {
+          "100": "hsl(var(--gray-100))",
+          "300": "hsl(var(--gray-300))",
+          "500": "hsl(var(--gray-500))",
+          "800": "hsl(var(--gray-800))",
         },
         card: {
           DEFAULT: "hsl(var(--card))",
@@ -59,6 +69,7 @@ export default {
         button: {
           foreground: "hsl(var(--button-foreground))",
         },
+        teritary: "hsl(var(--teritary))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -72,6 +83,38 @@ export default {
       },
       fontFamily: {
         sans: ["var(--font-pretendard)"],
+      },
+      fontSize: {
+        "headline-large": ["1.5rem", { lineHeight: "2rem", fontWeight: "700" }],
+        "headline-medium": [
+          "1.25rem",
+          { lineHeight: "1.75rem", fontWeight: "700" },
+        ],
+        "headline-small": [
+          "1.125rem",
+          { lineHeight: "1.625rem", fontWeight: "600" },
+        ],
+        "title-large": ["1rem", { lineHeight: "1.5rem", fontWeight: "600" }],
+        "title-medium": [
+          "0.9375rem",
+          { lineHeight: "1.375rem", fontWeight: "500" },
+        ],
+        "title-small": [
+          "0.875rem",
+          { lineHeight: "1.25rem", fontWeight: "500" },
+        ],
+        "body-large": ["1rem", { lineHeight: "1.5rem", fontWeight: "400" }],
+        "body-medium": [
+          "0.875rem",
+          { lineHeight: "1.25rem", fontWeight: "400" },
+        ],
+        "body-small": [
+          "0.75rem",
+          { lineHeight: "1.125rem", fontWeight: "400" },
+        ],
+        "label-large": ["1rem", { lineHeight: "1.5rem", fontWeight: "600" }],
+        "label-medium": ["0.75rem", { lineHeight: "1rem", fontWeight: "500" }],
+        "label-small": ["0.6875rem", { lineHeight: "1rem", fontWeight: "400" }],
       },
       borderRadius: {
         lg: "var(--radius)",

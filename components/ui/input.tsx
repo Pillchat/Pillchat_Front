@@ -3,12 +3,12 @@ import { cn } from "@/lib/utils";
 import { cva, VariantProps } from "class-variance-authority";
 
 const inputVariants = cva(
-  `flex h-14 w-full rounded-xl border border-input bg-transparent px-3 py-4 text-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-normal file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm`,
+  `flex h-14 w-full rounded-xl border border-gray-300 bg-card px-4 py-4 text-body-large text-foreground transition-colors file:border-0 file:bg-transparent file:text-body-large file:font-normal file:text-foreground placeholder:text-gray-500 disabled:cursor-not-allowed disabled:border-transparent disabled:bg-gray-100 disabled:text-gray-500 disabled:placeholder:text-gray-500`,
   {
     variants: {
       variant: {
         default: "",
-        secondary: "bg-secondary text-border border-none",
+        secondary: "border-transparent bg-gray-100 text-gray-800",
       },
     },
     defaultVariants: {
@@ -32,8 +32,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         className={cn(
           inputVariants({ variant }),
           error
-            ? "border-destructive focus-visible:outline-none focus-visible:ring-0"
-            : "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            ? "border-primary focus-visible:border-primary focus-visible:outline-none focus-visible:ring-0"
+            : "focus-visible:border-2 focus-visible:border-foreground focus-visible:outline-none focus-visible:ring-0",
           className,
         )}
         ref={ref}

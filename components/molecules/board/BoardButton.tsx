@@ -20,7 +20,7 @@ export const BoardButton: FC<BoardButtonProps> = ({
     <button
       type="button"
       className={cn(
-        "flex min-h-[58px] w-full min-w-0 items-center justify-center rounded-[12px] border border-[#C4C4C4] bg-white px-3 py-3",
+        "flex min-h-[58px] w-full min-w-0 items-center justify-center rounded-[12px] border border-border bg-card px-3 py-3",
         className,
       )}
       {...props}
@@ -34,7 +34,7 @@ export const BoardButton: FC<BoardButtonProps> = ({
           />
         </div>
         <div className="flex min-w-0 items-center">
-          <span className="font-Pretendard truncate text-[14px] font-medium text-[#666666]">
+          <span className="font-Pretendard truncate text-[14px] font-medium text-gray-800">
             {text}
           </span>
         </div>

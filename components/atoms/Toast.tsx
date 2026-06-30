@@ -20,7 +20,7 @@ export function Toast({ open, message, onClose, duration = 3000 }: ToastProps) {
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[1000] flex items-center justify-center">
-      <div className="pointer-events-auto relative z-[1001] mb-12 w-[90%] rounded-xl bg-[#11111170] px-5 py-3 text-center text-sm font-medium text-white shadow-xl dark:bg-neutral-900">
+      <div className="pointer-events-auto relative z-[1001] mb-12 w-[90%] rounded-xl bg-foreground/70 px-5 py-3 text-center text-sm font-medium text-primary-foreground shadow-xl dark:bg-neutral-900">
         {message}
       </div>
     </div>

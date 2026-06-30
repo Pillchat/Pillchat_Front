@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useAtom } from "jotai";
 import {
   schoolAtom,
@@ -16,6 +16,15 @@ import {
 import { fetchAPI } from "@/lib/client/fetch";
 
 export const useMyProfile = () => {
+  const [profileDetails, setProfileDetails] = useState({
+    userType: "STUDENT",
+    followerCount: 0,
+    followingCount: 0,
+    farmMoney: 0,
+    ticketCount: 0,
+    job: "",
+    workplace: "",
+  });
   const [isLoading, setIsLoading] = useAtom(profileLoadingAtom);
   const [error, setError] = useAtom(profileErrorAtom);
 
@@ -40,6 +49,54 @@ export const useMyProfile = () => {
         throw new Error(result.message || "프로필 조회 실패");
 
       const payload = result.data ?? {};
+      const numberValue = (...values: unknown[]) => {
+        const value = values.find(
+          (candidate) => candidate !== undefined && candidate !== null,
+        );
+
+        if (Array.isArray(value)) return value.length;
+
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : 0;
+      };
+      const textValue = (value: unknown) => {
+        if (typeof value === "string") return value;
+        if (value && typeof value === "object") {
+          const item = value as {
+            label?: string;
+            value?: string;
+            name?: string;
+          };
+          return item.label ?? item.value ?? item.name ?? "";
+        }
+        return "";
+      };
+
+      setProfileDetails({
+        userType: payload.userType ?? "STUDENT",
+        followerCount: numberValue(
+          payload.followerCount,
+          payload.followersCount,
+          payload.followers,
+        ),
+        followingCount: numberValue(
+          payload.followingCount,
+          payload.followingsCount,
+          payload.following,
+        ),
+        farmMoney: numberValue(
+          payload.farmMoney,
+          payload.pharmMoney,
+          payload.money,
+        ),
+        ticketCount: numberValue(
+          payload.ticketCount,
+          payload.tickets,
+          payload.questionTicketCount,
+        ),
+        job: textValue(payload.job ?? payload.profession),
+        workplace: textValue(payload.workplace ?? payload.company),
+      });
       const fetchedKeys: string[] = Array.isArray(payload.images)
         ? payload.images
             .map((img: { urlKey: string }) => img.urlKey)
@@ -104,6 +161,14 @@ export const useMyProfile = () => {
     resetProfile,
     isLoading,
     error,
-    profile: { nickname, school, grade, studentGrade, id, profileImg },
+    profile: {
+      nickname,
+      school,
+      grade,
+      studentGrade,
+      id,
+      profileImg,
+      ...profileDetails,
+    },
   };
 };

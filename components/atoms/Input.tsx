@@ -1,4 +1,5 @@
 import { ChangeEvent, KeyboardEvent } from "react";
+import { cn } from "@/lib/utils";
 
 interface Options {
   placeholder?: string;
@@ -10,6 +11,8 @@ interface Options {
   autoFocus?: boolean;
   maxLength?: number;
   minLength?: number;
+  className?: string;
+  error?: boolean;
 }
 
 export function Input({
@@ -22,10 +25,16 @@ export function Input({
   autoFocus,
   maxLength,
   minLength,
+  className,
+  error,
 }: Options) {
   return (
     <input
-      className="h-[52px] w-full rounded-[12px] border border-[#C4C4C4] bg-white pl-[1rem] font-[pretendard] text-[15px] font-medium"
+      className={cn(
+        "h-14 w-full rounded-xl border border-gray-300 bg-card px-4 text-body-large text-foreground placeholder:text-gray-500 focus:border-2 focus:border-foreground focus:outline-none disabled:border-transparent disabled:bg-gray-100 disabled:text-gray-500",
+        error && "border-primary focus:border-primary",
+        className,
+      )}
       placeholder={placeholder}
       type={type}
       value={value}

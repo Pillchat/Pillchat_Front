@@ -57,7 +57,7 @@ export const ImageButton = forwardRef<ImageButtonRef, ImageButtonProps>(
             id: `existing-${index}`,
             file: new File([], img.name || `image-${index}`, {
               type: "image/jpeg",
-            }), // 더미 파일
+            }),
             preview: img.url,
             s3Key: img.key,
             uploadStatus: "success" as const,

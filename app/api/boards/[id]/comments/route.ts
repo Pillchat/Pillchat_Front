@@ -68,9 +68,11 @@ export async function POST(
 
     const body = await request.json();
     const content = body?.content ?? "";
+    const isAnonymous = Boolean(body?.isAnonymous);
 
     const query = new URLSearchParams();
     query.set("content", content);
+    query.set("isAnonymous", String(isAnonymous));
 
     const response = await fetch(
       `${API_BASE_URL}/api/boards/${id}/comments?${query.toString()}`,

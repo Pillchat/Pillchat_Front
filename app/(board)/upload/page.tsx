@@ -508,7 +508,7 @@ const UploadPage = () => {
 
           <div className="flex min-h-0 flex-1 flex-col px-6 pb-6 pt-5">
             <div className="shrink-0 px-1">
-              <p className="font-Pretendard text-2xl font-semibold leading-[1.35]">
+              <p className="font-Pretendard text-headline-large">
                 학습자료 업로드 전, 다음 안내사항을 반드시 읽고 확인해주세요.
               </p>
             </div>
@@ -516,10 +516,10 @@ const UploadPage = () => {
             <div className="mt-6 flex min-h-0 flex-1 flex-col justify-between gap-6">
               <div className="space-y-5 px-1">
                 <div>
-                  <p className="font-Pretendard mb-2 text-base font-semibold">
+                  <p className="font-Pretendard mb-2 text-title-large">
                     1. 저작권 관련 책임 안내
                   </p>
-                  <ul className="font-Pretendard list-disc space-y-2 pl-5 text-[13px] font-medium leading-[1.45]">
+                  <ul className="font-Pretendard list-disc space-y-2 pl-5 text-body-medium">
                     <li>
                       사용자가 업로드하는 모든 자료는 대한민국 「저작권법」
                       제2조 및 제4조에 따라 보호받는 저작물에 해당할 수
@@ -539,10 +539,10 @@ const UploadPage = () => {
                 </div>
 
                 <div>
-                  <p className="font-Pretendard mb-2 text-base font-semibold">
+                  <p className="font-Pretendard mb-2 text-title-large">
                     2. 책임 동의 안내
                   </p>
-                  <ul className="font-Pretendard list-disc space-y-2 pl-5 text-[13px] font-medium leading-[1.45]">
+                  <ul className="font-Pretendard list-disc space-y-2 pl-5 text-body-medium">
                     <li>
                       본인은 자료를 직접 작성했거나, 저작권 문제가 없는 자료임을
                       확인합니다.
@@ -564,7 +564,7 @@ const UploadPage = () => {
                     className="h-[22px] w-[22px]"
                     style={{ color: checked ? "#FF412E" : "#C4C4C4" }}
                   />
-                  <p className="font-Pretendard text-sm font-medium">
+                  <p className="font-Pretendard text-title-small">
                     위 내용에 동의합니다.
                   </p>
                 </div>
@@ -670,7 +670,7 @@ const UploadPage = () => {
                     showDropdownButton={true}
                   />
                   {errors.subject && (
-                    <p className="text-sm text-destructive">
+                    <p className="text-body-medium text-destructive">
                       {errors.subject.message}
                     </p>
                   )}
@@ -679,12 +679,14 @@ const UploadPage = () => {
             />
 
             <div className="px-6">
-              <p className="mb-3 font-[Pretendard] text-xs">업로드 할 파일</p>
-              <p className="mb-1 font-[Pretendard] text-xs text-[#999]">
+              <p className="mb-3 font-[Pretendard] text-label-medium">
+                업로드 할 파일
+              </p>
+              <p className="mb-1 font-[Pretendard] text-body-small text-[#999]">
                 이미지 파일 (JPG, PNG 등) 최대 10장 또는 PDF 파일 1개 가능
               </p>
 
-              <div className="grid w-full grid-cols-2 gap-3">
+              <div className="grid w-full grid-cols-2 gap-4">
                 <BoardButton
                   imageSrc="/icons/Image.svg"
                   className="max-w-[168.5px]"
@@ -720,7 +722,7 @@ const UploadPage = () => {
 
               {previewItems.length > 0 && (
                 <div className="mt-5 pb-2">
-                  <div className="grid max-h-[60dvh] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                  <div className="grid max-h-[60dvh] grid-cols-2 gap-4 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                     {previewItems.map((item: any) => (
                       <div
                         key={item.id}
@@ -747,10 +749,10 @@ const UploadPage = () => {
                               type="application/pdf"
                               className="h-full w-full"
                             />
-                            <div className="absolute left-2 top-2 rounded bg-black/60 px-2 py-1 text-[10px] text-white">
+                            <div className="absolute left-2 top-2 rounded bg-black/60 px-2 py-1 text-label-small text-white">
                               PDF
                             </div>
-                            <div className="absolute bottom-0 left-0 right-0 truncate bg-black/55 px-2 py-1 text-[10px] text-white">
+                            <div className="absolute bottom-0 left-0 right-0 truncate bg-black/55 px-2 py-1 text-label-small text-white">
                               {item.name}
                             </div>
                           </>
@@ -787,13 +789,13 @@ const UploadPage = () => {
                 width={72}
                 className="mb-2"
               />
-              <p className="text-2xl font-semibold">
+              <p className="text-headline-large">
                 {isEditMode
                   ? "학습자료가 수정되었습니다!"
                   : "학습자료가 업로드되었습니다!"}
               </p>
             </div>
-            <p className="text-sm">
+            <p className="text-body-medium">
               내가 올린 학습자료는 마이페이지에서 확인할 수 있어요.
             </p>
           </div>

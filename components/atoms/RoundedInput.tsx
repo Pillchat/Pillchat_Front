@@ -19,9 +19,9 @@ export const RoundedInput: FC<InputProps> = ({
       onKeyDown={onKeyDown}
       onBlur={onBlur}
       className={cn(
-        "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent",
+        "inline-flex items-center justify-center gap-0 whitespace-nowrap rounded-xl text-label-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent",
         "border border-primary bg-accent text-primary",
-        "h-8 rounded-[1.25rem] px-3 py-1 text-sm",
+        "h-8 px-3 py-1",
         "w-auto",
         className,
       )}
