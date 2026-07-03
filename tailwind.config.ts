@@ -84,6 +84,9 @@ export default {
       fontFamily: {
         sans: ["var(--font-pretendard)"],
       },
+      maxWidth: {
+        app: "52.125rem",
+      },
       fontSize: {
         "headline-large": ["1.5rem", { lineHeight: "2rem", fontWeight: "700" }],
         "headline-medium": [

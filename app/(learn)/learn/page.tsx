@@ -179,14 +179,14 @@ export default function LearnPage() {
         </section>
       </main>
 
-      <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-[480px] -translate-x-1/2 bg-background px-6 py-3">
+      <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-app -translate-x-1/2 bg-background px-6 py-3 md:px-8">
         <Button
           type="button"
-          className="h-14 w-full active:scale-[0.98]"
+          className="h-14 w-full gap-1 active:scale-[0.98]"
           onClick={() => setToastOpen(true)}
         >
           <Bell aria-hidden="true" className="h-8 w-8" strokeWidth={1.5} />
-          오픈 알림 신청하고 혜택 받기
+          <p>오픈 알림 신청하고 혜택 받기</p>
         </Button>
       </div>
 

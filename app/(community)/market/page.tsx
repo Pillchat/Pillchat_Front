@@ -195,7 +195,7 @@ export default function MarketPage() {
         </section>
       </main>
 
-      <div className="pointer-events-none fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-full max-w-[480px] -translate-x-1/2 justify-end px-6">
+      <div className="pointer-events-none fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-full max-w-app -translate-x-1/2 justify-end px-6 md:px-8">
         <Link
           href="/market/upload"
           aria-label="자료 등록"

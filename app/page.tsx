@@ -669,7 +669,7 @@ const Home: FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="mx-auto flex min-h-screen w-full max-w-app flex-col bg-white">
       <AlarmHeader />
 
       <main className="flex-1 pb-24 pt-4">
@@ -868,7 +868,7 @@ const Home: FC = () => {
             onClick={() => setIsDdayEditorOpen(false)}
           >
             <div
-              className="mx-auto w-full max-w-[480px] rounded-t-2xl bg-card p-5"
+              className="mx-auto w-full max-w-app rounded-t-2xl bg-card p-5 md:max-w-[40rem]"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="flex items-center justify-between">

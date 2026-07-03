@@ -727,14 +727,14 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
       {keyboardOffset > 0 && (
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed bottom-0 left-1/2 z-30 w-full max-w-screen-sm -translate-x-1/2 bg-white md:max-w-none"
+          className="pointer-events-none fixed bottom-0 left-1/2 z-30 w-full max-w-app -translate-x-1/2 bg-white"
           style={{ height: keyboardOffset }}
         />
       )}
 
       <div
         ref={commentBarRef}
-        className="fixed bottom-0 left-1/2 z-40 w-full max-w-screen-sm -translate-x-1/2 border-t border-[#F4F4F4] bg-white px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 md:max-w-none"
+        className="fixed bottom-0 left-1/2 z-40 w-full max-w-app -translate-x-1/2 border-t border-[#F4F4F4] bg-white px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 md:px-8"
         style={{ bottom: keyboardOffset }}
       >
         <div className="flex flex-col gap-2">
