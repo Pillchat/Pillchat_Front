@@ -3,45 +3,17 @@ import {
   BookOpenCheck,
   ChevronRight,
   Flame,
-  FolderOpen,
-  Home,
   Monitor,
   NotebookPen,
   PenLine,
   Star,
   Target,
   Trophy,
-  UserRound,
 } from "lucide-react";
 
 import { AppShell, MeaninglessHeader } from "@/components/molecules";
 
-const pageTabs = [
-  {
-    href: "/questionbank",
-    label: "홈",
-    icon: Home,
-    active: true,
-  },
-  {
-    href: "/learn",
-    label: "내 과목",
-    icon: FolderOpen,
-    active: false,
-  },
-  {
-    href: "/wrongnote",
-    label: "오답노트",
-    icon: NotebookPen,
-    active: false,
-  },
-  {
-    href: "/mypage",
-    label: "마이페이지",
-    icon: UserRound,
-    active: false,
-  },
-];
+import { QuestionBankPageNavigation } from "./_components/QuestionBankPageNavigation";
 
 const questItems = [
   {
@@ -72,11 +44,14 @@ const questItems = [
 
 export default function QuestionBankPage() {
   return (
-    <AppShell bottomSpacing="nav" className="flex flex-col bg-white">
+    <AppShell
+      bottomNav={false}
+      bottomSpacing="nav"
+      className="flex flex-col bg-white"
+    >
       <MeaninglessHeader />
-      <PageNavigation />
 
-      <main className="flex flex-1 flex-col px-6 pb-7 pt-6">
+      <main className="flex flex-1 flex-col px-6 pb-7 pt-6 md:px-8">
         <section className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-muted-foreground">
@@ -86,7 +61,7 @@ export default function QuestionBankPage() {
               오늘도 국시 한 걸음 더
             </h1>
           </div>
-          <div className="flex h-12 shrink-0 items-center gap-2 rounded-full bg-brandSecondary px-4 text-brand">
+          <div className="flex h-12 shrink-0 items-center gap-2 rounded-full bg-primary-980 px-4 text-primary">
             <Flame aria-hidden="true" className="h-5 w-5" strokeWidth={2.2} />
             <span className="text-lg font-extrabold">23일</span>
           </div>
@@ -94,11 +69,11 @@ export default function QuestionBankPage() {
 
         <section
           aria-labelledby="quest-progress-title"
-          className="mt-8 rounded-[28px] border border-brand/15 bg-brandSecondary px-5 py-5 shadow-[0_12px_30px_rgba(17,17,17,0.05)]"
+          className="mt-8 rounded-[28px] border border-primary-900 bg-primary-980 px-5 py-5 shadow-[0_12px_30px_rgba(17,17,17,0.05)]"
         >
           <div className="flex flex-col gap-4 min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-[0_8px_18px_rgba(255,65,46,0.18)]">
+              <div className="flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_8px_18px_rgba(255,65,46,0.18)]">
                 <Target
                   aria-hidden="true"
                   className="h-7 w-7"
@@ -119,7 +94,7 @@ export default function QuestionBankPage() {
             </div>
 
             <div className="flex items-center justify-between gap-3 min-[390px]:flex-col min-[390px]:items-end">
-              <div className="flex h-9 shrink-0 items-center gap-2 rounded-full bg-brand px-3.5 text-sm font-extrabold text-white">
+              <div className="flex h-9 shrink-0 items-center gap-2 rounded-full bg-primary px-3.5 text-sm font-extrabold text-primary-foreground">
                 <Trophy
                   aria-hidden="true"
                   className="h-4 w-4"
@@ -127,7 +102,7 @@ export default function QuestionBankPage() {
                 />
                 18회
               </div>
-              <div className="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-brand">
+              <div className="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-primary">
                 진척률 0%
               </div>
             </div>
@@ -153,7 +128,7 @@ export default function QuestionBankPage() {
             <div className="flex min-w-0 items-center gap-2">
               <Target
                 aria-hidden="true"
-                className="h-5 w-5 shrink-0 text-brand"
+                className="h-5 w-5 shrink-0 text-primary"
                 strokeWidth={2.2}
               />
               <h2
@@ -163,7 +138,7 @@ export default function QuestionBankPage() {
                 오늘의 퀘스트
               </h2>
             </div>
-            <span className="rounded-full bg-brandSecondary px-3 py-1 text-xs font-bold text-brand">
+            <span className="rounded-full bg-primary-980 px-3 py-1 text-xs font-bold text-primary">
               자물쇠 해제됨
             </span>
           </div>
@@ -186,7 +161,7 @@ export default function QuestionBankPage() {
         >
           <Link
             href="/learn/cbt"
-            className="flex min-h-[13.25rem] flex-col rounded-[28px] bg-brand p-6 text-white shadow-[0_14px_30px_rgba(255,65,46,0.18)] transition-transform active:scale-[0.98]"
+            className="flex min-h-[13.25rem] flex-col rounded-[28px] bg-primary p-6 text-primary-foreground shadow-[0_14px_30px_rgba(255,65,46,0.18)] transition-transform active:scale-[0.98]"
             prefetch={false}
           >
             <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20">
@@ -208,10 +183,10 @@ export default function QuestionBankPage() {
 
           <Link
             href="/wrongnote/exams/ipad"
-            className="flex min-h-[13.25rem] flex-col rounded-[28px] border-2 border-brand/10 bg-white p-6 text-foreground shadow-[0_10px_24px_rgba(17,17,17,0.04)] transition-transform active:scale-[0.98]"
+            className="flex min-h-[13.25rem] flex-col rounded-[28px] border-2 border-primary-900 bg-white p-6 text-foreground shadow-[0_10px_24px_rgba(17,17,17,0.04)] transition-transform active:scale-[0.98]"
             prefetch={false}
           >
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brandSecondary text-brand">
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-980 text-primary">
               <PenLine
                 aria-hidden="true"
                 className="h-8 w-8"
@@ -234,7 +209,7 @@ export default function QuestionBankPage() {
           className="mt-6 flex min-h-20 items-center gap-4 rounded-[24px] border border-border bg-white px-6 py-5 shadow-[0_12px_28px_rgba(17,17,17,0.05)] transition-transform active:scale-[0.98]"
           prefetch={false}
         >
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#ffc247] to-brand text-white">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <BookOpenCheck
               aria-hidden="true"
               className="h-8 w-8"
@@ -251,14 +226,14 @@ export default function QuestionBankPage() {
           </span>
           <ChevronRight
             aria-hidden="true"
-            className="h-6 w-6 shrink-0 text-brand"
+            className="h-6 w-6 shrink-0 text-primary"
             strokeWidth={2.1}
           />
         </Link>
 
         <Link
           href="/questionbank/review"
-          className="mt-6 flex min-h-20 items-center gap-4 rounded-[28px] bg-brand px-6 py-5 text-white shadow-[0_14px_30px_rgba(255,65,46,0.18)] transition-transform active:scale-[0.98]"
+          className="mt-6 flex min-h-20 items-center gap-4 rounded-[28px] bg-primary px-6 py-5 text-primary-foreground shadow-[0_14px_30px_rgba(255,65,46,0.18)] transition-transform active:scale-[0.98]"
           prefetch={false}
         >
           <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/20">
@@ -283,37 +258,8 @@ export default function QuestionBankPage() {
           />
         </Link>
       </main>
+      <QuestionBankPageNavigation />
     </AppShell>
-  );
-}
-
-function PageNavigation() {
-  return (
-    <nav
-      aria-label="문제은행 빠른 이동"
-      className="sticky top-0 z-20 border-y border-border bg-white px-6 py-2"
-    >
-      <div className="grid grid-cols-4">
-        {pageTabs.map((item) => {
-          const Icon = item.icon;
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={item.active ? "page" : undefined}
-              className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg py-2 text-[0.6875rem] font-semibold transition-colors active:scale-[0.98] ${
-                item.active ? "text-brand" : "text-muted-foreground"
-              }`}
-              prefetch={false}
-            >
-              <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={2} />
-              <span className="truncate">{item.label}</span>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
   );
 }
 
@@ -334,16 +280,16 @@ function QuestRow({
   return (
     <Link
       href={item.href}
-      className="flex min-h-[5.625rem] items-center gap-3 border-t border-border px-5 py-4 transition-colors first:border-t-0 active:bg-brandSecondary"
+      className="flex min-h-[5.625rem] items-center gap-3 border-t border-border px-5 py-4 transition-colors first:border-t-0 active:bg-primary-980"
       prefetch={false}
     >
       <span
         className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-base font-extrabold ${
           index === 0
-            ? "border-brand bg-brandSecondary text-brand"
+            ? "border-primary bg-primary-980 text-primary"
             : index === 1
-              ? "border-[#f8d4a3] bg-[#fff4df] text-[#d9822b]"
-              : "border-[#81b9e9] bg-[#eef8ff] text-[#1b78bd]"
+              ? "border-primary-800 bg-primary-980 text-primary"
+              : "border-gray-300 bg-gray-100 text-gray-800"
         }`}
       >
         {marker}
@@ -354,10 +300,10 @@ function QuestRow({
         </strong>
         <span className="mt-1 block truncate text-sm text-muted-foreground">
           {item.description}{" "}
-          <span className="font-extrabold text-brand">{item.xp}</span>
+          <span className="font-extrabold text-primary">{item.xp}</span>
         </span>
       </span>
-      <span className="flex h-10 shrink-0 items-center gap-1 rounded-full bg-brand px-4 text-sm font-extrabold text-white">
+      <span className="flex h-10 shrink-0 items-center gap-1 rounded-full bg-primary px-4 text-sm font-extrabold text-primary-foreground">
         {item.action}
         <ChevronRight aria-hidden="true" className="h-4 w-4" strokeWidth={2} />
       </span>
