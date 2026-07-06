@@ -66,6 +66,7 @@ type AnswerState = {
   selected: number | null;
   flagged: boolean;
   unknown: boolean;
+  reviewed: boolean;
 };
 
 const CBT_MISSED_STORAGE_KEY = "yakchat:cbt-missed-question-ids";
@@ -274,7 +275,12 @@ const createAnswers = (questions: CbtQuestion[]) =>
   Object.fromEntries(
     questions.map((question) => [
       question.id,
-      { selected: null, flagged: false, unknown: false } satisfies AnswerState,
+      {
+        selected: null,
+        flagged: false,
+        unknown: false,
+        reviewed: false,
+      } satisfies AnswerState,
     ]),
   ) as Record<string, AnswerState>;
 
@@ -345,11 +351,13 @@ export default function LearnCbtPage() {
         selected: null,
         flagged: false,
         unknown: false,
+        reviewed: false,
       })
     : {
         selected: null,
         flagged: false,
         unknown: false,
+        reviewed: false,
       };
   const deadline = startedAt + durationMin * 60 * 1000;
   const elapsedSec = Math.max(0, Math.floor((now - startedAt) / 1000));
@@ -366,11 +374,16 @@ export default function LearnCbtPage() {
   }, []);
 
   useEffect(() => {
-    if (stage === "player" && !submitted && remainingSec === 0) {
+    if (
+      stage === "player" &&
+      mode !== "review" &&
+      !submitted &&
+      remainingSec === 0
+    ) {
       setSubmitted(true);
       setSubmitOpen(false);
     }
-  }, [remainingSec, stage, submitted]);
+  }, [mode, remainingSec, stage, submitted]);
 
   const summary = useMemo(() => {
     let answered = 0;
@@ -510,6 +523,7 @@ export default function LearnCbtPage() {
     updateAnswer(currentQuestion.id, {
       selected: choiceIndex,
       unknown: false,
+      reviewed: false,
     });
   };
 
@@ -542,6 +556,62 @@ export default function LearnCbtPage() {
     });
   };
 
+  const persistMissedQuestion = (questionId: string, isCorrect: boolean) => {
+    setMissedQuestionIds((previousIds) => {
+      const nextIds = new Set(previousIds);
+
+      if (isCorrect) {
+        nextIds.delete(questionId);
+      } else {
+        nextIds.add(questionId);
+      }
+
+      const orderedIds = ALL_QUESTIONS.filter((question) =>
+        nextIds.has(question.id),
+      ).map((question) => question.id);
+      saveMissedQuestionIds(orderedIds);
+      return orderedIds;
+    });
+  };
+
+  const checkReviewAnswer = () => {
+    if (!currentQuestion) return;
+
+    const answer = answers[currentQuestion.id] ?? currentAnswer;
+    const isCorrect = answer.selected === currentQuestion.answer;
+
+    updateAnswer(currentQuestion.id, {
+      reviewed: true,
+      unknown: answer.unknown || answer.selected === null,
+    });
+    persistMissedQuestion(currentQuestion.id, isCorrect);
+  };
+
+  const markReviewUnknown = () => {
+    if (!currentQuestion || currentAnswer.reviewed) return;
+
+    updateAnswer(currentQuestion.id, {
+      selected: null,
+      unknown: !currentAnswer.unknown,
+      reviewed: false,
+    });
+  };
+
+  const resetReviewQuestion = () => {
+    if (!currentQuestion) return;
+
+    updateAnswer(currentQuestion.id, {
+      selected: null,
+      unknown: false,
+      reviewed: false,
+    });
+  };
+
+  const reviewedCount = useMemo(
+    () => questions.filter((question) => answers[question.id]?.reviewed).length,
+    [answers, questions],
+  );
+
   if (stage === "hub") {
     return (
       <CbtHubPage
@@ -567,6 +637,27 @@ export default function LearnCbtPage() {
       <ReviewEmptyPage
         onBack={() => setStage("hub")}
         onStartSession={() => setStage("session-select")}
+      />
+    );
+  }
+
+  if (mode === "review") {
+    return (
+      <ReviewPlayerPage
+        title={runTitle}
+        subtitle={runSubtitle}
+        questions={questions}
+        question={currentQuestion}
+        answer={currentAnswer}
+        answerMap={answers}
+        questionIndex={questionIndex}
+        reviewedCount={reviewedCount}
+        onBack={returnToHub}
+        onGoToQuestion={goToQuestion}
+        onSelectChoice={answerQuestion}
+        onCheckAnswer={checkReviewAnswer}
+        onMarkUnknown={markReviewUnknown}
+        onResetQuestion={resetReviewQuestion}
       />
     );
   }
@@ -991,6 +1082,322 @@ export default function LearnCbtPage() {
           onSubmit={handleSubmit}
         />
       )}
+    </main>
+  );
+}
+
+function ReviewPlayerPage({
+  title,
+  subtitle,
+  questions,
+  question,
+  answer,
+  answerMap,
+  questionIndex,
+  reviewedCount,
+  onBack,
+  onGoToQuestion,
+  onSelectChoice,
+  onCheckAnswer,
+  onMarkUnknown,
+  onResetQuestion,
+}: {
+  title: string;
+  subtitle: string;
+  questions: CbtQuestion[];
+  question: CbtQuestion;
+  answer: AnswerState;
+  answerMap: Record<string, AnswerState>;
+  questionIndex: number;
+  reviewedCount: number;
+  onBack: () => void;
+  onGoToQuestion: (index: number) => void;
+  onSelectChoice: (choiceIndex: number) => void;
+  onCheckAnswer: () => void;
+  onMarkUnknown: () => void;
+  onResetQuestion: () => void;
+}) {
+  const isRevealed = answer.reviewed;
+  const isCorrect = answer.selected === question.answer;
+  const hasAnswer = answer.selected !== null || answer.unknown;
+  const isLastQuestion = questionIndex === questions.length - 1;
+  const progressPercent = Math.round(
+    ((questionIndex + 1) / questions.length) * 100,
+  );
+
+  const handlePrimaryAction = () => {
+    if (!isRevealed) {
+      onCheckAnswer();
+      return;
+    }
+
+    if (isLastQuestion) {
+      onBack();
+      return;
+    }
+
+    onGoToQuestion(questionIndex + 1);
+  };
+
+  return (
+    <main className="min-h-screen bg-[#f8f8f8] pb-28 text-foreground">
+      <header className="sticky top-0 z-30 border-b border-border bg-white">
+        <div className="mx-auto flex max-w-[52rem] items-center gap-3 px-5 py-4">
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="CBT 선택 화면으로 이동"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-white active:scale-[0.98]"
+          >
+            <ArrowLeft aria-hidden="true" className="h-5 w-5" />
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold text-brand">PillChat CBT</p>
+            <h1 className="mt-1 truncate text-xl font-extrabold">{title}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+          </div>
+          <div className="hidden rounded-lg border border-border bg-white px-3 py-2 text-right sm:block">
+            <p className="text-[0.6875rem] font-bold text-muted-foreground">
+              확인
+            </p>
+            <p className="text-sm font-extrabold tabular-nums">
+              {reviewedCount}/{questions.length}
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <section className="mx-auto max-w-[52rem] px-5 py-5">
+        <div className="mb-4 h-2 overflow-hidden rounded-full bg-white shadow-[inset_0_0_0_1px_rgba(17,17,17,0.06)]">
+          <div
+            className="h-full rounded-full bg-brand transition-[width]"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+
+        <article className="overflow-hidden rounded-lg border border-border bg-white">
+          <div className="flex flex-col gap-3 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-brand">
+                {question.subject} · {question.topic}
+              </p>
+              <h2 className="mt-1 text-lg font-extrabold">
+                {questionIndex + 1}번 문제
+              </h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-foreground">
+                {questionIndex + 1} / {questions.length}
+              </span>
+              {isRevealed && (
+                <span
+                  className={cn(
+                    "rounded-full px-3 py-1 text-xs font-extrabold",
+                    isCorrect
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "bg-red-50 text-destructive",
+                  )}
+                >
+                  {isCorrect ? "정답" : "오답"}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="px-5 py-6">
+            <div className="flex items-start gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand text-sm font-extrabold text-white">
+                Q
+              </span>
+              <p className="min-w-0 flex-1 text-lg font-semibold leading-8 text-foreground">
+                {question.stem}
+              </p>
+            </div>
+
+            <ul className="mt-6 grid gap-3">
+              {question.choices.map((choice, choiceIndex) => {
+                const selected = answer.selected === choiceIndex;
+                const correctChoice = choiceIndex === question.answer;
+                const revealWrong = isRevealed && selected && !correctChoice;
+                const mutedChoice = isRevealed && !selected && !correctChoice;
+
+                return (
+                  <li key={`${question.id}-${choiceIndex}`}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!isRevealed) onSelectChoice(choiceIndex);
+                      }}
+                      disabled={isRevealed}
+                      className={cn(
+                        "flex min-h-14 w-full items-start gap-3 rounded-lg border px-4 py-3 text-left transition-colors",
+                        selected
+                          ? "border-brand bg-brandSecondary"
+                          : "border-border bg-white hover:bg-muted",
+                        isRevealed &&
+                          correctChoice &&
+                          "border-emerald-500 bg-emerald-50",
+                        revealWrong && "border-destructive bg-red-50",
+                        mutedChoice && "opacity-55",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm font-extrabold",
+                          selected
+                            ? "border-brand bg-brand text-white"
+                            : "border-border bg-white text-muted-foreground",
+                          isRevealed &&
+                            correctChoice &&
+                            "border-emerald-500 bg-emerald-600 text-white",
+                          revealWrong &&
+                            "border-destructive bg-destructive text-white",
+                        )}
+                      >
+                        {CHOICE_LABELS[choiceIndex]}
+                      </span>
+                      <span className="min-w-0 flex-1 text-base font-medium leading-7">
+                        {choice}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={onMarkUnknown}
+                disabled={isRevealed}
+                className={cn(
+                  "inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-bold transition-colors disabled:opacity-50",
+                  answer.unknown
+                    ? "border-sky-300 bg-sky-50 text-sky-700"
+                    : "border-border bg-white text-muted-foreground hover:bg-muted",
+                )}
+              >
+                <HelpCircle aria-hidden="true" className="h-4 w-4" />
+                모르겠어요
+              </button>
+
+              {isRevealed && (
+                <button
+                  type="button"
+                  onClick={onResetQuestion}
+                  className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-white px-3 text-sm font-bold text-foreground hover:bg-muted"
+                >
+                  <RotateCcw aria-hidden="true" className="h-4 w-4" />
+                  다시 풀기
+                </button>
+              )}
+            </div>
+
+            {isRevealed && (
+              <div className="mt-6 border-t border-border pt-5">
+                <div
+                  className={cn(
+                    "flex items-center gap-2 text-base font-extrabold",
+                    isCorrect ? "text-emerald-700" : "text-destructive",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex h-8 w-8 items-center justify-center rounded-full text-sm text-white",
+                      isCorrect ? "bg-emerald-600" : "bg-destructive",
+                    )}
+                  >
+                    {isCorrect ? "O" : "X"}
+                  </span>
+                  <span>
+                    {isCorrect
+                      ? "정답입니다"
+                      : `정답은 ${CHOICE_LABELS[question.answer]}번입니다`}
+                  </span>
+                </div>
+
+                <div className="mt-4 border-l-4 border-brand bg-[#fafafa] px-4 py-3">
+                  <p className="text-sm font-bold text-foreground">
+                    정답: {question.choices[question.answer]}
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                    {question.explanation}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </article>
+
+        <nav
+          aria-label="오답 문항 이동"
+          className="mt-4 flex gap-2 overflow-x-auto pb-1"
+        >
+          {questions.map((item, index) => {
+            const reviewed = answerMap[item.id]?.reviewed ?? false;
+            const current = index === questionIndex;
+
+            return (
+              <button
+                key={item.id}
+                type="button"
+                aria-current={current ? "step" : undefined}
+                onClick={() => onGoToQuestion(index)}
+                className={cn(
+                  "flex h-9 min-w-9 items-center justify-center rounded-lg border px-3 text-xs font-extrabold tabular-nums",
+                  current
+                    ? "border-brand bg-brand text-white"
+                    : reviewed
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border-border bg-white text-muted-foreground",
+                )}
+              >
+                {index + 1}
+              </button>
+            );
+          })}
+        </nav>
+      </section>
+
+      <footer className="fixed bottom-0 left-1/2 z-30 w-full max-w-[52rem] -translate-x-1/2 border-t border-border bg-white px-5 py-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onGoToQuestion(questionIndex - 1)}
+            disabled={questionIndex === 0}
+            className="flex h-11 items-center gap-1 rounded-lg border border-border bg-white px-3 text-sm font-extrabold disabled:opacity-40"
+          >
+            <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+            이전
+          </button>
+          <div className="min-w-0 flex-1 text-center">
+            <p className="text-xs font-bold text-muted-foreground sm:hidden">
+              {reviewedCount}/{questions.length} 확인
+            </p>
+            <p className="text-sm font-extrabold tabular-nums">
+              {questionIndex + 1} / {questions.length}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handlePrimaryAction}
+            disabled={!isRevealed && !hasAnswer}
+            className="flex h-11 min-w-[7.5rem] items-center justify-center gap-1 rounded-lg bg-brand px-4 text-sm font-extrabold text-white disabled:bg-gray-200 disabled:text-muted-foreground"
+          >
+            {isRevealed ? (
+              <>
+                {isLastQuestion ? "마치기" : "다음"}
+                <ChevronRight aria-hidden="true" className="h-4 w-4" />
+              </>
+            ) : (
+              <>
+                <CheckSquare aria-hidden="true" className="h-4 w-4" />
+                정답 확인
+              </>
+            )}
+          </button>
+        </div>
+      </footer>
     </main>
   );
 }
