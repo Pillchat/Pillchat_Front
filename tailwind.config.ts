@@ -141,10 +141,38 @@ export default {
             height: "0",
           },
         },
+        "study-celebration-ring": {
+          "0%": {
+            transform: "translate(-50%, -50%) scale(0.2)",
+            opacity: "0.7",
+          },
+          "100%": {
+            transform: "translate(-50%, -50%) scale(3.5)",
+            opacity: "0",
+          },
+        },
+        "study-particle-burst": {
+          "0%": {
+            transform: "translate(-50%, -50%) scale(0.45) rotate(0deg)",
+            opacity: "0.95",
+          },
+          "72%": {
+            opacity: "1",
+          },
+          "100%": {
+            transform:
+              "translate(calc(-50% + var(--particle-x)), calc(-50% + var(--particle-y))) scale(1) rotate(var(--particle-rotate))",
+            opacity: "0",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "study-celebration-ring":
+          "study-celebration-ring 520ms ease-out forwards",
+        "study-particle-burst":
+          "study-particle-burst 720ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
       },
     },
   },

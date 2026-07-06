@@ -1,10 +1,19 @@
 "use client";
 
-import { FC, Fragment, ReactNode, useEffect, useMemo, useState } from "react";
+import {
+  type CSSProperties,
+  type FC,
+  Fragment,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import Link from "next/link";
 import {
   ArrowRight,
   CalendarDays,
+  Check,
   CheckCircle2,
   Flame,
   Pencil,
@@ -16,6 +25,7 @@ import {
   AlarmHeader,
   QuestionListCard,
 } from "@/components/molecules";
+import { Toast } from "@/components/atoms";
 import { useRouter } from "@/lib/navigation";
 import { getValidAccessToken } from "@/lib/client/fetch";
 import {
@@ -52,6 +62,26 @@ type DDayItem = {
   fetchedAt?: string;
 };
 
+type NewDdayDraft = {
+  id: string;
+  title: string;
+  date: string;
+  isConfirmed: boolean;
+  ddayId?: string;
+};
+
+type StudyCelebrationParticle = {
+  id: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotate: number;
+  delay: number;
+  color: string;
+  shape: "dot" | "pill" | "square";
+};
+
 type NationalExamPayload = {
   fetchedAt: string;
   exam: {
@@ -76,6 +106,14 @@ const STUDY_COUNT_STORAGE_KEY = "yakchat:study-count";
 const NATIONAL_EXAM_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const NATIONAL_EXAM_RETRY_COOLDOWN_MS = 60 * 60 * 1000;
 const PREVIOUS_DEFAULT_NATIONAL_EXAM_DATES = ["2027-01-15"];
+const MAX_DDAY_TITLE_LENGTH = 10;
+const STUDY_CELEBRATION_COLORS = [
+  "#FF412E",
+  "#FFD166",
+  "#06D6A0",
+  "#118AB2",
+  "#FFFFFF",
+];
 
 const DEFAULT_DDAYS: DDayItem[] = [
   {
@@ -84,6 +122,50 @@ const DEFAULT_DDAYS: DDayItem[] = [
     date: getNextJanuaryFourthFridayDate(),
   },
 ];
+
+const createNewDdayDraft = (): NewDdayDraft => ({
+  id: `draft-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  title: "",
+  date: "",
+  isConfirmed: false,
+});
+
+const trimTrailingNewDdayDrafts = (drafts: NewDdayDraft[]) => {
+  let lastIndex = drafts.length - 1;
+
+  while (
+    lastIndex > 0 &&
+    !drafts[lastIndex].title &&
+    !drafts[lastIndex].date &&
+    !drafts[lastIndex].isConfirmed
+  ) {
+    lastIndex -= 1;
+  }
+
+  return drafts.slice(0, lastIndex + 1);
+};
+
+const STUDY_CELEBRATION_PARTICLES: StudyCelebrationParticle[] = Array.from(
+  { length: 28 },
+  (_, index) => {
+    const angle = (index / 28) * Math.PI * 2;
+    const distance = 42 + (index % 5) * 9;
+    const size = 5 + (index % 4);
+    const shape = index % 7 === 0 ? "pill" : index % 5 === 0 ? "square" : "dot";
+
+    return {
+      id: index,
+      x: Math.round(Math.cos(angle) * distance),
+      y: Math.round(Math.sin(angle) * distance),
+      width: shape === "pill" ? size * 2 : size,
+      height: shape === "pill" ? Math.max(3, size - 2) : size,
+      rotate: (index * 37) % 180,
+      delay: (index % 6) * 16,
+      color: STUDY_CELEBRATION_COLORS[index % STUDY_CELEBRATION_COLORS.length],
+      shape,
+    };
+  },
+);
 
 const formatExamDate = (dateValue: string) => {
   const [year, month, day] = dateValue.split("-").map(Number);
@@ -272,6 +354,42 @@ const HomeSection: FC<{
   </section>
 );
 
+const StudyCelebrationParticles: FC<{ burstId: number }> = ({ burstId }) => {
+  if (burstId === 0) return null;
+
+  return (
+    <div
+      key={burstId}
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 z-10 overflow-visible motion-reduce:hidden"
+    >
+      <span className="absolute left-1/2 top-1/2 h-9 w-9 animate-study-celebration-ring rounded-full border-2 border-primary/30 bg-primary/10" />
+      {STUDY_CELEBRATION_PARTICLES.map((particle) => {
+        const style = {
+          "--particle-x": `${particle.x}px`,
+          "--particle-y": `${particle.y}px`,
+          "--particle-rotate": `${particle.rotate}deg`,
+          width: `${particle.width}px`,
+          height: `${particle.height}px`,
+          backgroundColor: particle.color,
+          animationDelay: `${particle.delay}ms`,
+          boxShadow: `0 0 8px ${particle.color}`,
+        } as CSSProperties;
+        const shapeClassName =
+          particle.shape === "square" ? "rounded-[2px]" : "rounded-full";
+
+        return (
+          <span
+            key={particle.id}
+            className={`absolute left-1/2 top-1/2 animate-study-particle-burst opacity-0 ${shapeClassName}`}
+            style={style}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
 const Home: FC = () => {
   const router = useRouter();
 
@@ -280,10 +398,13 @@ const Home: FC = () => {
   const [ddays, setDdays] = useState<DDayItem[]>(DEFAULT_DDAYS);
   const [activeDdayId, setActiveDdayId] = useState(DEFAULT_DDAYS[0].id);
   const [isDdayEditorOpen, setIsDdayEditorOpen] = useState(false);
-  const [newDdayLabel, setNewDdayLabel] = useState("");
-  const [newDdayDate, setNewDdayDate] = useState("");
+  const [newDdayDrafts, setNewDdayDrafts] = useState<NewDdayDraft[]>([
+    { id: "draft-0", title: "", date: "", isConfirmed: false },
+  ]);
   const [studyCount, setStudyCount] = useState(0);
   const [isStudyCertified, setIsStudyCertified] = useState(false);
+  const [studyCelebrationBurstId, setStudyCelebrationBurstId] = useState(0);
+  const [ddayToastMessage, setDdayToastMessage] = useState<string | null>(null);
   const [viewCountOverrides, setViewCountOverrides] = useState<
     Record<string, number>
   >({});
@@ -458,29 +579,14 @@ const Home: FC = () => {
     if (isStudyCertified) return;
 
     const nextCount = studyCount + 1;
+    setStudyCelebrationBurstId((prev) => prev + 1);
     setIsStudyCertified(true);
     setStudyCount(nextCount);
     window.localStorage.setItem(STUDY_CERT_STORAGE_KEY, todayKey());
     window.localStorage.setItem(STUDY_COUNT_STORAGE_KEY, String(nextCount));
   };
 
-  const handleAddDday = () => {
-    const label = newDdayLabel.trim();
-    if (!label || !newDdayDate) return;
-
-    const nextDday = {
-      id: String(Date.now()),
-      label,
-      date: newDdayDate,
-    };
-
-    setDdays((prev) => [...prev, nextDday]);
-    setActiveDdayId(nextDday.id);
-    setNewDdayLabel("");
-    setNewDdayDate("");
-  };
-
-  const handleRemoveDday = (id: string) => {
+  const removeDdayById = (id: string) => {
     setDdays((prev) => {
       const next = prev.filter((item) => item.id !== id);
 
@@ -489,6 +595,112 @@ const Home: FC = () => {
       }
 
       return next.length > 0 ? next : DEFAULT_DDAYS;
+    });
+  };
+
+  const handleNewDdayDraftTitleChange = (draftId: string, title: string) => {
+    const draft = newDdayDrafts.find((item) => item.id === draftId);
+    const nextTitle = title.slice(0, MAX_DDAY_TITLE_LENGTH);
+
+    if (draft?.ddayId) {
+      removeDdayById(draft.ddayId);
+    }
+
+    setNewDdayDrafts((prev) =>
+      trimTrailingNewDdayDrafts(
+        prev.map((item) =>
+          item.id === draftId
+            ? {
+                ...item,
+                title: nextTitle,
+                isConfirmed: false,
+                ddayId: undefined,
+              }
+            : item,
+        ),
+      ),
+    );
+  };
+
+  const handleNewDdayDraftDateChange = (draftId: string, date: string) => {
+    const draft = newDdayDrafts.find((item) => item.id === draftId);
+
+    if (draft?.ddayId) {
+      removeDdayById(draft.ddayId);
+    }
+
+    setNewDdayDrafts((prev) =>
+      trimTrailingNewDdayDrafts(
+        prev.map((item) =>
+          item.id === draftId
+            ? { ...item, date, isConfirmed: false, ddayId: undefined }
+            : item,
+        ),
+      ),
+    );
+  };
+
+  const handleToggleNewDdayDraft = (draftId: string) => {
+    const draft = newDdayDrafts.find((item) => item.id === draftId);
+    if (!draft) return;
+
+    if (draft.isConfirmed) {
+      if (draft.ddayId) {
+        removeDdayById(draft.ddayId);
+      }
+
+      setNewDdayDrafts((prev) =>
+        trimTrailingNewDdayDrafts(
+          prev.map((item) =>
+            item.id === draftId
+              ? { ...item, isConfirmed: false, ddayId: undefined }
+              : item,
+          ),
+        ),
+      );
+      setDdayToastMessage("일정이 삭제되었습니다!");
+      return;
+    }
+
+    const label = (draft.title ?? "").trim();
+    if (!label || !draft.date) return;
+
+    const nextDdayId = `custom-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2)}`;
+    const nextDday = {
+      id: nextDdayId,
+      label,
+      date: draft.date,
+      source: "custom" as const,
+    };
+
+    setDdays((prev) => [...prev, nextDday]);
+    setActiveDdayId(nextDdayId);
+    setDdayToastMessage("일정이 추가되었습니다!");
+    setNewDdayDrafts((prev) => {
+      const draftIndex = prev.findIndex((item) => item.id === draftId);
+      const next = prev.map((item) =>
+        item.id === draftId
+          ? { ...item, isConfirmed: true, ddayId: nextDdayId }
+          : item,
+      );
+      const hasBlankDraftAfter = next
+        .slice(draftIndex + 1)
+        .some((item) => !item.title && !item.date && !item.isConfirmed);
+
+      return hasBlankDraftAfter ? next : [...next, createNewDdayDraft()];
+    });
+  };
+
+  const handleRemoveDday = (id: string) => {
+    removeDdayById(id);
+    setNewDdayDrafts((prev) => {
+      const next = prev.filter((item) => item.ddayId !== id);
+
+      return next.length > 0
+        ? trimTrailingNewDdayDrafts(next)
+        : [createNewDdayDraft()];
     });
   };
 
@@ -694,7 +906,7 @@ const Home: FC = () => {
                     ? "국시원 API 기준"
                     : "직접 설정"}{" "}
                   · 현재 <b>{studyCount.toLocaleString("ko-KR")}명</b>의
-                  동기들이 열공 중
+                  동기들이 열공 중🔥
                 </p>
               </div>
               <button
@@ -750,24 +962,27 @@ const Home: FC = () => {
               </button>
             </div>
 
-            <button
-              type="button"
-              onClick={handleCertifyStudy}
-              className="mt-4 flex h-12 w-full items-center justify-center gap-0 rounded-xl bg-white text-label-large text-primary active:scale-[0.98]"
-            >
-              {isStudyCertified ? (
-                <>
-                  <CheckCircle2
-                    aria-hidden="true"
-                    className="h-8 w-8"
-                    strokeWidth={1.5}
-                  />
-                  오늘도 인증 완료
-                </>
-              ) : (
-                "오늘도 공부 인증하기"
-              )}
-            </button>
+            <div className="relative mt-4">
+              <StudyCelebrationParticles burstId={studyCelebrationBurstId} />
+              <button
+                type="button"
+                onClick={handleCertifyStudy}
+                className="flex h-12 w-full items-center justify-center gap-0 rounded-xl bg-white text-label-large text-primary active:scale-[0.98]"
+              >
+                {isStudyCertified ? (
+                  <>
+                    <CheckCircle2
+                      aria-hidden="true"
+                      className="h-8 w-8"
+                      strokeWidth={1.5}
+                    />
+                    오늘도 인증 완료
+                  </>
+                ) : (
+                  "오늘도 공부 인증하기"
+                )}
+              </button>
+            </div>
           </div>
         </section>
 
@@ -886,76 +1101,148 @@ const Home: FC = () => {
               </div>
 
               <div className="mt-4 space-y-2">
-                {ddays.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between rounded-lg border border-border p-3"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setActiveDdayId(item.id)}
-                      className="min-w-0 text-left"
+                {ddays.map((item) => {
+                  const isActive = item.id === activeDdayId;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`flex items-center justify-between rounded-lg border p-3 ${
+                        isActive
+                          ? "border-primary bg-primary-980"
+                          : "border-border"
+                      }`}
                     >
-                      <p className="text-title-small text-foreground">
-                        {item.label}
-                      </p>
-                      <p className="mt-1 text-body-small text-muted-foreground">
-                        {formatExamDate(item.date)} ·{" "}
-                        {formatDday(calculateDday(item.date))}
-                        {item.source === "api" ? " · 공식 API" : ""}
-                      </p>
-                    </button>
-                    {item.source === "api" ? (
-                      <span className="shrink-0 rounded-full bg-primary-980 px-2 py-1 text-label-small font-medium text-primary">
-                        공식
-                      </span>
-                    ) : (
                       <button
                         type="button"
-                        onClick={() => handleRemoveDday(item.id)}
-                        className="shrink-0 text-label-medium text-muted-foreground"
+                        onClick={() => setActiveDdayId(item.id)}
+                        aria-pressed={isActive}
+                        className="min-w-0 flex-1 text-left"
                       >
-                        삭제
+                        <p className="text-title-small text-foreground">
+                          {item.label}
+                        </p>
+                        <p className="mt-1 text-body-small text-muted-foreground">
+                          {formatExamDate(item.date)} ·{" "}
+                          {formatDday(calculateDday(item.date))}
+                          {item.source === "api" ? " · 공식 API" : ""}
+                        </p>
                       </button>
-                    )}
-                  </div>
-                ))}
+                      {item.source === "api" ? (
+                        <span className="shrink-0 rounded-full bg-white px-2 py-1 text-label-small font-medium text-primary">
+                          공식
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveDday(item.id)}
+                          className="shrink-0 text-label-medium text-muted-foreground"
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="mt-4 rounded-lg bg-primary-980 p-3">
                 <p className="text-label-medium text-muted-foreground">
                   새 D-Day 추가
                 </p>
-                <input
-                  value={newDdayLabel}
-                  onChange={(event) => setNewDdayLabel(event.target.value)}
-                  placeholder="예) 약물학 중간고사"
-                  className="mt-2 h-10 w-full rounded-lg border border-border bg-background px-3 text-body-medium text-foreground outline-none focus:border-primary-800"
-                />
-                <div className="mt-2 flex items-center gap-2">
-                  <CalendarDays
-                    aria-hidden="true"
-                    className="h-4 w-4 shrink-0 text-muted-foreground"
-                  />
-                  <input
-                    type="date"
-                    value={newDdayDate}
-                    onChange={(event) => setNewDdayDate(event.target.value)}
-                    className="h-10 min-w-0 flex-1 rounded-lg border border-border bg-background px-3 text-body-medium text-foreground outline-none focus:border-primary-800"
-                  />
+                <div className="mt-2 space-y-2">
+                  {newDdayDrafts.map((draft) => (
+                    <div
+                      key={draft.id}
+                      className={`grid grid-cols-[minmax(5rem,0.7fr)_minmax(7.5rem,1fr)_1.75rem] items-center gap-2 rounded-lg border bg-background px-3 py-2 transition-colors ${
+                        draft.isConfirmed
+                          ? "border-primary"
+                          : "border-border focus-within:border-primary-800"
+                      }`}
+                    >
+                      <input
+                        type="text"
+                        value={draft.title ?? ""}
+                        maxLength={MAX_DDAY_TITLE_LENGTH}
+                        onChange={(event) =>
+                          handleNewDdayDraftTitleChange(
+                            draft.id,
+                            event.target.value,
+                          )
+                        }
+                        placeholder="제목(10자)"
+                        aria-label="D-Day 제목"
+                        className="h-7 min-w-0 border-r border-border bg-transparent pr-2 text-body-medium text-foreground outline-none placeholder:text-muted-foreground"
+                      />
+                      <div className="flex min-w-0 items-center gap-2">
+                        <CalendarDays
+                          aria-hidden="true"
+                          className="h-4 w-4 shrink-0 text-muted-foreground"
+                        />
+                        <input
+                          type="date"
+                          value={draft.date}
+                          onChange={(event) =>
+                            handleNewDdayDraftDateChange(
+                              draft.id,
+                              event.target.value,
+                            )
+                          }
+                          onInput={(event) =>
+                            handleNewDdayDraftDateChange(
+                              draft.id,
+                              event.currentTarget.value,
+                            )
+                          }
+                          aria-label="D-Day 날짜"
+                          className="h-7 min-w-0 flex-1 bg-transparent text-body-medium text-foreground outline-none"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleNewDdayDraft(draft.id)}
+                        disabled={
+                          (!(draft.title ?? "").trim() || !draft.date) &&
+                          !draft.isConfirmed
+                        }
+                        aria-label={
+                          draft.isConfirmed ? "D-Day 비활성화" : "D-Day 추가"
+                        }
+                        aria-pressed={draft.isConfirmed}
+                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors ${
+                          draft.isConfirmed
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-primary-980 text-muted-foreground disabled:opacity-40"
+                        }`}
+                      >
+                        <Check
+                          aria-hidden="true"
+                          className="h-4 w-4"
+                          strokeWidth={2}
+                        />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <button
-                  type="button"
-                  onClick={handleAddDday}
-                  className="mt-3 h-[3.625rem] w-full rounded-xl bg-primary text-label-large text-primary-foreground active:scale-[0.98]"
-                >
-                  추가
-                </button>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setIsDdayEditorOpen(false)}
+                className="mt-3 h-[3.625rem] w-full rounded-xl bg-foreground text-label-large text-background active:scale-[0.98]"
+              >
+                완료
+              </button>
             </div>
           </div>
         )}
       </main>
+
+      <Toast
+        open={!!ddayToastMessage}
+        message={ddayToastMessage ?? ""}
+        onClose={() => setDdayToastMessage(null)}
+      />
 
       <BottomNavbar />
     </div>
