@@ -9,15 +9,12 @@ export interface ManualSignupFormData {
   email: string;
   agreeToTerms: boolean;
   realName: string;
-  documentType: "student" | "professional";
-  // 학생용 (Optional로 정의하되 로직에서 타입에 따라 필수 체크)
-  studentId?: string;
+  documentType: "student";
+  // 학생용
+  studentId: string;
   university?: string;
   department?: string;
-  grade?: string;
-  // 전문가용
-  licenseNumber?: string;
-  issueDate?: string;
+  grade: string;
 }
 
 export const useManualSubmit = () => {

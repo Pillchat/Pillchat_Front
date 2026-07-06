@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const PUBLIC_PATHS = [
+  "/intro",
   "/login",
   "/signup",
   "/find",
@@ -22,8 +23,8 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("access_token")?.value;
 
   if (!token) {
-    const loginUrl = new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
+    const introUrl = new URL("/intro", request.url);
+    return NextResponse.redirect(introUrl);
   }
 
   return NextResponse.next();

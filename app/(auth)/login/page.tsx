@@ -7,7 +7,7 @@ import { FC, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "@/lib/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useSubmit } from "./_hooks";
+import { useGoogleOAuth, useKakaoOAuth, useSubmit } from "./_hooks";
 import { useState } from "react";
 import { IconInputField } from "@/components/molecules";
 import { emailRules, passwordRules } from "@/validations";
@@ -17,6 +17,8 @@ import {
   isTokenExpired,
   refreshTokens,
 } from "@/lib/functions";
+import { FcGoogle } from "react-icons/fc";
+import { RiKakaoTalkFill } from "react-icons/ri";
 
 export type LoginFormData = {
   email: string;
@@ -33,6 +35,7 @@ const LoginPage: FC = () => {
   const {
     control,
     handleSubmit,
+    watch,
     formState: { errors, isValid },
   } = useForm<LoginFormData>({
     mode: "onChange",
@@ -42,6 +45,12 @@ const LoginPage: FC = () => {
       rememberMe: false,
     },
   });
+  const rememberMe = watch("rememberMe");
+  const { startGoogleLogin, isGoogleLoginLoading, googleLoginError } =
+    useGoogleOAuth(rememberMe);
+  const { startKakaoLogin, isKakaoLoginLoading, kakaoLoginError } =
+    useKakaoOAuth(rememberMe);
+  const authError = loginError || googleLoginError || kakaoLoginError;
 
   useEffect(() => {
     const restoreLogin = async () => {
@@ -131,9 +140,9 @@ const LoginPage: FC = () => {
           </div>
 
           <div className="login-actions">
-            {loginError && (
+            {authError && (
               <p className="text-center text-sm text-destructive">
-                {loginError}
+                {authError}
               </p>
             )}
 
@@ -144,6 +153,46 @@ const LoginPage: FC = () => {
               disabled={!isValid || isLoading || isCheckingAuth}
             >
               로그인
+            </Button>
+
+            <div className="flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-muted" />
+              <span className="text-xs font-medium text-muted-foreground">
+                또는
+              </span>
+              <div className="h-px flex-1 bg-muted" />
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-border bg-white text-base text-foreground shadow-none active:bg-secondary"
+              disabled={
+                isLoading ||
+                isGoogleLoginLoading ||
+                isKakaoLoginLoading ||
+                isCheckingAuth
+              }
+              onClick={startGoogleLogin}
+            >
+              <FcGoogle className="!size-5" />
+              Google로 로그인
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-[#FEE500] bg-[#FEE500] text-base text-[#191919] shadow-none active:bg-[#F7DC00]"
+              disabled={
+                isLoading ||
+                isGoogleLoginLoading ||
+                isKakaoLoginLoading ||
+                isCheckingAuth
+              }
+              onClick={startKakaoLogin}
+            >
+              <RiKakaoTalkFill className="!size-5 text-[#191919]" />
+              카카오로 로그인
             </Button>
 
             <div className="login-footer-links">

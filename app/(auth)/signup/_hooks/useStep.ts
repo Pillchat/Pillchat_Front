@@ -13,14 +13,14 @@ export enum Step {
 }
 
 export const useStep = () => {
-  const [step, setStep] = useState<Step>(Step.Role);
+  const [step, setStep] = useState<Step>(Step.DepartMent);
 
   const nextStep = () => {
-    if (step < Step.Nickname) setStep((prev) => (prev + 1) as Step);
+    if (step < Step.Password) setStep((prev) => (prev + 1) as Step);
   };
 
   const prevStep = () => {
-    if (step > Step.Role) setStep((prev) => (prev - 1) as Step);
+    if (step > Step.DepartMent) setStep((prev) => (prev - 1) as Step);
   };
 
   const goToStep = (targetStep: Step) => {

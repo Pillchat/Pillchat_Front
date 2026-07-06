@@ -14,9 +14,6 @@ export const POST = async (request: NextRequest) => {
     university,
     department,
     grade,
-    // 전문가용 필드
-    licenseNumber,
-    issueDate,
   } = body;
 
   // 1. 공통 필수 필드 검증
@@ -34,24 +31,16 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  // 2. documentType에 따른 세부 필드 검증
-  if (documentType === "student") {
-    if (!studentId || !university) {
-      return NextResponse.json(
-        { error: "학생 회원은 학번과 대학교명이 필수입니다." },
-        { status: 400 },
-      );
-    }
-  } else if (documentType === "professional") {
-    if (!licenseNumber) {
-      return NextResponse.json(
-        { error: "전문가 회원은 면허번호가 필수입니다." },
-        { status: 400 },
-      );
-    }
-  } else {
+  if (documentType !== "student") {
     return NextResponse.json(
-      { error: "유효하지 않은 사용자 유형입니다." },
+      { error: "현재 일반 회원가입은 학생 회원만 지원합니다." },
+      { status: 400 },
+    );
+  }
+
+  if (!studentId || !grade) {
+    return NextResponse.json(
+      { error: "학생 회원은 학번과 학년이 필수입니다." },
       { status: 400 },
     );
   }
@@ -73,9 +62,10 @@ export const POST = async (request: NextRequest) => {
           agreeToTerms,
           realName,
           documentType,
-          ...(documentType === "student"
-            ? { studentId, university, department, grade }
-            : { licenseNumber, issueDate }),
+          studentId,
+          university,
+          department,
+          grade,
         }),
       },
     );

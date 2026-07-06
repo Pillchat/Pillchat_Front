@@ -575,7 +575,7 @@ const Home: FC = () => {
 
   useEffect(() => {
     if (isAuthenticated === false) {
-      router.replace("/login");
+      router.replace("/intro");
     }
   }, [isAuthenticated, router]);
 

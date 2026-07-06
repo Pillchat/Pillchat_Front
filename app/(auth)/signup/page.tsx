@@ -496,26 +496,19 @@ import {
   PRIVACY_TEXT,
 } from "./_hooks";
 import { useManualSubmit } from "./_hooks/useManualSubmit";
-import { GRADE_OPTIONS, SelectGradeModal } from "./SelectGradeModal";
 
-import {
-  RoleCard,
-  SelectBox,
-  SolidButton,
-  StrokeButton,
-} from "@/components/atoms";
+import { SolidButton, StrokeButton } from "@/components/atoms";
 import { StepHeader, IconInputField } from "@/components/molecules";
 import { VerifyInputField } from "./_components/VerifyInputField";
 
 const SignupPage: FC = () => {
-  const { step, nextStep, prevStep, setStep } = useStep();
+  const { step, nextStep, prevStep } = useStep();
   const { onVerify, isLoading: isVerifyLoading, isVerified } = useVerify();
   const { onCheckVerify } = useCheckVerify();
 
   // 수동 회원가입 훅 사용
   const { onSubmit, isLoading: isSubmitLoading } = useManualSubmit();
 
-  const [route, setRoute] = useState<"student" | "professional" | "">("");
   const [checkedTerms, setCheckedTerms] = useState(false);
   const [checkedPrivacy, setCheckedPrivacy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -535,11 +528,6 @@ const SignupPage: FC = () => {
   const [department, setDepartment] = useState("");
   const [studentId, setStudentId] = useState("");
   const [grade, setGrade] = useState("");
-  const [isGradeOpen, setIsGradeOpen] = useState(false);
-
-  // 전문가용
-  const [licenseNumber, setLicenseNumber] = useState("");
-  const [issueDate, setIssueDate] = useState("");
 
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -569,30 +557,28 @@ const SignupPage: FC = () => {
     await onVerify(email);
   };
 
-  const handleGradeSelect = (selectedGrade: string) => {
-    setGrade(selectedGrade);
-    setIsGradeOpen(false);
-  };
-
   const isValidStudentId = (value: string) => /^\d{8,12}$/.test(value);
-
-  // 정보 입력 단계 유효성 검사
-  const isValidManualInfo = () => {
-    if (!realName.trim()) return false;
-
-    if (route === "student") {
-      return !!university && isValidStudentId(studentId);
-    } else if (route === "professional") {
-      return !!licenseNumber;
-    }
-    return false;
-  };
 
   const isValidNickname = (nickname: string) =>
     /^[가-힣A-Za-z0-9]{2,}$/.test(nickname.trim());
 
+  // 정보 입력 단계 유효성 검사
+  const isValidManualInfo = () => {
+    if (!realName.trim()) return false;
+    if (!isValidNickname(nickname)) return false;
+    if (!grade.trim()) return false;
+    return isValidStudentId(studentId);
+  };
+
   const handleSubmit = async () => {
-    if (!nickname || !email || !password || !route) {
+    if (
+      !nickname ||
+      !email ||
+      !password ||
+      !realName.trim() ||
+      !studentId ||
+      !grade.trim()
+    ) {
       alert("모든 필수 정보를 입력해주세요.");
       return;
     }
@@ -608,57 +594,16 @@ const SignupPage: FC = () => {
       nickname: nickname.trim(),
       agreeToTerms: true,
       realName: realName.trim(),
-      documentType: route as "student" | "professional",
-      ...(route === "student" && {
-        university,
-        department,
-        studentId,
-        grade,
-      }),
-      ...(route === "professional" && {
-        licenseNumber,
-        issueDate,
-      }),
+      documentType: "student",
+      university: university.trim(),
+      department: department.trim(),
+      studentId,
+      grade: grade.trim(),
     });
   };
 
   return (
     <div className="flex min-h-screen flex-col items-center">
-      {/* 1. 역할 선택 (Role) */}
-      {step === Step.Role && (
-        <>
-          <StepHeader
-            content="직장 확인"
-            onIconClick={() => router.push("/login")}
-          />
-          <div className="mt-[5rem] text-xl font-semibold">
-            <p>현재 어떤 직종에 일하고 계신가요?</p>
-          </div>
-
-          <div className="mt-5 flex flex-row gap-[15px]">
-            <RoleCard
-              title="학생"
-              imageSrc="/illustrations/Student.svg"
-              onClick={() => {
-                setRoute("student");
-                // OCR 가이드/촬영(Guide, Ocr) 단계를 건너뛰고 바로 정보 입력(DepartMent -> ManualInfo) 단계로 이동
-                setStep(Step.DepartMent);
-              }}
-            />
-
-            <RoleCard
-              title="전문가"
-              imageSrc="/illustrations/Specialist.svg"
-              onClick={() => {
-                setRoute("professional");
-                // OCR 가이드/촬영 단계를 건너뛰고 바로 정보 입력 단계로 이동
-                setStep(Step.DepartMent);
-              }}
-            />
-          </div>
-        </>
-      )}
-
       {/* OCR 관련 단계(Guide, Ocr)는 수동 가입에서 사용하지 않으므로 제거 
          Step.DepartMent 단계를 "정보 수동 입력" 단계로 재사용합니다.
       */}
@@ -666,8 +611,8 @@ const SignupPage: FC = () => {
       {step === Step.DepartMent && (
         <>
           <StepHeader
-            content={`${route === "student" ? "학생" : "전문가"} 정보 입력`}
-            onIconClick={() => setStep(Step.Role)}
+            content="학생 정보 입력"
+            onIconClick={() => router.push("/intro")}
           />
 
           <div className="mt-[1rem] flex w-[90%] flex-col gap-[20px]">
@@ -683,88 +628,73 @@ const SignupPage: FC = () => {
                 iconSize={20}
               />
 
-              {route === "student" ? (
-                <>
-                  <IconInputField
-                    content="학교명"
-                    value={university}
-                    onChange={(e) => setUniversity(e.target.value)}
-                    onIconClick={() => setUniversity("")}
-                    placeholder="한국대학교"
-                    iconSrc="/icons/Cancel.svg"
-                    iconAsButton={true}
-                    iconSize={20}
-                  />
-                  <IconInputField
-                    content="학과"
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                    onIconClick={() => setDepartment("")}
-                    placeholder="약학과"
-                    iconSrc="/icons/Cancel.svg"
-                    iconAsButton={true}
-                    iconSize={20}
-                  />
-                  <IconInputField
-                    content="학번"
-                    value={studentId}
-                    onChange={(e) =>
-                      setStudentId(e.target.value.replace(/\D/g, ""))
-                    }
-                    onIconClick={() => setStudentId("")}
-                    placeholder="20241234"
-                    iconSrc="/icons/Cancel.svg"
-                    iconAsButton={true}
-                    iconSize={20}
-                    type="text"
-                    maxLength={14}
-                    inputMode="numeric"
-                  />
-                  <p className="text-sm text-border">
-                    14자 이하로 입력해주세요
-                  </p>
-                  <IconInputField
-                    content="학년 (선택)"
-                    value={grade}
-                    onChange={(e) => setGrade(e.target.value)}
-                    onIconClick={() => setGrade("")}
-                    placeholder="1학년"
-                    iconSrc="/icons/Cancel.svg"
-                    iconAsButton={true}
-                    iconSize={20}
-                  />
-                </>
-              ) : route === "professional" ? (
-                <>
-                  <IconInputField
-                    content="면허번호"
-                    value={licenseNumber}
-                    onChange={(e) => setLicenseNumber(e.target.value)}
-                    onIconClick={() => setLicenseNumber("")}
-                    placeholder="12345"
-                    iconSrc="/icons/Cancel.svg"
-                    iconAsButton={true}
-                    iconSize={20}
-                  />
-                  <IconInputField
-                    content="발급일 (선택)"
-                    value={issueDate}
-                    onChange={(e) => setIssueDate(e.target.value)}
-                    onIconClick={() => setIssueDate("")}
-                    placeholder="YYYY-MM-DD"
-                    iconSrc="/icons/Cancel.svg"
-                    iconAsButton={true}
-                    iconSize={20}
-                  />
-                </>
-              ) : null}
+              <IconInputField
+                content="닉네임"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                onIconClick={() => setNickname("")}
+                placeholder="필챗러"
+                iconSrc="/icons/Cancel.svg"
+                iconAsButton={true}
+                iconSize={20}
+              />
+              <p className="text-sm text-border">
+                한글, 영문, 숫자만 사용한 2자 이상
+              </p>
+
+              <IconInputField
+                content="학년"
+                value={grade}
+                onChange={(e) => setGrade(e.target.value)}
+                onIconClick={() => setGrade("")}
+                placeholder="1학년"
+                iconSrc="/icons/Cancel.svg"
+                iconAsButton={true}
+                iconSize={20}
+              />
+              <IconInputField
+                content="학과"
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                onIconClick={() => setDepartment("")}
+                placeholder="약학과"
+                iconSrc="/icons/Cancel.svg"
+                iconAsButton={true}
+                iconSize={20}
+              />
+              <IconInputField
+                content="학번"
+                value={studentId}
+                onChange={(e) =>
+                  setStudentId(e.target.value.replace(/\D/g, ""))
+                }
+                onIconClick={() => setStudentId("")}
+                placeholder="20241234"
+                iconSrc="/icons/Cancel.svg"
+                iconAsButton={true}
+                iconSize={20}
+                type="text"
+                maxLength={14}
+                inputMode="numeric"
+              />
+              <p className="text-sm text-border">14자 이하로 입력해주세요</p>
+              <IconInputField
+                content="학교명 (선택)"
+                value={university}
+                onChange={(e) => setUniversity(e.target.value)}
+                onIconClick={() => setUniversity("")}
+                placeholder="한국대학교"
+                iconSrc="/icons/Cancel.svg"
+                iconAsButton={true}
+                iconSize={20}
+              />
             </div>
 
             <div className="mt-[2rem] flex w-full flex-col justify-center gap-[15px]">
               <StrokeButton
                 content="이전으로"
                 variant="stroke-brand"
-                onClick={() => setStep(Step.Role)}
+                onClick={() => router.push("/intro")}
               />
               <SolidButton
                 content="다음"
@@ -998,75 +928,21 @@ const SignupPage: FC = () => {
 
             <div className="mt-[4rem]">
               <SolidButton
-                content="다음"
+                content={isSubmitLoading ? "가입 중..." : "완료"}
                 variant={
                   passwordRe && password === passwordRe ? "brand" : "disabled"
                 }
-                disabled={password !== passwordRe}
-                onClick={() => {
-                  nextStep();
-                }}
-              />
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* 닉네임 입력 및 최종 가입 (Nickname) */}
-      {step === Step.Nickname && (
-        <>
-          <StepHeader content="회원가입" onIconClick={prevStep} />
-
-          <div className="mt-[2rem] flex w-[90%] flex-col gap-[20px]">
-            <p className="text-xl font-semibold">
-              필챗에서 활동할 닉네임을 입력해주세요.
-            </p>
-
-            <div className="flex flex-col gap-[5px]">
-              <IconInputField
-                content="닉네임"
-                iconAsButton={true}
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                onIconClick={() => setNickname("")}
-                iconPosition="right"
-                iconSrc="/icons/Cancel.svg"
-                iconSize={20}
-                placeholder="닉네임을 적어주세요"
-                autoFocus={true}
-              />
-
-              <p className="font-regular text-sm text-border">
-                한글, 영문, 숫자만 사용한 2자 이상
-              </p>
-            </div>
-
-            <div className="mt-[9rem]">
-              <SolidButton
-                content={isSubmitLoading ? "가입 중..." : "완료"}
-                variant={
-                  isValidNickname(nickname) && email && !isSubmitLoading
-                    ? "brand"
-                    : "disabled"
-                }
                 disabled={
-                  !isValidNickname(nickname) || !email || isSubmitLoading
+                  !passwordRe || password !== passwordRe || isSubmitLoading
                 }
                 onClick={async () => {
                   await handleSubmit();
-                  router.push("/login");
                 }}
               />
             </div>
           </div>
         </>
       )}
-
-      <SelectGradeModal
-        isOpen={isGradeOpen}
-        closeClick={() => setIsGradeOpen(false)}
-        onSelect={handleGradeSelect}
-      />
     </div>
   );
 };
