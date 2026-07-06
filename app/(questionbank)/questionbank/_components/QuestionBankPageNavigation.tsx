@@ -15,35 +15,41 @@ type PageTab = {
   href: string;
   label: string;
   icon: LucideIcon;
+  iconClassName: string;
   isBack?: boolean;
 };
 
 const pageTabs: PageTab[] = [
   {
     href: "/learn",
-    label: "뒤로",
+    label: "",
     icon: ArrowLeft,
+    iconClassName: "h-8 w-8",
     isBack: true,
   },
   {
     href: "/questionbank",
     label: "홈",
     icon: BookOpenCheck,
+    iconClassName: "h-5 w-5",
   },
   {
     href: "/questionbank/subjects",
     label: "내 과목",
     icon: FolderOpen,
+    iconClassName: "h-5 w-5",
   },
   {
     href: "/questionbank/wrong-notes",
     label: "오답노트",
     icon: NotebookPen,
+    iconClassName: "h-5 w-5",
   },
   {
     href: "/questionbank/me",
     label: "마이페이지",
     icon: UserRound,
+    iconClassName: "h-5 w-5",
   },
 ];
 
@@ -78,7 +84,11 @@ export function QuestionBankPageNavigation() {
             }`}
             prefetch={false}
           >
-            <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={2} />
+            <Icon
+              aria-hidden="true"
+              className={item.iconClassName}
+              strokeWidth={2}
+            />
             <span className="truncate">{item.label}</span>
           </Link>
         );
