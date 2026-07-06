@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface ToastProps {
   open: boolean;
@@ -9,18 +9,40 @@ interface ToastProps {
   duration?: number;
 }
 
+const TOAST_FADE_OUT_MS = 1000;
+
 export function Toast({ open, message, onClose, duration = 3000 }: ToastProps) {
+  const [isFadingOut, setIsFadingOut] = useState(false);
+
   useEffect(() => {
-    if (!open) return;
-    const timer = setTimeout(() => onClose(), duration);
-    return () => clearTimeout(timer);
+    if (!open) {
+      setIsFadingOut(false);
+      return;
+    }
+
+    setIsFadingOut(false);
+
+    const fadeOutDelay = Math.max(duration - TOAST_FADE_OUT_MS, 0);
+    const fadeOutTimer = setTimeout(() => {
+      setIsFadingOut(true);
+    }, fadeOutDelay);
+    const closeTimer = setTimeout(() => onClose(), duration);
+
+    return () => {
+      clearTimeout(fadeOutTimer);
+      clearTimeout(closeTimer);
+    };
   }, [open, duration, onClose]);
 
   if (!open) return null;
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[1000] flex items-center justify-center">
-      <div className="pointer-events-auto relative z-[1001] mb-12 w-[90%] rounded-xl bg-foreground/70 px-5 py-3 text-center text-sm font-medium text-primary-foreground shadow-xl dark:bg-neutral-900">
+      <div
+        className={`pointer-events-auto relative z-[1001] mb-12 w-[90%] rounded-xl bg-foreground/70 px-5 py-3 text-center text-sm font-medium text-primary-foreground shadow-xl transition-opacity duration-1000 ease-out dark:bg-neutral-900 ${
+          isFadingOut ? "opacity-0" : "opacity-100"
+        }`}
+      >
         {message}
       </div>
     </div>
