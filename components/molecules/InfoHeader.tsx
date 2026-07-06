@@ -30,7 +30,7 @@ export const InfoHeader: FC<InfoHeaderProps> = ({
 
   return (
     <>
-      <header className="fixed left-1/2 top-0 z-50 flex h-[90px] w-full max-w-screen-sm -translate-x-1/2 items-center justify-between bg-white px-6 md:max-w-none">
+      <header className="fixed left-1/2 top-0 z-50 flex h-[90px] w-full max-w-app -translate-x-1/2 items-center justify-between bg-white px-6 md:px-8">
         {/* 왼쪽: 뒤로가기 */}
         <LeftArrowButton onClick={() => router.back()} />
 

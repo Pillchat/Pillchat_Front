@@ -205,7 +205,7 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
 
               <div
                 className={cn(
-                  "fixed left-0 right-0 z-50 mx-auto flex max-w-screen-sm flex-col rounded-t-2xl border bg-white px-6 pt-4 shadow-lg md:max-w-none",
+                  "fixed left-0 right-0 z-50 mx-auto flex max-w-app flex-col rounded-t-2xl border bg-white px-6 pt-4 shadow-lg md:px-8",
                   hasBottombar ? "bottom-[108px]" : "bottom-0",
                   modalMaxHeightClassName,
                 )}

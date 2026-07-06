@@ -1,30 +1,135 @@
 import { useCallback, useState } from "react";
 import { useAtom } from "jotai";
-import {
-  schoolAtom,
-  gradeAtom,
-  profileLoadingAtom,
-  profileErrorAtom,
-  updateProfileAtom,
-  clearProfileAtom,
-  studentGradeAtom,
-  idAtom,
-  nicknameAtom,
-  keysAtom,
-  profileImgAtom,
-} from "@/store/profile";
+
 import { fetchAPI } from "@/lib/client/fetch";
+import {
+  buildFileUrlMap,
+  getFileKey,
+  getFilePreviewUrl,
+} from "@/lib/shared/filePreview";
+import {
+  clearProfileAtom,
+  gradeAtom,
+  idAtom,
+  keysAtom,
+  nicknameAtom,
+  profileErrorAtom,
+  profileImgAtom,
+  profileLoadingAtom,
+  schoolAtom,
+  studentGradeAtom,
+  updateProfileAtom,
+} from "@/store/profile";
+
+type ProfileDetails = {
+  userType: string;
+  followerCount: number;
+  followingCount: number;
+  farmMoney: number;
+  ticketCount: number;
+  job: string;
+  workplace: string;
+};
+
+const initialProfileDetails: ProfileDetails = {
+  userType: "STUDENT",
+  followerCount: 0,
+  followingCount: 0,
+  farmMoney: 0,
+  ticketCount: 0,
+  job: "",
+  workplace: "",
+};
+
+const isResolvedImageUrl = (value: string) =>
+  /^(https?:|blob:|data:)/i.test(value) || value.startsWith("/");
+
+const uniqueStrings = (values: string[]) =>
+  Array.from(new Set(values.filter(Boolean)));
+
+const normalizeFilesResponse = (value: any) => {
+  if (Array.isArray(value)) return value;
+  if (Array.isArray(value?.data)) return value.data;
+  if (Array.isArray(value?.files)) return value.files;
+  if (Array.isArray(value?.result)) return value.result;
+  return [];
+};
+
+const numberValue = (...values: unknown[]) => {
+  const value = values.find(
+    (candidate) => candidate !== undefined && candidate !== null,
+  );
+
+  if (Array.isArray(value)) return value.length;
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const textValue = (value: unknown) => {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object") {
+    const item = value as {
+      label?: string;
+      value?: string;
+      name?: string;
+      grade?: string;
+    };
+    return item.label ?? item.value ?? item.name ?? item.grade ?? "";
+  }
+  return "";
+};
+
+const getProfileImageCandidates = (payload: any) =>
+  [
+    ...(Array.isArray(payload.images) ? payload.images : []),
+    payload.profileImg,
+    payload.profileImage,
+    payload.imageUrl,
+  ].filter(Boolean);
+
+const resolveProfileImage = async (payload: any) => {
+  const imageCandidates = getProfileImageCandidates(payload);
+  const directProfileImg =
+    imageCandidates
+      .map((image) => getFilePreviewUrl(image as any))
+      .find(Boolean) ??
+    imageCandidates
+      .filter((image): image is string => typeof image === "string")
+      .find(isResolvedImageUrl) ??
+    null;
+  const fetchedKeys = uniqueStrings(
+    imageCandidates
+      .map((image) => getFileKey(image as any))
+      .filter((key) => key && !isResolvedImageUrl(key)),
+  );
+
+  if (fetchedKeys.length === 0) {
+    return { fetchedKeys, profileImageUrl: directProfileImg };
+  }
+
+  try {
+    const filesResponse = await fetchAPI("/api/files", "GET", {
+      keys: fetchedKeys,
+    });
+    const files = normalizeFilesResponse(filesResponse);
+    const fileUrlMap = buildFileUrlMap(fetchedKeys, files);
+    const profileImageUrl =
+      fetchedKeys.map((key) => fileUrlMap[key]).find(Boolean) ??
+      files.map((file: any) => getFilePreviewUrl(file)).find(Boolean) ??
+      directProfileImg;
+
+    return { fetchedKeys, profileImageUrl: profileImageUrl ?? null };
+  } catch {
+    console.warn("Failed to resolve profile image");
+    return { fetchedKeys, profileImageUrl: directProfileImg };
+  }
+};
 
 export const useMyProfile = () => {
-  const [profileDetails, setProfileDetails] = useState({
-    userType: "STUDENT",
-    followerCount: 0,
-    followingCount: 0,
-    farmMoney: 0,
-    ticketCount: 0,
-    job: "",
-    workplace: "",
-  });
+  const [profileDetails, setProfileDetails] = useState<ProfileDetails>(
+    initialProfileDetails,
+  );
   const [isLoading, setIsLoading] = useAtom(profileLoadingAtom);
   const [error, setError] = useAtom(profileErrorAtom);
 
@@ -36,7 +141,7 @@ export const useMyProfile = () => {
   const [grade] = useAtom(gradeAtom);
   const [studentGrade] = useAtom(studentGradeAtom);
   const [id] = useAtom(idAtom);
-  const [keys, setKeys] = useAtom(keysAtom);
+  const [, setKeys] = useAtom(keysAtom);
   const [profileImg, setProfileImg] = useAtom(profileImgAtom);
 
   const onMyProfile = useCallback(async () => {
@@ -45,32 +150,13 @@ export const useMyProfile = () => {
 
     try {
       const result = await fetchAPI("/api/auth/inquiry-myprofile", "GET");
-      if (!result.success)
-        throw new Error(result.message || "프로필 조회 실패");
+      if (!result.success) {
+        throw new Error(result.message || "Failed to load profile");
+      }
 
       const payload = result.data ?? {};
-      const numberValue = (...values: unknown[]) => {
-        const value = values.find(
-          (candidate) => candidate !== undefined && candidate !== null,
-        );
-
-        if (Array.isArray(value)) return value.length;
-
-        const parsed = Number(value);
-        return Number.isFinite(parsed) ? parsed : 0;
-      };
-      const textValue = (value: unknown) => {
-        if (typeof value === "string") return value;
-        if (value && typeof value === "object") {
-          const item = value as {
-            label?: string;
-            value?: string;
-            name?: string;
-          };
-          return item.label ?? item.value ?? item.name ?? "";
-        }
-        return "";
-      };
+      const { fetchedKeys, profileImageUrl } =
+        await resolveProfileImage(payload);
 
       setProfileDetails({
         userType: payload.userType ?? "STUDENT",
@@ -97,44 +183,23 @@ export const useMyProfile = () => {
         job: textValue(payload.job ?? payload.profession),
         workplace: textValue(payload.workplace ?? payload.company),
       });
-      const fetchedKeys: string[] = Array.isArray(payload.images)
-        ? payload.images
-            .map((img: { urlKey: string }) => img.urlKey)
-            .filter(Boolean)
-        : [];
 
       updateProfile({
         nickname: payload.nickname ?? null,
         school: payload.school ?? null,
-        grade: payload.grade?.grade ?? null,
+        grade: textValue(payload.grade) || null,
         studentGrade: payload.studentGrade ?? null,
         id: payload.id ?? null,
         keys: fetchedKeys,
       });
       setKeys(fetchedKeys);
-
-      // 이전 유저 이미지 잔존 방지
-      setProfileImg(null);
-
-      if (fetchedKeys.length > 0) {
-        try {
-          // fetchAPI: localStorage에서 항상 최신 토큰 사용 (stale accessTokenAtom 문제 해결)
-          const data = await fetchAPI("/api/files", "GET", {
-            keys: fetchedKeys,
-          });
-          if (Array.isArray(data) && data[0]?.preSignedUrl) {
-            setProfileImg(data[0].preSignedUrl);
-          }
-        } catch {
-          console.warn("프로필 이미지 resolve 실패");
-        }
-      }
+      setProfileImg(profileImageUrl);
     } catch (err: any) {
-      console.error("프로필 조회 실패:", err);
-      setError(err?.message || "프로필 조회 실패");
+      console.error("Failed to load profile:", err);
+      setError(err?.message || "Failed to load profile");
       if (
-        err?.message?.includes("로그인") ||
-        err?.message?.includes("인증") ||
+        err?.message?.includes("login") ||
+        err?.message?.includes("auth") ||
         err?.message?.includes("401")
       ) {
         clearProfile();
@@ -146,9 +211,9 @@ export const useMyProfile = () => {
     setIsLoading,
     setError,
     updateProfile,
-    clearProfile,
     setKeys,
     setProfileImg,
+    clearProfile,
   ]);
 
   const resetProfile = useCallback(() => {

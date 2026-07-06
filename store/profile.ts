@@ -33,12 +33,12 @@ export const updateProfileAtom = atom(
     get,
     set,
     update: {
-      nickname?: string;
+      nickname?: string | null;
       profileImg?: string | null;
-      school?: string;
-      grade?: string;
-      studentGrade?: string;
-      id?: number;
+      school?: string | null;
+      grade?: string | null;
+      studentGrade?: string | null;
+      id?: number | null;
       keys?: string[];
     },
   ) => {

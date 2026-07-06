@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 
 import { AppShell, MeaninglessHeader } from "@/components/molecules";
 
@@ -49,14 +48,20 @@ export default function BoardsHubPage() {
               href={board.href}
               className="flex items-center gap-4 rounded-lg border border-border bg-card p-4 transition-transform active:scale-[0.98]"
             >
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-accent text-foreground">
-                <Image
-                  src={board.iconSrc}
-                  alt=""
-                  width={32}
-                  height={32}
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-accent text-brand">
+                <span
                   aria-hidden="true"
-                  className="h-8 w-8"
+                  className="h-8 w-8 bg-current"
+                  style={{
+                    WebkitMaskImage: `url(${board.iconSrc})`,
+                    WebkitMaskPosition: "center",
+                    WebkitMaskRepeat: "no-repeat",
+                    WebkitMaskSize: "contain",
+                    maskImage: `url(${board.iconSrc})`,
+                    maskPosition: "center",
+                    maskRepeat: "no-repeat",
+                    maskSize: "contain",
+                  }}
                 />
               </span>
               <span className="min-w-0 flex-1">
