@@ -7,6 +7,7 @@ import {
   type ReactNode,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import Link from "next/link";
@@ -404,10 +405,15 @@ const Home: FC = () => {
   const [studyCount, setStudyCount] = useState(0);
   const [isStudyCertified, setIsStudyCertified] = useState(false);
   const [studyCelebrationBurstId, setStudyCelebrationBurstId] = useState(0);
-  const [ddayToastMessage, setDdayToastMessage] = useState<string | null>(null);
+  const [ddayToast, setDdayToast] = useState<{
+    id: number;
+    message: string;
+  } | null>(null);
   const [viewCountOverrides, setViewCountOverrides] = useState<
     Record<string, number>
   >({});
+  const ddayListRef = useRef<HTMLDivElement | null>(null);
+  const newDdayDraftListRef = useRef<HTMLDivElement | null>(null);
   const userInfo = getCurrentUserInfo();
 
   const {
@@ -542,6 +548,32 @@ const Home: FC = () => {
   }, [activeDdayId, isDdayReady]);
 
   useEffect(() => {
+    if (!isDdayEditorOpen || !ddayListRef.current) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      const list = ddayListRef.current;
+      if (list) {
+        list.scrollTop = list.scrollHeight;
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [ddays.length, isDdayEditorOpen]);
+
+  useEffect(() => {
+    if (!isDdayEditorOpen || !newDdayDraftListRef.current) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      const list = newDdayDraftListRef.current;
+      if (list) {
+        list.scrollTop = list.scrollHeight;
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [newDdayDrafts.length, isDdayEditorOpen]);
+
+  useEffect(() => {
     if (isAuthenticated === false) {
       router.replace("/login");
     }
@@ -584,6 +616,13 @@ const Home: FC = () => {
     setStudyCount(nextCount);
     window.localStorage.setItem(STUDY_CERT_STORAGE_KEY, todayKey());
     window.localStorage.setItem(STUDY_COUNT_STORAGE_KEY, String(nextCount));
+  };
+
+  const showDdayToast = (message: string) => {
+    setDdayToast((prev) => ({
+      id: (prev?.id ?? 0) + 1,
+      message,
+    }));
   };
 
   const removeDdayById = (id: string) => {
@@ -658,7 +697,7 @@ const Home: FC = () => {
           ),
         ),
       );
-      setDdayToastMessage("일정이 삭제되었습니다!");
+      showDdayToast("일정이 삭제되었습니다!");
       return;
     }
 
@@ -677,7 +716,7 @@ const Home: FC = () => {
 
     setDdays((prev) => [...prev, nextDday]);
     setActiveDdayId(nextDdayId);
-    setDdayToastMessage("일정이 추가되었습니다!");
+    showDdayToast("일정이 추가되었습니다!");
     setNewDdayDrafts((prev) => {
       const draftIndex = prev.findIndex((item) => item.id === draftId);
       const next = prev.map((item) =>
@@ -694,6 +733,8 @@ const Home: FC = () => {
   };
 
   const handleRemoveDday = (id: string) => {
+    if (id === "guksi") return;
+
     removeDdayById(id);
     setNewDdayDrafts((prev) => {
       const next = prev.filter((item) => item.ddayId !== id);
@@ -1083,7 +1124,7 @@ const Home: FC = () => {
             onClick={() => setIsDdayEditorOpen(false)}
           >
             <div
-              className="mx-auto w-full max-w-app rounded-t-2xl bg-card p-5 md:max-w-[40rem]"
+              className="mx-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-app flex-col rounded-t-2xl bg-card p-5 md:max-w-[40rem]"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="flex items-center justify-between">
@@ -1100,9 +1141,13 @@ const Home: FC = () => {
                 </button>
               </div>
 
-              <div className="mt-4 space-y-2">
+              <div
+                ref={ddayListRef}
+                className="mt-4 max-h-[12rem] space-y-2 overflow-y-auto overscroll-contain pr-1 sm:max-h-[14rem]"
+              >
                 {ddays.map((item) => {
                   const isActive = item.id === activeDdayId;
+                  const isNationalExamDday = item.id === "guksi";
 
                   return (
                     <div
@@ -1132,7 +1177,7 @@ const Home: FC = () => {
                         <span className="shrink-0 rounded-full bg-white px-2 py-1 text-label-small font-medium text-primary">
                           공식
                         </span>
-                      ) : (
+                      ) : !isNationalExamDday ? (
                         <button
                           type="button"
                           onClick={() => handleRemoveDday(item.id)}
@@ -1140,7 +1185,7 @@ const Home: FC = () => {
                         >
                           삭제
                         </button>
-                      )}
+                      ) : null}
                     </div>
                   );
                 })}
@@ -1150,7 +1195,10 @@ const Home: FC = () => {
                 <p className="text-label-medium text-muted-foreground">
                   새 D-Day 추가
                 </p>
-                <div className="mt-2 space-y-2">
+                <div
+                  ref={newDdayDraftListRef}
+                  className="mt-2 max-h-[13.5rem] space-y-2 overflow-y-auto overscroll-contain pr-1 sm:max-h-[16rem]"
+                >
                   {newDdayDrafts.map((draft) => (
                     <div
                       key={draft.id}
@@ -1239,9 +1287,10 @@ const Home: FC = () => {
       </main>
 
       <Toast
-        open={!!ddayToastMessage}
-        message={ddayToastMessage ?? ""}
-        onClose={() => setDdayToastMessage(null)}
+        open={!!ddayToast}
+        message={ddayToast?.message ?? ""}
+        toastKey={ddayToast?.id}
+        onClose={() => setDdayToast(null)}
       />
 
       <BottomNavbar />

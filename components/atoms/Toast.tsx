@@ -1,18 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ToastProps {
   open: boolean;
   message: string;
   onClose: () => void;
   duration?: number;
+  toastKey?: string | number;
 }
 
 const TOAST_FADE_OUT_MS = 1000;
 
-export function Toast({ open, message, onClose, duration = 3000 }: ToastProps) {
+export function Toast({
+  open,
+  message,
+  onClose,
+  duration = 3000,
+  toastKey,
+}: ToastProps) {
   const [isFadingOut, setIsFadingOut] = useState(false);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) {
@@ -26,13 +38,13 @@ export function Toast({ open, message, onClose, duration = 3000 }: ToastProps) {
     const fadeOutTimer = setTimeout(() => {
       setIsFadingOut(true);
     }, fadeOutDelay);
-    const closeTimer = setTimeout(() => onClose(), duration);
+    const closeTimer = setTimeout(() => onCloseRef.current(), duration);
 
     return () => {
       clearTimeout(fadeOutTimer);
       clearTimeout(closeTimer);
     };
-  }, [open, duration, onClose]);
+  }, [open, duration, message, toastKey]);
 
   if (!open) return null;
 
