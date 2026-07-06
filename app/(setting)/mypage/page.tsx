@@ -1,9 +1,10 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronLeft, GraduationCap, Lock, Pencil } from "lucide-react";
+
+import { BottomNavbar } from "@/components/molecules";
 import { useRouter } from "@/lib/navigation";
-import { BottomNavbar, MeaninglessHeader } from "@/components/molecules";
-import { fetchAPI } from "@/lib/client/fetch";
 import { useMyProfile } from "./_hooks";
 
 const gradeLabels: Record<string, string> = {
@@ -14,374 +15,280 @@ const gradeLabels: Record<string, string> = {
   MYEONGYAK: "명약",
 };
 
-const gradeColors: Record<string, string> = {
-  SAESSAK: "#4caf50",
-  HANAL: "#ff49b9",
-  DUEAL: "#e6ad00",
-  GOSU: "#ff412e",
-  MYEONGYAK: "#9f1004",
-};
+type ProfileTab = "posts" | "comments" | "badges";
 
-interface ActionItemProps {
-  icon: string;
-  label: string;
-  onClick?: () => void;
-  bordered?: boolean;
-}
+const tabs: { id: ProfileTab; label: string }[] = [
+  { id: "posts", label: "내가 쓴 글" },
+  { id: "comments", label: "내가 쓴 댓글" },
+  { id: "badges", label: "배지" },
+];
 
-function ActionItem({ icon, label, onClick, bordered }: ActionItemProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 text-center text-sm font-medium text-[#222] ${bordered ? "border-l border-[#eeeeee]" : ""}`}
-    >
-      <img src={icon} alt="" className="h-8 w-8" />
-      <span className="whitespace-nowrap">{label}</span>
-    </button>
-  );
-}
+const postItems = [
+  {
+    meta: "자유게시판 · 06/22 05:09",
+    title: "현장실습 2번 떨어졌다 ㅠㅠㅠ",
+  },
+  {
+    meta: "암기 꿀팁 · 어제",
+    title: "베타차단제 한 줄 암기법 ㄷㄷ",
+  },
+  {
+    meta: "자유게시판 · 3일 전",
+    title: "약물학 교수님 시험 스타일 정리해드림",
+  },
+];
 
-interface InfoItemProps {
-  icon: string;
-  title: string;
-  description: string;
-  onClick?: () => void;
-}
+const commentItems = [
+  {
+    meta: "자유게시판 · 오늘",
+    title: "저도 같은 부분에서 헷갈렸어요",
+  },
+  {
+    meta: "암기 꿀팁 · 어제",
+    title: "이 암기법 진짜 도움 됩니다",
+  },
+  {
+    meta: "실습 후기 · 2일 전",
+    title: "병원별 분위기 차이가 꽤 크더라구요",
+  },
+];
 
-function InfoItem({ icon, title, description, onClick }: InfoItemProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full items-center gap-3 py-2 text-left"
-    >
-      <img src={icon} alt="" className="h-8 w-8 shrink-0" />
-      <span className="min-w-0">
-        <strong className="block text-base font-semibold leading-6 text-[#222]">
-          {title}
-        </strong>
-        <span className="block text-sm leading-5 text-[#777]">
-          {description}
-        </span>
-      </span>
-    </button>
-  );
-}
+const badgeItems = [
+  {
+    meta: "학습 배지",
+    title: "7일 연속 학습 달성",
+  },
+  {
+    meta: "커뮤니티 배지",
+    title: "첫 게시글 작성",
+  },
+  {
+    meta: "시험 대비 배지",
+    title: "CBT 복습 완료",
+  },
+];
 
-function BalanceItem({
-  icon,
-  value,
-  label,
-  compact = false,
-}: {
-  icon: string;
-  value: number;
-  label: string;
-  compact?: boolean;
-}) {
-  return (
-    <div
-      className={`flex w-full min-w-0 flex-1 flex-col items-center justify-center ${compact ? "gap-1 py-2" : "gap-2 py-4"}`}
-    >
-      <div className="flex w-full items-center justify-center gap-2">
-        <img src={icon} alt="" className={compact ? "h-7 w-7" : "h-8 w-8"} />
-        <strong
-          className={`${compact ? "text-lg" : "text-xl"} font-semibold text-[#171717]`}
-        >
-          {value.toLocaleString("ko-KR")}
-        </strong>
+function PillAvatar({ src, alt }: { src?: string | null; alt: string }) {
+  const [hasImageError, setHasImageError] = useState(false);
+
+  useEffect(() => {
+    setHasImageError(false);
+  }, [src]);
+
+  if (src && !hasImageError) {
+    return (
+      <div className="h-full w-full rounded-full bg-[#ffe3d7]">
+        <img
+          src={src}
+          alt={alt}
+          onError={() => setHasImageError(true)}
+          className="h-full w-full rounded-full object-cover"
+        />
       </div>
-      <span className="w-full text-center text-sm font-medium text-[#333]">
-        {label}
-      </span>
+    );
+  }
+
+  return (
+    <div className="relative h-full w-full overflow-hidden rounded-full bg-[#ffe3d7]">
+      <div className="absolute left-1/2 top-1/2 h-[2.35rem] w-[4.85rem] -translate-x-1/2 -translate-y-1/2 -rotate-45 overflow-hidden rounded-full bg-[#f1b454] shadow-[0_7px_14px_rgba(198,74,40,0.22)]">
+        <div className="absolute right-0 top-0 h-full w-[52%] rounded-r-full bg-gradient-to-br from-[#b82563] to-[#e54a78]" />
+        <div className="absolute right-[0.55rem] top-[0.55rem] h-3 w-3 rounded-full bg-white/80" />
+      </div>
     </div>
   );
 }
 
-function PurchaseButton({
-  icon,
-  children,
-}: {
-  icon: string;
-  children: ReactNode;
-}) {
+function ContentList({ items }: { items: typeof postItems }) {
   return (
-    <button
-      type="button"
-      className="flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#fff6f5] px-2 text-sm font-medium text-[#222]"
-    >
-      <img src={icon} alt="" className="h-7 w-7" />
-      <span className="whitespace-nowrap">{children}</span>
-    </button>
-  );
-}
-
-function BenefitItem({
-  icon,
-  title,
-  onClick,
-}: {
-  icon: string;
-  title: string;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full items-center gap-3 py-2 text-left"
-    >
-      <img src={icon} alt="" className="h-8 w-8 shrink-0" />
-      <strong className="text-base font-semibold leading-6 text-[#222]">
-        {title}
-      </strong>
-    </button>
+    <div className="px-6 pt-[1.625rem]">
+      {items.map((item, index) => (
+        <article
+          key={`${item.meta}-${item.title}`}
+          className={`flex h-[70px] flex-col justify-center ${
+            index === 0 ? "pt-0" : "border-t border-[#ebe6e3]"
+          }`}
+        >
+          <p className="text-[0.8125rem] font-normal leading-[18px] text-[#6f625d]">
+            {item.meta}
+          </p>
+          <h2 className="mt-1 text-[1rem] font-bold leading-[22px] text-[#050505]">
+            {item.title}
+          </h2>
+        </article>
+      ))}
+    </div>
   );
 }
 
 export default function MyPage() {
   const router = useRouter();
   const { onMyProfile, isLoading, error, profile } = useMyProfile();
+  const [activeTab, setActiveTab] = useState<ProfileTab>("posts");
 
   useEffect(() => {
     onMyProfile();
   }, [onMyProfile]);
 
-  const isProfessional = profile.userType === "PROFESSIONAL";
-  const displayName = profile.nickname || "닉네임";
-  const profileImage = profile.profileImg || "/icons/defaultProfile.svg";
-  const gradeLabel = profile.grade
-    ? gradeLabels[profile.grade] || profile.grade
-    : "";
-  const detailLine = isProfessional
-    ? [
-        profile.job || "직업 정보 없음",
-        profile.workplace || "근무지 정보 없음",
-      ].join(" / ")
-    : [
-        profile.school || "학교 정보 없음",
-        profile.studentGrade || "학년 정보 없음",
-      ].join(" / ");
+  const displayName = profile.nickname || "약학마스터";
+  const profileImage = profile.profileImg || null;
+  const badgeLabel =
+    profile.grade && profile.grade !== "NONE"
+      ? gradeLabels[profile.grade] || profile.grade
+      : "약물학 A+";
+  const followerCount = profile.followerCount || 6;
+  const followingCount = profile.followingCount || 52;
 
-  const handleOnboardingClick = async () => {
-    try {
-      const result = await fetchAPI("/api/auth/inquiry-myprofile", "GET");
-      const role =
-        result?.data?.userType === "PROFESSIONAL" ? "professional" : "student";
-      router.push(`/onboarding/${role}`);
-    } catch {
-      router.push("/onboarding");
-    }
-  };
+  const currentItems = useMemo(() => {
+    if (activeTab === "comments") return commentItems;
+    if (activeTab === "badges") return badgeItems;
+    return postItems;
+  }, [activeTab]);
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-screen-sm bg-white pb-[8.25rem]">
-      <MeaninglessHeader showActions />
+    <div className="mx-auto min-h-dvh w-full max-w-[393px] bg-white pb-[5.25rem] text-[#111]">
+      <header className="flex h-[60px] items-center justify-between px-6">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          aria-label="뒤로가기"
+          className="-ml-1 flex h-10 w-10 items-center justify-start text-[#111] active:scale-95"
+        >
+          <ChevronLeft
+            aria-hidden="true"
+            className="h-7 w-7"
+            strokeWidth={2.35}
+          />
+        </button>
+        <button
+          type="button"
+          onClick={() => router.push("/setting")}
+          className="text-[1rem] font-normal leading-6 text-[#4d3f39] active:scale-95"
+        >
+          설정
+        </button>
+      </header>
 
-      <main className="px-6 pb-4">
-        {error ? (
-          <div className="flex min-h-[28rem] flex-col items-center justify-center gap-3 text-center">
-            <p className="text-sm text-[#777]">
-              프로필 정보를 불러오지 못했습니다.
-            </p>
-            <button
-              type="button"
-              onClick={() => onMyProfile()}
-              className="rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white"
-            >
-              다시 시도
-            </button>
-          </div>
-        ) : (
-          <>
-            <section className="flex flex-col items-center pt-3 text-center">
-              <div className="relative h-[4.25rem] w-[4.25rem]">
-                <img
-                  src={profileImage}
-                  alt={`${displayName} 프로필`}
-                  className="h-full w-full rounded-full object-cover"
-                />
-              </div>
-
-              <div className="mt-3 flex min-h-7 items-center justify-center gap-2">
-                {isLoading ? (
-                  <span className="h-5 w-28 animate-pulse rounded bg-[#eeeeee]" />
-                ) : (
-                  <>
-                    <h1 className="text-xl font-bold text-[#171717]">
-                      {displayName}
-                    </h1>
-                    {isProfessional && gradeLabel && (
-                      <span
-                        className="rounded-full px-3 py-1 text-sm font-semibold text-white"
-                        style={{
-                          backgroundColor:
-                            gradeColors[profile.grade || ""] || "#666",
-                        }}
-                      >
-                        {gradeLabel}
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-              <p className="mt-1 text-sm text-[#333]">{detailLine}</p>
-
-              <div className="mt-4 flex items-start justify-center gap-12">
-                <div>
-                  <span className="block text-xs text-[#999]">팔로워</span>
-                  <strong className="mt-1 block text-lg font-medium text-[#222]">
-                    {profile.followerCount.toLocaleString("ko-KR")}
-                  </strong>
-                </div>
-                <div>
-                  <span className="block text-xs text-[#999]">팔로잉</span>
-                  <strong className="mt-1 block text-lg font-medium text-[#222]">
-                    {profile.followingCount.toLocaleString("ko-KR")}
-                  </strong>
-                </div>
-              </div>
-
+      {error ? (
+        <main className="flex min-h-[34rem] flex-col items-center justify-center px-6 text-center">
+          <p className="text-[0.9375rem] font-medium text-[#6f625d]">
+            프로필 정보를 불러오지 못했습니다.
+          </p>
+          <button
+            type="button"
+            onClick={() => onMyProfile()}
+            className="mt-4 h-11 rounded-full bg-[#e85a35] px-6 text-[0.9375rem] font-bold text-white"
+          >
+            다시 시도
+          </button>
+        </main>
+      ) : (
+        <main>
+          <section className="flex h-[268px] flex-col items-center pb-[16px] pl-[16px] pr-[24px] pt-[8px] text-center">
+            <div className="relative h-[96px] w-[96px] shrink-0">
+              <PillAvatar src={profileImage} alt={`${displayName} 프로필`} />
               <button
                 type="button"
                 onClick={() => router.push("/editprofile")}
-                className="mt-5 h-11 w-full rounded-2xl bg-[#fff6f5] text-sm font-semibold text-brand"
+                aria-label="프로필 이미지 편집"
+                className="absolute bottom-[0.125rem] right-[-0.125rem] flex h-8 w-8 items-center justify-center rounded-full border-[0.1875rem] border-white bg-[#e85a35] text-white shadow-[0_2px_7px_rgba(232,90,53,0.28)] active:scale-95"
               >
-                프로필 편집
+                <Pencil
+                  aria-hidden="true"
+                  className="h-4 w-4"
+                  strokeWidth={2}
+                />
               </button>
-            </section>
+            </div>
 
-            <section className="mt-8">
-              <h2 className="text-sm text-[#999]">내 자료 관리</h2>
-              <div className="mt-2 flex">
-                <ActionItem
-                  icon={isProfessional ? "/Answer.svg" : "/QA.svg"}
-                  label={isProfessional ? "답변 관리" : "질문 및 답변 관리"}
-                  onClick={() => router.push("/archive")}
-                />
-                <ActionItem
-                  icon="/Post.svg"
-                  label="게시물 관리"
-                  bordered
-                  onClick={() => router.push("/board")}
-                />
-                <ActionItem
-                  icon="/Materials.svg"
-                  label="학습 자료 관리"
-                  bordered
-                  onClick={() => router.push("/archive")}
-                />
-              </div>
-            </section>
-
-            <section className="mt-7">
-              <h2 className="text-sm text-[#999]">팜머니 관리</h2>
-              {isProfessional ? (
-                <div className="mt-2 grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    className="flex h-20 flex-col items-center justify-center gap-2 rounded-2xl bg-[#fff6f5]"
-                  >
-                    <img src="/Store.svg" alt="" className="h-8 w-8" />
-                    <span className="text-sm font-semibold text-[#222]">
-                      팜머니 상점
-                    </span>
-                  </button>
-                  <div className="flex h-20 flex-col items-center justify-center rounded-2xl bg-[#fff6f5]">
-                    <BalanceItem
-                      icon="/FarmMoney.svg"
-                      value={profile.farmMoney}
-                      label="보유 팜머니"
-                      compact
-                    />
-                  </div>
-                </div>
+            <div className="mt-[17px] flex min-h-[36px] w-full items-center justify-center gap-2">
+              {isLoading ? (
+                <div className="h-8 w-40 animate-pulse rounded-full bg-[#f1ece9]" />
               ) : (
                 <>
-                  <div className="mt-2 flex rounded-2xl bg-[#fff6f5]">
-                    <BalanceItem
-                      icon="/Ticket.svg"
-                      value={profile.ticketCount}
-                      label="보유 질문티켓"
+                  <h1 className="max-w-[12rem] truncate text-[1.875rem] font-semibold leading-9 text-[#050505]">
+                    {displayName}
+                  </h1>
+                  <span className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#fff0ea] px-3.5 text-[0.9375rem] font-bold text-[#c63821]">
+                    <GraduationCap
+                      aria-hidden="true"
+                      className="h-4 w-4 text-[#273044]"
+                      strokeWidth={2}
                     />
-                    <BalanceItem
-                      icon="/FarmMoney.svg"
-                      value={profile.farmMoney}
-                      label="보유 팜머니"
-                    />
-                  </div>
-                  <div className="mt-2 flex gap-2">
-                    <PurchaseButton icon="/Store.svg">
-                      팜머니 상점
-                    </PurchaseButton>
-                    <PurchaseButton icon="/Purchase.svg">
-                      팜머니 / 질문권 구입
-                    </PurchaseButton>
-                  </div>
+                    {badgeLabel}
+                  </span>
                 </>
               )}
-            </section>
+            </div>
 
-            <section className="mt-8">
-              <h2 className="text-sm text-[#999]">정보</h2>
-              <div className="mt-2 flex flex-col gap-1">
-                <InfoItem
-                  icon="/Badge.svg"
-                  title="뱃지 설정"
-                  description="대표 뱃지를 설정해보세요."
-                  onClick={() => router.push("/grade")}
-                />
-                {!isProfessional && (
-                  <InfoItem
-                    icon="/userUp.svg"
-                    title="승급 조건"
-                    description="다음 승급을 위한 조건을 알아보세요."
-                    onClick={() => router.push("/gradeInfo")}
-                  />
-                )}
-                <InfoItem
-                  icon="/Coupon.svg"
-                  title="내 쿠폰"
-                  description="쿠폰을 사용하여 알뜰한 약챗 소비를 해보세요."
-                  onClick={() => router.push("/coupon")}
-                />
-                <InfoItem
-                  icon="/BellColor.svg"
-                  title="알림 설정"
-                  description="원하는 알림만 받도록 설정해보세요."
-                  onClick={() => router.push("/bellSetting")}
-                />
-                <InfoItem
-                  icon="/userInfo.svg"
-                  title="맞춤형 정보 설정"
-                  description="내가 설정한 항목을 변경할 수 있어요."
-                  onClick={handleOnboardingClick}
-                />
-              </div>
-            </section>
+            <div className="mt-[8px] flex items-center justify-center text-[1.125rem] leading-7 text-[#5c4c46]">
+              <span>
+                팔로워{" "}
+                <strong className="font-bold text-[#050505]">
+                  {followerCount.toLocaleString("ko-KR")}
+                </strong>
+              </span>
+              <span className="mx-[1.375rem] h-[1.0625rem] w-px bg-[#e6ded9]" />
+              <span>
+                팔로잉{" "}
+                <strong className="font-bold text-[#050505]">
+                  {followingCount.toLocaleString("ko-KR")}
+                </strong>
+              </span>
+            </div>
 
-            <section className="mt-8">
-              <h2 className="text-sm text-[#999]">혜택</h2>
-              <div className="mt-2 flex flex-col gap-1">
-                <BenefitItem
-                  icon="/Attendance.svg"
-                  title="출석체크하고 5 팜머니 받기"
-                  onClick={() => router.push("/attendance")}
-                />
-                <BenefitItem
-                  icon="/Invite.svg"
-                  title="친구 초대하고 50 팜머니 받기"
-                  onClick={() => router.push("/invite")}
-                />
-              </div>
-              <div className="mt-5 h-px w-full bg-[#eeeeee]" />
-            </section>
-          </>
-        )}
-      </main>
+            <button
+              type="button"
+              onClick={() => router.push("/editprofile")}
+              className="mt-[14px] h-[44px] w-full rounded-full bg-[#f5f1ee] text-[1.0625rem] font-bold text-[#050505] active:scale-[0.99]"
+            >
+              프로필 편집
+            </button>
+          </section>
 
-      <BottomNavbar className="md:max-w-screen-sm" />
+          <section className="h-[44px] border-b border-[#ebe6e3]">
+            <div className="grid h-full grid-cols-3 px-6">
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.id;
+
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative flex items-center justify-center text-[1.0625rem] font-semibold leading-6 ${
+                      isActive ? "text-[#050505]" : "text-[#5f524d]"
+                    }`}
+                  >
+                    {tab.label}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-[#19110f]" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="min-h-[24.5rem]">
+            <div className="flex justify-end px-6 pt-[0.875rem]">
+              <button
+                type="button"
+                className="inline-flex h-8 items-center gap-2 rounded-full bg-[#fff0ea] px-4 text-[0.9375rem] font-bold text-[#c63821] active:scale-95"
+              >
+                <Lock
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                  strokeWidth={1.9}
+                />
+                공개
+              </button>
+            </div>
+            <ContentList items={currentItems} />
+          </section>
+        </main>
+      )}
+
+      <BottomNavbar className="max-w-[393px]" />
     </div>
   );
 }
