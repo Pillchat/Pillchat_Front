@@ -1,8 +1,7 @@
 "use client";
 
-import { TextButton, TextareaWithLabel } from "@/components/atoms";
-import { IconInputField, SelectModal } from "@/components/molecules";
-import { BoardHeader, BoardButton } from "@/components/molecules/board";
+import { TextButton } from "@/components/atoms";
+import { SelectModal } from "@/components/molecules";
 import { Controller } from "react-hook-form";
 import {
   Step,
@@ -22,6 +21,14 @@ import {
   isPdfFileKey,
 } from "@/lib/shared/filePreview";
 import { useBoardQuery, useFilesQuery } from "@/hooks/queries";
+import {
+  Camera,
+  Check,
+  CheckSquare,
+  ChevronRight,
+  FileText,
+  X,
+} from "lucide-react";
 
 const buildQueryParams = (
   params: Record<
@@ -53,6 +60,7 @@ type PostDraft = {
   title: string;
   content: string;
   selectedCategory: string;
+  isAnonymous: boolean;
   updatedAt: number;
 };
 
@@ -89,6 +97,64 @@ const getPostDraftKey = (editId: string | null, target: BoardTargetKey) =>
     ? `board-post-draft:edit:${editId}`
     : `board-post-draft:create:${target}`;
 
+const CommunityRuleSummary = () => {
+  return (
+    <section className="pt-12 text-[#5F5550]">
+      <div className="mb-7 flex justify-end">
+        <button
+          type="button"
+          className="flex h-12 items-center gap-2 rounded-full border border-[#E7E0DC] bg-white px-5 text-base font-semibold text-[#5F5550] shadow-[0_1px_3px_rgba(17,17,17,0.03)]"
+        >
+          커뮤니티 이용규칙 전체 보기
+          <ChevronRight aria-hidden="true" className="h-5 w-5" />
+        </button>
+      </div>
+
+      <div className="space-y-6 text-[1.0625rem] font-medium leading-8">
+        <p>
+          PillChat은 누구나 기분 좋게 참여할 수 있는 커뮤니티를 만들기 위해
+          커뮤니티 이용규칙을 제정하여 운영하고 있습니다. 위반 시 게시물이
+          삭제되고 서비스 이용이 일정 기간 제한될 수 있습니다.
+        </p>
+        <p>
+          아래는 이 게시판에 해당하는 핵심 내용에 대한 요약 사항이며, 게시물
+          작성 전 커뮤니티 이용규칙 전문을 반드시 확인하시기 바랍니다.
+        </p>
+      </div>
+
+      <div className="mt-7 space-y-7 text-[1.0625rem] leading-8">
+        <div>
+          <h2 className="font-extrabold text-foreground">
+            ※ 정치·사회 관련 행위 금지
+          </h2>
+          <ul className="mt-4 space-y-2 font-medium text-[#5F5550]">
+            <li>
+              - 국가기관, 정치 관련 단체, 언론, 시민단체에 대한 언급 혹은 이와
+              관련한 행위
+            </li>
+            <li>
+              - 정책·외교 또는 정치·정파에 대한 의견, 주장 및 이념, 가치관을
+              드러내는 행위
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h2 className="font-extrabold text-foreground">
+            ※ 홍보 및 판매 관련 행위 금지
+          </h2>
+          <ul className="mt-4 space-y-2 font-medium text-[#5F5550]">
+            <li>
+              - 영리 여부와 관계없이 사업체·기관·단체·개인에게 직간접적으로
+              영향을 줄 수 있는 게시물 작성 행위
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const PostPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -102,6 +168,7 @@ const PostPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>(
     boardTarget.category,
   );
+  const [isAnonymous, setIsAnonymous] = useState(true);
 
   const draftKey = useMemo(
     () => getPostDraftKey(editId, boardTargetKey),
@@ -162,6 +229,7 @@ const PostPage = () => {
           title: trimmedTitle,
           content: trimmedContent,
           category: targetCategory,
+          isAnonymous: String(isAnonymous),
           keys: [...remainingExistingKeys, ...uploadedKeys],
         });
 
@@ -174,6 +242,7 @@ const PostPage = () => {
         title: trimmedTitle,
         content: trimmedContent,
         category: targetCategory,
+        isAnonymous,
         images: imageFiles.length > 0 ? imageFiles : undefined,
         pdf: pdfFile || undefined,
       });
@@ -200,6 +269,7 @@ const PostPage = () => {
         content: parsed.content ?? "",
       });
       setSelectedCategory(parsed.selectedCategory ?? boardTarget.category);
+      setIsAnonymous(parsed.isAnonymous ?? true);
 
       if (parsed.step && parsed.step !== Step.Complete) {
         setStep(parsed.step);
@@ -247,6 +317,7 @@ const PostPage = () => {
       content: boardData.content ?? "",
     });
     setSelectedCategory(boardData.category ?? boardTarget.category);
+    setIsAnonymous(boardData.isAnonymous ?? true);
   }, [
     draftReady,
     isEditMode,
@@ -305,11 +376,20 @@ const PostPage = () => {
       title: title ?? "",
       content: content ?? "",
       selectedCategory,
+      isAnonymous,
       updatedAt: Date.now(),
     };
 
     window.localStorage.setItem(draftKey, JSON.stringify(draft));
-  }, [draftKey, draftReady, step, title, content, selectedCategory]);
+  }, [
+    draftKey,
+    draftReady,
+    step,
+    title,
+    content,
+    selectedCategory,
+    isAnonymous,
+  ]);
 
   const canSubmit =
     trimmedTitle.length > 0 &&
@@ -343,45 +423,52 @@ const PostPage = () => {
     resetForm();
     clearFiles();
     setSelectedCategory(boardTarget.category);
+    setIsAnonymous(true);
     setStep(Step.Upload);
   };
 
   return (
     <>
       {step === Step.Upload && (
-        <div className="flex min-h-screen flex-col bg-white">
-          <BoardHeader
-            title={
-              isEditMode ? "게시글 수정" : `${boardTarget.label} 게시글 업로드`
-            }
-            rightButtonLabel={
-              isSubmitting
-                ? isEditMode
-                  ? "수정하는 중.."
-                  : "등록하는 중.."
-                : isEditMode
-                  ? "수정하기"
-                  : "등록하기"
-            }
-            onRightButtonClick={openConfirmModal}
-            isActive={canSubmit}
-            onLeftButtonClick={() => router.push(boardTarget.path)}
-          />
+        <div className="mx-auto flex min-h-[100dvh] w-full max-w-app flex-col bg-white">
+          <header className="sticky top-0 z-40 flex h-[4.5rem] shrink-0 items-center justify-between bg-white px-6">
+            <button
+              type="button"
+              onClick={() => router.push(boardTarget.path)}
+              aria-label="글쓰기 닫기"
+              className="flex h-11 w-11 items-center justify-start text-foreground active:scale-[0.98]"
+            >
+              <X aria-hidden="true" className="h-8 w-8" strokeWidth={2.4} />
+            </button>
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-8">
-            <div className="mb-5 w-full px-6">
-              <Controller
-                name="title"
-                control={control}
-                rules={{
-                  required: "제목을 입력해주세요.",
-                }}
-                render={({ field }) => (
-                  <IconInputField
-                    content="제목"
-                    placeholder="제목을 입력해주세요."
+            <h1 className="absolute left-1/2 -translate-x-1/2 text-xl font-extrabold text-foreground">
+              {isEditMode ? "글 수정" : "글 쓰기"}
+            </h1>
+
+            <button
+              type="button"
+              onClick={openConfirmModal}
+              disabled={!canSubmit}
+              className="h-11 px-1 text-base font-extrabold text-[#5f5550] disabled:text-[#9F9A96]"
+            >
+              {isSubmitting ? (isEditMode ? "수정 중" : "등록 중") : "완료"}
+            </button>
+          </header>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-28 pt-5">
+            <Controller
+              name="title"
+              control={control}
+              rules={{
+                required: "제목을 입력해주세요.",
+              }}
+              render={({ field }) => (
+                <div>
+                  <input
+                    {...field}
                     value={field.value ?? ""}
-                    inputClassName="border-[#C4C4C4] focus-visible:border-[#C4C4C4] focus-visible:ring-[#C4C4C4]"
+                    placeholder="제목을 입력해주세요."
+                    className="h-14 w-full border-0 border-b border-[#E8E1DD] bg-transparent px-0 pb-5 text-[1.75rem] font-extrabold leading-none text-foreground outline-none placeholder:text-[#A7A2A0] focus:border-[#D9D2CE]"
                     onChange={(e) =>
                       field.onChange(
                         e.target.value
@@ -390,118 +477,131 @@ const PostPage = () => {
                           .slice(0, 30),
                       )
                     }
+                  />
+                  {errors.title?.message && (
+                    <p className="mt-2 text-sm font-medium text-destructive">
+                      {errors.title.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+
+            <Controller
+              name="content"
+              control={control}
+              render={({ field }) => (
+                <div className="mt-5">
+                  <textarea
+                    value={field.value ?? ""}
+                    placeholder={`학교 친구들과 자유롭게 얘기해보세요.\n#수강신청 #취업`}
+                    className="min-h-[12.5rem] w-full resize-none border-0 bg-transparent p-0 text-xl font-medium leading-8 text-foreground outline-none placeholder:text-[#AAA4A1]"
+                    onChange={(e) => handleContentChange(e.target.value)}
                     onBlur={field.onBlur}
                     ref={field.ref}
                   />
-                )}
-              />
-            </div>
-
-            <div className="mb-5 w-full px-6">
-              <Controller
-                name="content"
-                control={control}
-                render={({ field }) => (
-                  <TextareaWithLabel
-                    label="본문"
-                    placeholder="본문을 입력해주세요."
-                    value={field.value ?? ""}
-                    className="max-h-[50dvh] border-[#C4C4C4] focus-visible:border-[#C4C4C4] focus-visible:ring-[#C4C4C4]"
-                    onChange={(e) => handleContentChange(e.target.value)}
-                    onBlur={field.onBlur}
-                    errorMessage={errors.content?.message}
-                    showMaxLengthError
-                  />
-                )}
-              />
-            </div>
-
-            <div className="px-6">
-              <p className="mb-3 font-[Pretendard] text-label-medium">
-                업로드할 파일
-              </p>
-              <p className="mb-1 font-[Pretendard] text-body-small text-[#999]">
-                선택 사항입니다. 이미지 파일 최대 10장 또는 PDF 파일 1개 가능
-              </p>
-
-              <div className="grid w-full grid-cols-2 gap-4">
-                <BoardButton
-                  imageSrc="/icons/Image.svg"
-                  className="max-w-[168.5px]"
-                  text="이미지 업로드"
-                  onClick={openImagePicker}
-                  type="button"
-                />
-                <BoardButton
-                  imageSrc="/icons/File2.svg"
-                  className="max-w-[168.5px]"
-                  text="파일 업로드"
-                  onClick={openPdfPicker}
-                  type="button"
-                />
-              </div>
-
-              <input
-                ref={imageInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handleImageChange}
-              />
-
-              <input
-                ref={pdfInputRef}
-                type="file"
-                accept="application/pdf"
-                className="hidden"
-                onChange={handlePdfChange}
-              />
-
-              {previewItems.length > 0 && (
-                <div className="mt-5 pb-2">
-                  <div className="grid max-h-[60dvh] grid-cols-2 gap-4 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                    {previewItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="relative aspect-square overflow-hidden border border-[#C4C4C4] bg-[#F8F8F8]"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => removeItem(item.id)}
-                          className="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center"
-                        >
-                          <img src="/icons/Remove.svg" alt="제거" />
-                        </button>
-
-                        {item.type === "image" ? (
-                          <img
-                            src={item.previewUrl}
-                            alt={item.name}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <>
-                            <embed
-                              src={`${item.previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-                              type="application/pdf"
-                              className="h-full w-full"
-                            />
-                            <div className="absolute left-2 top-2 rounded bg-black/60 px-2 py-1 text-label-small text-white">
-                              PDF
-                            </div>
-                            <div className="absolute bottom-0 left-0 right-0 truncate bg-black/55 px-2 py-1 text-label-small text-white">
-                              {item.name}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  {errors.content?.message && (
+                    <p className="mt-2 text-sm font-medium text-destructive">
+                      {errors.content.message}
+                    </p>
+                  )}
                 </div>
               )}
-            </div>
+            />
+
+            {previewItems.length > 0 && (
+              <div className="mb-8 mt-4 grid grid-cols-3 gap-3">
+                {previewItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="relative aspect-square overflow-hidden rounded-lg border border-[#E8E1DD] bg-[#F8F6F5]"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.id)}
+                      aria-label={`${item.name} 제거`}
+                      className="absolute right-1.5 top-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white"
+                    >
+                      <X aria-hidden="true" className="h-4 w-4" />
+                    </button>
+
+                    {item.type === "image" ? (
+                      <img
+                        src={item.previewUrl}
+                        alt={item.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full flex-col items-center justify-center px-3 text-center text-[#6D625E]">
+                        <FileText aria-hidden="true" className="h-9 w-9" />
+                        <span className="mt-2 line-clamp-2 text-xs font-bold">
+                          {item.name}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <CommunityRuleSummary />
+
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleImageChange}
+            />
+
+            <input
+              ref={pdfInputRef}
+              type="file"
+              accept="application/pdf"
+              className="hidden"
+              onChange={handlePdfChange}
+            />
           </div>
+
+          <footer className="fixed bottom-0 left-1/2 z-40 flex h-[4.625rem] w-full max-w-app -translate-x-1/2 items-center justify-between border-t border-[#EEE8E5] bg-white px-6">
+            <div className="flex items-center gap-5">
+              <button
+                type="button"
+                onClick={openImagePicker}
+                aria-label="이미지 첨부"
+                className="flex h-11 w-11 items-center justify-center text-[#756B67] active:scale-[0.98]"
+              >
+                <Camera aria-hidden="true" className="h-8 w-8" />
+              </button>
+              <button
+                type="button"
+                onClick={openPdfPicker}
+                aria-label="파일 첨부"
+                className="flex h-11 w-11 items-center justify-center text-[#756B67] active:scale-[0.98]"
+              >
+                <CheckSquare aria-hidden="true" className="h-8 w-8" />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsAnonymous((value) => !value)}
+              aria-pressed={isAnonymous}
+              className="flex h-11 items-center gap-2 text-lg font-extrabold text-primary active:scale-[0.98]"
+            >
+              <span
+                className={`flex h-8 w-8 items-center justify-center rounded-lg border-2 ${
+                  isAnonymous
+                    ? "border-primary bg-primary text-white"
+                    : "border-[#D8D0CC] bg-white text-transparent"
+                }`}
+              >
+                <Check aria-hidden="true" className="h-5 w-5" strokeWidth={3} />
+              </span>
+              익명
+            </button>
+          </footer>
         </div>
       )}
 
