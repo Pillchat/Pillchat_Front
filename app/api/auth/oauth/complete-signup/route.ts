@@ -52,14 +52,11 @@ export const POST = async (request: NextRequest) => {
       );
     }
 
-    if (
-      body.documentType !== "student" &&
-      body.documentType !== "professional"
-    ) {
+    if (body.documentType !== "student") {
       return NextResponse.json(
         {
           success: false,
-          message: "가입 유형이 올바르지 않습니다.",
+          message: "학생 회원가입만 가능합니다.",
         },
         { status: 400 },
       );

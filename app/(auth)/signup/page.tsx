@@ -513,6 +513,9 @@ const SignupPage: FC = () => {
   const [checkedPrivacy, setCheckedPrivacy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordRe, setShowPasswordRe] = useState(false);
+  const [manualInfoPage, setManualInfoPage] = useState<"profile" | "school">(
+    "profile",
+  );
   const router = useRouter();
 
   // 공통
@@ -562,12 +565,27 @@ const SignupPage: FC = () => {
   const isValidNickname = (nickname: string) =>
     /^[가-힣A-Za-z0-9]{2,}$/.test(nickname.trim());
 
-  // 정보 입력 단계 유효성 검사
-  const isValidManualInfo = () => {
-    if (!realName.trim()) return false;
-    if (!isValidNickname(nickname)) return false;
+  const isValidProfileInfo = () => {
+    return realName.trim().length > 0 && isValidNickname(nickname);
+  };
+
+  const isValidSchoolInfo = () => {
     if (!grade.trim()) return false;
     return isValidStudentId(studentId);
+  };
+
+  // 정보 입력 단계 유효성 검사
+  const isValidManualInfo = () => {
+    return isValidProfileInfo() && isValidSchoolInfo();
+  };
+
+  const handleManualInfoBack = () => {
+    if (manualInfoPage === "school") {
+      setManualInfoPage("profile");
+      return;
+    }
+
+    router.push("/intro");
   };
 
   const handleSubmit = async () => {
@@ -611,98 +629,164 @@ const SignupPage: FC = () => {
       {step === Step.DepartMent && (
         <>
           <StepHeader
-            content="학생 정보 입력"
-            onIconClick={() => router.push("/intro")}
+            content={
+              manualInfoPage === "profile" ? "기본 정보 입력" : "학생 정보 입력"
+            }
+            onIconClick={handleManualInfoBack}
           />
 
-          <div className="mt-[1rem] flex w-[90%] flex-col gap-[20px]">
-            <div className="flex flex-col gap-[20px]">
-              <IconInputField
-                content="성명 (실명)"
-                value={realName}
-                onChange={(e) => setRealName(e.target.value)}
-                onIconClick={() => setRealName("")}
-                placeholder="홍길동"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton={true}
-                iconSize={20}
+          <div className="mt-[1rem] flex w-[90%] flex-1 flex-col gap-[20px]">
+            <div className="flex items-center gap-2">
+              <div
+                className={`h-1.5 flex-1 rounded-full ${
+                  manualInfoPage === "profile" ? "bg-primary" : "bg-gray-200"
+                }`}
               />
-
-              <IconInputField
-                content="닉네임"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                onIconClick={() => setNickname("")}
-                placeholder="필챗러"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton={true}
-                iconSize={20}
-              />
-              <p className="text-sm text-border">
-                한글, 영문, 숫자만 사용한 2자 이상
-              </p>
-
-              <IconInputField
-                content="학년"
-                value={grade}
-                onChange={(e) => setGrade(e.target.value)}
-                onIconClick={() => setGrade("")}
-                placeholder="1학년"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton={true}
-                iconSize={20}
-              />
-              <IconInputField
-                content="학과"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                onIconClick={() => setDepartment("")}
-                placeholder="약학과"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton={true}
-                iconSize={20}
-              />
-              <IconInputField
-                content="학번"
-                value={studentId}
-                onChange={(e) =>
-                  setStudentId(e.target.value.replace(/\D/g, ""))
-                }
-                onIconClick={() => setStudentId("")}
-                placeholder="20241234"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton={true}
-                iconSize={20}
-                type="text"
-                maxLength={14}
-                inputMode="numeric"
-              />
-              <p className="text-sm text-border">14자 이하로 입력해주세요</p>
-              <IconInputField
-                content="학교명 (선택)"
-                value={university}
-                onChange={(e) => setUniversity(e.target.value)}
-                onIconClick={() => setUniversity("")}
-                placeholder="한국대학교"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton={true}
-                iconSize={20}
+              <div
+                className={`h-1.5 flex-1 rounded-full ${
+                  manualInfoPage === "school" ? "bg-primary" : "bg-gray-200"
+                }`}
               />
             </div>
 
-            <div className="mt-[2rem] flex w-full flex-col justify-center gap-[15px]">
-              <StrokeButton
-                content="이전으로"
-                variant="stroke-brand"
-                onClick={() => router.push("/intro")}
-              />
-              <SolidButton
-                content="다음"
-                variant={isValidManualInfo() ? "brand" : "disabled"}
-                disabled={!isValidManualInfo()}
-                onClick={() => nextStep()}
-              />
-            </div>
+            {manualInfoPage === "profile" ? (
+              <>
+                <div className="flex flex-col gap-[20px]">
+                  <div className="mb-2 flex flex-col gap-2">
+                    <p className="text-xl font-semibold">
+                      이름과 닉네임을 입력해주세요.
+                    </p>
+                    <p className="text-sm text-border">
+                      닉네임은 필챗에서 활동할 때 보여요.
+                    </p>
+                  </div>
+
+                  <IconInputField
+                    content="성명 (실명)"
+                    value={realName}
+                    onChange={(e) => setRealName(e.target.value)}
+                    onIconClick={() => setRealName("")}
+                    placeholder="홍길동"
+                    iconSrc="/icons/Cancel.svg"
+                    iconAsButton={true}
+                    iconSize={20}
+                    autoFocus={true}
+                  />
+
+                  <div className="flex flex-col gap-[5px]">
+                    <IconInputField
+                      content="닉네임"
+                      value={nickname}
+                      onChange={(e) => setNickname(e.target.value)}
+                      onIconClick={() => setNickname("")}
+                      placeholder="필챗러"
+                      iconSrc="/icons/Cancel.svg"
+                      iconAsButton={true}
+                      iconSize={20}
+                    />
+                    <p className="text-sm text-border">
+                      한글, 영문, 숫자만 사용한 2자 이상
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-auto flex w-full flex-col justify-center gap-[15px] pb-14">
+                  <StrokeButton
+                    content="이전으로"
+                    variant="stroke-brand"
+                    onClick={handleManualInfoBack}
+                  />
+                  <SolidButton
+                    content="다음"
+                    variant={isValidProfileInfo() ? "brand" : "disabled"}
+                    disabled={!isValidProfileInfo()}
+                    onClick={() => setManualInfoPage("school")}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col gap-[20px]">
+                  <div className="mb-2 flex flex-col gap-2">
+                    <p className="text-xl font-semibold">
+                      학교 정보를 입력해주세요.
+                    </p>
+                    <p className="text-sm text-border">
+                      학번과 학년은 필수로 입력해주세요.
+                    </p>
+                  </div>
+
+                  <IconInputField
+                    content="학교명 (선택)"
+                    value={university}
+                    onChange={(e) => setUniversity(e.target.value)}
+                    onIconClick={() => setUniversity("")}
+                    placeholder="한국대학교"
+                    iconSrc="/icons/Cancel.svg"
+                    iconAsButton={true}
+                    iconSize={20}
+                    autoFocus={true}
+                  />
+
+                  <IconInputField
+                    content="학과"
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    onIconClick={() => setDepartment("")}
+                    placeholder="약학과"
+                    iconSrc="/icons/Cancel.svg"
+                    iconAsButton={true}
+                    iconSize={20}
+                  />
+
+                  <div className="flex flex-col gap-[5px]">
+                    <IconInputField
+                      content="학번"
+                      value={studentId}
+                      onChange={(e) =>
+                        setStudentId(e.target.value.replace(/\D/g, ""))
+                      }
+                      onIconClick={() => setStudentId("")}
+                      placeholder="20241234"
+                      iconSrc="/icons/Cancel.svg"
+                      iconAsButton={true}
+                      iconSize={20}
+                      type="text"
+                      maxLength={14}
+                      inputMode="numeric"
+                    />
+                    <p className="text-sm text-border">
+                      숫자 8자 이상 12자 이하로 입력해주세요.
+                    </p>
+                  </div>
+
+                  <IconInputField
+                    content="학년"
+                    value={grade}
+                    onChange={(e) => setGrade(e.target.value)}
+                    onIconClick={() => setGrade("")}
+                    placeholder="1학년"
+                    iconSrc="/icons/Cancel.svg"
+                    iconAsButton={true}
+                    iconSize={20}
+                  />
+                </div>
+
+                <div className="mt-auto flex w-full flex-col justify-center gap-[15px] pb-14">
+                  <StrokeButton
+                    content="이전으로"
+                    variant="stroke-brand"
+                    onClick={() => setManualInfoPage("profile")}
+                  />
+                  <SolidButton
+                    content="다음"
+                    variant={isValidManualInfo() ? "brand" : "disabled"}
+                    disabled={!isValidManualInfo()}
+                    onClick={() => nextStep()}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </>
       )}
