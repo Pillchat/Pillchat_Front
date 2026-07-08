@@ -25,9 +25,7 @@ import { syncViewCountInQueryData } from "@/lib/shared/syncViewCount";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/lib/navigation";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
-import { Bookmark } from "lucide-react";
 import { useLikeStatus } from "@/hooks/useLikeStatus";
-import { useBoardScrapStatus } from "@/hooks/useBoardScrapStatus";
 import {
   useBoardCommentsQuery,
   useBoardQuery,
@@ -38,6 +36,7 @@ import {
   useDeleteBoardCommentMutation,
   useDeleteBoardMutation,
   useToggleBoardCommentLikeMutation,
+  useToggleBoardScrapMutation,
   useUpdateBoardCommentMutation,
 } from "@/hooks/mutations";
 import { BoardTitleSection } from "./BoardTitleSection";
@@ -68,16 +67,44 @@ const shouldSkipViewOnLoad = () => {
   return legacyNavigation?.type === legacyNavigation?.TYPE_RELOAD;
 };
 
+const copyTextToClipboard = async (text: string) => {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.top = "-9999px";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  const copied = document.execCommand("copy");
+  document.body.removeChild(textarea);
+
+  if (!copied) {
+    throw new Error("URL copy failed");
+  }
+};
+
+const getBoardScrapWhether = (board: any) =>
+  Boolean(
+    board?.scrapWhether ??
+      board?.isScrapped ??
+      board?.scrapped ??
+      board?.isBookmarked ??
+      board?.bookmarked ??
+      false,
+  );
+
 export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { isLiked, likeCount, toggleLike } = useLikeStatus(boardId, "boards");
-  const {
-    isScrapped,
-    scrapCount,
-    isLoading: scrapLoading,
-    toggleScrap,
-  } = useBoardScrapStatus(boardId);
+  const toggleScrapMutation = useToggleBoardScrapMutation();
   const currentUserId = getCurrentUserId();
   const commentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const editingCommentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -86,6 +113,7 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [commentValue, setCommentValue] = useState("");
   const [commentAnonymous, setCommentAnonymous] = useState(false);
+  const [isScrapped, setIsScrapped] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
   const [commentBarHeight, setCommentBarHeight] = useState(112);
 
@@ -112,6 +140,12 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
       refetchOnMount: skipView ? true : "always",
     },
   );
+
+  useEffect(() => {
+    if (!boardData) return;
+
+    setIsScrapped(getBoardScrapWhether(boardData));
+  }, [boardData]);
 
   useEffect(() => {
     if (boardData?.viewCount === undefined || boardData?.viewCount === null) {
@@ -233,8 +267,18 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   };
 
   const handleScrapClick = async () => {
-    const success = await toggleScrap();
-    if (!success) {
+    if (!boardId || toggleScrapMutation.isPending) return;
+
+    const previousScrapped = isScrapped;
+    setIsScrapped(!previousScrapped);
+    try {
+      await toggleScrapMutation.mutateAsync({
+        boardId,
+        isScrapped: previousScrapped,
+      });
+    } catch (error) {
+      setIsScrapped(previousScrapped);
+      console.error("게시글 북마크 처리 실패:", error);
       alert("게시글 스크랩 처리에 실패했습니다.");
     }
   };
@@ -242,7 +286,9 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const isAuthor =
     boardData &&
     currentUserId &&
-    (boardData.userId ? boardData.userId === currentUserId : false);
+    (boardData.userId
+      ? String(boardData.userId) === String(currentUserId)
+      : false);
 
   const deleteMutation = useDeleteBoardMutation({
     onSuccess: () => {
@@ -319,6 +365,31 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
   const handleEdit = () => router.push(`/post?edit=${boardId}`);
   const handleDelete = () => setShowDeleteConfirm(true);
   const handleReport = () => router.push(`/reports?type=BOARD&id=${boardId}`);
+  const handleShareUrl = async () => {
+    if (typeof window === "undefined") return;
+
+    const url = window.location.href;
+    const title = boardData?.title ?? "게시글";
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+      }
+    }
+
+    try {
+      await copyTextToClipboard(url);
+      alert("URL이 복사되었습니다.");
+    } catch (error) {
+      console.error("URL 공유 실패:", error);
+      alert("URL 공유에 실패했습니다.");
+    }
+  };
   const handleCommentReport = (commentId: number) => {
     router.push(`/reports?type=BOARD_COMMENT&id=${commentId}`);
   };
@@ -374,6 +445,23 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     });
   };
 
+  const shareMenuItem: ActionMenuItem = {
+    id: "share",
+    label: "URL 공유",
+    onClick: () => {
+      void handleShareUrl();
+    },
+  };
+
+  const bookmarkMenuItem: ActionMenuItem = {
+    id: "bookmark",
+    label: isScrapped ? "북마크 취소" : "북마크",
+    onClick: () => {
+      void handleScrapClick();
+    },
+    disabled: toggleScrapMutation.isPending,
+  };
+
   const menuItems: ActionMenuItem[] = isAuthor
     ? [
         { id: "edit", label: "수정", onClick: handleEdit },
@@ -386,6 +474,8 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
       ]
     : [{ id: "report", label: "신고", onClick: handleReport }];
 
+  const boardMenuItems = [...menuItems, bookmarkMenuItem, shareMenuItem];
+
   return (
     <div
       className="flex min-h-screen flex-col"
@@ -394,8 +484,27 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
       <CustomHeader
         title="게시판"
         showIcon
-        rightButtonLabel={isAuthor ? "수정" : undefined}
-        onRightButtonClick={isAuthor ? handleEdit : undefined}
+        rightSlot={
+          boardData ? (
+            <ActionMenu
+              trigger={
+                <Button variant="textOnly" size="icon" aria-label="게시글 메뉴">
+                  <img
+                    src="/icons/Ellipsis.svg"
+                    alt=""
+                    className="h-8 w-8 rotate-90"
+                  />
+                </Button>
+              }
+              items={boardMenuItems}
+              align="end"
+              side="bottom"
+              showBackdrop={true}
+            />
+          ) : (
+            <div aria-hidden="true" className="h-9 w-9" />
+          )
+        }
       />
 
       {boardLoading && (
@@ -427,49 +536,14 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
               />
             </div>
 
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <LikeButton
                   onClick={handleLikeClick}
                   likeCount={likeCount}
                   isLiked={isLiked}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  aria-label={isScrapped ? "스크랩 취소" : "스크랩"}
-                  disabled={scrapLoading}
-                  className={
-                    isScrapped
-                      ? "h-14 w-auto rounded-full border border-primary bg-accent px-4 py-2 text-primary disabled:opacity-60"
-                      : "h-14 w-auto rounded-full border px-4 py-2 disabled:opacity-60"
-                  }
-                  onClick={handleScrapClick}
-                >
-                  <Bookmark
-                    className="h-8 w-8"
-                    fill={isScrapped ? "currentColor" : "none"}
-                    strokeWidth={1.5}
-                  />
-                  <span className="text-base font-medium">{scrapCount}</span>
-                </Button>
               </div>
-              <ActionMenu
-                trigger={
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <img
-                      src="/icons/Ellipsis.svg"
-                      alt="더보기"
-                      className="h-5 w-5"
-                    />
-                  </Button>
-                }
-                items={menuItems}
-                align="end"
-                side="top"
-                showBackdrop={true}
-              />
             </div>
           </div>
 

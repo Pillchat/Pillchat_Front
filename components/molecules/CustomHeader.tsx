@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { type FC, type ReactNode } from "react";
 
 import { LeftArrowButton, TextButton } from "@/components/atoms";
 import { useRouter } from "@/lib/navigation";
@@ -13,6 +13,7 @@ interface CustomHeaderProps {
   showIcon?: boolean;
   onRightButtonClick?: () => void;
   isActive?: boolean;
+  rightSlot?: ReactNode;
 }
 
 export const CustomHeader: FC<CustomHeaderProps> = ({
@@ -21,6 +22,7 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
   rightButtonLabel = "",
   onRightButtonClick,
   isActive = false,
+  rightSlot,
 }) => {
   const router = useRouter();
 
@@ -31,7 +33,9 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
         <p className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-lg font-semibold">
           {title}
         </p>
-        {showIcon ? (
+        {rightSlot !== undefined ? (
+          rightSlot
+        ) : showIcon ? (
           <Button
             variant="textOnly"
             size="icon"
