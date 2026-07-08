@@ -13,19 +13,19 @@ const previewItems = [
   {
     title: "AI 플래시카드",
     description: "취약 개념을 반복해서 복습하는 학습 루틴",
-    href: "/flashcards",
+    href: null,
     iconSrc: "/FlashCard.svg",
   },
   {
     title: "문제 은행",
     description: "국시 유형을 실전처럼 풀어보는 문제 환경",
-    href: "/questionbank",
+    href: null,
     iconSrc: "/CBT.svg",
   },
   {
     title: "서술형 메이커",
     description: "키워드와 이미지로 정리하는 암기 보조",
-    href: "/learn/image-maker",
+    href: null,
     iconSrc: "/Image2.svg",
   },
 ];
