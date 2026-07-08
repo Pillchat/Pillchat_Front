@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { createPortal } from "react-dom";
 
 export interface ActionMenuItem {
   id: string;
@@ -79,9 +80,16 @@ export const ActionMenu: FC<ActionMenuProps> = ({
   return (
     <>
       {/* 백드롭 오버레이 */}
-      {showBackdrop && isOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/40" />
-      )}
+      {showBackdrop &&
+        isOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            aria-hidden="true"
+            className="fixed inset-0 z-[100] bg-black/40"
+          />,
+          document.body,
+        )}
 
       <div className={cn(className)}>
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>

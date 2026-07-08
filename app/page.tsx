@@ -11,16 +11,7 @@ import {
   useState,
 } from "react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  CalendarDays,
-  Check,
-  CheckCircle2,
-  Flame,
-  Pencil,
-  Plus,
-  X,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, Flame, Pencil, Plus, X } from "lucide-react";
 import {
   BottomNavbar,
   AlarmHeader,
@@ -679,27 +670,9 @@ const Home: FC = () => {
     );
   };
 
-  const handleToggleNewDdayDraft = (draftId: string) => {
+  const handleAddNewDdayDraft = (draftId: string) => {
     const draft = newDdayDrafts.find((item) => item.id === draftId);
     if (!draft) return;
-
-    if (draft.isConfirmed) {
-      if (draft.ddayId) {
-        removeDdayById(draft.ddayId);
-      }
-
-      setNewDdayDrafts((prev) =>
-        trimTrailingNewDdayDrafts(
-          prev.map((item) =>
-            item.id === draftId
-              ? { ...item, isConfirmed: false, ddayId: undefined }
-              : item,
-          ),
-        ),
-      );
-      showDdayToast("일정이 삭제되었습니다!");
-      return;
-    }
 
     const label = (draft.title ?? "").trim();
     if (!label || !draft.date) return;
@@ -715,26 +688,11 @@ const Home: FC = () => {
     };
 
     setDdays((prev) => [...prev, nextDday]);
-    setActiveDdayId(nextDdayId);
     showDdayToast("일정이 추가되었습니다!");
-    setNewDdayDrafts((prev) => {
-      const draftIndex = prev.findIndex((item) => item.id === draftId);
-      const next = prev.map((item) =>
-        item.id === draftId
-          ? { ...item, isConfirmed: true, ddayId: nextDdayId }
-          : item,
-      );
-      const hasBlankDraftAfter = next
-        .slice(draftIndex + 1)
-        .some((item) => !item.title && !item.date && !item.isConfirmed);
-
-      return hasBlankDraftAfter ? next : [...next, createNewDdayDraft()];
-    });
+    setNewDdayDrafts([createNewDdayDraft()]);
   };
 
   const handleRemoveDday = (id: string) => {
-    if (id === "guksi") return;
-
     removeDdayById(id);
     setNewDdayDrafts((prev) => {
       const next = prev.filter((item) => item.ddayId !== id);
@@ -921,6 +879,12 @@ const Home: FC = () => {
     return <div>Loading...</div>;
   }
 
+  const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    if ("showPicker" in e.currentTarget) {
+      e.currentTarget.showPicker();
+    }
+  };
+
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-app flex-col bg-white">
       <AlarmHeader />
@@ -1014,7 +978,7 @@ const Home: FC = () => {
                   <>
                     <CheckCircle2
                       aria-hidden="true"
-                      className="h-8 w-8"
+                      className="mr-1 h-5 w-5"
                       strokeWidth={1.5}
                     />
                     오늘도 인증 완료
@@ -1131,14 +1095,6 @@ const Home: FC = () => {
                 <h2 className="text-headline-small text-foreground">
                   D-Day 관리
                 </h2>
-                <button
-                  type="button"
-                  onClick={() => setIsDdayEditorOpen(false)}
-                  aria-label="닫기"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-980 text-muted-foreground"
-                >
-                  <X aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-                </button>
               </div>
 
               <div
@@ -1147,7 +1103,6 @@ const Home: FC = () => {
               >
                 {ddays.map((item) => {
                   const isActive = item.id === activeDdayId;
-                  const isNationalExamDday = item.id === "guksi";
 
                   return (
                     <div
@@ -1158,26 +1113,46 @@ const Home: FC = () => {
                           : "border-border"
                       }`}
                     >
-                      <button
-                        type="button"
-                        onClick={() => setActiveDdayId(item.id)}
-                        aria-pressed={isActive}
-                        className="min-w-0 flex-1 text-left"
-                      >
-                        <p className="text-title-small text-foreground">
+                      <div className="min-w-0 flex-1 text-left">
+                        <p
+                          className={`text-title-small ${
+                            isActive
+                              ? "text-primary-600"
+                              : "text-muted-foreground"
+                          }`}
+                        >
                           {item.label}
                         </p>
-                        <p className="mt-1 text-body-small text-muted-foreground">
+                        <p
+                          className={`mt-1 text-body-small ${
+                            isActive
+                              ? "text-primary-600"
+                              : "text-muted-foreground"
+                          }`}
+                        >
                           {formatExamDate(item.date)} ·{" "}
                           {formatDday(calculateDday(item.date))}
                           {item.source === "api" ? " · 공식 API" : ""}
                         </p>
-                      </button>
-                      {item.source === "api" ? (
-                        <span className="shrink-0 rounded-full bg-white px-2 py-1 text-label-small font-medium text-primary">
-                          공식
-                        </span>
-                      ) : !isNationalExamDday ? (
+                      </div>
+                      <div className="ml-3 flex shrink-0 items-center gap-2">
+                        {item.source === "api" && (
+                          <span className="rounded-full bg-white px-2 py-1 text-label-small font-medium text-primary">
+                            공식
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setActiveDdayId(item.id)}
+                          aria-pressed={isActive}
+                          className={`shrink-0 text-label-small font-semibold ${
+                            isActive
+                              ? "text-primary-800"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {isActive ? "대표로 설정됨" : "대표설정"}
+                        </button>
                         <button
                           type="button"
                           onClick={() => handleRemoveDday(item.id)}
@@ -1185,7 +1160,7 @@ const Home: FC = () => {
                         >
                           삭제
                         </button>
-                      ) : null}
+                      </div>
                     </div>
                   );
                 })}
@@ -1199,85 +1174,74 @@ const Home: FC = () => {
                   ref={newDdayDraftListRef}
                   className="mt-2 max-h-[13.5rem] space-y-2 overflow-y-auto overscroll-contain pr-1 sm:max-h-[16rem]"
                 >
-                  {newDdayDrafts.map((draft) => (
-                    <div
-                      key={draft.id}
-                      className={`grid grid-cols-[minmax(5rem,0.7fr)_minmax(7.5rem,1fr)_1.75rem] items-center gap-2 rounded-lg border bg-background px-3 py-2 transition-colors ${
-                        draft.isConfirmed
-                          ? "border-primary"
-                          : "border-border focus-within:border-primary-800"
-                      }`}
-                    >
-                      <input
-                        type="text"
-                        value={draft.title ?? ""}
-                        maxLength={MAX_DDAY_TITLE_LENGTH}
-                        onChange={(event) =>
-                          handleNewDdayDraftTitleChange(
-                            draft.id,
-                            event.target.value,
-                          )
-                        }
-                        placeholder="제목(10자)"
-                        aria-label="D-Day 제목"
-                        className="h-7 min-w-0 border-r border-border bg-transparent pr-2 text-body-medium text-foreground outline-none placeholder:text-muted-foreground"
-                      />
-                      <div className="flex min-w-0 items-center gap-2">
-                        <CalendarDays
-                          aria-hidden="true"
-                          className="h-4 w-4 shrink-0 text-muted-foreground"
-                        />
+                  {newDdayDrafts.map((draft) => {
+                    const canAddDraft = Boolean(
+                      (draft.title ?? "").trim() && draft.date,
+                    );
+
+                    return (
+                      <div
+                        key={draft.id}
+                        className="grid grid-cols-[minmax(5rem,0.7fr)_minmax(7.5rem,1fr)_2.25rem] items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 transition-colors focus-within:border-primary-800"
+                      >
                         <input
-                          type="date"
-                          value={draft.date}
+                          type="text"
+                          value={draft.title ?? ""}
+                          maxLength={MAX_DDAY_TITLE_LENGTH}
                           onChange={(event) =>
-                            handleNewDdayDraftDateChange(
+                            handleNewDdayDraftTitleChange(
                               draft.id,
                               event.target.value,
                             )
                           }
-                          onInput={(event) =>
-                            handleNewDdayDraftDateChange(
-                              draft.id,
-                              event.currentTarget.value,
-                            )
-                          }
-                          aria-label="D-Day 날짜"
-                          className="h-7 min-w-0 flex-1 bg-transparent text-body-medium text-foreground outline-none"
+                          placeholder="제목(최대 10자)"
+                          aria-label="D-Day 제목"
+                          className="h-7 min-w-0 border-r border-border bg-transparent pr-2 text-body-medium text-foreground outline-none placeholder:text-muted-foreground"
                         />
+                        <div className="flex min-w-0 items-center gap-2">
+                          <img src="/Calendar.svg" width={20} alt="" />
+                          <input
+                            type="date"
+                            onClick={(event) => handleClick(event)}
+                            value={draft.date}
+                            onChange={(event) =>
+                              handleNewDdayDraftDateChange(
+                                draft.id,
+                                event.target.value,
+                              )
+                            }
+                            onInput={(event) =>
+                              handleNewDdayDraftDateChange(
+                                draft.id,
+                                event.currentTarget.value,
+                              )
+                            }
+                            aria-label="D-Day 날짜"
+                            className="h-7 min-w-0 flex-1 bg-transparent text-body-medium text-foreground outline-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                          />
+                        </div>
+                        <div className="flex h-6 w-9 shrink-0 items-center justify-center">
+                          {canAddDraft && (
+                            <button
+                              type="button"
+                              onClick={() => handleAddNewDdayDraft(draft.id)}
+                              aria-label="D-Day 추가"
+                              className="flex h-6 w-9 items-center justify-center rounded-xl text-label-small font-semibold text-primary active:scale-[0.98]"
+                            >
+                              추가
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleToggleNewDdayDraft(draft.id)}
-                        disabled={
-                          (!(draft.title ?? "").trim() || !draft.date) &&
-                          !draft.isConfirmed
-                        }
-                        aria-label={
-                          draft.isConfirmed ? "D-Day 비활성화" : "D-Day 추가"
-                        }
-                        aria-pressed={draft.isConfirmed}
-                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors ${
-                          draft.isConfirmed
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-primary-980 text-muted-foreground disabled:opacity-40"
-                        }`}
-                      >
-                        <Check
-                          aria-hidden="true"
-                          className="h-4 w-4"
-                          strokeWidth={2}
-                        />
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => setIsDdayEditorOpen(false)}
-                className="mt-3 h-[3.625rem] w-full rounded-xl bg-foreground text-label-large text-background active:scale-[0.98]"
+                className="mt-3 h-[3.625rem] w-full rounded-xl bg-primary-600 text-label-large text-background active:scale-[0.98]"
               >
                 완료
               </button>

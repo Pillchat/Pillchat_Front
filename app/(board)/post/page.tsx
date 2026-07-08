@@ -15,6 +15,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { fetchAPI } from "@/lib/client/fetch";
 import { uploadBoard } from "@/lib/client/upload";
+import { getCurrentUserId } from "@/lib/client/auth";
 import {
   buildFileUrlMap,
   getFileKey,
@@ -97,6 +98,83 @@ const getPostDraftKey = (editId: string | null, target: BoardTargetKey) =>
     ? `board-post-draft:edit:${editId}`
     : `board-post-draft:create:${target}`;
 
+const normalizeBoardId = (value: unknown) => {
+  if (typeof value === "string" || typeof value === "number") {
+    const id = String(value).trim();
+    return id ? id : null;
+  }
+
+  return null;
+};
+
+const getCreatedBoardId = (payload: any): string | null => {
+  const directId = normalizeBoardId(payload);
+  if (directId) return directId;
+
+  const candidates = [
+    payload?.id,
+    payload?.boardId,
+    payload?.postId,
+    payload?.board?.id,
+    payload?.data?.id,
+    payload?.data?.boardId,
+    payload?.data?.postId,
+    payload?.data?.board?.id,
+    payload?.result?.id,
+    payload?.result?.boardId,
+  ];
+
+  for (const candidate of candidates) {
+    const id = normalizeBoardId(candidate);
+    if (id) return id;
+  }
+
+  return null;
+};
+
+const getBoardList = (payload: any) => {
+  const data = payload?.data ?? payload;
+
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.content)) return data.content;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.data?.content)) return data.data.content;
+
+  return [];
+};
+
+const findUploadedBoardId = async ({
+  title,
+  content,
+  category,
+}: {
+  title: string;
+  content: string;
+  category: string;
+}) => {
+  try {
+    const currentUserId = getCurrentUserId();
+    const response = await fetchAPI("/api/boards", "GET", { category });
+    const boards = getBoardList(response)
+      .filter((item: any) => {
+        const idMatches =
+          !currentUserId || Number(item?.userId) === Number(currentUserId);
+
+        return idMatches && item?.title === title && item?.content === content;
+      })
+      .sort((left: any, right: any) => {
+        const leftTime = new Date(left?.createdAt ?? 0).getTime();
+        const rightTime = new Date(right?.createdAt ?? 0).getTime();
+        return rightTime - leftTime;
+      });
+
+    return getCreatedBoardId(boards[0]);
+  } catch (error) {
+    console.error("방금 작성한 게시글 ID 조회 실패:", error);
+    return null;
+  }
+};
+
 const CommunityRuleSummary = () => {
   return (
     <section className="pt-12 text-[#5F5550]">
@@ -169,6 +247,7 @@ const PostPage = () => {
     boardTarget.category,
   );
   const [isAnonymous, setIsAnonymous] = useState(true);
+  const [createdBoardId, setCreatedBoardId] = useState<string | null>(editId);
 
   const draftKey = useMemo(
     () => getPostDraftKey(editId, boardTargetKey),
@@ -234,11 +313,12 @@ const PostPage = () => {
         });
 
         await fetchAPI(`/api/boards/${editId}?${queryString}`, "PUT");
+        setCreatedBoardId(editId);
         return;
       }
 
       // 생성 모드: V2 multipart API (파일 + 데이터 한번에)
-      await uploadBoard({
+      const uploadResult = await uploadBoard({
         title: trimmedTitle,
         content: trimmedContent,
         category: targetCategory,
@@ -246,6 +326,16 @@ const PostPage = () => {
         images: imageFiles.length > 0 ? imageFiles : undefined,
         pdf: pdfFile || undefined,
       });
+
+      const nextBoardId =
+        getCreatedBoardId(uploadResult) ??
+        (await findUploadedBoardId({
+          title: trimmedTitle,
+          content: trimmedContent,
+          category: targetCategory,
+        }));
+
+      setCreatedBoardId(nextBoardId);
     },
   });
 
@@ -424,7 +514,18 @@ const PostPage = () => {
     clearFiles();
     setSelectedCategory(boardTarget.category);
     setIsAnonymous(true);
+    setCreatedBoardId(null);
     setStep(Step.Upload);
+  };
+
+  const viewPostId = createdBoardId ?? editId;
+  const handleViewPost = () => {
+    if (viewPostId) {
+      router.push(`/board/${viewPostId}`);
+      return;
+    }
+
+    router.push("/archive");
   };
 
   return (
@@ -645,7 +746,7 @@ const PostPage = () => {
               className="border border-primary text-primary"
               label="내 게시물 보기"
               variant="teritary"
-              onClick={() => router.push("/archive")}
+              onClick={handleViewPost}
             />
             <TextButton label="다른 게시글 올리기" onClick={resetPostPage} />
           </div>
