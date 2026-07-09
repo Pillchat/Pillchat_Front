@@ -46,7 +46,7 @@ const learnFeatures = [
     icon: PanelTop,
   },
   {
-    title: "서술형 메이커",
+    title: "서술형 도우미",
     description: "키워드와 이미지로 정리하는 암기 보조",
     icon: ImageIcon,
   },
@@ -54,7 +54,7 @@ const learnFeatures = [
 
 export default function IntroPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<IntroTab>("market");
+  const [activeTab, setActiveTab] = useState<IntroTab>("community");
 
   useEffect(() => {
     const redirectAuthenticatedUser = async () => {

@@ -23,7 +23,7 @@ const previewItems = [
     iconSrc: "/CBT.svg",
   },
   {
-    title: "서술형 메이커",
+    title: "서술형 도우미",
     description: "키워드와 이미지로 정리하는 암기 보조",
     href: null,
     iconSrc: "/Image2.svg",

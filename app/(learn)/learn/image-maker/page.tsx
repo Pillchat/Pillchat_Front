@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { type ChangeEvent, useState } from "react";
-import { ArrowRight, FileText, Sparkles, Upload } from "lucide-react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
+import { ArrowRight, FileText, Sparkles, Upload, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,30 +16,58 @@ const examplePrompts = [
   "운영체제 · 스케줄링",
 ];
 
-const guideSteps = [
-  {
-    number: "01",
-    title: "자료 업로드",
-    description: "붙여넣기 또는 파일 업로드",
-  },
-  {
-    number: "02",
-    title: "키워드 순서 배열",
-    description: "논리의 뼈대를 먼저 잡기",
-  },
-  {
-    number: "03",
-    title: "그림 보고 서술",
-    description: "연상 이미지로 답안 작성",
-  },
-];
+const toPixelNumber = (value: string) => {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const resizeMaterialTextarea = (textarea: HTMLTextAreaElement) => {
+  const style = window.getComputedStyle(textarea);
+  const lineHeight = toPixelNumber(style.lineHeight) || 28;
+  const verticalSpace =
+    toPixelNumber(style.paddingTop) +
+    toPixelNumber(style.paddingBottom) +
+    toPixelNumber(style.borderTopWidth) +
+    toPixelNumber(style.borderBottomWidth);
+  const minHeight = Math.ceil(lineHeight * 3 + verticalSpace);
+  const maxHeight = Math.max(minHeight, Math.floor(textarea.offsetWidth));
+
+  textarea.style.height = `${minHeight}px`;
+  textarea.style.overflowY = "hidden";
+
+  const nextHeight = Math.min(textarea.scrollHeight, maxHeight);
+  textarea.style.height = `${nextHeight}px`;
+  textarea.style.overflowY =
+    textarea.scrollHeight > maxHeight ? "auto" : "hidden";
+};
 
 export default function ImageMakerPage() {
+  const materialTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [material, setMaterial] = useState("");
   const [fileName, setFileName] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
+  const [isMaterialFocused, setIsMaterialFocused] = useState(false);
 
   const hasMaterial = material.trim().length > 0 || fileName.length > 0;
+
+  useEffect(() => {
+    if (!materialTextareaRef.current) return;
+    resizeMaterialTextarea(materialTextareaRef.current);
+  }, [material]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (!materialTextareaRef.current) return;
+      resizeMaterialTextarea(materialTextareaRef.current);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -51,6 +79,11 @@ export default function ImageMakerPage() {
     event.target.value = "";
   };
 
+  const handleClearFile = () => {
+    setFileName("");
+    setStatusMessage("");
+  };
+
   const handleExampleClick = (prompt: string) => {
     setMaterial(
       `${prompt}\n\n핵심 개념과 흐름을 정리해서 서술형 답안으로 만들어주세요.`,
@@ -60,7 +93,7 @@ export default function ImageMakerPage() {
 
   const handleGenerateClick = () => {
     if (!hasMaterial) {
-      setStatusMessage("자료를 붙여넣거나 PDF · TXT 파일을 업로드해주세요.");
+      setStatusMessage("자료를 붙여넣거나 파일을 업로드해주세요.");
       return;
     }
 
@@ -108,38 +141,50 @@ export default function ImageMakerPage() {
           </h1>
 
           <textarea
+            ref={materialTextareaRef}
+            rows={3}
             value={material}
             onChange={(event) => {
               setMaterial(event.target.value);
               setStatusMessage("");
             }}
+            onBlur={() => setIsMaterialFocused(false)}
+            onFocus={() => setIsMaterialFocused(true)}
+            onInput={(event) => resizeMaterialTextarea(event.currentTarget)}
             placeholder="교재의 한 단락, 강의 노트, 요약본을 붙여넣어 보세요."
-            className="mt-6 h-[22rem] w-full resize-none rounded-[1.75rem] border border-gray-100 bg-muted px-6 py-6 text-base leading-7 text-foreground outline-none placeholder:text-muted-foreground focus:border-brand focus:ring-2 focus:ring-brand/20 sm:text-lg sm:leading-8"
+            className="mt-6 w-full resize-none overflow-hidden rounded-[0.75rem] border border-gray-100 bg-muted px-6 py-6 text-base leading-7 text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:ring-0 focus-visible:ring-0 sm:text-lg sm:leading-8"
+            style={{
+              borderColor: isMaterialFocused ? "#111111" : undefined,
+            }}
           />
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <label className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-brand bg-card px-4 text-sm font-bold text-brand transition-colors active:bg-brandSecondary sm:w-auto sm:px-6 sm:text-base">
               <Upload aria-hidden="true" className="h-5 w-5" strokeWidth={2} />
-              PDF · TXT 업로드
+              파일 업로드
               <input
                 type="file"
-                accept=".pdf,.txt,application/pdf,text/plain"
+                accept="image/*,.pdf,.txt,application/pdf,text/plain"
                 className="sr-only"
                 onChange={handleFileChange}
               />
             </label>
 
             {fileName && (
-              <span className="inline-flex min-h-9 max-w-full items-center gap-2 rounded-full bg-brandSecondary px-4 text-sm font-semibold text-brand">
+              <span className="inline-flex min-h-9 max-w-full items-center gap-2 rounded-full bg-brandSecondary py-1 pl-4 pr-2 text-sm font-semibold text-brand">
                 <FileText aria-hidden="true" className="h-4 w-4" />
-                <span className="truncate">{fileName}</span>
+                <span className="min-w-0 flex-1 truncate">{fileName}</span>
+                <button
+                  type="button"
+                  aria-label="선택한 파일 삭제"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-brand transition-colors active:bg-primary-900"
+                  onClick={handleClearFile}
+                >
+                  <X aria-hidden="true" className="h-4 w-4" strokeWidth={2.4} />
+                </button>
               </span>
             )}
           </div>
-
-          <p className="mt-4 text-sm font-medium leading-6 text-muted-foreground">
-            PDF는 텍스트 추출 후 데모용 요약이 생성돼요.
-          </p>
 
           <div className="mt-10">
             <h2 className="text-base font-bold text-muted-foreground">
@@ -165,7 +210,7 @@ export default function ImageMakerPage() {
             onClick={handleGenerateClick}
           >
             <Sparkles aria-hidden="true" className="!h-6 !w-6" />
-            서술형 문제 3개 생성하기
+            서술형 문제 생성하기
             <ArrowRight aria-hidden="true" className="!h-6 !w-6" />
           </Button>
 
@@ -180,35 +225,6 @@ export default function ImageMakerPage() {
               {statusMessage}
             </p>
           )}
-        </section>
-
-        <section aria-labelledby="usage-guide-title" className="mt-6">
-          <h2
-            id="usage-guide-title"
-            className="text-base font-bold text-foreground"
-          >
-            사용법
-          </h2>
-          <ol className="mt-3 flex flex-col gap-3">
-            {guideSteps.map((step) => (
-              <li
-                key={step.number}
-                className="grid grid-cols-[3.25rem_1fr] gap-4 border-b border-gray-100 py-4 last:border-b-0"
-              >
-                <span className="text-lg font-extrabold text-brand">
-                  {step.number}.
-                </span>
-                <span>
-                  <strong className="block text-base font-bold text-foreground">
-                    {step.title}
-                  </strong>
-                  <span className="mt-1 block text-sm font-medium leading-5 text-muted-foreground">
-                    {step.description}
-                  </span>
-                </span>
-              </li>
-            ))}
-          </ol>
         </section>
       </main>
     </ImageMakerUploadShell>
