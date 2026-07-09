@@ -4,7 +4,7 @@ import { serverFetch } from "@/lib/server/fetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST;
 const BOARD_CATEGORIES = ["FREE", "TIP", "REVIEW"];
-const normalizeToken = (token: string) => token.replace(/^Bearer\s+/i, "");
+const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
 
 const getAuthHeaders = (accessToken?: string): HeadersInit =>
   accessToken

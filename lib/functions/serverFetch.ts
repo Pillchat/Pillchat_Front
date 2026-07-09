@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST;
+const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
 
 type ServerFetchOptions = {
   method: string;
@@ -18,7 +19,13 @@ export const serverFetch = async (
 
   // 요청에서 인증 헤더 추출
   if (request) {
-    const authorization = request.headers.get("authorization");
+    const accessToken = request.cookies.get("access_token")?.value;
+    const authHeader = request.headers.get("authorization");
+    const authorization = authHeader
+      ? `Bearer ${normalizeToken(authHeader)}`
+      : accessToken
+        ? `Bearer ${normalizeToken(accessToken)}`
+        : null;
     if (authorization) {
       headers["Authorization"] = authorization;
     }

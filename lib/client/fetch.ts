@@ -6,7 +6,8 @@ const REFRESH_TOKEN_KEY = "refresh_token";
 
 const isBrowser = () => typeof window !== "undefined";
 
-const normalizeToken = (token: string) => token.replace(/^Bearer\s+/i, "");
+const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
+const toBearerHeader = (token: string) => `Bearer ${normalizeToken(token)}`;
 
 const getTokenExpiryTime = (token: string): number | null => {
   try {
@@ -155,10 +156,12 @@ export const refreshTokens = async (): Promise<
           refreshToken;
 
         if (accessToken) {
-          setTokens(accessToken, nextRefreshToken, rememberMe);
+          const normalizedAccessToken = normalizeToken(accessToken);
+          const normalizedRefreshToken = normalizeToken(nextRefreshToken);
+          setTokens(normalizedAccessToken, normalizedRefreshToken, rememberMe);
           return {
-            access_token: accessToken,
-            refresh_token: nextRefreshToken,
+            access_token: normalizedAccessToken,
+            refresh_token: normalizedRefreshToken,
           };
         }
       }
@@ -176,7 +179,7 @@ export const fetchPost = async (url: string, data: any) => {
   const headers: Record<string, string> = {};
 
   if (url !== "/api/auth/login" && token) {
-    headers.Authorization = `Bearer ${token}`;
+    headers.Authorization = toBearerHeader(token);
   }
 
   let response = await fetch(url, {
@@ -201,7 +204,7 @@ export const fetchPost = async (url: string, data: any) => {
         credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${refreshed.access_token}`,
+          Authorization: toBearerHeader(refreshed.access_token),
         },
       });
     }
@@ -226,7 +229,7 @@ export const fetchAPI = async (url: string, method: string, data?: any) => {
   const headers: Record<string, string> = {};
 
   if (token) {
-    headers.Authorization = `Bearer ${token}`;
+    headers.Authorization = toBearerHeader(token);
   }
 
   let requestUrl = url;
@@ -263,7 +266,7 @@ export const fetchAPI = async (url: string, method: string, data?: any) => {
         ...requestOptions,
         headers: {
           ...headers,
-          Authorization: `Bearer ${refreshed.access_token}`,
+          Authorization: toBearerHeader(refreshed.access_token),
         },
       });
     }

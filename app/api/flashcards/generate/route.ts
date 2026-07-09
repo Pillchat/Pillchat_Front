@@ -22,6 +22,7 @@ const MAX_FILE_SIZE = 8 * 1024 * 1024;
 const PDF_POLL_INTERVAL_MS = 1500;
 const PDF_MAX_POLLS = 8;
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST?.replace(/\/$/, "");
+const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
 
 const trimText = (value: unknown) =>
   typeof value === "string" ? value.trim() : "";
@@ -69,7 +70,8 @@ async function extractPdfQuestions(
 
   const authorization = request.headers.get("authorization");
   const headers: Record<string, string> = {};
-  if (authorization) headers.Authorization = authorization;
+  if (authorization)
+    headers.Authorization = `Bearer ${normalizeToken(authorization)}`;
 
   const formData = new FormData();
   formData.append("file", file);

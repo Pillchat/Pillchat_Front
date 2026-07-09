@@ -6,6 +6,9 @@ const REFRESH_TOKEN_KEY = "refresh_token";
 
 const isBrowser = () => typeof window !== "undefined";
 
+const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
+const toBearerHeader = (token: string) => `Bearer ${normalizeToken(token)}`;
+
 const getTokenExpiryTime = (token: string): number | null => {
   try {
     const payload = token.split(".")[1];
@@ -51,21 +54,24 @@ const getStoredToken = (key: string) => {
   const mode = getStoredAuthMode();
   if (mode) {
     const token = getStorage(mode)?.getItem(key);
-    if (token) return token;
+    if (token) return normalizeToken(token);
   }
 
-  return window.sessionStorage.getItem(key) ?? window.localStorage.getItem(key);
+  const token =
+    window.sessionStorage.getItem(key) ?? window.localStorage.getItem(key);
+  return token ? normalizeToken(token) : null;
 };
 
 const setAccessTokenCookie = (accessToken: string, rememberMe: boolean) => {
   if (!isBrowser()) return;
 
-  const expiresAt = getTokenExpiryTime(accessToken);
+  const normalizedAccessToken = normalizeToken(accessToken);
+  const expiresAt = getTokenExpiryTime(normalizedAccessToken);
   const maxAgeSeconds = expiresAt
     ? Math.max(0, Math.floor((expiresAt - Date.now()) / 1000))
     : 24 * 3600;
   const maxAge = rememberMe ? `; max-age=${maxAgeSeconds}` : "";
-  document.cookie = `access_token=${accessToken}; path=/${maxAge}; SameSite=Lax`;
+  document.cookie = `access_token=${normalizedAccessToken}; path=/${maxAge}; SameSite=Lax`;
 };
 
 export const getToken = () => getStoredToken(ACCESS_TOKEN_KEY);
@@ -91,6 +97,8 @@ export const setTokens = (
 ) => {
   if (!isBrowser()) return;
 
+  const normalizedAccessToken = normalizeToken(accessToken);
+  const normalizedRefreshToken = normalizeToken(refreshToken);
   const mode: AuthStorageMode = rememberMe ? "local" : "session";
   const targetStorage = getStorage(mode);
   const otherStorage = getStorage(rememberMe ? "session" : "local");
@@ -99,11 +107,11 @@ export const setTokens = (
   otherStorage?.removeItem(REFRESH_TOKEN_KEY);
   otherStorage?.removeItem(AUTH_STORAGE_MODE_KEY);
 
-  targetStorage?.setItem(ACCESS_TOKEN_KEY, accessToken);
-  targetStorage?.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  targetStorage?.setItem(ACCESS_TOKEN_KEY, normalizedAccessToken);
+  targetStorage?.setItem(REFRESH_TOKEN_KEY, normalizedRefreshToken);
   targetStorage?.setItem(AUTH_STORAGE_MODE_KEY, mode);
 
-  setAccessTokenCookie(accessToken, rememberMe);
+  setAccessTokenCookie(normalizedAccessToken, rememberMe);
 };
 
 export const clearTokens = () => {
@@ -148,10 +156,12 @@ export const refreshTokens = async (): Promise<
           refreshToken;
 
         if (accessToken) {
-          setTokens(accessToken, nextRefreshToken, rememberMe);
+          const normalizedAccessToken = normalizeToken(accessToken);
+          const normalizedRefreshToken = normalizeToken(nextRefreshToken);
+          setTokens(normalizedAccessToken, normalizedRefreshToken, rememberMe);
           return {
-            access_token: accessToken,
-            refresh_token: nextRefreshToken,
+            access_token: normalizedAccessToken,
+            refresh_token: normalizedRefreshToken,
           };
         }
       }
@@ -169,7 +179,7 @@ export const fetchPost = async (url: string, data: any) => {
   const headers: Record<string, string> = {};
 
   if (url !== "/api/auth/login" && token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    headers["Authorization"] = toBearerHeader(token);
   }
 
   let response = await fetch(url, {
@@ -189,7 +199,7 @@ export const fetchPost = async (url: string, data: any) => {
         body: JSON.stringify(data),
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${refreshed.access_token}`,
+          Authorization: toBearerHeader(refreshed.access_token),
         },
       });
     }
@@ -214,7 +224,7 @@ export const fetchAPI = async (url: string, method: string, data?: any) => {
   const headers: Record<string, string> = {};
 
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    headers["Authorization"] = toBearerHeader(token);
   }
 
   let requestUrl = url;
@@ -252,7 +262,7 @@ export const fetchAPI = async (url: string, method: string, data?: any) => {
         ...requestOptions,
         headers: {
           ...headers,
-          Authorization: `Bearer ${refreshed.access_token}`,
+          Authorization: toBearerHeader(refreshed.access_token),
         },
       });
     }

@@ -37,23 +37,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { getValidAccessToken } from "@/lib/client/fetch";
+import {
+  buildReviewLogs,
+  createRemoteFlashcard,
+  deleteRemoteFlashcard,
+  fetchAgainTodayFlashcards,
+  fetchDueFlashcards,
+  fetchFlashcardPage,
+  fetchFlashcardStats,
+  fetchWeakFlashcards,
+  mergeFlashcards,
+  reviewRemoteFlashcard,
+  type FlashcardStats,
+} from "@/lib/flashcards/api";
 import { cn } from "@/lib/utils";
 import {
-  createFlashcard,
   createMaskId,
   downscaleImage,
   readFileAsDataUrl,
-  readFlashcards,
-  readReviewLogs,
-  writeFlashcardData,
 } from "@/lib/flashcards/storage";
 import {
   getLatestRating,
-  getReviewStreak,
-  getTodayAgainCardIds,
   isDue,
   isWeakCard,
-  rateFlashcard,
   ratingLabels,
   ratingToneClass,
 } from "@/lib/flashcards/srs";
@@ -146,6 +152,15 @@ const weakFolderDescriptions: Record<Rating, string> = {
   hard: "긴가민가했던 카드",
   again: "다시 풀어야 할 카드",
 };
+
+type WeakFolders = Record<Rating, Flashcard[]>;
+
+const createEmptyWeakFolders = (): WeakFolders => ({
+  again: [],
+  hard: [],
+  good: [],
+  easy: [],
+});
 
 function formatDueTime(card: Flashcard) {
   const diff = card.due - Date.now();
@@ -288,36 +303,82 @@ function getTodayKey(value = Date.now()) {
 function useFlashcardData() {
   const [cards, setCards] = useState<Flashcard[]>([]);
   const [logs, setLogs] = useState<ReviewLog[]>([]);
+  const [againTodayCards, setAgainTodayCards] = useState<Flashcard[]>([]);
+  const [weakFolders, setWeakFolders] = useState<WeakFolders>(
+    createEmptyWeakFolders,
+  );
+  const [stats, setStats] = useState<FlashcardStats | null>(null);
   const [ready, setReady] = useState(false);
   const [toast, setToast] = useState("");
 
-  useEffect(() => {
-    setCards(readFlashcards());
-    setLogs(readReviewLogs());
-    setReady(true);
-  }, []);
+  const applyCards = (nextCards: Flashcard[]) => {
+    setCards(nextCards);
+    setLogs(buildReviewLogs(nextCards));
+  };
 
-  const commit = (nextCards: Flashcard[], nextLogs = logs) => {
+  const refresh = async ({ showLoading = false } = {}) => {
+    if (showLoading) setReady(false);
+
     try {
-      writeFlashcardData(nextCards, nextLogs);
-      setCards(nextCards);
-      setLogs(nextLogs);
+      const [page, dueCards, againCards, nextStats, weakEntries] =
+        await Promise.all([
+          fetchFlashcardPage(),
+          fetchDueFlashcards(),
+          fetchAgainTodayFlashcards(),
+          fetchFlashcardStats(),
+          Promise.all(
+            weakFolderOrder.map(async (rating) => {
+              const folderCards = await fetchWeakFlashcards(rating);
+              return [rating, folderCards] as const;
+            }),
+          ),
+        ]);
+      const nextWeakFolders = weakEntries.reduce<WeakFolders>(
+        (acc, [rating, folderCards]) => {
+          acc[rating] = folderCards;
+          return acc;
+        },
+        createEmptyWeakFolders(),
+      );
+      const nextCards = mergeFlashcards(
+        page.cards,
+        dueCards,
+        againCards,
+        ...Object.values(nextWeakFolders),
+      );
+
+      applyCards(nextCards);
+      setAgainTodayCards(againCards);
+      setWeakFolders(nextWeakFolders);
+      setStats(nextStats);
       return true;
-    } catch {
+    } catch (error) {
       setToast(
-        "저장 공간이 부족해요. 이미지 크기를 줄이거나 오래된 카드를 삭제해 주세요.",
+        error instanceof Error
+          ? error.message
+          : "플래시카드를 불러오지 못했어요.",
       );
       return false;
+    } finally {
+      if (showLoading) setReady(true);
     }
   };
+
+  useEffect(() => {
+    void refresh({ showLoading: true });
+  }, []);
 
   return {
     cards,
     logs,
+    againTodayCards,
+    weakFolders,
+    stats,
     ready,
     toast,
     setToast,
-    commit,
+    setCards: applyCards,
+    refresh,
   };
 }
 
@@ -613,12 +674,13 @@ function StudyPanel({
   onExitAgainMode,
 }: {
   cards: Flashcard[];
-  onRate: (card: Flashcard, rating: Rating) => void;
+  onRate: (card: Flashcard, rating: Rating) => Promise<void> | void;
   againModeIds: string[] | null;
   onExitAgainMode: () => void;
 }) {
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const [ratingPending, setRatingPending] = useState(false);
   const now = Date.now();
 
   const queue = useMemo(() => {
@@ -637,13 +699,19 @@ function StudyPanel({
 
   const current = queue[index] ?? queue[0];
 
-  const handleRate = (rating: Rating) => {
-    if (!current) return;
-    onRate(current, rating);
-    setFlipped(false);
-    setIndex((prev) =>
-      queue.length <= 1 ? 0 : Math.min(prev, queue.length - 2),
-    );
+  const handleRate = async (rating: Rating) => {
+    if (!current || ratingPending) return;
+
+    setRatingPending(true);
+    try {
+      await onRate(current, rating);
+      setFlipped(false);
+      setIndex((prev) =>
+        queue.length <= 1 ? 0 : Math.min(prev, queue.length - 2),
+      );
+    } finally {
+      setRatingPending(false);
+    }
   };
 
   if (!current) {
@@ -699,7 +767,7 @@ function StudyPanel({
         onFlip={() => setFlipped((prev) => !prev)}
       />
 
-      <RatingBar disabled={!flipped} onRate={handleRate} />
+      <RatingBar disabled={!flipped || ratingPending} onRate={handleRate} />
     </div>
   );
 }
@@ -707,17 +775,20 @@ function StudyPanel({
 function WeakPanel({
   cards,
   logs,
+  weakFolders,
   onRate,
   onDelete,
 }: {
   cards: Flashcard[];
   logs: ReviewLog[];
-  onRate: (card: Flashcard, rating: Rating) => void;
-  onDelete: (cardId: string) => void;
+  weakFolders: WeakFolders;
+  onRate: (card: Flashcard, rating: Rating) => Promise<void> | void;
+  onDelete: (cardId: string) => Promise<void> | void;
 }) {
   const [folder, setFolder] = useState<Rating | null>(null);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [flipped, setFlipped] = useState(false);
+  const [ratingPending, setRatingPending] = useState(false);
 
   const folders = useMemo(() => {
     const result: Record<Rating, Flashcard[]> = {
@@ -728,12 +799,18 @@ function WeakPanel({
     };
 
     cards.forEach((card) => {
-      const latestRating = getLatestRating(card.id, logs);
+      const latestRating = card.lastRating ?? getLatestRating(card.id, logs);
       if (latestRating) result[latestRating].push(card);
     });
 
+    weakFolderOrder.forEach((rating) => {
+      if (weakFolders[rating].length > 0) {
+        result[rating] = weakFolders[rating];
+      }
+    });
+
     return result;
-  }, [cards, logs]);
+  }, [cards, logs, weakFolders]);
 
   const folderCards = folder ? folders[folder] : [];
   const activeCard =
@@ -852,10 +929,17 @@ function WeakPanel({
                 onFlip={() => setFlipped((prev) => !prev)}
               />
               <RatingBar
-                disabled={!flipped}
-                onRate={(rating) => {
-                  onRate(activeCard, rating);
-                  setFlipped(false);
+                disabled={!flipped || ratingPending}
+                onRate={async (rating) => {
+                  if (ratingPending) return;
+
+                  setRatingPending(true);
+                  try {
+                    await onRate(activeCard, rating);
+                    setFlipped(false);
+                  } finally {
+                    setRatingPending(false);
+                  }
                 }}
               />
             </div>
@@ -869,19 +953,19 @@ function WeakPanel({
 function ManualCreateForm({
   onAdd,
 }: {
-  onAdd: (draft: FlashcardDraft) => void;
+  onAdd: (draft: FlashcardDraft) => Promise<void> | void;
 }) {
   const [type, setType] = useState<CardType>("concept");
   const [concept, setConcept] = useState(emptyConcept);
   const [relation, setRelation] = useState(emptyRelation);
   const [compare, setCompare] = useState(emptyCompare);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (type === "concept") {
       const term = concept.term.trim();
       const definition = concept.definition.trim();
       if (!term || !definition) return;
-      onAdd({ type, term, definition });
+      await onAdd({ type, term, definition });
       setConcept(emptyConcept);
     }
 
@@ -890,7 +974,7 @@ function ManualCreateForm({
       const effect = relation.effect.trim();
       const mechanism = relation.mechanism.trim();
       if (!trigger || !effect || !mechanism) return;
-      onAdd({ type, trigger, effect, mechanism });
+      await onAdd({ type, trigger, effect, mechanism });
       setRelation(emptyRelation);
     }
 
@@ -900,7 +984,7 @@ function ManualCreateForm({
       const common = compare.common.trim();
       const difference = compare.difference.trim();
       if (!nameA || !nameB || !common || !difference) return;
-      onAdd({ type, nameA, nameB, common, difference });
+      await onAdd({ type, nameA, nameB, common, difference });
       setCompare(emptyCompare);
     }
   };
@@ -1056,8 +1140,8 @@ function CreatePanel({
   onDelete,
 }: {
   cards: Flashcard[];
-  onAddMany: (drafts: FlashcardDraft[]) => void;
-  onDelete: (cardId: string) => void;
+  onAddMany: (drafts: FlashcardDraft[]) => Promise<void> | void;
+  onDelete: (cardId: string) => Promise<void> | void;
 }) {
   const [mode, setMode] = useState<CreateMode>("ai");
   const [topic, setTopic] = useState("");
@@ -1104,7 +1188,7 @@ function CreatePanel({
         throw new Error("생성된 카드가 없어요.");
       }
 
-      onAddMany(drafts);
+      await onAddMany(drafts);
       setTopic("");
       setSourceText("");
       setSourceFile(null);
@@ -1297,7 +1381,11 @@ function CreatePanel({
   );
 }
 
-function BlindEditor({ onSave }: { onSave: (draft: FlashcardDraft) => void }) {
+function BlindEditor({
+  onSave,
+}: {
+  onSave: (draft: FlashcardDraft) => Promise<void> | void;
+}) {
   const stageRef = useRef<HTMLDivElement>(null);
   const draftStartRef = useRef<{ x: number; y: number } | null>(null);
   const lastStrokePointRef = useRef<{ x: number; y: number } | null>(null);
@@ -1317,6 +1405,7 @@ function BlindEditor({ onSave }: { onSave: (draft: FlashcardDraft) => void }) {
   } | null>(null);
   const [resizingMaskId, setResizingMaskId] = useState<string | null>(null);
   const [toast, setToast] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const getPoint = (event: PointerEvent<HTMLDivElement>) => {
     const rect = stageRef.current?.getBoundingClientRect();
@@ -1539,24 +1628,35 @@ function BlindEditor({ onSave }: { onSave: (draft: FlashcardDraft) => void }) {
 
   const handleSave = async () => {
     const trimmed = title.trim();
-    if (!trimmed || !imageUrl || masks.length === 0) return;
+    if (!trimmed || !imageUrl || masks.length === 0 || saving) return;
 
-    const compressed = await downscaleImage(imageUrl);
-    onSave({
-      type: "blind",
-      title: trimmed,
-      imageUrl: compressed,
-      masks,
-    });
-    setTitle("");
-    setImageUrl("");
-    setMasks([]);
-    setRevealed(new Set());
-    setMode("edit");
-    setTool("box");
-    activeStrokeIdRef.current = null;
-    lastStrokePointRef.current = null;
-    draftStartRef.current = null;
+    setSaving(true);
+    try {
+      const compressed = await downscaleImage(imageUrl);
+      await onSave({
+        type: "blind",
+        title: trimmed,
+        imageUrl: compressed,
+        masks,
+      });
+      setTitle("");
+      setImageUrl("");
+      setMasks([]);
+      setRevealed(new Set());
+      setMode("edit");
+      setTool("box");
+      activeStrokeIdRef.current = null;
+      lastStrokePointRef.current = null;
+      draftStartRef.current = null;
+    } catch (error) {
+      setToast(
+        error instanceof Error
+          ? error.message
+          : "블라인드 카드를 저장하지 못했어요.",
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   const visibleMasks = draftMask ? [...masks, draftMask] : masks;
@@ -1765,9 +1865,10 @@ function BlindEditor({ onSave }: { onSave: (draft: FlashcardDraft) => void }) {
       <Button
         type="button"
         onClick={handleSave}
-        disabled={!title.trim() || !imageUrl || masks.length === 0}
+        disabled={!title.trim() || !imageUrl || masks.length === 0 || saving}
         className="w-full"
       >
+        {saving && <Loader2 className="animate-spin" />}
         카드로 저장
       </Button>
 
@@ -1779,16 +1880,24 @@ function BlindEditor({ onSave }: { onSave: (draft: FlashcardDraft) => void }) {
 function StatsPanel({
   cards,
   logs,
+  stats,
+  againTodayCards,
   onStartAgain,
 }: {
   cards: Flashcard[];
   logs: ReviewLog[];
+  stats: FlashcardStats | null;
+  againTodayCards: Flashcard[];
   onStartAgain: (cardIds: string[]) => void;
 }) {
-  const againIds = useMemo(() => getTodayAgainCardIds(logs), [logs]);
-  const streak = useMemo(() => getReviewStreak(logs), [logs]);
+  const againIds = useMemo(
+    () => againTodayCards.map((card) => card.id),
+    [againTodayCards],
+  );
   const weakCount = useMemo(() => cards.filter(isWeakCard).length, [cards]);
   const typeCounts = useMemo(() => {
+    if (stats) return stats.typeDistribution;
+
     return cards.reduce<Record<CardType, number>>(
       (acc, card) => {
         acc[card.type] += 1;
@@ -1796,7 +1905,9 @@ function StatsPanel({
       },
       { concept: 0, relation: 0, compare: 0, blind: 0 },
     );
-  }, [cards]);
+  }, [cards, stats]);
+  const totalCards = stats?.totalCards ?? cards.length;
+  const streak = stats?.streak ?? 0;
 
   return (
     <div className="space-y-5">
@@ -1804,7 +1915,7 @@ function StatsPanel({
         <div className="rounded-2xl border border-border p-4">
           <p className="text-sm font-bold text-muted-foreground">총 카드</p>
           <p className="mt-3 text-3xl font-black text-foreground">
-            {cards.length}
+            {totalCards}
           </p>
         </div>
         <button
@@ -1814,7 +1925,9 @@ function StatsPanel({
           className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-left text-rose-700 transition active:scale-[0.98] disabled:opacity-60"
         >
           <p className="text-sm font-bold">Again 카드</p>
-          <p className="mt-3 text-3xl font-black">{againIds.length}</p>
+          <p className="mt-3 text-3xl font-black">
+            {stats?.againToday ?? againIds.length}
+          </p>
         </button>
         <div className="rounded-2xl border border-border p-4">
           <p className="text-sm font-bold text-muted-foreground">연속 학습</p>
@@ -1833,8 +1946,8 @@ function StatsPanel({
         <div className="mt-4 space-y-3">
           {(Object.keys(typeCounts) as CardType[]).map((type) => {
             const value = typeCounts[type];
-            const width = cards.length
-              ? Math.max(6, (value / cards.length) * 100)
+            const width = totalCards
+              ? Math.max(6, (value / totalCards) * 100)
               : 0;
 
             return (
@@ -1928,39 +2041,81 @@ function PillchatTabNav({
 }
 
 export function FlashcardApp() {
-  const { cards, logs, ready, toast, setToast, commit } = useFlashcardData();
+  const {
+    cards,
+    logs,
+    againTodayCards,
+    weakFolders,
+    stats,
+    ready,
+    toast,
+    setToast,
+    setCards,
+    refresh,
+  } = useFlashcardData();
   const [activeTab, setActiveTab] = useState<AppTab>("study");
   const [againModeIds, setAgainModeIds] = useState<string[] | null>(null);
 
   const activeTabConfig =
     tabItems.find((item) => item.key === activeTab) ?? tabItems[0];
 
-  const addDrafts = (drafts: FlashcardDraft[]) => {
-    const nextCards = [
-      ...cards,
-      ...drafts.map((draft) => createFlashcard(draft)),
-    ];
-    const saved = commit(nextCards, logs);
-    if (saved) setToast(`${drafts.length}장의 카드를 저장했어요.`);
-  };
-
-  const deleteCard = (cardId: string) => {
-    const nextCards = cards.filter((card) => card.id !== cardId);
-    const nextLogs = logs.filter((log) => log.cardId !== cardId);
-    commit(nextCards, nextLogs);
-  };
-
-  const handleRate = (target: Flashcard, rating: Rating) => {
-    const reviewed = rateFlashcard(target, rating);
-    const nextCards = cards.map((card) =>
-      card.id === target.id ? reviewed.card : card,
-    );
-    const nextLogs = [...logs, reviewed.log];
-
-    if (commit(nextCards, nextLogs) && againModeIds && rating !== "again") {
-      setAgainModeIds((prev) => prev?.filter((id) => id !== target.id) ?? null);
+  const addDrafts = async (drafts: FlashcardDraft[]) => {
+    try {
+      const createdCards = await Promise.all(drafts.map(createRemoteFlashcard));
+      setCards(mergeFlashcards(createdCards, cards));
+      setToast(`${createdCards.length}장의 카드를 저장했어요.`);
+      void refresh();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "카드를 저장하지 못했어요.";
+      setToast(message);
+      throw new Error(message);
     }
   };
+
+  const deleteCard = async (cardId: string) => {
+    try {
+      await deleteRemoteFlashcard(cardId);
+      setCards(cards.filter((card) => card.id !== cardId));
+      setAgainModeIds((prev) => prev?.filter((id) => id !== cardId) ?? null);
+      setToast("카드를 삭제했어요.");
+      void refresh();
+    } catch (error) {
+      setToast(
+        error instanceof Error ? error.message : "카드를 삭제하지 못했어요.",
+      );
+    }
+  };
+
+  const handleRate = async (target: Flashcard, rating: Rating) => {
+    try {
+      const reviewed = await reviewRemoteFlashcard(target.id, rating);
+      const nextCards = mergeFlashcards(
+        cards.map((card) => (card.id === target.id ? reviewed : card)),
+        [reviewed],
+      );
+      setCards(nextCards);
+
+      if (againModeIds && rating !== "again") {
+        setAgainModeIds(
+          (prev) => prev?.filter((id) => id !== target.id) ?? null,
+        );
+      }
+
+      void refresh();
+    } catch (error) {
+      setToast(
+        error instanceof Error ? error.message : "평가를 저장하지 못했어요.",
+      );
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    if (againModeIds && againModeIds.length === 0) {
+      setAgainModeIds(null);
+    }
+  }, [againModeIds]);
 
   if (!ready) {
     return (
@@ -2002,6 +2157,7 @@ export function FlashcardApp() {
             <WeakPanel
               cards={cards}
               logs={logs}
+              weakFolders={weakFolders}
               onRate={handleRate}
               onDelete={deleteCard}
             />
@@ -2023,6 +2179,8 @@ export function FlashcardApp() {
             <StatsPanel
               cards={cards}
               logs={logs}
+              stats={stats}
+              againTodayCards={againTodayCards}
               onStartAgain={(cardIds) => {
                 if (cardIds.length === 0) return;
                 setAgainModeIds(cardIds);

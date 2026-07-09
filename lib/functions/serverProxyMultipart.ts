@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST;
+const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
 
 /**
  * 클라이언트 요청을 백엔드로 그대로 프록시 (multipart / JSON 모두 지원)
@@ -12,7 +13,13 @@ export async function proxyToBackend(
   backendPath: string,
   method: string,
 ) {
-  const auth = request.headers.get("authorization");
+  const accessToken = request.cookies.get("access_token")?.value;
+  const authHeader = request.headers.get("authorization");
+  const auth = authHeader
+    ? `Bearer ${normalizeToken(authHeader)}`
+    : accessToken
+      ? `Bearer ${normalizeToken(accessToken)}`
+      : null;
   const contentType = request.headers.get("content-type");
   const body = method === "GET" ? undefined : await request.arrayBuffer();
 
@@ -30,6 +37,14 @@ export async function proxyToBackend(
     return new NextResponse(null, { status: 204 });
   }
 
-  const data = await res.json().catch(() => ({}));
-  return NextResponse.json(data, { status: res.status });
+  const text = await res.text();
+  if (!text.trim()) {
+    return NextResponse.json({}, { status: res.status });
+  }
+
+  try {
+    return NextResponse.json(JSON.parse(text), { status: res.status });
+  } catch {
+    return NextResponse.json({ message: text }, { status: res.status });
+  }
 }
