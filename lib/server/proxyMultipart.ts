@@ -21,11 +21,17 @@ export async function proxyToBackend(
       ? `Bearer ${normalizeToken(accessToken)}`
       : null;
   const contentType = request.headers.get("content-type");
-  const body = method === "GET" ? undefined : await request.arrayBuffer();
+  const isMultipart = contentType?.includes("multipart/form-data") ?? false;
+  const body =
+    method === "GET"
+      ? undefined
+      : isMultipart
+        ? await request.formData()
+        : await request.arrayBuffer();
 
   const headers: Record<string, string> = {};
   if (auth) headers["Authorization"] = auth;
-  if (contentType) headers["Content-Type"] = contentType;
+  if (contentType && !isMultipart) headers["Content-Type"] = contentType;
 
   const res = await fetch(`${API_BASE_URL}${backendPath}`, {
     method,

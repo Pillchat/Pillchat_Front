@@ -66,6 +66,19 @@ export async function uploadBoard(data: {
   images?: File[];
   pdf?: File;
 }) {
+  const hasImages = Boolean(data.images?.length);
+  const hasPdf = Boolean(data.pdf);
+
+  if (!hasImages && !hasPdf) {
+    const params = new URLSearchParams({
+      title: data.title,
+      content: data.content,
+      category: data.category,
+    });
+
+    return fetchAPI(`/api/boards?${params.toString()}`, "POST");
+  }
+
   const fd = new FormData();
   fd.append("title", data.title);
   fd.append("content", data.content);
