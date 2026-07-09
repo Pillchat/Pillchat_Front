@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildQueryParams } from "@/lib/shared/query";
-import { serverFetch } from "@/lib/server/fetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST;
 const BOARD_CATEGORIES = ["FREE", "TIP", "REVIEW"];
 const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
+const getAccessToken = (request: NextRequest) => {
+  const authorization = request.headers.get("authorization");
+  if (authorization) return normalizeToken(authorization);
+  const accessToken = request.cookies.get("access_token")?.value;
+  return accessToken ? normalizeToken(accessToken) : "";
+};
 
 const getAuthHeaders = (accessToken?: string): HeadersInit =>
   accessToken
@@ -78,6 +83,7 @@ const appendListParams = (
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const accessToken = getAccessToken(request);
 
     const title = searchParams.get("title");
     const content = searchParams.get("content");
@@ -91,6 +97,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!accessToken) {
+      return NextResponse.json(
+        { message: "로그인이 필요합니다." },
+        { status: 401 },
+      );
+    }
+
     const queryString = buildQueryParams({
       title,
       content,
@@ -98,10 +111,18 @@ export async function POST(request: NextRequest) {
       keys,
     });
 
-    const data = await serverFetch(`/api/boards?${queryString}`, {
+    const response = await fetch(`${API_BASE_URL}/api/boards?${queryString}`, {
       method: "POST",
-      request,
+      headers: getAuthHeaders(accessToken),
+      cache: "no-store",
     });
+    const data = await parseBackendResponse(response);
+
+    if (!response.ok) {
+      return NextResponse.json(getErrorBody(data, response.status), {
+        status: response.status,
+      });
+    }
 
     return NextResponse.json(data);
   } catch (error) {
@@ -115,9 +136,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const accessToken =
-      request.headers.get("authorization")?.replace("Bearer ", "") ||
-      request.cookies.get("access_token")?.value;
+    const accessToken = getAccessToken(request);
     const category = request.nextUrl.searchParams.get("category");
     const categories = category ? [category.toUpperCase()] : BOARD_CATEGORIES;
 
