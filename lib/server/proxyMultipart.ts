@@ -37,6 +37,7 @@ export async function proxyToBackend(
     method,
     headers,
     body,
+    cache: "no-store",
   });
 
   if (res.status === 204) {

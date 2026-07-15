@@ -44,12 +44,12 @@ const getBoardCategoryText = (item: any) =>
 const matchesCategory = (item: any, category: string) =>
   getBoardCategoryText(item) === category.toUpperCase();
 
-const getErrorBody = (data: any, status: number) => {
+const getErrorBody = (data: any, status: number, fallbackMessage: string) => {
   if (data && typeof data === "object") return data;
   if (typeof data === "string" && data.trim()) {
     return { message: data };
   }
-  return { message: `게시글 목록 조회에 실패했습니다. (${status})` };
+  return { message: `${fallbackMessage} (${status})` };
 };
 
 const appendListParams = (
@@ -119,9 +119,17 @@ export async function POST(request: NextRequest) {
     const data = await parseBackendResponse(response);
 
     if (!response.ok) {
-      return NextResponse.json(getErrorBody(data, response.status), {
-        status: response.status,
-      });
+      const fallbackMessage =
+        response.status === 401 || response.status === 403
+          ? "로그인 세션이 만료되었거나 인증에 실패했습니다. 다시 로그인해주세요."
+          : "게시글 업로드에 실패했습니다.";
+
+      return NextResponse.json(
+        getErrorBody(data, response.status, fallbackMessage),
+        {
+          status: response.status,
+        },
+      );
     }
 
     return NextResponse.json(data);
@@ -206,7 +214,11 @@ export async function GET(request: NextRequest) {
         }
 
         return NextResponse.json(
-          getErrorBody(failed.data, failed.response.status),
+          getErrorBody(
+            failed.data,
+            failed.response.status,
+            "게시글 목록 조회에 실패했습니다.",
+          ),
           { status: failed.response.status },
         );
       }
@@ -217,7 +229,11 @@ export async function GET(request: NextRequest) {
     if (successful.length === 0) {
       const failed = responses[0];
       return NextResponse.json(
-        getErrorBody(failed?.data, failed?.response.status ?? 500),
+        getErrorBody(
+          failed?.data,
+          failed?.response.status ?? 500,
+          "게시글 목록 조회에 실패했습니다.",
+        ),
         { status: failed?.response.status ?? 500 },
       );
     }

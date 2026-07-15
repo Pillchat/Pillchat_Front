@@ -210,7 +210,10 @@ export const fetchPost = async (url: string, data: any) => {
       message: "서버 오류가 발생했습니다.",
     }));
     throw new Error(
-      errorData.message || `HTTP error! status: ${response.status}`,
+      errorData.message ||
+        errorData.error ||
+        errorData.code ||
+        `HTTP error! status: ${response.status}`,
     );
   }
 
@@ -255,7 +258,7 @@ export const fetchAPI = async (url: string, method: string, data?: any) => {
 
   let response = await fetch(requestUrl, requestOptions);
 
-  if (response.status === 401 && !isAuthRequest) {
+  if ((response.status === 401 || response.status === 403) && !isAuthRequest) {
     const refreshed = await refreshTokens();
     if (refreshed) {
       response = await fetch(requestUrl, {
@@ -273,7 +276,10 @@ export const fetchAPI = async (url: string, method: string, data?: any) => {
       message: "서버 오류가 발생했습니다.",
     }));
     throw new Error(
-      errorData.message || `HTTP error! status: ${response.status}`,
+      errorData.message ||
+        errorData.error ||
+        errorData.code ||
+        `HTTP error! status: ${response.status}`,
     );
   }
 

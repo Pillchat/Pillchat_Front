@@ -215,7 +215,10 @@ export const fetchPost = async (url: string, data: any) => {
       message: "서버 오류가 발생했습니다.",
     }));
     throw new Error(
-      errorData.message || `HTTP error! status: ${response.status}`,
+      errorData.message ||
+        errorData.error ||
+        errorData.code ||
+        `HTTP error! status: ${response.status}`,
     );
   }
 
@@ -277,11 +280,21 @@ export const fetchAPI = async (url: string, method: string, data?: any) => {
       message: "서버 오류가 발생했습니다.",
     }));
     throw new Error(
-      errorData.message || `HTTP error! status: ${response.status}`,
+      errorData.message ||
+        errorData.error ||
+        errorData.code ||
+        `HTTP error! status: ${response.status}`,
     );
   }
 
-  const result = await response.json();
+  if (response.status === 204) return null;
 
-  return result;
+  const responseText = await response.text();
+  if (!responseText.trim()) return null;
+
+  try {
+    return JSON.parse(responseText);
+  } catch {
+    return responseText;
+  }
 };
