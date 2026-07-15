@@ -160,7 +160,7 @@ export default function QuestionBankPage() {
           className="mt-6 grid grid-cols-2 gap-4"
         >
           <Link
-            href="/learn/cbt"
+            href="/learning/cbt"
             className="flex min-h-[13.25rem] flex-col rounded-[28px] bg-primary p-6 text-primary-foreground shadow-[0_14px_30px_rgba(255,65,46,0.18)] transition-transform active:scale-[0.98]"
             prefetch={false}
           >
@@ -172,12 +172,12 @@ export default function QuestionBankPage() {
               />
             </span>
             <strong className="mt-auto block text-xl font-extrabold leading-7">
-              CBT 형태로
+              약사국시 CBT
               <br />
-              학습하기
+              실전 연습
             </strong>
             <span className="mt-3 text-sm font-medium text-white/90">
-              국시 컴퓨터 시험 모드
+              실제 시험 흐름으로 시간 관리와 답안 선택을 연습해요
             </span>
           </Link>
 

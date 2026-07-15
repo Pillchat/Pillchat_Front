@@ -19,7 +19,13 @@ const previewItems = [
   {
     title: "문제 은행",
     description: "국시 유형을 실전처럼 풀어보는 문제 환경",
-    href: null,
+    href: "/questionbank",
+    iconSrc: "/CBT.svg",
+  },
+  {
+    title: "약사국시 CBT 실전 연습",
+    description: "실제 시험 흐름으로 시간 관리와 답안 선택을 연습해요",
+    href: "/learning/cbt",
     iconSrc: "/CBT.svg",
   },
   {
@@ -118,7 +124,7 @@ export default function LearnPage() {
         </section>
       </main>
 
-      <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-app -translate-x-1/2 bg-background px-6 py-3 md:px-8">
+      <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-app -translate-x-1/2 bg-background px-6 py-3 md:px-8">
         <Button
           type="button"
           className="h-14 w-full gap-1 active:scale-[0.98]"
