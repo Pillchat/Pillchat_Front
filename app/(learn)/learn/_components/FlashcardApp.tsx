@@ -41,9 +41,9 @@ import {
   buildReviewLogs,
   createRemoteFlashcard,
   deleteRemoteFlashcard,
+  fetchAllFlashcards,
   fetchAgainTodayFlashcards,
   fetchDueFlashcards,
-  fetchFlashcardPage,
   fetchFlashcardStats,
   fetchWeakFlashcards,
   mergeFlashcards,
@@ -82,7 +82,6 @@ const tabItems: Array<{
   title: string;
   description: string;
   icon: typeof BookOpen;
-  activeClass: string;
 }> = [
   {
     key: "study",
@@ -90,7 +89,6 @@ const tabItems: Array<{
     title: "학습",
     description: "오늘의 카드를 복습해보세요.",
     icon: BookOpen,
-    activeClass: "text-orange-600 bg-orange-50",
   },
   {
     key: "weak",
@@ -98,7 +96,6 @@ const tabItems: Array<{
     title: "취약 노트",
     description: "다시 보고 싶은 카드를 모아봤어요.",
     icon: AlertCircle,
-    activeClass: "text-amber-700 bg-amber-50",
   },
   {
     key: "create",
@@ -106,7 +103,6 @@ const tabItems: Array<{
     title: "카드 만들기",
     description: "AI로 자동 생성하거나 직접 만들어보세요.",
     icon: PlusCircle,
-    activeClass: "text-rose-600 bg-rose-50",
   },
   {
     key: "blind",
@@ -114,7 +110,6 @@ const tabItems: Array<{
     title: "이미지 가림막",
     description: "구조식과 표 위에 가림막을 만들고 카드로 저장해요.",
     icon: EyeOff,
-    activeClass: "text-slate-700 bg-slate-100",
   },
   {
     key: "stats",
@@ -122,7 +117,6 @@ const tabItems: Array<{
     title: "학습 통계",
     description: "Again 카드와 연속 학습 일수를 확인해요.",
     icon: BarChart3,
-    activeClass: "text-blue-700 bg-blue-50",
   },
 ];
 
@@ -320,9 +314,9 @@ function useFlashcardData() {
     if (showLoading) setReady(false);
 
     try {
-      const [page, dueCards, againCards, nextStats, weakEntries] =
+      const [allCards, dueCards, againCards, nextStats, weakEntries] =
         await Promise.all([
-          fetchFlashcardPage(),
+          fetchAllFlashcards(),
           fetchDueFlashcards(),
           fetchAgainTodayFlashcards(),
           fetchFlashcardStats(),
@@ -341,7 +335,7 @@ function useFlashcardData() {
         createEmptyWeakFolders(),
       );
       const nextCards = mergeFlashcards(
-        page.cards,
+        allCards,
         dueCards,
         againCards,
         ...Object.values(nextWeakFolders),
@@ -2005,7 +1999,7 @@ function StatsPanel({
   );
 }
 
-function PillchatTabNav({
+function FlashcardPageNavigation({
   activeTab,
   onChange,
 }: {
@@ -2014,8 +2008,8 @@ function PillchatTabNav({
 }) {
   return (
     <nav
-      aria-label="필챗 탭"
-      className="sticky top-[5.625rem] z-30 grid h-[4.75rem] w-full grid-cols-5 border-b border-border/50 bg-white/95 px-2 py-2 backdrop-blur-xl"
+      aria-label="플래시카드 전용 네비게이션"
+      className="fixed bottom-0 left-1/2 z-50 grid h-[calc(5.25rem+env(safe-area-inset-bottom))] w-full max-w-app -translate-x-1/2 grid-cols-5 items-start border-t border-gray-300 bg-white pb-[env(safe-area-inset-bottom)]"
     >
       {tabItems.map((item) => {
         const Icon = item.icon;
@@ -2026,12 +2020,13 @@ function PillchatTabNav({
             key={item.key}
             type="button"
             onClick={() => onChange(item.key)}
+            aria-current={active ? "page" : undefined}
             className={cn(
-              "flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-xs font-bold text-muted-foreground",
-              active && item.activeClass,
+              "relative flex h-[70px] w-full min-w-0 flex-col items-center justify-center gap-0.5 text-[10px] font-semibold leading-[14px] text-muted-foreground transition-colors active:scale-95",
+              active && "text-primary",
             )}
           >
-            <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={1.7} />
+            <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={2} />
             <span className="truncate">{item.label}</span>
           </button>
         );
@@ -2119,18 +2114,21 @@ export function FlashcardApp() {
 
   if (!ready) {
     return (
-      <AppShell bottomSpacing="nav">
+      <AppShell bottomNav={false} bottomSpacing="nav">
         <div className="flex min-h-dvh items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-brand" />
         </div>
+        <FlashcardPageNavigation
+          activeTab={activeTab}
+          onChange={setActiveTab}
+        />
       </AppShell>
     );
   }
 
   return (
-    <AppShell bottomSpacing="nav">
+    <AppShell bottomNav={false} bottomSpacing="nav">
       <FlashcardShellHeader />
-      <PillchatTabNav activeTab={activeTab} onChange={setActiveTab} />
 
       <main className="px-6 pt-5">
         <section className="pb-5">
@@ -2192,6 +2190,7 @@ export function FlashcardApp() {
       </main>
 
       <Toast open={!!toast} message={toast} onClose={() => setToast("")} />
+      <FlashcardPageNavigation activeTab={activeTab} onChange={setActiveTab} />
     </AppShell>
   );
 }

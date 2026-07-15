@@ -1,4 +1,8 @@
-import { fetchAPI, getValidAccessToken } from "@/lib/client/fetch";
+import {
+  fetchAPI,
+  getValidAccessToken,
+  refreshTokens,
+} from "@/lib/client/fetch";
 import type {
   BlindMask,
   CardState,
@@ -107,18 +111,6 @@ const apiStateToLocal: Record<ApiCardState, CardState> = {
   LEARNING: "learning",
   DUE: "due",
   GRADUATED: "graduated",
-};
-
-const EMPTY_STATS: FlashcardStats = {
-  totalCards: 0,
-  againToday: 0,
-  streak: 0,
-  typeDistribution: {
-    concept: 0,
-    relation: 0,
-    compare: 0,
-    blind: 0,
-  },
 };
 
 const toNumber = (value: unknown, fallback = 0) =>
@@ -323,9 +315,16 @@ const mapStats = (payload: FlashcardStatsDto | null | undefined) => {
 };
 
 const getErrorMessage = (payload: unknown, fallback: string) => {
-  if (payload && typeof payload === "object" && "message" in payload) {
-    const message = (payload as { message?: unknown }).message;
-    if (typeof message === "string" && message.trim()) return message;
+  if (payload && typeof payload === "object") {
+    const error = payload as {
+      message?: unknown;
+      error?: unknown;
+      code?: unknown;
+    };
+
+    for (const value of [error.message, error.error, error.code]) {
+      if (typeof value === "string" && value.trim()) return value;
+    }
   }
 
   return fallback;
@@ -334,22 +333,40 @@ const getErrorMessage = (payload: unknown, fallback: string) => {
 const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
 
 async function fetchFormData(url: string, formData: FormData) {
-  const token = await getValidAccessToken();
-  const headers: Record<string, string> = {};
-  if (token) headers.Authorization = `Bearer ${normalizeToken(token)}`;
+  const send = (token?: string | null) =>
+    fetch(url, {
+      method: "POST",
+      headers: token
+        ? { Authorization: `Bearer ${normalizeToken(token)}` }
+        : undefined,
+      body: formData,
+      credentials: "same-origin",
+    });
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers,
-    body: formData,
-    credentials: "same-origin",
-  });
+  let response = await send(await getValidAccessToken());
 
-  const payload = await response.json().catch(() => null);
+  if (response.status === 401 || response.status === 403) {
+    const refreshed = await refreshTokens();
+    if (refreshed) response = await send(refreshed.access_token);
+  }
+
+  const responseText = await response.text();
+  let payload: unknown = null;
+
+  if (responseText.trim()) {
+    try {
+      payload = JSON.parse(responseText);
+    } catch {
+      payload = { message: responseText };
+    }
+  }
 
   if (!response.ok) {
     throw new Error(
-      getErrorMessage(payload, "플래시카드 요청에 실패했습니다."),
+      getErrorMessage(
+        payload,
+        `플래시카드 요청에 실패했습니다. (${response.status})`,
+      ),
     );
   }
 
@@ -398,17 +415,19 @@ function getCreatePayload(draft: Exclude<FlashcardDraft, { type: "blind" }>) {
   };
 }
 
+type FlashcardPageParams = {
+  type?: CardType;
+  page?: number;
+  size?: number;
+  sort?: string;
+};
+
 export async function fetchFlashcardPage({
   type,
   page = 0,
   size = 200,
   sort = "createdAt,desc",
-}: {
-  type?: CardType;
-  page?: number;
-  size?: number;
-  sort?: string;
-} = {}): Promise<FlashcardPage> {
+}: FlashcardPageParams = {}): Promise<FlashcardPage> {
   const query = new URLSearchParams({
     page: String(page),
     size: String(size),
@@ -430,6 +449,30 @@ export async function fetchFlashcardPage({
     number: toNumber(payload.number, page),
     size: toNumber(payload.size, size),
   };
+}
+
+export async function fetchAllFlashcards({
+  type,
+  size = 200,
+  sort = "createdAt,desc",
+}: Omit<FlashcardPageParams, "page"> = {}) {
+  const firstPage = await fetchFlashcardPage({ type, page: 0, size, sort });
+  const cards = [...firstPage.cards];
+
+  for (let page = 1; page < firstPage.totalPages; page += 1) {
+    const nextPage = await fetchFlashcardPage({ type, page, size, sort });
+    cards.push(...nextPage.cards);
+  }
+
+  return mergeFlashcards(cards);
+}
+
+export async function fetchFlashcardById(cardId: string) {
+  const payload = (await fetchAPI(
+    `/api/flashcards/${cardId}`,
+    "GET",
+  )) as FlashcardDto;
+  return mapFlashcardDto(payload);
 }
 
 export async function fetchDueFlashcards() {
@@ -454,15 +497,11 @@ export async function fetchWeakFlashcards(folder: Rating) {
 }
 
 export async function fetchFlashcardStats() {
-  try {
-    const payload = (await fetchAPI(
-      "/api/flashcards/stats",
-      "GET",
-    )) as FlashcardStatsDto | null;
-    return mapStats(payload);
-  } catch {
-    return EMPTY_STATS;
-  }
+  const payload = (await fetchAPI(
+    "/api/flashcards/stats",
+    "GET",
+  )) as FlashcardStatsDto | null;
+  return mapStats(payload);
 }
 
 export async function createRemoteFlashcard(draft: FlashcardDraft) {
