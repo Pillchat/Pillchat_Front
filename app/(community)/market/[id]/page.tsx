@@ -169,7 +169,7 @@ export default async function MarketDetailPage({
         </Tabs>
       </main>
 
-      <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-app -translate-x-1/2 bg-card px-6 pb-1 pt-3 md:px-8">
+      <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-app -translate-x-1/2 bg-card px-6 pb-1 pt-3 md:px-8">
         <button
           type="button"
           className="h-[3.625rem] w-full rounded-xl bg-primary text-label-large text-primary-foreground active:scale-[0.98]"
