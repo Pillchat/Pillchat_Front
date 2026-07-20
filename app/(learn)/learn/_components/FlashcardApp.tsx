@@ -36,7 +36,7 @@ import { AppShell } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getValidAccessToken } from "@/lib/client/fetch";
+import { getValidAccessToken, refreshTokens } from "@/lib/client/fetch";
 import {
   buildReviewLogs,
   createRemoteFlashcard,
@@ -294,6 +294,29 @@ function getTodayKey(value = Date.now()) {
   return `${year}-${month}-${day}`;
 }
 
+type RequestResult<T> = { ok: true; value: T } | { ok: false; error: unknown };
+
+async function settleRequest<T>(
+  request: Promise<T>,
+): Promise<RequestResult<T>> {
+  try {
+    return { ok: true, value: await request };
+  } catch (error) {
+    return { ok: false, error };
+  }
+}
+
+function getRequestValue<T>(
+  result: RequestResult<T>,
+  fallback: T,
+  errors: unknown[],
+) {
+  if (result.ok) return result.value;
+
+  errors.push(result.error);
+  return fallback;
+}
+
 function useFlashcardData() {
   const [cards, setCards] = useState<Flashcard[]>([]);
   const [logs, setLogs] = useState<ReviewLog[]>([]);
@@ -314,26 +337,47 @@ function useFlashcardData() {
     if (showLoading) setReady(false);
 
     try {
-      const [allCards, dueCards, againCards, nextStats, weakEntries] =
-        await Promise.all([
-          fetchAllFlashcards(),
-          fetchDueFlashcards(),
-          fetchAgainTodayFlashcards(),
-          fetchFlashcardStats(),
-          Promise.all(
-            weakFolderOrder.map(async (rating) => {
-              const folderCards = await fetchWeakFlashcards(rating);
-              return [rating, folderCards] as const;
-            }),
-          ),
-        ]);
-      const nextWeakFolders = weakEntries.reduce<WeakFolders>(
-        (acc, [rating, folderCards]) => {
-          acc[rating] = folderCards;
+      const primaryRequests = Promise.all([
+        settleRequest(fetchAllFlashcards()),
+        settleRequest(fetchDueFlashcards()),
+        settleRequest(fetchAgainTodayFlashcards()),
+        settleRequest(fetchFlashcardStats()),
+      ]);
+      const weakRequests = Promise.all(
+        weakFolderOrder.map((rating) =>
+          settleRequest(fetchWeakFlashcards(rating)),
+        ),
+      );
+      const [primaryResults, weakResults] = await Promise.all([
+        primaryRequests,
+        weakRequests,
+      ]);
+      const [allResult, dueResult, againResult, statsResult] = primaryResults;
+      const errors: unknown[] = [];
+      const allCards = getRequestValue(allResult, cards, errors);
+      const dueCards = getRequestValue(dueResult, [], errors);
+      const againCards = getRequestValue(againResult, againTodayCards, errors);
+      const nextStats = getRequestValue<FlashcardStats | null>(
+        statsResult,
+        stats,
+        errors,
+      );
+      const nextWeakFolders = weakFolderOrder.reduce<WeakFolders>(
+        (acc, rating, index) => {
+          acc[rating] = getRequestValue(
+            weakResults[index],
+            weakFolders[rating],
+            errors,
+          );
           return acc;
         },
         createEmptyWeakFolders(),
       );
+
+      if (errors.length === primaryResults.length + weakResults.length) {
+        throw errors[0];
+      }
+
       const nextCards = mergeFlashcards(
         allCards,
         dueCards,
@@ -345,6 +389,13 @@ function useFlashcardData() {
       setAgainTodayCards(againCards);
       setWeakFolders(nextWeakFolders);
       setStats(nextStats);
+
+      if (errors.length > 0) {
+        setToast(
+          `일부 플래시카드 정보를 불러오지 못했어요. (${errors.length}개)`,
+        );
+      }
+
       return true;
     } catch (error) {
       setToast(
@@ -378,7 +429,7 @@ function useFlashcardData() {
 
 function FlashcardShellHeader() {
   return (
-    <header className="sticky top-0 z-20 flex h-[5.625rem] items-center justify-between border-b border-border/30 bg-white/95 px-6 backdrop-blur-xl">
+    <header className="sticky top-0 z-20 flex h-[60px] items-center justify-between border-b border-border/30 bg-white/95 px-6 backdrop-blur-xl">
       <Link href="/" aria-label="홈으로 이동" className="flex items-center">
         <Image
           src="/brand/PillChat.svg"
@@ -1159,14 +1210,26 @@ function CreatePanel({
       if (sourceFile) formData.append("file", sourceFile);
 
       const token = await getValidAccessToken();
-      const headers: Record<string, string> = {};
-      if (token) headers.Authorization = `Bearer ${token}`;
+      if (!token) {
+        throw new Error("로그인이 필요합니다. 다시 로그인해주세요.");
+      }
 
-      const response = await fetch("/api/flashcards/generate", {
-        method: "POST",
-        headers,
-        body: formData,
-      });
+      const requestGeneration = (accessToken: string) =>
+        fetch("/api/flashcards/generate", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}` },
+          body: formData,
+          credentials: "same-origin",
+        });
+
+      let response = await requestGeneration(token);
+
+      if (response.status === 401 || response.status === 403) {
+        const refreshed = await refreshTokens();
+        if (refreshed) {
+          response = await requestGeneration(refreshed.access_token);
+        }
+      }
 
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as {

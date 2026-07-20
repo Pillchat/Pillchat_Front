@@ -532,7 +532,7 @@ const PostPage = () => {
     <>
       {step === Step.Upload && (
         <div className="mx-auto flex min-h-[100dvh] w-full max-w-app flex-col bg-white">
-          <header className="sticky top-0 z-40 flex h-[4.5rem] shrink-0 items-center justify-between bg-white px-6">
+          <header className="sticky top-0 z-40 flex h-[60px] shrink-0 items-center justify-between bg-white px-6">
             <button
               type="button"
               onClick={() => router.push(boardTarget.path)}
@@ -569,7 +569,7 @@ const PostPage = () => {
                     {...field}
                     value={field.value ?? ""}
                     placeholder="제목을 입력해주세요."
-                    className="h-14 w-full border-0 border-b border-[#E8E1DD] bg-transparent px-0 pb-5 text-[1.75rem] font-extrabold leading-none text-foreground outline-none placeholder:text-[#A7A2A0] focus:border-[#D9D2CE]"
+                    className="h-14 w-full border-0 border-b border-[#E8E1DD] bg-transparent px-0 pb-5 text-headline-large font-extrabold text-foreground outline-none placeholder:text-[#A7A2A0] focus:border-[#D9D2CE]"
                     onChange={(e) =>
                       field.onChange(
                         e.target.value
@@ -596,7 +596,7 @@ const PostPage = () => {
                   <textarea
                     value={field.value ?? ""}
                     placeholder={`학교 친구들과 자유롭게 얘기해보세요.\n#수강신청 #취업`}
-                    className="min-h-[12.5rem] w-full resize-none border-0 bg-transparent p-0 text-xl font-medium leading-8 text-foreground outline-none placeholder:text-[#AAA4A1]"
+                    className="min-h-[12.5rem] w-full resize-none border-0 bg-transparent p-0 text-body-large font-medium text-foreground outline-none placeholder:text-[#AAA4A1]"
                     onChange={(e) => handleContentChange(e.target.value)}
                     onBlur={field.onBlur}
                     ref={field.ref}

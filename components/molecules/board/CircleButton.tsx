@@ -11,11 +11,11 @@ export const CircleButton = ({ onUploadPost, className = "" }: Props) => {
   return (
     <button
       type="button"
-      aria-label="게시글 업로드"
+      aria-label="글쓰기"
       onClick={onUploadPost}
       className={cn(
         "fixed bottom-[132px] right-6 z-[40]",
-        "grid h-[64px] w-[64px] place-items-center rounded-full",
+        "flex h-[64px] items-center justify-center gap-2 rounded-full px-5",
         "bg-primary text-primary-foreground shadow-lg",
         "transition-transform duration-200 active:scale-95",
         className,
@@ -41,6 +41,7 @@ export const CircleButton = ({ onUploadPost, className = "" }: Props) => {
           strokeLinecap="round"
         />
       </svg>
+      <span className="whitespace-nowrap text-base font-bold">글쓰기</span>
     </button>
   );
 };

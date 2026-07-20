@@ -54,7 +54,7 @@ export default function LearnPage() {
 
   return (
     <AppShell bottomSpacing="cta" className="flex flex-col">
-      <header className="flex h-[5.625rem] items-center justify-between px-6">
+      <header className="flex h-[60px] items-center justify-between px-6">
         <Link href="/" aria-label="홈으로 이동" className="flex items-center">
           <Image
             src="/brand/PillChat.svg"

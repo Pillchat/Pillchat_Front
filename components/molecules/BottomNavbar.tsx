@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { FC } from "react";
 import { usePathname } from "next/navigation";
 
@@ -10,12 +11,14 @@ const NAV_ITEMS = [
   {
     href: "/",
     iconSrc: "/Home.svg",
+    checkedIconSrc: "/CheckedHome.svg",
     label: "홈",
     isActive: (pathname: string) => pathname === "/",
   },
   {
     href: "/learn",
     iconSrc: "/learn.svg",
+    checkedIconSrc: "/CheckedLearn.svg",
     label: "학습",
     isActive: (pathname: string) =>
       pathname.startsWith("/learn") ||
@@ -25,6 +28,7 @@ const NAV_ITEMS = [
   {
     href: "/boards",
     iconSrc: "/Board.svg",
+    checkedIconSrc: "/CheckedBoard.svg",
     label: "게시판",
     isActive: (pathname: string) =>
       pathname.startsWith("/boards") ||
@@ -36,12 +40,14 @@ const NAV_ITEMS = [
   {
     href: "/cheer",
     iconSrc: "/cheer.svg",
+    checkedIconSrc: "/CheckedCheer.svg",
     label: "응원방",
     isActive: (pathname: string) => pathname.startsWith("/cheer"),
   },
   {
     href: "/market",
     iconSrc: "/market.svg",
+    checkedIconSrc: "/CheckedMarket.svg",
     label: "마켓",
     isActive: (pathname: string) => pathname.startsWith("/market"),
   },
@@ -71,26 +77,36 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
             href={item.href}
             className={cn(
               "relative flex h-[70px] w-full min-w-0 flex-col items-center justify-center gap-0.5 text-[10px] leading-[14px] text-gray-300 transition-colors active:scale-95",
-              isActive && "text-primary",
+              isActive && "text-foreground",
             )}
             prefetch={false}
             aria-current={isActive ? "page" : undefined}
           >
             <span className="relative flex h-8 w-8 items-center justify-center">
-              <span
-                aria-hidden="true"
-                className="h-8 w-8 bg-current transition-colors"
-                style={{
-                  WebkitMaskImage: `url(${item.iconSrc})`,
-                  WebkitMaskPosition: "center",
-                  WebkitMaskRepeat: "no-repeat",
-                  WebkitMaskSize: "contain",
-                  maskImage: `url(${item.iconSrc})`,
-                  maskPosition: "center",
-                  maskRepeat: "no-repeat",
-                  maskSize: "contain",
-                }}
-              />
+              {isActive ? (
+                <Image
+                  src={item.checkedIconSrc}
+                  alt=""
+                  width={32}
+                  height={32}
+                  className="h-8 w-8"
+                />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="h-8 w-8 bg-current transition-colors"
+                  style={{
+                    WebkitMaskImage: `url(${item.iconSrc})`,
+                    WebkitMaskPosition: "center",
+                    WebkitMaskRepeat: "no-repeat",
+                    WebkitMaskSize: "contain",
+                    maskImage: `url(${item.iconSrc})`,
+                    maskPosition: "center",
+                    maskRepeat: "no-repeat",
+                    maskSize: "contain",
+                  }}
+                />
+              )}
             </span>
             <span>{item.label}</span>
           </Link>

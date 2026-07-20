@@ -19,7 +19,7 @@ export const OnboardingHeader = ({
 }: OnboardingHeaderProps) => {
   return (
     <>
-      <header className="fixed left-1/2 top-0 z-50 flex h-[90px] w-full max-w-app -translate-x-1/2 items-center justify-between bg-white px-6 md:px-8">
+      <header className="fixed left-1/2 top-0 z-50 flex h-[60px] w-full max-w-app -translate-x-1/2 items-center justify-between bg-white px-6 md:px-8">
         <LeftArrowButton onClick={onBack ?? (() => {})} />
         <p className="text-lg font-bold">
           {step}/{totalSteps - 1}
@@ -35,7 +35,7 @@ export const OnboardingHeader = ({
           <div className="w-10" />
         )}
       </header>
-      <div aria-hidden="true" className="h-[90px] shrink-0" />
+      <div aria-hidden="true" className="h-[60px] shrink-0" />
     </>
   );
 };

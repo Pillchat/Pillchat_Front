@@ -131,7 +131,7 @@ export const useQuestionForm = () => {
   // data가 변경될 때마다 subjectId를 자동으로 업데이트
   useEffect(() => {
     if (data?.id) {
-      setValue("subjectId", data.id, { shouldValidate: true });
+      setValue("subjectId", String(data.id), { shouldValidate: true });
     }
   }, [data, setValue]);
 

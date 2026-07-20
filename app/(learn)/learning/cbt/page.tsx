@@ -1595,7 +1595,7 @@ export default function CbtPracticePage() {
 
   return (
     <main className="h-dvh min-h-[640px] min-w-[1024px] overflow-hidden bg-[#f7f7f7] text-foreground">
-      <header className="fixed inset-x-0 top-0 z-40 h-[72px] border-b border-border bg-white">
+      <header className="fixed inset-x-0 top-0 z-40 h-[60px] border-b border-border bg-white">
         <div className="grid h-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 px-5">
           <div className="flex min-w-0 items-center gap-3">
             <button
@@ -1710,7 +1710,7 @@ export default function CbtPracticePage() {
       </header>
 
       {isPortrait && (
-        <div className="fixed inset-x-0 top-[72px] z-30 flex h-12 items-center justify-center gap-2 bg-amber-100 text-sm font-bold text-amber-900">
+        <div className="fixed inset-x-0 top-[60px] z-30 flex h-12 items-center justify-center gap-2 bg-amber-100 text-sm font-bold text-amber-900">
           <RotateCcw className="h-4 w-4" />
           패드를 가로로 돌리면 더 편하게 응시할 수 있어요. 답안과 시간은
           유지됩니다.
@@ -1719,8 +1719,8 @@ export default function CbtPracticePage() {
 
       <div
         className={cn(
-          "fixed inset-x-0 bottom-[64px] top-[72px] grid grid-cols-[minmax(0,1fr)_280px] min-[1180px]:grid-cols-[minmax(0,1fr)_304px] min-[1280px]:grid-cols-[minmax(0,1fr)_320px]",
-          isPortrait && "top-[120px]",
+          "fixed inset-x-0 bottom-[64px] top-[60px] grid grid-cols-[minmax(0,1fr)_280px] min-[1180px]:grid-cols-[minmax(0,1fr)_304px] min-[1280px]:grid-cols-[minmax(0,1fr)_320px]",
+          isPortrait && "top-[108px]",
         )}
       >
         <section className="flex min-w-0 flex-col overflow-hidden">

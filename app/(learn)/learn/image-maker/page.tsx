@@ -102,7 +102,7 @@ export default function ImageMakerPage() {
 
   return (
     <ImageMakerUploadShell activeTab="home">
-      <header className="sticky top-0 z-30 flex h-[4.75rem] items-center justify-between border-b border-gray-100 bg-background px-6">
+      <header className="sticky top-0 z-30 flex h-[60px] items-center justify-between border-b border-gray-100 bg-background px-6">
         <Link href="/" aria-label="홈으로 이동" className="flex items-center">
           <Image
             src="/brand/PillChat.svg"

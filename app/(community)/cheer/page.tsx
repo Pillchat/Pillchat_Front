@@ -87,7 +87,7 @@ export default function CheerPage() {
 
   return (
     <AppShell bottomSpacing="input" className="flex flex-col">
-      <header className="sticky top-0 z-10 border-b border-border bg-background px-6 py-4">
+      <header className="sticky top-0 z-10 flex h-[60px] items-center border-b border-border bg-background px-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-brand">LIVE 응원방</p>

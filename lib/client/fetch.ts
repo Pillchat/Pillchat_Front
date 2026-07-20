@@ -241,10 +241,14 @@ export const fetchAPI = async (url: string, method: string, data?: any) => {
   if (method.toUpperCase() === "GET" && data) {
     const params = new URLSearchParams();
     Object.entries(data).forEach(([key, value]) => {
+      if (value === undefined || value === null) return;
+
       if (Array.isArray(value)) {
-        value.forEach((v) => params.append(key, v));
+        value.forEach((v) => {
+          if (v !== undefined && v !== null) params.append(key, String(v));
+        });
       } else {
-        params.append(key, value as string);
+        params.append(key, String(value));
       }
     });
     requestUrl = `${url}?${params.toString()}`;
