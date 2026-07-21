@@ -31,7 +31,7 @@ const previewItems = [
   {
     title: "서술형 도우미",
     description: "키워드와 이미지로 정리하는 암기 보조",
-    href: "/image-maker",
+    href: "/learn/image-maker",
     iconSrc: "/Image2.svg",
   },
 ];
