@@ -13,7 +13,7 @@ const previewItems = [
   {
     title: "AI 플래시카드",
     description: "취약 개념을 반복해서 복습하는 학습 루틴",
-    href: null,
+    href: "/flashcards",
     iconSrc: "/FlashCard.svg",
   },
   {
@@ -31,7 +31,7 @@ const previewItems = [
   {
     title: "서술형 도우미",
     description: "키워드와 이미지로 정리하는 암기 보조",
-    href: null,
+    href: "/learn/image-maker",
     iconSrc: "/Image2.svg",
   },
 ];
@@ -54,7 +54,7 @@ export default function LearnPage() {
 
   return (
     <AppShell bottomSpacing="cta" className="flex flex-col">
-      <header className="flex h-[5.625rem] items-center justify-between px-6">
+      <header className="flex h-[60px] items-center justify-between px-6">
         <Link href="/" aria-label="홈으로 이동" className="flex items-center">
           <Image
             src="/brand/PillChat.svg"

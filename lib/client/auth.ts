@@ -58,7 +58,9 @@ export const getCurrentUserId = (): string | null => {
       return null;
     }
 
-    const token = localStorage.getItem("access_token");
+    const token =
+      localStorage.getItem("access_token") ??
+      sessionStorage.getItem("access_token");
     if (!token) {
       return null;
     }
@@ -68,7 +70,8 @@ export const getCurrentUserId = (): string | null => {
       return null;
     }
 
-    return payload.userId || null;
+    const userId = payload.userId ?? payload.sub;
+    return userId === undefined || userId === null ? null : String(userId);
   } catch (error) {
     console.error("Get current user ID error:", error);
     return null;
@@ -147,7 +150,9 @@ export const getCurrentUserInfo = (): JWTPayload | null => {
       return null;
     }
 
-    const token = localStorage.getItem("access_token");
+    const token =
+      localStorage.getItem("access_token") ??
+      sessionStorage.getItem("access_token");
     if (!token) {
       return null;
     }

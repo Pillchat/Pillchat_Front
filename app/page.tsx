@@ -41,8 +41,9 @@ import { Separator } from "@/components/ui/separator";
 import {
   useBoardsQuery,
   useFilesQuery,
-  useMaterialsQuery,
+  useMarketItemsQuery,
 } from "@/hooks/queries";
+import type { MarketItemCard } from "@/types/market";
 
 type DDayItem = {
   id: string;
@@ -307,43 +308,35 @@ const getCommentCount = (item: any) =>
   item?.repliesCount ??
   0;
 
-const getMaterialList = (data: any) => {
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.data)) return data.data;
-  if (Array.isArray(data?.content)) return data.content;
-  if (Array.isArray(data?.data?.content)) return data.data.content;
-  return [];
-};
-
-const getMaterialPrice = (item: any) =>
-  Number(item?.price ?? item?.amount ?? item?.cost ?? 0);
-
 const HomeSection: FC<{
   title: string;
   subtitle?: string;
   href: string;
   children: ReactNode;
 }> = ({ title, subtitle, href, children }) => (
-  <section className="px-6 pb-7">
-    <div className="mb-3 flex items-end justify-between gap-3">
-      <div>
-        <h2 className="text-headline-small text-foreground">{title}</h2>
-        {subtitle && (
-          <p className="mt-1 text-body-small text-muted-foreground">
-            {subtitle}
-          </p>
-        )}
+  <>
+    <div aria-hidden="true" className="my-8 h-3 bg-primary-980" />
+    <section className="px-6">
+      <div className="mb-3 flex items-end justify-between gap-3">
+        <div>
+          <h2 className="text-headline-small text-foreground">{title}</h2>
+          {subtitle && (
+            <p className="mt-1 text-body-small text-muted-foreground">
+              {subtitle}
+            </p>
+          )}
+        </div>
+        <Link
+          href={href}
+          className="flex shrink-0 items-center gap-0.5 text-label-medium text-gray-500"
+        >
+          더보기
+          <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+        </Link>
       </div>
-      <Link
-        href={href}
-        className="flex shrink-0 items-center gap-0.5 text-label-medium text-primary"
-      >
-        더보기
-        <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-      </Link>
-    </div>
-    {children}
-  </section>
+      {children}
+    </section>
+  </>
 );
 
 const StudyCelebrationParticles: FC<{ burstId: number }> = ({ burstId }) => {
@@ -415,10 +408,10 @@ const Home: FC = () => {
   } = useBoardsQuery("latest", {
     enabled: isAuthenticated === true,
   });
-  const { data: materialsData, isLoading: isMaterialsLoading } =
-    useMaterialsQuery({
-      enabled: isAuthenticated === true,
-    });
+  const { data: marketData, isLoading: isMarketLoading } = useMarketItemsQuery(
+    { page: 0, size: 4, sort: ["createdAt,desc"] },
+    { enabled: isAuthenticated === true },
+  );
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -734,10 +727,7 @@ const Home: FC = () => {
     return [];
   }, [boards]);
 
-  const materialPreviewItems = useMemo(
-    () => getMaterialList(materialsData).slice(0, 4),
-    [materialsData],
-  );
+  const marketPreviewItems = marketData?.content ?? [];
 
   const boardList = useMemo(() => {
     return [...rawBoardList]
@@ -890,8 +880,8 @@ const Home: FC = () => {
       <AlarmHeader />
 
       <main className="flex-1 pb-24 pt-4">
-        <section className="px-6 pb-6" aria-label="국가고시 D-Day">
-          <div className="overflow-hidden rounded-2xl bg-primary p-5 text-primary-foreground shadow-[0_16px_36px_rgba(255,65,46,0.22)]">
+        <section className="px-6" aria-label="국가고시 D-Day">
+          <div className="overflow-hidden rounded-2xl bg-primary p-5 text-primary-foreground">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5 text-label-medium text-primary-foreground/90">
@@ -996,7 +986,7 @@ const Home: FC = () => {
           subtitle="밤새워 만든 고퀄리티 전공 요약본"
           href="/market"
         >
-          {isMaterialsLoading ? (
+          {isMarketLoading ? (
             <div className="-mx-6 flex gap-4 overflow-x-auto px-6 pb-1">
               {[...Array(3)].map((_, index) => (
                 <div
@@ -1005,40 +995,32 @@ const Home: FC = () => {
                 />
               ))}
             </div>
-          ) : materialPreviewItems.length === 0 ? (
+          ) : marketPreviewItems.length === 0 ? (
             <div className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-body-medium text-muted-foreground">
               등록된 자료가 없습니다.
             </div>
           ) : (
             <div className="-mx-6 flex gap-4 overflow-x-auto px-6 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {materialPreviewItems.map((item: any) => {
-                const price = getMaterialPrice(item);
-                const title = item?.title ?? "제목 없음";
-                const subject =
-                  item?.subjectName ??
-                  item?.subject?.name ??
-                  item?.category ??
-                  "";
-
+              {marketPreviewItems.map((item: MarketItemCard) => {
                 return (
                   <Link
                     key={item.id}
-                    href={`/materials/${item.id}`}
+                    href={`/market/${item.id}`}
                     className="w-40 shrink-0 overflow-hidden rounded-lg border border-border bg-card active:scale-[0.98]"
                   >
                     <div className="flex h-24 items-center justify-center bg-primary-980 px-3 text-center text-title-small text-primary">
                       자료
                     </div>
                     <div className="px-3 py-2.5">
-                      <p className="truncate text-label-small font-medium text-brand">
-                        {subject || "학습자료"}
+                      <p className="truncate text-label-small font-medium text-gray-500">
+                        {item.subjectName || "학습자료"}
                       </p>
                       <p className="mt-1 line-clamp-1 text-label-medium text-foreground">
-                        {title}
+                        {item.title || "제목 없음"}
                       </p>
                       <p className="mt-1 text-label-medium font-semibold text-primary">
-                        {price > 0
-                          ? `${price.toLocaleString("ko-KR")}원`
+                        {item.price > 0
+                          ? `${item.price.toLocaleString("ko-KR")}원`
                           : "무료"}
                       </p>
                     </div>

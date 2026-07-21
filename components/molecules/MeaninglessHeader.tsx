@@ -18,7 +18,7 @@ export const MeaninglessHeader: FC<MeaninglessHeaderProps> = ({
   const unreadCount = useAtomValue(unreadCountAtom);
 
   return (
-    <header className="flex w-full items-center justify-between px-6 py-4">
+    <header className="flex h-[60px] w-full items-center justify-between px-6">
       <Link href="/" className="flex h-[3.625rem] cursor-pointer items-center">
         <img src="/brand/PillChat.svg" alt="logo" width={82} height={32} />
       </Link>

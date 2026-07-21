@@ -4,6 +4,7 @@ export * from "./useBoardsQuery";
 export * from "./useBoardScrapStatusQuery";
 export * from "./useFilesQuery";
 export * from "./useLikeStatusQuery";
+export * from "./useMarketQueries";
 export * from "./useMaterialsQuery";
 export * from "./useNotificationSettingsQuery";
 export * from "./useQuestionQuery";
