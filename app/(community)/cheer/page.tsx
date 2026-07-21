@@ -87,7 +87,7 @@ export default function CheerPage() {
 
   return (
     <AppShell bottomSpacing="input" className="flex flex-col">
-      <header className="sticky top-0 z-10 border-b border-border bg-background px-6 py-4">
+      <header className="sticky top-0 z-10 flex h-[60px] items-center border-b border-border bg-background px-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-brand">LIVE 응원방</p>
@@ -137,7 +137,7 @@ export default function CheerPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-full max-w-app -translate-x-1/2 gap-4 border-t border-border bg-background px-6 pb-1 pt-3 md:px-8"
+        className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-full max-w-app -translate-x-1/2 gap-4 border-t border-border bg-background px-6 pb-1 pt-3 md:px-8"
       >
         <input
           value={message}

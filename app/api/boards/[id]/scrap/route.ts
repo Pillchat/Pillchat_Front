@@ -15,7 +15,9 @@ const parseResponse = async (response: Response) => {
 };
 
 const getAccessToken = (request: NextRequest) =>
-  request.headers.get("authorization")?.replace("Bearer ", "");
+  request.headers.get("authorization")?.replace(/^(Bearer\s+)+/i, "") ||
+  request.cookies.get("access_token")?.value?.replace(/^(Bearer\s+)+/i, "") ||
+  "";
 
 const buildErrorBody = (data: unknown, fallbackMessage: string) =>
   data && typeof data === "object" ? data : { message: fallbackMessage };
@@ -51,9 +53,11 @@ export async function POST(
       );
     }
 
-    return NextResponse.json(data ?? { success: true }, {
-      status: response.status,
-    });
+    if (response.status === 204 || data == null) {
+      return NextResponse.json({ success: true }, { status: 200 });
+    }
+
+    return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error("게시글 스크랩 API 에러:", error);
 
@@ -95,9 +99,11 @@ export async function DELETE(
       );
     }
 
-    return NextResponse.json(data ?? { success: true }, {
-      status: response.status,
-    });
+    if (response.status === 204 || data == null) {
+      return NextResponse.json({ success: true }, { status: 200 });
+    }
+
+    return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error("게시글 스크랩 취소 API 에러:", error);
 

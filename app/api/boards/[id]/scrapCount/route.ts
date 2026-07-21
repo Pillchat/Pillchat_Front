@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST;
+const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
+const getAccessToken = (request: NextRequest) => {
+  const authorization = request.headers.get("authorization");
+  if (authorization) return normalizeToken(authorization);
+  const accessToken = request.cookies.get("access_token")?.value;
+  return accessToken ? normalizeToken(accessToken) : "";
+};
 
 const parseResponse = async (response: Response) => {
   const text = await response.text();
@@ -20,9 +27,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const accessToken = request.headers
-      .get("authorization")
-      ?.replace("Bearer ", "");
+    const accessToken = getAccessToken(request);
 
     if (!accessToken) {
       return NextResponse.json(
@@ -43,6 +48,10 @@ export async function GET(
     );
 
     const data = await parseResponse(response);
+
+    if (response.status === 204 || data == null) {
+      return NextResponse.json({}, { status: 200 });
+    }
 
     return NextResponse.json(data ?? {}, { status: response.status });
   } catch (error) {

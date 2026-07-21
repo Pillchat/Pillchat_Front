@@ -108,6 +108,8 @@ export function rateFlashcard(
 }
 
 export function isWeakCard(card: Flashcard) {
+  if (typeof card.weak === "boolean") return card.weak;
+
   const total =
     card.againCount + card.hardCount + card.goodCount + card.easyCount;
 

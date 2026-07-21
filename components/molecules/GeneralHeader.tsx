@@ -129,7 +129,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
     <>
       <header
         className={cn(
-          "sticky top-0 z-10 flex w-full items-center justify-between bg-background/95 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+          "sticky top-0 z-10 flex h-[60px] w-full items-center justify-between bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60",
           !hideBottomBorder && "border-b border-border/40",
         )}
       >

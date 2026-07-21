@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeft, GraduationCap, Lock, Pencil } from "lucide-react";
 
 import { BottomNavbar } from "@/components/molecules";
 import { useRouter } from "@/lib/navigation";
-import { useMyProfile } from "./_hooks";
+import { useMyPageContent, useMyProfile } from "./_hooks";
+import type { MyPost } from "./_hooks";
 
 const gradeLabels: Record<string, string> = {
   SAESSAK: "새싹",
@@ -23,50 +24,26 @@ const tabs: { id: ProfileTab; label: string }[] = [
   { id: "badges", label: "배지" },
 ];
 
-const postItems = [
-  {
-    meta: "자유게시판 · 06/22 05:09",
-    title: "현장실습 2번 떨어졌다 ㅠㅠㅠ",
-  },
-  {
-    meta: "암기 꿀팁 · 어제",
-    title: "베타차단제 한 줄 암기법 ㄷㄷ",
-  },
-  {
-    meta: "자유게시판 · 3일 전",
-    title: "약물학 교수님 시험 스타일 정리해드림",
-  },
-];
+const categoryLabels: Record<string, string> = {
+  FREE: "자유게시판",
+  TIP: "암기 꿀팁",
+  REVIEW: "실습 후기",
+};
 
-const commentItems = [
-  {
-    meta: "자유게시판 · 오늘",
-    title: "저도 같은 부분에서 헷갈렸어요",
-  },
-  {
-    meta: "암기 꿀팁 · 어제",
-    title: "이 암기법 진짜 도움 됩니다",
-  },
-  {
-    meta: "실습 후기 · 2일 전",
-    title: "병원별 분위기 차이가 꽤 크더라구요",
-  },
-];
+const formatCreatedAt = (value: string) => {
+  if (!value) return "날짜 없음";
 
-const badgeItems = [
-  {
-    meta: "학습 배지",
-    title: "7일 연속 학습 달성",
-  },
-  {
-    meta: "커뮤니티 배지",
-    title: "첫 게시글 작성",
-  },
-  {
-    meta: "시험 대비 배지",
-    title: "CBT 복습 완료",
-  },
-];
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "날짜 없음";
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+};
 
 function PillAvatar({ src, alt }: { src?: string | null; alt: string }) {
   const [hasImageError, setHasImageError] = useState(false);
@@ -98,24 +75,62 @@ function PillAvatar({ src, alt }: { src?: string | null; alt: string }) {
   );
 }
 
-function ContentList({ items }: { items: typeof postItems }) {
+function ContentList({
+  items,
+  onSelect,
+}: {
+  items: MyPost[];
+  onSelect: (id: number) => void;
+}) {
   return (
     <div className="px-6 pt-[1.625rem]">
       {items.map((item, index) => (
         <article
-          key={`${item.meta}-${item.title}`}
-          className={`flex h-[70px] flex-col justify-center ${
+          key={item.id}
+          className={`h-[70px] ${
             index === 0 ? "pt-0" : "border-t border-[#ebe6e3]"
           }`}
         >
-          <p className="text-[0.8125rem] font-normal leading-[18px] text-[#6f625d]">
-            {item.meta}
-          </p>
-          <h2 className="mt-1 text-[1rem] font-bold leading-[22px] text-[#050505]">
-            {item.title}
-          </h2>
+          <button
+            type="button"
+            onClick={() => onSelect(item.id)}
+            className="flex h-full w-full flex-col justify-center text-left active:opacity-70"
+          >
+            <p className="text-[0.8125rem] font-normal leading-[18px] text-[#6f625d]">
+              {item.categoryName || categoryLabels[item.category] || "게시판"} ·{" "}
+              {formatCreatedAt(item.createdAt)}
+            </p>
+            <h2 className="mt-1 truncate text-[1rem] font-medium leading-[22px] text-[#050505]">
+              {item.title}
+            </h2>
+          </button>
         </article>
       ))}
+    </div>
+  );
+}
+
+function ContentStatus({
+  message,
+  actionLabel,
+  onAction,
+}: {
+  message: string;
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <div className="flex min-h-[16rem] flex-col items-center justify-center px-6 text-center">
+      <p className="text-[0.9375rem] leading-6 text-[#6f625d]">{message}</p>
+      {actionLabel && onAction && (
+        <button
+          type="button"
+          onClick={onAction}
+          className="mt-4 h-10 rounded-full bg-[#fff0ea] px-5 text-[0.875rem] font-bold text-[#c63821]"
+        >
+          {actionLabel}
+        </button>
+      )}
     </div>
   );
 }
@@ -123,26 +138,26 @@ function ContentList({ items }: { items: typeof postItems }) {
 export default function MyPage() {
   const router = useRouter();
   const { onMyProfile, isLoading, error, profile } = useMyProfile();
+  const {
+    posts,
+    isLoading: postsLoading,
+    error: postsError,
+    refetch: refetchPosts,
+  } = useMyPageContent();
   const [activeTab, setActiveTab] = useState<ProfileTab>("posts");
 
   useEffect(() => {
     onMyProfile();
   }, [onMyProfile]);
 
-  const displayName = profile.nickname || "약학마스터";
+  const displayName = profile.nickname || "이름";
   const profileImage = profile.profileImg || null;
   const badgeLabel =
     profile.grade && profile.grade !== "NONE"
       ? gradeLabels[profile.grade] || profile.grade
-      : "약물학 A+";
-  const followerCount = profile.followerCount || 6;
-  const followingCount = profile.followingCount || 52;
-
-  const currentItems = useMemo(() => {
-    if (activeTab === "comments") return commentItems;
-    if (activeTab === "badges") return badgeItems;
-    return postItems;
-  }, [activeTab]);
+      : "등급 없음";
+  const followerCount = profile.followerCount;
+  const followingCount = profile.followingCount;
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-[393px] bg-white pb-[5.25rem] text-[#111]">
@@ -205,7 +220,7 @@ export default function MyPage() {
                 <div className="h-8 w-40 animate-pulse rounded-full bg-[#f1ece9]" />
               ) : (
                 <>
-                  <h1 className="max-w-[12rem] truncate text-[1.875rem] font-semibold leading-9 text-[#050505]">
+                  <h1 className="max-w-[12rem] truncate text-[1.875rem] font-medium leading-9 text-[#050505]">
                     {displayName}
                   </h1>
                   <span className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#fff0ea] px-3.5 text-[0.9375rem] font-bold text-[#c63821]">
@@ -283,7 +298,39 @@ export default function MyPage() {
                 공개
               </button>
             </div>
-            <ContentList items={currentItems} />
+            {activeTab === "posts" &&
+              (postsLoading ? (
+                <div
+                  className="space-y-4 px-6 pt-[1.625rem]"
+                  aria-label="내가 쓴 글 불러오는 중"
+                >
+                  {[0, 1, 2].map((item) => (
+                    <div
+                      key={item}
+                      className="h-[54px] animate-pulse rounded-lg bg-[#f5f1ee]"
+                    />
+                  ))}
+                </div>
+              ) : postsError ? (
+                <ContentStatus
+                  message="내가 쓴 글을 불러오지 못했습니다."
+                  actionLabel="다시 시도"
+                  onAction={refetchPosts}
+                />
+              ) : posts.length === 0 ? (
+                <ContentStatus message="아직 작성한 글이 없습니다." />
+              ) : (
+                <ContentList
+                  items={posts}
+                  onSelect={(id) => router.push(`/board/${id}`)}
+                />
+              ))}
+            {activeTab === "comments" && (
+              <ContentStatus message="내가 쓴 댓글 목록 API가 아직 제공되지 않습니다." />
+            )}
+            {activeTab === "badges" && (
+              <ContentStatus message="배지 목록 API가 아직 제공되지 않습니다." />
+            )}
           </section>
         </main>
       )}

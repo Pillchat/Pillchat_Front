@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST;
+const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
+const getAccessToken = (request: NextRequest) => {
+  const authorization = request.headers.get("authorization");
+  if (authorization) return normalizeToken(authorization);
+  const accessToken = request.cookies.get("access_token")?.value;
+  return accessToken ? normalizeToken(accessToken) : "";
+};
 
 export async function POST(
   request: NextRequest,
@@ -9,9 +16,7 @@ export async function POST(
   try {
     const { id } = await params;
 
-    const accessToken = request.headers
-      .get("authorization")
-      ?.replace("Bearer ", "");
+    const accessToken = getAccessToken(request);
 
     if (!accessToken) {
       return NextResponse.json(
@@ -36,6 +41,10 @@ export async function POST(
       data = text;
     }
 
+    if (response.status === 204 || data == null) {
+      return NextResponse.json({ success: true }, { status: 200 });
+    }
+
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error("게시글 좋아요 API 에러:", error);
@@ -54,9 +63,7 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    const accessToken = request.headers
-      .get("authorization")
-      ?.replace("Bearer ", "");
+    const accessToken = getAccessToken(request);
 
     if (!accessToken) {
       return NextResponse.json(
@@ -79,6 +86,10 @@ export async function DELETE(
       data = text ? JSON.parse(text) : null;
     } catch {
       data = text;
+    }
+
+    if (response.status === 204 || data == null) {
+      return NextResponse.json({ success: true }, { status: 200 });
     }
 
     return NextResponse.json(data, { status: response.status });

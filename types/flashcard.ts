@@ -8,6 +8,7 @@ export interface BaseFlashcard {
   id: string;
   type: CardType;
   createdAt: number;
+  updatedAt?: number;
   ease: number;
   interval: number;
   reps: number;
@@ -15,10 +16,12 @@ export interface BaseFlashcard {
   state: CardState;
   due: number;
   lastReviewed?: number;
+  lastRating?: Rating | null;
   againCount: number;
   hardCount: number;
   goodCount: number;
   easyCount: number;
+  weak?: boolean;
 }
 
 export interface ConceptFlashcard extends BaseFlashcard {
@@ -97,5 +100,6 @@ export type FlashcardDraft =
       type: "blind";
       title: string;
       imageUrl: string;
+      imageFile?: File;
       masks: BlindMask[];
     };

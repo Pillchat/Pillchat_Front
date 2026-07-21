@@ -1,4 +1,50 @@
-import { getToken, fetchAPI } from "./fetch";
+import { fetchAPI, getValidAccessToken, refreshTokens } from "./fetch";
+
+const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
+
+const getUploadContentType = (file: File) => {
+  if (file.type) return file.type;
+
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  const inferredTypes: Record<string, string> = {
+    pdf: "application/pdf",
+    ppt: "application/vnd.ms-powerpoint",
+    pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    mp4: "video/mp4",
+    mov: "video/quicktime",
+    webm: "video/webm",
+  };
+
+  return (extension && inferredTypes[extension]) || "application/octet-stream";
+};
+
+const readUploadError = async (response: Response) => {
+  const text = await response.text();
+
+  if (text.trim()) {
+    try {
+      const payload = JSON.parse(text) as {
+        message?: unknown;
+        error?: unknown;
+        code?: unknown;
+      };
+      const message = [payload.message, payload.error, payload.code].find(
+        (value): value is string =>
+          typeof value === "string" && value.trim().length > 0,
+      );
+
+      if (message) return message;
+    } catch {
+      return text;
+    }
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    return "인증이 만료되었거나 이 요청에 대한 권한이 없습니다. 다시 로그인해주세요.";
+  }
+
+  return `요청 실패 (${response.status})`;
+};
 
 // ─── 내부 헬퍼 ───────────────────────────────────────────────
 
@@ -8,15 +54,38 @@ async function fetchWithFormData(
   method: string,
   formData: FormData,
 ) {
-  const token = getToken();
-  const headers: Record<string, string> = {};
-  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const buildHeaders = (token?: string | null) => {
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${normalizeToken(token)}`;
+    return headers;
+  };
 
-  const res = await fetch(url, { method, headers, body: formData });
+  const token = await getValidAccessToken();
+  if (!token) {
+    throw new Error("로그인이 필요합니다. 다시 로그인해주세요.");
+  }
+
+  let res = await fetch(url, {
+    method,
+    headers: buildHeaders(token),
+    body: formData,
+    credentials: "same-origin",
+  });
+
+  if (res.status === 401 || res.status === 403) {
+    const refreshed = await refreshTokens();
+    if (refreshed) {
+      res = await fetch(url, {
+        method,
+        headers: buildHeaders(refreshed.access_token),
+        body: formData,
+        credentials: "same-origin",
+      });
+    }
+  }
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `요청 실패 (${res.status})`);
+    throw new Error(await readUploadError(res));
   }
 
   if (res.status === 204) return null;
@@ -77,28 +146,77 @@ export async function uploadMaterial(data: {
 
 // ─── 대형 파일 업로드 (10MB 초과) ───────────────────────────
 
-type RefType = "QUESTION" | "ANSWER" | "PROFILE" | "MATERIAL" | "BOARD";
+export type FileRefType =
+  | "QUESTION"
+  | "ANSWER"
+  | "PROFILE"
+  | "MATERIAL"
+  | "MARKET"
+  | "BOARD";
+
+export type CompletedFileUpload = {
+  fileId: number;
+  status?: string;
+  originalFileName?: string;
+  fileSize?: number;
+};
 
 /** 대형 파일 업로드: init → S3 PUT → complete */
-export async function uploadLargeFile(file: File, refType: RefType) {
+export async function uploadLargeFile(
+  file: File,
+  refType: FileRefType,
+): Promise<CompletedFileUpload> {
+  const contentType = getUploadContentType(file);
+
   // Step 1: init
   const initRes = await fetchAPI("/api/files/init", "POST", {
     fileName: file.name,
-    contentType: file.type,
+    contentType,
     fileSize: file.size,
     refType,
   });
+  const initializedFileId = Number(initRes?.fileId);
+  const presignedUrl = initRes?.presignedUrl;
 
-  // Step 2: S3 직접 업로드
-  const s3Res = await fetch(initRes.presignedUrl, {
-    method: "PUT",
-    headers: { "Content-Type": file.type },
-    body: file,
-  });
-  if (!s3Res.ok) throw new Error("S3 업로드 실패");
+  if (
+    !Number.isSafeInteger(initializedFileId) ||
+    initializedFileId <= 0 ||
+    typeof presignedUrl !== "string" ||
+    !presignedUrl
+  ) {
+    throw new Error("파일 업로드 초기화 응답이 올바르지 않습니다.");
+  }
 
-  // Step 3: complete
-  return fetchAPI(`/api/files/${initRes.fileId}/complete`, "POST");
+  try {
+    // Step 2: S3 직접 업로드
+    const s3Res = await fetch(presignedUrl, {
+      method: "PUT",
+      headers: { "Content-Type": contentType },
+      body: file,
+    });
+    if (!s3Res.ok) throw new Error("S3 업로드 실패");
+
+    // Step 3: complete
+    const completed = await fetchAPI(
+      `/api/files/${initializedFileId}/complete`,
+      "POST",
+    );
+    const fileId = Number(completed?.fileId ?? initializedFileId);
+
+    if (!Number.isSafeInteger(fileId) || fileId <= 0) {
+      throw new Error("파일 업로드 완료 응답에서 fileId를 확인할 수 없습니다.");
+    }
+
+    return {
+      ...(completed && typeof completed === "object" ? completed : {}),
+      fileId,
+    };
+  } catch (error) {
+    await fetchAPI(`/api/files/${initializedFileId}/delete`, "DELETE").catch(
+      () => undefined,
+    );
+    throw error;
+  }
 }
 
 // ─── 파일 다운로드 / 삭제 ───────────────────────────────────

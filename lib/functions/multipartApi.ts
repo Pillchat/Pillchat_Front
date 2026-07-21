@@ -1,4 +1,6 @@
-import { getToken, fetchAPI } from "./fetchData";
+import { fetchAPI, getValidAccessToken, refreshTokens } from "./fetchData";
+
+const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
 
 // ─── 내부 헬퍼 ───────────────────────────────────────────────
 
@@ -8,11 +10,31 @@ async function fetchWithFormData(
   method: string,
   formData: FormData,
 ) {
-  const token = getToken();
-  const headers: Record<string, string> = {};
-  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const buildHeaders = (token?: string | null) => {
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${normalizeToken(token)}`;
+    return headers;
+  };
 
-  const res = await fetch(url, { method, headers, body: formData });
+  const token = await getValidAccessToken();
+  let res = await fetch(url, {
+    method,
+    headers: buildHeaders(token),
+    body: formData,
+    credentials: "same-origin",
+  });
+
+  if (res.status === 401 || res.status === 403) {
+    const refreshed = await refreshTokens();
+    if (refreshed) {
+      res = await fetch(url, {
+        method,
+        headers: buildHeaders(refreshed.access_token),
+        body: formData,
+        credentials: "same-origin",
+      });
+    }
+  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

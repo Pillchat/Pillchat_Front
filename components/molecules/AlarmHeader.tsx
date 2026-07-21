@@ -66,7 +66,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
   return (
     <>
       <header
-        className={`sticky top-0 z-10 flex w-full items-center justify-between border-b-0 bg-white px-6 py-4 backdrop-blur ${
+        className={`sticky top-0 z-10 flex h-[60px] w-full items-center justify-between border-b-0 bg-white px-6 backdrop-blur ${
           hideBottomBorder ? "" : "border-b border-border/40"
         }`}
       >

@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildQueryParams } from "@/lib/shared/query";
-import { serverFetch } from "@/lib/server/fetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST;
 const BOARD_CATEGORIES = ["FREE", "TIP", "REVIEW"];
-const normalizeToken = (token: string) => token.replace(/^Bearer\s+/i, "");
+const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
+const getAccessToken = (request: NextRequest) => {
+  const authorization = request.headers.get("authorization");
+  if (authorization) return normalizeToken(authorization);
+  const accessToken = request.cookies.get("access_token")?.value;
+  return accessToken ? normalizeToken(accessToken) : "";
+};
 
 const getAuthHeaders = (accessToken?: string): HeadersInit =>
   accessToken
@@ -39,12 +44,12 @@ const getBoardCategoryText = (item: any) =>
 const matchesCategory = (item: any, category: string) =>
   getBoardCategoryText(item) === category.toUpperCase();
 
-const getErrorBody = (data: any, status: number) => {
+const getErrorBody = (data: any, status: number, fallbackMessage: string) => {
   if (data && typeof data === "object") return data;
   if (typeof data === "string" && data.trim()) {
     return { message: data };
   }
-  return { message: `게시글 목록 조회에 실패했습니다. (${status})` };
+  return { message: `${fallbackMessage} (${status})` };
 };
 
 const appendListParams = (
@@ -78,6 +83,7 @@ const appendListParams = (
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const accessToken = getAccessToken(request);
 
     const title = searchParams.get("title");
     const content = searchParams.get("content");
@@ -91,6 +97,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!accessToken) {
+      return NextResponse.json(
+        { message: "로그인이 필요합니다." },
+        { status: 401 },
+      );
+    }
+
     const queryString = buildQueryParams({
       title,
       content,
@@ -98,10 +111,26 @@ export async function POST(request: NextRequest) {
       keys,
     });
 
-    const data = await serverFetch(`/api/boards?${queryString}`, {
+    const response = await fetch(`${API_BASE_URL}/api/boards?${queryString}`, {
       method: "POST",
-      request,
+      headers: getAuthHeaders(accessToken),
+      cache: "no-store",
     });
+    const data = await parseBackendResponse(response);
+
+    if (!response.ok) {
+      const fallbackMessage =
+        response.status === 401 || response.status === 403
+          ? "로그인 세션이 만료되었거나 인증에 실패했습니다. 다시 로그인해주세요."
+          : "게시글 업로드에 실패했습니다.";
+
+      return NextResponse.json(
+        getErrorBody(data, response.status, fallbackMessage),
+        {
+          status: response.status,
+        },
+      );
+    }
 
     return NextResponse.json(data);
   } catch (error) {
@@ -115,9 +144,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const accessToken =
-      request.headers.get("authorization")?.replace("Bearer ", "") ||
-      request.cookies.get("access_token")?.value;
+    const accessToken = getAccessToken(request);
     const category = request.nextUrl.searchParams.get("category");
     const categories = category ? [category.toUpperCase()] : BOARD_CATEGORIES;
 
@@ -187,7 +214,11 @@ export async function GET(request: NextRequest) {
         }
 
         return NextResponse.json(
-          getErrorBody(failed.data, failed.response.status),
+          getErrorBody(
+            failed.data,
+            failed.response.status,
+            "게시글 목록 조회에 실패했습니다.",
+          ),
           { status: failed.response.status },
         );
       }
@@ -198,7 +229,11 @@ export async function GET(request: NextRequest) {
     if (successful.length === 0) {
       const failed = responses[0];
       return NextResponse.json(
-        getErrorBody(failed?.data, failed?.response.status ?? 500),
+        getErrorBody(
+          failed?.data,
+          failed?.response.status ?? 500,
+          "게시글 목록 조회에 실패했습니다.",
+        ),
         { status: failed?.response.status ?? 500 },
       );
     }

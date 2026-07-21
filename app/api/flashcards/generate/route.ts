@@ -20,8 +20,19 @@ type GeneratedQuestion = {
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024;
 const PDF_POLL_INTERVAL_MS = 1500;
-const PDF_MAX_POLLS = 8;
+const PDF_MAX_POLLS = 60;
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_HOST?.replace(/\/$/, "");
+const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
+
+class GenerationApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "GenerationApiError";
+  }
+}
 
 const trimText = (value: unknown) =>
   typeof value === "string" ? value.trim() : "";
@@ -61,15 +72,47 @@ const isPdfFile = (file: File) =>
 const readJson = async (response: Response) =>
   (await response.json().catch(() => null)) as unknown;
 
+const readResponseError = async (response: Response, fallback: string) => {
+  const text = await response.text();
+
+  if (!text.trim()) return fallback;
+
+  try {
+    const payload = JSON.parse(text) as {
+      message?: unknown;
+      error?: unknown;
+      errorMessage?: unknown;
+    };
+    const message = [payload.message, payload.errorMessage, payload.error].find(
+      (value): value is string =>
+        typeof value === "string" && value.trim().length > 0,
+    );
+
+    return message ?? fallback;
+  } catch {
+    return text;
+  }
+};
+
 async function extractPdfQuestions(
   file: File,
   request: Request,
 ): Promise<GeneratedQuestion[]> {
-  if (!API_BASE_URL) return [];
+  if (!API_BASE_URL) {
+    throw new GenerationApiError("백엔드 API 주소가 설정되지 않았습니다.", 500);
+  }
 
   const authorization = request.headers.get("authorization");
-  const headers: Record<string, string> = {};
-  if (authorization) headers.Authorization = authorization;
+  if (!authorization) {
+    throw new GenerationApiError(
+      "로그인이 필요합니다. 다시 로그인해주세요.",
+      401,
+    );
+  }
+
+  const headers = {
+    Authorization: `Bearer ${normalizeToken(authorization)}`,
+  };
 
   const formData = new FormData();
   formData.append("file", file);
@@ -81,13 +124,25 @@ async function extractPdfQuestions(
     body: formData,
   });
 
-  if (!uploadResponse.ok) return [];
+  if (!uploadResponse.ok) {
+    throw new GenerationApiError(
+      await readResponseError(uploadResponse, "PDF 업로드에 실패했습니다."),
+      uploadResponse.status,
+    );
+  }
 
   const uploadData = unwrapData(await readJson(uploadResponse)) as {
     fileId?: number | string;
   } | null;
   const fileId = uploadData?.fileId;
-  if (!fileId) return [];
+  if (!fileId) {
+    throw new GenerationApiError(
+      "PDF 업로드 응답에서 fileId를 받지 못했습니다.",
+      502,
+    );
+  }
+
+  let extractedTextPreview = "";
 
   for (let attempt = 0; attempt < PDF_MAX_POLLS; attempt += 1) {
     if (attempt > 0) await wait(PDF_POLL_INTERVAL_MS);
@@ -97,40 +152,74 @@ async function extractPdfQuestions(
       { headers },
     );
 
-    if (!extractResponse.ok) return [];
+    if (!extractResponse.ok) {
+      throw new GenerationApiError(
+        await readResponseError(
+          extractResponse,
+          "PDF 문제 생성 상태를 확인하지 못했습니다.",
+        ),
+        extractResponse.status,
+      );
+    }
 
     const extractData = unwrapData(await readJson(extractResponse)) as {
       status?: string;
       taskStatus?: string;
       questions?: GeneratedQuestion[];
-      extractedText?: string;
       extractedTextPreview?: string;
+      errorMessage?: string;
     } | null;
+
+    if (extractData?.extractedTextPreview?.trim()) {
+      extractedTextPreview = extractData.extractedTextPreview.trim();
+    }
 
     if (
       extractData?.status === "FAILED" ||
       extractData?.taskStatus === "FAILED"
     ) {
-      return [];
+      throw new GenerationApiError(
+        extractData.errorMessage ||
+          "PDF 텍스트 추출 또는 문제 생성에 실패했습니다.",
+        422,
+      );
     }
 
     if (Array.isArray(extractData?.questions) && extractData.questions.length) {
       return extractData.questions;
     }
 
-    if (extractData?.status === "DONE" && extractData.extractedText) {
+    if (
+      extractData?.status === "DONE" &&
+      extractData.taskStatus === "COMPLETED" &&
+      extractedTextPreview
+    ) {
       return [
         {
           subject: file.name,
-          content: extractData.extractedText,
-          answer: extractData.extractedTextPreview ?? "",
-          explanation: extractData.extractedText.slice(0, 220),
+          content: extractedTextPreview,
+          answer: extractedTextPreview,
+          explanation: extractedTextPreview.slice(0, 220),
         },
       ];
     }
   }
 
-  return [];
+  if (extractedTextPreview) {
+    return [
+      {
+        subject: file.name,
+        content: extractedTextPreview,
+        answer: extractedTextPreview,
+        explanation: extractedTextPreview.slice(0, 220),
+      },
+    ];
+  }
+
+  throw new GenerationApiError(
+    "PDF 문제 생성 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.",
+    504,
+  );
 }
 
 async function readGenerationInput(request: Request): Promise<GenerationInput> {
@@ -347,7 +436,7 @@ export async function POST(request: Request) {
         message:
           error instanceof Error ? error.message : "카드를 생성하지 못했어요.",
       },
-      { status: 400 },
+      { status: error instanceof GenerationApiError ? error.status : 400 },
     );
   }
 }
