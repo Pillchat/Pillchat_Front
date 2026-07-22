@@ -22,7 +22,8 @@ function createWatermarkPattern(nickname: string | null): string {
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate((-20 * Math.PI) / 180);
 
-  ctx.font = "bold 36px sans-serif";
+  const fontFamily = getComputedStyle(document.body).fontFamily;
+  ctx.font = `bold 36px ${fontFamily}`;
   const text = nickname ? `Pillchat ${nickname}` : "Pillchat";
   ctx.fillText(text, 0, 0);
 

@@ -508,7 +508,7 @@ const UploadPage = () => {
 
           <div className="flex min-h-0 flex-1 flex-col px-6 pb-6 pt-5">
             <div className="shrink-0 px-1">
-              <p className="font-Pretendard text-headline-large">
+              <p className="text-headline-large">
                 학습자료 업로드 전, 다음 안내사항을 반드시 읽고 확인해주세요.
               </p>
             </div>
@@ -516,10 +516,10 @@ const UploadPage = () => {
             <div className="mt-6 flex min-h-0 flex-1 flex-col justify-between gap-6">
               <div className="space-y-5 px-1">
                 <div>
-                  <p className="font-Pretendard mb-2 text-title-large">
+                  <p className="mb-2 text-title-large">
                     1. 저작권 관련 책임 안내
                   </p>
-                  <ul className="font-Pretendard list-disc space-y-2 pl-5 text-body-medium">
+                  <ul className="list-disc space-y-2 pl-5 text-body-medium">
                     <li>
                       사용자가 업로드하는 모든 자료는 대한민국 「저작권법」
                       제2조 및 제4조에 따라 보호받는 저작물에 해당할 수
@@ -539,10 +539,8 @@ const UploadPage = () => {
                 </div>
 
                 <div>
-                  <p className="font-Pretendard mb-2 text-title-large">
-                    2. 책임 동의 안내
-                  </p>
-                  <ul className="font-Pretendard list-disc space-y-2 pl-5 text-body-medium">
+                  <p className="mb-2 text-title-large">2. 책임 동의 안내</p>
+                  <ul className="list-disc space-y-2 pl-5 text-body-medium">
                     <li>
                       본인은 자료를 직접 작성했거나, 저작권 문제가 없는 자료임을
                       확인합니다.
@@ -564,9 +562,7 @@ const UploadPage = () => {
                     className="h-[22px] w-[22px]"
                     style={{ color: checked ? "#FF412E" : "#C4C4C4" }}
                   />
-                  <p className="font-Pretendard text-title-small">
-                    위 내용에 동의합니다.
-                  </p>
+                  <p className="text-title-small">위 내용에 동의합니다.</p>
                 </div>
 
                 <div className="mt-4">
@@ -679,10 +675,8 @@ const UploadPage = () => {
             />
 
             <div className="px-6">
-              <p className="mb-3 font-[Pretendard] text-label-medium">
-                업로드 할 파일
-              </p>
-              <p className="mb-1 font-[Pretendard] text-body-small text-[#999]">
+              <p className="mb-3 text-label-medium">업로드 할 파일</p>
+              <p className="mb-1 text-body-small text-[#999]">
                 이미지 파일 (JPG, PNG 등) 최대 10장 또는 PDF 파일 1개 가능
               </p>
 

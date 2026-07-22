@@ -178,7 +178,7 @@ const SupportPage = () => {
           type="button"
           onClick={() => setActiveTab("form")}
           className={cn(
-            "relative flex items-center justify-center font-[Pretendard] text-[18px] font-semibold leading-[34px]",
+            "relative flex items-center justify-center text-[18px] font-semibold leading-[34px]",
             activeTab === "form" ? "text-primary" : "text-[#666666]",
           )}
         >
@@ -193,7 +193,7 @@ const SupportPage = () => {
           type="button"
           onClick={() => setActiveTab("history")}
           className={cn(
-            "relative flex items-center justify-center font-[Pretendard] text-[18px] font-semibold leading-[34px]",
+            "relative flex items-center justify-center text-[18px] font-semibold leading-[34px]",
             activeTab === "history" ? "text-primary" : "text-[#666666]",
           )}
         >
@@ -236,12 +236,8 @@ const SupportPage = () => {
           </div>
 
           <div className="px-6">
-            <p className="mb-3 font-[Pretendard] text-xs">
-              {TEXT.attachmentLabel}
-            </p>
-            <p className="mb-1 font-[Pretendard] text-xs text-[#999]">
-              {TEXT.attachmentGuide}
-            </p>
+            <p className="mb-3 text-xs">{TEXT.attachmentLabel}</p>
+            <p className="mb-1 text-xs text-[#999]">{TEXT.attachmentGuide}</p>
 
             <div className="grid w-full grid-cols-2 gap-4">
               <BoardButton
