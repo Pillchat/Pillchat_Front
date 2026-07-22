@@ -11,12 +11,29 @@ const PUBLIC_PATHS = [
   "/flashcards",
 ];
 
+const LOGIN_NO_STORE_HEADERS = {
+  "Cache-Control": "no-store, no-cache, max-age=0, must-revalidate",
+  "CDN-Cache-Control": "no-store",
+  "Vercel-CDN-Cache-Control": "no-store",
+};
+
+const isLoginPath = (pathname: string) =>
+  pathname === "/login" || pathname.startsWith("/login/");
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 공개 경로는 통과
   if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) {
-    return NextResponse.next();
+    const response = NextResponse.next();
+
+    if (isLoginPath(pathname)) {
+      for (const [name, value] of Object.entries(LOGIN_NO_STORE_HEADERS)) {
+        response.headers.set(name, value);
+      }
+    }
+
+    return response;
   }
 
   // 쿠키에서 토큰 확인

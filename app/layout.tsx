@@ -9,6 +9,7 @@ import { TopRouteProgress } from "@/components/molecules";
 const pretendard = localFont({
   src: "../public/fonts/PretendardVariable.woff2",
   display: "swap",
+  variable: "--font-pretendard",
 });
 
 export const metadata: Metadata = {
@@ -33,7 +34,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko" className={pretendard.variable} suppressHydrationWarning>
       <head>
         <Script id="block-zoom" strategy="beforeInteractive">{`
           (function () {
@@ -75,7 +76,7 @@ export default function RootLayout({
           })();
         `}</Script>
       </head>
-      <body className={pretendard.className}>
+      <body className="font-sans">
         <Script
           src="https://developers.kakao.com/sdk/js/kakao.min.js"
           strategy="afterInteractive"

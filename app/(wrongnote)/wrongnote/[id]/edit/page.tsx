@@ -127,7 +127,7 @@ const EditWrongNotePage = () => {
             onItemToggle={handleSubjectToggle}
             showDropdown
             showDropdownButton
-            categoryTitleClassName="text-sm font-medium text-pretendard text-[#111]"
+            categoryTitleClassName="text-sm font-medium text-[#111]"
             buttonSize="sm"
             className="gap-0"
           />

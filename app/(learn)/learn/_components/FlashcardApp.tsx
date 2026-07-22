@@ -36,7 +36,7 @@ import { AppShell } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getValidAccessToken, refreshTokens } from "@/lib/client/fetch";
+import { getValidAccessToken, recoverAccessToken } from "@/lib/client/fetch";
 import {
   buildReviewLogs,
   createRemoteFlashcard,
@@ -1225,9 +1225,9 @@ function CreatePanel({
       let response = await requestGeneration(token);
 
       if (response.status === 401 || response.status === 403) {
-        const refreshed = await refreshTokens();
-        if (refreshed) {
-          response = await requestGeneration(refreshed.access_token);
+        const recoveredToken = await recoverAccessToken(token);
+        if (recoveredToken) {
+          response = await requestGeneration(recoveredToken);
         }
       }
 

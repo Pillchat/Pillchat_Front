@@ -1,5 +1,5 @@
 import { RegisterOptions } from "react-hook-form";
-import { LoginFormData } from "@/app/(auth)/login/page";
+import type { LoginFormData } from "@/app/(auth)/login/types";
 
 export const passwordRules: RegisterOptions<LoginFormData, "password"> = {
   required: "비밀번호를 입력해주세요.",

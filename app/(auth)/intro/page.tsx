@@ -72,7 +72,7 @@ export default function IntroPage() {
   const SimpleSlideIcon = simpleSlide?.icon;
 
   const handlePrimaryAction = () => {
-    router.push("/signup");
+    router.push("/login");
   };
 
   return (

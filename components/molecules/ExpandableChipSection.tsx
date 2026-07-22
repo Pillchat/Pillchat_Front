@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { ButtonSize } from "@/types";
 import { map } from "lodash";
 import { FC, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 type ExpandableChipSectionProps = {
   data: Record<string, string[]>;
@@ -25,6 +26,8 @@ type ExpandableChipSectionProps = {
   hasBottombar?: boolean;
   modalSelectionMode?: "manual" | "instant";
   modalMaxHeightClassName?: string;
+  modalClassName?: string;
+  showModalCloseButton?: boolean;
 };
 
 export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
@@ -46,6 +49,8 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
   hasBottombar = false,
   modalSelectionMode = "manual",
   modalMaxHeightClassName = "max-h-[50vh]",
+  modalClassName,
+  showModalCloseButton = true,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [pendingSelectedItems, setPendingSelectedItems] = useState<string[]>(
@@ -197,103 +202,111 @@ export const ExpandableChipSection: FC<ExpandableChipSectionProps> = ({
           </div>
 
           {isExpanded && showDropdown ? (
-            <>
-              <div
-                className="fixed inset-0 z-40 bg-black/20"
-                onClick={closeModalWithoutApply}
-              />
+            createPortal(
+              <>
+                <div
+                  className="fixed inset-0 z-40 bg-black/20"
+                  onClick={closeModalWithoutApply}
+                />
 
-              <div
-                className={cn(
-                  "fixed left-0 right-0 z-50 mx-auto flex max-w-app flex-col rounded-t-2xl border bg-white px-6 pt-4 shadow-lg md:px-8",
-                  hasBottombar ? "bottom-[108px]" : "bottom-0",
-                  modalMaxHeightClassName,
-                )}
-              >
-                <div className="mb-4 flex items-center justify-between">
-                  <p className="text-lg font-semibold">{category}</p>
-                  <button
-                    onClick={closeModalWithoutApply}
-                    className="text-gray-400 hover:text-gray-600"
-                    type="button"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto pb-6">
-                  <div className="flex flex-col gap-4">
-                    {expandedData ? (
-                      map(
-                        Object.entries(expandedData),
-                        ([subCategory, subItems]) => (
-                          <div
-                            key={subCategory}
-                            className="flex flex-col gap-2"
-                          >
-                            <p className="text-sm font-medium text-gray-700">
-                              {subCategory}
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {map(subItems, (item) => (
-                                <TextButton
-                                  key={item}
-                                  onClick={() =>
-                                    isInstantModalSelection
-                                      ? handleItemClick(item)
-                                      : handlePendingItemClick(item)
-                                  }
-                                  variant="outline"
-                                  label={item}
-                                  className={cn(
-                                    modalSelectedItems.includes(item) &&
-                                      selectedChipClassName,
-                                  )}
-                                  size={buttonSize}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        ),
-                      )
-                    ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {map(items, (item) => (
-                          <TextButton
-                            key={item}
-                            onClick={() =>
-                              isInstantModalSelection
-                                ? handleItemClick(item)
-                                : handlePendingItemClick(item)
-                            }
-                            variant="outline"
-                            label={item}
-                            className={cn(
-                              modalSelectedItems.includes(item) &&
-                                selectedChipClassName,
-                            )}
-                            size={buttonSize}
-                          />
-                        ))}
-                      </div>
+                <div
+                  className={cn(
+                    "fixed left-0 right-0 z-50 mx-auto flex max-w-app flex-col rounded-t-2xl border bg-white px-6 pt-4 shadow-lg md:px-8",
+                    hasBottombar
+                      ? "bottom-[calc(5.25rem+env(safe-area-inset-bottom))]"
+                      : "bottom-0",
+                    modalMaxHeightClassName,
+                    modalClassName,
+                  )}
+                >
+                  <div className="mb-4 flex items-center justify-between">
+                    <p className="text-lg font-semibold">{category}</p>
+                    {showModalCloseButton && (
+                      <button
+                        onClick={closeModalWithoutApply}
+                        className="text-gray-400 hover:text-gray-600"
+                        type="button"
+                      >
+                        ✕
+                      </button>
                     )}
                   </div>
-                </div>
 
-                {!isInstantModalSelection && (
-                  <div className="sticky bottom-0 -mx-6 px-6 py-5">
-                    <button
-                      type="button"
-                      onClick={applyPendingSelection}
-                      className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
-                      disabled={!isPendingChanged}
-                    >
-                      선택 완료
-                    </button>
+                  <div className="flex-1 overflow-y-auto pb-6">
+                    <div className="flex flex-col gap-4">
+                      {expandedData ? (
+                        map(
+                          Object.entries(expandedData),
+                          ([subCategory, subItems]) => (
+                            <div
+                              key={subCategory}
+                              className="flex flex-col gap-2"
+                            >
+                              <p className="text-sm font-medium text-gray-700">
+                                {subCategory}
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {map(subItems, (item) => (
+                                  <TextButton
+                                    key={item}
+                                    onClick={() =>
+                                      isInstantModalSelection
+                                        ? handleItemClick(item)
+                                        : handlePendingItemClick(item)
+                                    }
+                                    variant="outline"
+                                    label={item}
+                                    className={cn(
+                                      modalSelectedItems.includes(item) &&
+                                        selectedChipClassName,
+                                    )}
+                                    size={buttonSize}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          ),
+                        )
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {map(items, (item) => (
+                            <TextButton
+                              key={item}
+                              onClick={() =>
+                                isInstantModalSelection
+                                  ? handleItemClick(item)
+                                  : handlePendingItemClick(item)
+                              }
+                              variant="outline"
+                              label={item}
+                              className={cn(
+                                modalSelectedItems.includes(item) &&
+                                  selectedChipClassName,
+                              )}
+                              size={buttonSize}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
-            </>
+
+                  {!isInstantModalSelection && (
+                    <div className="sticky bottom-0 -mx-6 px-6 py-5">
+                      <button
+                        type="button"
+                        onClick={applyPendingSelection}
+                        className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
+                        disabled={!isPendingChanged}
+                      >
+                        선택 완료
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>,
+              document.body,
+            )
           ) : (
             <div
               className={

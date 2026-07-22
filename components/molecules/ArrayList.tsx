@@ -84,7 +84,7 @@ export const ArrayList = <T extends string>({
                   onClick={() => select(t.key)}
                   className={[
                     "relative inline-flex h-full whitespace-nowrap px-0",
-                    "font-['Pretendard'] text-[18px] font-semibold",
+                    "text-[18px] font-semibold",
                     scrollable
                       ? "items-start"
                       : "items-start justify-center text-center",

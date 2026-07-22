@@ -6,7 +6,12 @@ import { useSearchParams } from "next/navigation";
 import { Bookmark, Heart, Plus, Star } from "lucide-react";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
-import { AppShell, MeaninglessHeader } from "@/components/molecules";
+import {
+  AppShell,
+  BottomNavbar,
+  ExpandableChipSection,
+  MeaninglessHeader,
+} from "@/components/molecules";
 import {
   useMarketItemsQuery,
   useSellerMarketItemsQuery,
@@ -89,6 +94,16 @@ function MarketPageContent() {
     () => getSubjectOptions(subjectsQuery.data, items),
     [items, subjectsQuery.data],
   );
+  const subjectFilterLabels = useMemo(
+    () => ["전체", ...subjectOptions.map((subject) => subject.label)],
+    [subjectOptions],
+  );
+  const selectedSubjectLabel =
+    subjectOptions.find((subject) => subject.id === selectedSubjectId)?.label ??
+    "전체";
+  const selectedGradeLabel =
+    gradeOptions.find((grade) => grade.value === selectedGrade)?.label ??
+    "전체";
   const sellerNickname = items[0]?.sellerNickname;
 
   const changeSubject = (subjectId?: number) => {
@@ -101,8 +116,23 @@ function MarketPageContent() {
     setPage(0);
   };
 
+  const changeSubjectByLabel = (label: string) => {
+    if (label === "전체") {
+      changeSubject();
+      return;
+    }
+
+    const subject = subjectOptions.find((option) => option.label === label);
+    if (subject) changeSubject(subject.id);
+  };
+
+  const changeGradeByLabel = (label: string) => {
+    const grade = gradeOptions.find((option) => option.label === label);
+    if (grade) changeGrade(grade.value);
+  };
+
   return (
-    <AppShell>
+    <AppShell bottomNav={false}>
       <MeaninglessHeader />
 
       <main className="pb-8 pt-3">
@@ -131,55 +161,37 @@ function MarketPageContent() {
 
         {!sellerId && (
           <section
-            className="sticky top-0 z-10 mt-6 space-y-2 bg-background/95 px-6 py-3 backdrop-blur"
+            className="sticky top-0 z-10 mt-6 space-y-2 bg-background/95 px-6 py-3"
             aria-label="자료 필터"
           >
-            <div className="flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <button
-                type="button"
-                aria-pressed={selectedSubjectId === undefined}
-                onClick={() => changeSubject()}
-                className={`h-8 shrink-0 rounded-full px-3 text-label-medium ${
-                  selectedSubjectId === undefined
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-primary-980 text-muted-foreground"
-                }`}
-              >
-                전체
-              </button>
-              {subjectOptions.map((subject) => (
-                <button
-                  key={subject.id}
-                  type="button"
-                  aria-pressed={selectedSubjectId === subject.id}
-                  onClick={() => changeSubject(subject.id)}
-                  className={`h-8 shrink-0 rounded-full px-3 text-label-medium ${
-                    selectedSubjectId === subject.id
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-primary-980 text-muted-foreground"
-                  }`}
-                >
-                  {subject.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {gradeOptions.map((grade) => (
-                <button
-                  key={grade.value || "all"}
-                  type="button"
-                  aria-pressed={selectedGrade === grade.value}
-                  onClick={() => changeGrade(grade.value)}
-                  className={`h-8 shrink-0 rounded-full px-3 text-label-medium ${
-                    selectedGrade === grade.value
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-primary-980 text-muted-foreground"
-                  }`}
-                >
-                  {grade.label}
-                </button>
-              ))}
-            </div>
+            <ExpandableChipSection
+              data={{ 과목: subjectFilterLabels }}
+              selectedItems={[selectedSubjectLabel]}
+              onItemToggle={changeSubjectByLabel}
+              selectionMode="single"
+              showDropdown
+              showDropdownButton
+              modalSelectionMode="manual"
+              modalMaxHeightClassName="max-h-[calc(100dvh-24px)]"
+              modalClassName="shadow-none"
+              showModalCloseButton={false}
+              categoryTitleClassName="sr-only"
+              className="gap-0"
+            />
+            <ExpandableChipSection
+              data={{ 학년: gradeOptions.map((grade) => grade.label) }}
+              selectedItems={[selectedGradeLabel]}
+              onItemToggle={changeGradeByLabel}
+              selectionMode="single"
+              showDropdown
+              showDropdownButton
+              modalSelectionMode="manual"
+              modalMaxHeightClassName="max-h-[calc(100dvh-24px)]"
+              modalClassName="shadow-none"
+              showModalCloseButton={false}
+              categoryTitleClassName="sr-only"
+              className="gap-0"
+            />
           </section>
         )}
 
@@ -331,7 +343,7 @@ function MarketPageContent() {
         )}
       </main>
 
-      <div className="pointer-events-none fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-full max-w-app -translate-x-1/2 justify-end px-6 md:px-8">
+      <div className="pointer-events-none fixed bottom-[calc(6.25rem+env(safe-area-inset-bottom))] left-1/2 z-30 flex w-full max-w-app -translate-x-1/2 justify-end px-6 md:px-8">
         <Link
           href="/market/upload"
           aria-label="자료 올리기"
@@ -343,6 +355,8 @@ function MarketPageContent() {
           </span>
         </Link>
       </div>
+
+      <BottomNavbar className="z-20" />
     </AppShell>
   );
 }

@@ -1,4 +1,4 @@
-import { fetchAPI, getValidAccessToken, refreshTokens } from "./fetch";
+import { fetchAPI, getValidAccessToken, recoverAccessToken } from "./fetch";
 
 const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
 
@@ -73,11 +73,11 @@ async function fetchWithFormData(
   });
 
   if (res.status === 401 || res.status === 403) {
-    const refreshed = await refreshTokens();
-    if (refreshed) {
+    const recoveredToken = await recoverAccessToken(token);
+    if (recoveredToken) {
       res = await fetch(url, {
         method,
-        headers: buildHeaders(refreshed.access_token),
+        headers: buildHeaders(recoveredToken),
         body: formData,
         credentials: "same-origin",
       });

@@ -90,7 +90,7 @@ const NewWrongNotePage = () => {
             onItemToggle={handleSubjectToggle}
             showDropdown
             showDropdownButton
-            categoryTitleClassName="text-sm font-semibold text-pretendard text-[#111]"
+            categoryTitleClassName="text-sm font-semibold text-[#111]"
             buttonSize="sm"
             className="gap-0"
           />
