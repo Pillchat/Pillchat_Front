@@ -550,15 +550,15 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
           <div className="border-t-[12px] border-t-[#F4F4F4]">
             <div className="px-6 pb-6 pt-6">
               <div className="flex items-center gap-4 border-b border-[#F4F4F4] pb-4">
-                <span className="text-base font-semibold text-foreground">
+                <span className="text-headline-medium text-foreground">
                   댓글
                 </span>
                 <button
                   type="button"
                   className={
                     commentSort === "latest"
-                      ? "text-base font-semibold text-primary"
-                      : "text-base font-medium text-[#999999]"
+                      ? "text-label-medium text-primary"
+                      : "text-label-medium text-gray-500"
                   }
                   onClick={() => setCommentSort("latest")}
                 >
@@ -568,8 +568,8 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
                   type="button"
                   className={
                     commentSort === "popular"
-                      ? "text-base font-semibold text-primary"
-                      : "text-base font-medium text-[#999999]"
+                      ? "text-label-medium text-primary"
+                      : "text-label-medium text-gray-500"
                   }
                   onClick={() => setCommentSort("popular")}
                 >

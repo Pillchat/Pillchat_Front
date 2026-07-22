@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { clearSignupDraft, getSignupDraft } from "@/lib/client/signupDraft";
 import {
   clearStoredGoogleOAuth,
   getGoogleOAuthRedirectUri,
@@ -100,6 +101,7 @@ export const GoogleOAuthCallback = () => {
             rememberMe,
             email: getOAuthEmail(result.data),
             name: getOAuthName(result.data),
+            signupDraft: getSignupDraft() ?? undefined,
           });
           clearStoredGoogleOAuth();
           router.replace("/onboarding/oauth");
@@ -120,6 +122,7 @@ export const GoogleOAuthCallback = () => {
         }
 
         saveTokensAndSetupRefresh(accessToken, refreshToken, rememberMe);
+        clearSignupDraft();
         clearPendingOAuthSignup();
         clearStoredGoogleOAuth();
         router.replace("/");

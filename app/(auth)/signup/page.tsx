@@ -485,7 +485,7 @@ export type SignupFormData = {
 
 // export default SignupPage;
 
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useRouter } from "@/lib/navigation";
 import {
   Step,
@@ -497,12 +497,24 @@ import {
 } from "./_hooks";
 import { useManualSubmit } from "./_hooks/useManualSubmit";
 
-import { SolidButton, StrokeButton } from "@/components/atoms";
+import { SolidButton } from "@/components/atoms";
+import { Button } from "@/components/ui/button";
 import { StepHeader, IconInputField } from "@/components/molecules";
+import type { SignupGrade, SignupSource } from "@/constants/signup";
+import {
+  clearSignupDraft,
+  getSignupDraft,
+  saveSignupDraft,
+} from "@/lib/client/signupDraft";
+import { FcGoogle } from "react-icons/fc";
+import { RiKakaoTalkFill } from "react-icons/ri";
+import Image from "next/image";
+import { useGoogleOAuth, useKakaoOAuth } from "../login/_hooks";
 import { VerifyInputField } from "./_components/VerifyInputField";
+import { SignupInfoFlow } from "./_components/SignupInfoFlow";
 
 const SignupPage: FC = () => {
-  const { step, nextStep, prevStep } = useStep();
+  const { step, setStep, nextStep, prevStep } = useStep();
   const { onVerify, isLoading: isVerifyLoading, isVerified } = useVerify();
   const { onCheckVerify } = useCheckVerify();
 
@@ -525,9 +537,33 @@ const SignupPage: FC = () => {
 
   // 학생용
   const [university, setUniversity] = useState("");
-  const [department, setDepartment] = useState("");
-  const [studentId, setStudentId] = useState("");
-  const [grade, setGrade] = useState("");
+  const [grade, setGrade] = useState<SignupGrade | "">("");
+  const [signupSource, setSignupSource] = useState<SignupSource | "">("");
+
+  const { startGoogleLogin, isGoogleLoginLoading, googleLoginError } =
+    useGoogleOAuth(true);
+  const { startKakaoLogin, isKakaoLoginLoading, kakaoLoginError } =
+    useKakaoOAuth(true);
+  const oauthError = googleLoginError || kakaoLoginError;
+
+  const leaveSignup = () => {
+    clearSignupDraft();
+    router.push("/intro");
+  };
+
+  useEffect(() => {
+    const draft = getSignupDraft();
+    if (!draft) return;
+
+    setRealName(draft.realName);
+    setNickname(draft.nickname);
+    setGrade(draft.grade);
+    setUniversity(draft.university);
+    setSignupSource(draft.signupSource);
+    setCheckedTerms(draft.agreeToTerms);
+    setCheckedPrivacy(draft.agreeToPrivacy);
+    setStep(Step.AuthMethod);
+  }, [setStep]);
 
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -557,28 +593,50 @@ const SignupPage: FC = () => {
     await onVerify(email);
   };
 
-  const isValidStudentId = (value: string) => /^\d{8,12}$/.test(value);
-
   const isValidNickname = (nickname: string) =>
     /^[가-힣A-Za-z0-9]{2,}$/.test(nickname.trim());
 
-  // 정보 입력 단계 유효성 검사
-  const isValidManualInfo = () => {
-    if (!realName.trim()) return false;
-    if (!isValidNickname(nickname)) return false;
-    if (!grade.trim()) return false;
-    return isValidStudentId(studentId);
+  const isManualInfoValid = Boolean(
+    realName.trim() && isValidNickname(nickname) && grade && signupSource,
+  );
+
+  const persistSignupDraft = () => {
+    if (!grade || !signupSource || !isManualInfoValid) return false;
+
+    saveSignupDraft({
+      realName: realName.trim(),
+      nickname: nickname.trim(),
+      grade,
+      university: university.trim(),
+      signupSource,
+      agreeToTerms: checkedTerms,
+      agreeToPrivacy: checkedPrivacy,
+    });
+    return true;
   };
 
+  const startGoogleSignup = () => {
+    if (!persistSignupDraft()) return;
+    startGoogleLogin();
+  };
+
+  const startKakaoSignup = () => {
+    if (!persistSignupDraft()) return;
+    startKakaoLogin();
+  };
+
+  const isSignupReady = Boolean(
+    isManualInfoValid &&
+      isValidEmail(email) &&
+      code.trim() &&
+      password.length >= 8 &&
+      passwordRe === password &&
+      checkedTerms &&
+      checkedPrivacy,
+  );
+
   const handleSubmit = async () => {
-    if (
-      !nickname ||
-      !email ||
-      !password ||
-      !realName.trim() ||
-      !studentId ||
-      !grade.trim()
-    ) {
+    if (!isSignupReady || !grade || !signupSource) {
       alert("모든 필수 정보를 입력해주세요.");
       return;
     }
@@ -596,9 +654,8 @@ const SignupPage: FC = () => {
       realName: realName.trim(),
       documentType: "student",
       university: university.trim(),
-      department: department.trim(),
-      studentId,
-      grade: grade.trim(),
+      grade,
+      signupSource,
     });
   };
 
@@ -609,102 +666,20 @@ const SignupPage: FC = () => {
       */}
 
       {step === Step.DepartMent && (
-        <>
-          <StepHeader
-            content="학생 정보 입력"
-            onIconClick={() => router.push("/intro")}
-          />
-
-          <div className="mt-[1rem] flex w-[90%] flex-col gap-[20px]">
-            <div className="flex flex-col gap-[20px]">
-              <IconInputField
-                content="성명 (실명)"
-                value={realName}
-                onChange={(e) => setRealName(e.target.value)}
-                onIconClick={() => setRealName("")}
-                placeholder="홍길동"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton={true}
-                iconSize={20}
-              />
-
-              <IconInputField
-                content="닉네임"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                onIconClick={() => setNickname("")}
-                placeholder="필챗러"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton={true}
-                iconSize={20}
-              />
-              <p className="text-sm text-border">
-                한글, 영문, 숫자만 사용한 2자 이상
-              </p>
-
-              <IconInputField
-                content="학년"
-                value={grade}
-                onChange={(e) => setGrade(e.target.value)}
-                onIconClick={() => setGrade("")}
-                placeholder="1학년"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton={true}
-                iconSize={20}
-              />
-              <IconInputField
-                content="학과"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                onIconClick={() => setDepartment("")}
-                placeholder="약학과"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton={true}
-                iconSize={20}
-              />
-              <IconInputField
-                content="학번"
-                value={studentId}
-                onChange={(e) =>
-                  setStudentId(e.target.value.replace(/\D/g, ""))
-                }
-                onIconClick={() => setStudentId("")}
-                placeholder="20241234"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton={true}
-                iconSize={20}
-                type="text"
-                maxLength={14}
-                inputMode="numeric"
-              />
-              <p className="text-sm text-border">14자 이하로 입력해주세요</p>
-              <IconInputField
-                content="학교명 (선택)"
-                value={university}
-                onChange={(e) => setUniversity(e.target.value)}
-                onIconClick={() => setUniversity("")}
-                placeholder="한국대학교"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton={true}
-                iconSize={20}
-              />
-            </div>
-
-            <div className="mt-[2rem] flex w-full flex-col justify-center gap-[15px]">
-              <StrokeButton
-                content="이전으로"
-                variant="stroke-brand"
-                onClick={() => router.push("/intro")}
-              />
-              <SolidButton
-                content="다음"
-                variant={isValidManualInfo() ? "brand" : "disabled"}
-                disabled={!isValidManualInfo()}
-                onClick={() => nextStep()}
-              />
-            </div>
-          </div>
-        </>
+        <SignupInfoFlow
+          realName={realName}
+          nickname={nickname}
+          grade={grade}
+          university={university}
+          signupSource={signupSource}
+          onRealNameChange={setRealName}
+          onNicknameChange={setNickname}
+          onGradeChange={setGrade}
+          onUniversityChange={setUniversity}
+          onSignupSourceChange={setSignupSource}
+          onExit={leaveSignup}
+          onComplete={nextStep}
+        />
       )}
 
       {/* 서비스 이용약관 동의 (ServiceRule) */}
@@ -724,18 +699,20 @@ const SignupPage: FC = () => {
           <div className="z-[1] mb-14 mt-auto flex w-full flex-col items-center bg-[linear-gradient(to_top,_#FFFFFF_0%,_#FFFFFF_24%,_transparent_100%)] shadow-[0_-22px_24px_rgba(255,255,255,0.3),_0_-50px_40px_rgba(255,255,255,0.6)]">
             <button
               type="button"
+              aria-pressed={checkedTerms}
               className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]"
               onClick={() => setCheckedTerms(!checkedTerms)}
             >
-              <img
+              <Image
                 className="h-[26px] w-[26px]"
+                width={26}
+                height={26}
                 src={
                   checkedTerms
                     ? "/icons/CheckedIcon.svg"
                     : "/icons/UncheckIcon.svg"
                 }
-                onClick={() => setCheckedTerms(!checkedTerms)}
-                alt="icon"
+                alt=""
               />
               <div className="flex flex-row text-sm font-medium">
                 <p className="text-brand underline underline-offset-2">
@@ -774,18 +751,20 @@ const SignupPage: FC = () => {
           <div className="z-[1] mb-14 mt-auto flex w-full flex-col items-center bg-[linear-gradient(to_top,_#FFFFFF_0%,_#FFFFFF_24%,_transparent_100%)] shadow-[0_-22px_24px_rgba(255,255,255,0.3),_0_-50px_40px_rgba(255,255,255,0.6)]">
             <button
               type="button"
+              aria-pressed={checkedPrivacy}
               className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]"
               onClick={() => setCheckedPrivacy(!checkedPrivacy)}
             >
-              <img
+              <Image
                 className="h-[26px] w-[26px]"
+                width={26}
+                height={26}
                 src={
                   checkedPrivacy
                     ? "/icons/CheckedIcon.svg"
                     : "/icons/UncheckIcon.svg"
                 }
-                onClick={() => setCheckedPrivacy(!checkedPrivacy)}
-                alt="icon"
+                alt=""
               />
               <div className="flex flex-row text-sm font-medium">
                 <p className="text-brand underline underline-offset-2">
@@ -807,6 +786,68 @@ const SignupPage: FC = () => {
         </div>
       )}
 
+      {step === Step.AuthMethod && (
+        <>
+          <StepHeader content="회원가입" onIconClick={prevStep} />
+
+          <div className="mt-[3rem] flex w-[90%] flex-col gap-[20px]">
+            <div className="flex flex-col gap-2">
+              <p className="text-xl font-semibold">가입 방법을 선택해주세요.</p>
+              <p className="text-sm text-muted-foreground">
+                선택한 방법으로 계정이 만들어집니다.
+              </p>
+            </div>
+
+            {oauthError && (
+              <p className="text-center text-sm text-destructive">
+                {oauthError}
+              </p>
+            )}
+
+            <div className="mt-[1rem] flex flex-col gap-[15px]">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-[3.625rem] w-full rounded-xl border-border bg-white text-label-large text-foreground shadow-none active:bg-secondary"
+                disabled={isGoogleLoginLoading || isKakaoLoginLoading}
+                onClick={startGoogleSignup}
+              >
+                <FcGoogle className="!size-5" />
+                Google로 가입하기
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="h-[3.625rem] w-full rounded-xl border-[#FEE500] bg-[#FEE500] text-label-large text-[#191919] shadow-none active:bg-[#F7DC00]"
+                disabled={isGoogleLoginLoading || isKakaoLoginLoading}
+                onClick={startKakaoSignup}
+              >
+                <RiKakaoTalkFill className="!size-5 text-[#191919]" />
+                카카오로 가입하기
+              </Button>
+
+              <div className="flex items-center gap-3 py-1">
+                <div className="h-px flex-1 bg-muted" />
+                <span className="text-xs font-medium text-muted-foreground">
+                  또는
+                </span>
+                <div className="h-px flex-1 bg-muted" />
+              </div>
+
+              <SolidButton
+                content="이메일로 가입하기"
+                disabled={isGoogleLoginLoading || isKakaoLoginLoading}
+                onClick={() => {
+                  clearSignupDraft();
+                  nextStep();
+                }}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
       {/* 이메일 인증 (Email) */}
       {step === Step.Email && (
         <>
@@ -817,14 +858,9 @@ const SignupPage: FC = () => {
 
             <IconInputField
               content="이메일"
-              iconAsButton={true}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onIconClick={() => setEmail("")}
               type="email"
-              iconPosition="right"
-              iconSrc="/icons/Cancel.svg"
-              iconSize={20}
               placeholder="이메일을 적어주세요"
               autoFocus={true}
             />
@@ -929,12 +965,8 @@ const SignupPage: FC = () => {
             <div className="mt-[4rem]">
               <SolidButton
                 content={isSubmitLoading ? "가입 중..." : "완료"}
-                variant={
-                  passwordRe && password === passwordRe ? "brand" : "disabled"
-                }
-                disabled={
-                  !passwordRe || password !== passwordRe || isSubmitLoading
-                }
+                variant={isSignupReady ? "brand" : "disabled"}
+                disabled={!isSignupReady || isSubmitLoading}
                 onClick={async () => {
                   await handleSubmit();
                 }}

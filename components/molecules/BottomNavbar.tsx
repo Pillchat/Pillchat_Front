@@ -64,7 +64,7 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
     <nav
       aria-label="하단 네비게이션"
       className={cn(
-        "fixed bottom-0 left-1/2 z-50 grid h-[calc(5.25rem+env(safe-area-inset-bottom))] w-full max-w-app -translate-x-1/2 grid-cols-5 items-start border-t border-gray-300 bg-white pb-[env(safe-area-inset-bottom)]",
+        "fixed bottom-0 left-1/2 z-50 grid h-[calc(6.5rem+env(safe-area-inset-bottom))] w-full max-w-app -translate-x-1/2 grid-cols-5 items-start border-t border-gray-300 bg-white pb-[env(safe-area-inset-bottom)]",
         className,
       )}
     >

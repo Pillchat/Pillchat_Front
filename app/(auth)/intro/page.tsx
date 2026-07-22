@@ -4,14 +4,13 @@ import { Button } from "@/components/ui/button";
 import { getValidAccessToken } from "@/lib/client/fetch";
 import { useRouter } from "@/lib/navigation";
 import {
-  Bell,
   Image as ImageIcon,
   Layers,
   MessageCircle,
   PanelTop,
   ShoppingBag,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { type TouchEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type IntroTab = "community" | "learn" | "market";
 
@@ -20,6 +19,9 @@ const tabs: Array<{ id: IntroTab; label: string }> = [
   { id: "learn", label: "학습기능" },
   { id: "market", label: "마켓" },
 ];
+
+const SWIPE_THRESHOLD_PX = 48;
+const SWIPE_HORIZONTAL_RATIO = 1.2;
 
 const simpleSlides = {
   community: {
@@ -55,6 +57,7 @@ const learnFeatures = [
 export default function IntroPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<IntroTab>("community");
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const redirectAuthenticatedUser = async () => {
@@ -72,7 +75,43 @@ export default function IntroPage() {
   const SimpleSlideIcon = simpleSlide?.icon;
 
   const handlePrimaryAction = () => {
-    router.push("/login");
+    router.push("/signup");
+  };
+
+  const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches[0];
+    if (!touch) return;
+
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    const touch = event.changedTouches[0];
+    touchStartRef.current = null;
+    if (!start || !touch) return;
+
+    const deltaX = touch.clientX - start.x;
+    const deltaY = touch.clientY - start.y;
+    const horizontalDistance = Math.abs(deltaX);
+
+    if (
+      horizontalDistance < SWIPE_THRESHOLD_PX ||
+      horizontalDistance <= Math.abs(deltaY) * SWIPE_HORIZONTAL_RATIO
+    ) {
+      return;
+    }
+
+    setActiveTab((currentTab) => {
+      const currentIndex = tabs.findIndex((tab) => tab.id === currentTab);
+      const direction = deltaX < 0 ? 1 : -1;
+      const nextIndex = Math.min(
+        tabs.length - 1,
+        Math.max(0, currentIndex + direction),
+      );
+
+      return tabs[nextIndex]?.id ?? currentTab;
+    });
   };
 
   return (
@@ -101,70 +140,79 @@ export default function IntroPage() {
           </div>
         </div>
 
-        {simpleSlide ? (
-          <div className="flex flex-1 flex-col items-center text-center">
-            <div className="mt-14 flex flex-col gap-3">
-              <h1 className="text-[1.75rem] font-bold leading-tight text-[#17100c]">
-                {simpleSlide.title}
-              </h1>
-              <p className="text-base font-medium text-[#61728e]">
-                {simpleSlide.description}
-              </p>
-            </div>
-
-            <div className="mt-auto flex h-[16rem] w-full items-center justify-center">
-              <div className="flex h-[11.75rem] w-[11.75rem] items-center justify-center rounded-full bg-[#ffe1d5]">
-                {SimpleSlideIcon && (
-                  <SimpleSlideIcon
-                    strokeWidth={2.6}
-                    className="h-20 w-20 text-brand"
-                  />
-                )}
+        <div
+          className="flex flex-1 touch-pan-y"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={() => {
+            touchStartRef.current = null;
+          }}
+        >
+          {simpleSlide ? (
+            <div className="flex min-w-0 flex-1 flex-col items-center text-center">
+              <div className="mt-14 flex flex-col gap-3">
+                <h1 className="text-[1.75rem] font-bold leading-tight text-[#17100c]">
+                  {simpleSlide.title}
+                </h1>
+                <p className="text-base font-medium text-[#61728e]">
+                  {simpleSlide.description}
+                </p>
               </div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-1 flex-col">
-            <div className="mt-10">
-              <p className="text-lg font-bold text-brand">PillChat Learn</p>
-              <h1 className="mt-6 text-[2rem] font-bold leading-[1.28] text-[#111111]">
-                약대 학습 솔루션,
-                <br />
-                9월 전격 출시!
-              </h1>
-              <p className="mt-6 text-base font-medium leading-[1.75] text-[#666666]">
-                약대생의 복습, 기출 풀이, 서술형 암기를 한 흐름으로 이어주는
-                학습 탭을 준비하고 있어요.
-              </p>
-            </div>
 
-            <div className="mt-8 flex flex-col">
-              {learnFeatures.map((feature, index) => (
-                <div key={feature.title}>
-                  <div className="flex items-center gap-4 py-4">
-                    <div className="flex h-[3.75rem] w-[3.75rem] shrink-0 items-center justify-center rounded-xl bg-[#fff3f2]">
-                      <feature.icon
-                        strokeWidth={2.4}
-                        className="h-7 w-7 text-[#222222]"
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <h2 className="text-xl font-bold text-[#111111]">
-                        {feature.title}
-                      </h2>
-                      <p className="mt-1.5 text-sm font-medium leading-relaxed text-[#666666]">
-                        {feature.description}
-                      </p>
-                    </div>
-                  </div>
-                  {index < learnFeatures.length - 1 && (
-                    <div className="h-px bg-[#d6d6d6]" />
+              <div className="mt-auto flex h-[16rem] w-full items-center justify-center">
+                <div className="flex h-[11.75rem] w-[11.75rem] items-center justify-center rounded-full bg-[#ffe1d5]">
+                  {SimpleSlideIcon && (
+                    <SimpleSlideIcon
+                      strokeWidth={2.6}
+                      className="h-20 w-20 text-brand"
+                    />
                   )}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="flex min-w-0 flex-1 flex-col">
+              <div className="mt-10">
+                <p className="text-lg font-bold text-brand">PillChat Learn</p>
+                <h1 className="mt-6 text-[2rem] font-bold leading-[1.28] text-[#111111]">
+                  약대 학습 솔루션,
+                  <br />
+                  9월 전격 출시!
+                </h1>
+                <p className="mt-6 text-base font-medium leading-[1.75] text-[#666666]">
+                  약대생의 복습, 기출 풀이, 서술형 암기를 한 흐름으로 이어주는
+                  학습 탭을 준비하고 있어요.
+                </p>
+              </div>
+
+              <div className="mt-8 flex flex-col">
+                {learnFeatures.map((feature, index) => (
+                  <div key={feature.title}>
+                    <div className="flex items-center gap-4 py-4">
+                      <div className="flex h-[3.75rem] w-[3.75rem] shrink-0 items-center justify-center rounded-xl bg-[#fff3f2]">
+                        <feature.icon
+                          strokeWidth={2.4}
+                          className="h-7 w-7 text-[#222222]"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <h2 className="text-xl font-bold text-[#111111]">
+                          {feature.title}
+                        </h2>
+                        <p className="mt-1.5 text-sm font-medium leading-relaxed text-[#666666]">
+                          {feature.description}
+                        </p>
+                      </div>
+                    </div>
+                    {index < learnFeatures.length - 1 && (
+                      <div className="h-px bg-[#d6d6d6]" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="mt-auto pt-5">
           <div className="mb-5 flex justify-center gap-2">
@@ -183,12 +231,7 @@ export default function IntroPage() {
             className="h-14 w-full whitespace-normal rounded-xl px-4 py-0 text-base font-bold leading-tight"
             onClick={handlePrimaryAction}
           >
-            {activeTab === "learn" && (
-              <Bell strokeWidth={2.2} className="!h-6 !w-6" />
-            )}
-            {activeTab === "learn"
-              ? "오픈 알림 신청하고 혜택 받기"
-              : "가볍게 시작하기"}
+            가볍게 시작하기
           </Button>
 
           <button

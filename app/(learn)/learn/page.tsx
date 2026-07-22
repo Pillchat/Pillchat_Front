@@ -2,12 +2,22 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Bell } from "lucide-react";
-import { useState } from "react";
+import { Bell } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Toast } from "@/components/atoms";
 import { AppShell } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
+import { useNotificationConsentMutation } from "@/hooks/mutations";
+import {
+  notificationConsentQueryKey,
+  useNotificationConsentQuery,
+} from "@/hooks/queries";
+import { getCurrentUserId } from "@/lib/client/auth";
+import { getValidAccessToken } from "@/lib/client/fetch";
+import { useRouter } from "@/lib/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import type { NotificationConsentStatus } from "@/types/notification";
 
 const previewItems = [
   {
@@ -38,23 +48,110 @@ const previewItems = [
 
 function ToolIcon({ src }: { src: string }) {
   return (
-    <Image
-      src={src}
-      alt=""
-      width={32}
-      height={32}
+    <span
       aria-hidden="true"
-      className="h-8 w-8"
+      className="h-8 w-8 bg-current"
+      style={{
+        WebkitMaskImage: `url(${src})`,
+        WebkitMaskPosition: "center",
+        WebkitMaskRepeat: "no-repeat",
+        WebkitMaskSize: "contain",
+        maskImage: `url(${src})`,
+        maskPosition: "center",
+        maskRepeat: "no-repeat",
+        maskSize: "contain",
+      }}
     />
   );
 }
 
 export default function LearnPage() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [authUserId, setAuthUserId] = useState<string | null>();
   const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastKey, setToastKey] = useState(0);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const checkAuthentication = async () => {
+      const token = await getValidAccessToken();
+      if (!isCancelled) {
+        setAuthUserId(token ? (getCurrentUserId() ?? "current-user") : null);
+      }
+    };
+
+    checkAuthentication().catch(() => {
+      if (!isCancelled) setAuthUserId(null);
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
+  const isAuthenticated = typeof authUserId === "string";
+  const consentQuery = useNotificationConsentQuery(authUserId ?? null);
+  const hasAgreed = consentQuery.data?.agreed === true;
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setToastKey((current) => current + 1);
+    setToastOpen(true);
+  };
+
+  const consentMutation = useNotificationConsentMutation({
+    onSuccess: () => {
+      if (authUserId) {
+        queryClient.setQueryData<NotificationConsentStatus>(
+          notificationConsentQueryKey(authUserId),
+          { agreed: true },
+        );
+      }
+      showToast(
+        "알림 신청이 완료되었습니다! 9월 오픈 시 가장 먼저 안내해 드립니다.",
+      );
+    },
+    onError: (error) => {
+      showToast(error.message || "오픈 알림을 신청하지 못했습니다.");
+    },
+  });
+
+  const handleNotificationConsent = () => {
+    if (authUserId === null) {
+      router.push("/login");
+      return;
+    }
+
+    if (!isAuthenticated || hasAgreed) return;
+    consentMutation.mutate();
+  };
+
+  const isCheckingConsent = isAuthenticated && consentQuery.isLoading;
+  const isButtonDisabled =
+    authUserId === undefined ||
+    isCheckingConsent ||
+    consentMutation.isPending ||
+    hasAgreed;
+
+  const buttonLabel =
+    authUserId === undefined
+      ? "로그인 확인 중..."
+      : authUserId === null
+        ? "로그인하고 오픈 알림 신청하기"
+        : isCheckingConsent
+          ? "신청 여부 확인 중..."
+          : consentMutation.isPending
+            ? "오픈 알림 신청 중..."
+            : hasAgreed
+              ? "오픈 알림 신청 완료"
+              : "오픈 알림 신청하고 혜택 받기";
 
   return (
     <AppShell bottomSpacing="cta" className="flex flex-col">
-      <header className="flex h-[60px] items-center justify-between px-6">
+      <header className="sticky top-0 z-40 flex h-[60px] shrink-0 items-center justify-between bg-background px-6">
         <Link href="/" aria-label="홈으로 이동" className="flex items-center">
           <Image
             src="/brand/PillChat.svg"
@@ -72,12 +169,12 @@ export default function LearnPage() {
       <main className="flex flex-1 flex-col px-6 pt-10">
         <section>
           <p className="text-sm font-semibold text-brand">PillChat Learn</p>
-          <h1 className="mt-3 text-[2rem] font-bold leading-[2.75rem] text-foreground">
+          <h1 className="mt-3 text-headline-large text-foreground">
             약대 학습 솔루션,
             <br />
             9월 전격 출시!
           </h1>
-          <p className="mt-4 text-base font-medium leading-7 text-muted-foreground">
+          <p className="mt-4 text-body-large text-muted-foreground">
             약대생의 복습, 기출 풀이, 서술형 암기를 한 흐름으로 이어주는 학습
             탭을 준비하고 있어요.
           </p>
@@ -90,7 +187,7 @@ export default function LearnPage() {
           {previewItems.map((item) => {
             const content = (
               <>
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-accent text-foreground">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-accent text-primary-600">
                   <ToolIcon src={item.iconSrc} />
                 </span>
                 <span className="min-w-0">
@@ -108,15 +205,12 @@ export default function LearnPage() {
               <Link
                 key={item.title}
                 href={item.href}
-                className="flex items-center gap-3 border-b border-border py-4 transition-transform last:border-b-0 active:scale-[0.98]"
+                className="flex items-center gap-3 py-4 transition-transform active:scale-[0.98]"
               >
                 {content}
               </Link>
             ) : (
-              <div
-                key={item.title}
-                className="flex items-center gap-3 border-b border-border py-4 last:border-b-0"
-              >
+              <div key={item.title} className="flex items-center gap-3 py-4">
                 {content}
               </div>
             );
@@ -124,21 +218,24 @@ export default function LearnPage() {
         </section>
       </main>
 
-      <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-app -translate-x-1/2 bg-background px-6 py-3 md:px-8">
+      <div className="fixed bottom-[calc(6.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-app -translate-x-1/2 bg-background px-6 py-3 md:px-8">
         <Button
           type="button"
-          className="h-14 w-full gap-1 active:scale-[0.98]"
-          onClick={() => setToastOpen(true)}
+          className="h-14 w-full gap-1 active:scale-[0.98] [&_svg]:size-6"
+          disabled={isButtonDisabled}
+          aria-busy={consentMutation.isPending || isCheckingConsent}
+          onClick={handleNotificationConsent}
         >
-          <Bell aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-          <p>오픈 알림 신청하고 혜택 받기</p>
+          <Bell aria-hidden="true" strokeWidth={1.5} />
+          <p>{buttonLabel}</p>
         </Button>
       </div>
 
       <Toast
         open={toastOpen}
         onClose={() => setToastOpen(false)}
-        message="알림 신청이 완료되었습니다! 9월 오픈 시 가장 먼저 안내해 드립니다."
+        message={toastMessage}
+        toastKey={toastKey}
       />
     </AppShell>
   );

@@ -46,7 +46,7 @@ export default function BoardsHubPage() {
             <Link
               key={board.href}
               href={board.href}
-              className="flex items-center gap-4 rounded-lg border border-border bg-card p-4 transition-transform active:scale-[0.98]"
+              className="flex items-center gap-4 rounded-lg bg-primary-980 p-4 transition-transform active:scale-[0.98]"
             >
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-accent text-brand">
                 <span
@@ -65,13 +65,13 @@ export default function BoardsHubPage() {
                 />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="text-label-medium text-brand">
+                <span className="text-label-medium text-primary-600">
                   {board.meta}
                 </span>
-                <strong className="mt-1 block text-headline-small text-foreground">
+                <strong className="mt-2 block text-headline-small text-foreground">
                   {board.title}
                 </strong>
-                <span className="mt-1 block text-body-medium text-muted-foreground">
+                <span className="mt-1 block text-body-medium text-gray-800">
                   {board.description}
                 </span>
               </span>

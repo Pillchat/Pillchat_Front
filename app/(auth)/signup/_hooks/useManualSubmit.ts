@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useAuth } from "@/hooks"; // 기존 토큰 저장 훅 재사용
+import type { SignupGrade, SignupSource } from "@/constants/signup";
 
 // 기존 SignupFormData에 수동 입력 필드를 확장한 인터페이스 정의
 export interface ManualSignupFormData {
@@ -10,11 +11,9 @@ export interface ManualSignupFormData {
   agreeToTerms: boolean;
   realName: string;
   documentType: "student";
-  // 학생용
-  studentId: string;
   university?: string;
-  department?: string;
-  grade: string;
+  grade: SignupGrade;
+  signupSource: SignupSource;
 }
 
 export const useManualSubmit = () => {

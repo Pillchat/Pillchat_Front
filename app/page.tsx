@@ -11,7 +11,7 @@ import {
   useState,
 } from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Flame, Pencil, Plus, X } from "lucide-react";
+import { ArrowRight, CheckCircle2, Flame, Pencil, X } from "lucide-react";
 import {
   BottomNavbar,
   AlarmHeader,
@@ -38,6 +38,8 @@ import {
 } from "@/lib/shared/dday";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useAtomValue } from "jotai";
+import { onlineCountAtom } from "@/store/presence";
 import {
   useBoardsQuery,
   useFilesQuery,
@@ -95,7 +97,6 @@ const DDAY_LIST_STORAGE_KEY = "yakchat:ddays";
 const DDAY_ACTIVE_STORAGE_KEY = "yakchat:active-dday-id";
 const NATIONAL_EXAM_CACHE_STORAGE_KEY = "yakchat:khp-national-exam-cache";
 const STUDY_CERT_STORAGE_KEY = "yakchat:study-certified-date";
-const STUDY_COUNT_STORAGE_KEY = "yakchat:study-count";
 const NATIONAL_EXAM_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const NATIONAL_EXAM_RETRY_COOLDOWN_MS = 60 * 60 * 1000;
 const PREVIOUS_DEFAULT_NATIONAL_EXAM_DATES = ["2027-01-15"];
@@ -386,7 +387,6 @@ const Home: FC = () => {
   const [newDdayDrafts, setNewDdayDrafts] = useState<NewDdayDraft[]>([
     { id: "draft-0", title: "", date: "", isConfirmed: false },
   ]);
-  const [studyCount, setStudyCount] = useState(0);
   const [isStudyCertified, setIsStudyCertified] = useState(false);
   const [studyCelebrationBurstId, setStudyCelebrationBurstId] = useState(0);
   const [ddayToast, setDdayToast] = useState<{
@@ -399,6 +399,7 @@ const Home: FC = () => {
   const ddayListRef = useRef<HTMLDivElement | null>(null);
   const newDdayDraftListRef = useRef<HTMLDivElement | null>(null);
   const userInfo = getCurrentUserInfo();
+  const onlineCount = useAtomValue(onlineCountAtom);
 
   const {
     data: boards,
@@ -427,9 +428,6 @@ const Home: FC = () => {
     const savedDdays = window.localStorage.getItem(DDAY_LIST_STORAGE_KEY);
     const savedActiveId = window.localStorage.getItem(DDAY_ACTIVE_STORAGE_KEY);
     const savedStudyDate = window.localStorage.getItem(STUDY_CERT_STORAGE_KEY);
-    const savedStudyCount = window.localStorage.getItem(
-      STUDY_COUNT_STORAGE_KEY,
-    );
 
     let nextDdays = DEFAULT_DDAYS;
 
@@ -466,10 +464,6 @@ const Home: FC = () => {
 
     if (savedActiveId) {
       setActiveDdayId(savedActiveId);
-    }
-
-    if (savedStudyCount && !Number.isNaN(Number(savedStudyCount))) {
-      setStudyCount(Number(savedStudyCount));
     }
 
     setIsStudyCertified(savedStudyDate === todayKey());
@@ -594,12 +588,9 @@ const Home: FC = () => {
   const handleCertifyStudy = () => {
     if (isStudyCertified) return;
 
-    const nextCount = studyCount + 1;
     setStudyCelebrationBurstId((prev) => prev + 1);
     setIsStudyCertified(true);
-    setStudyCount(nextCount);
     window.localStorage.setItem(STUDY_CERT_STORAGE_KEY, todayKey());
-    window.localStorage.setItem(STUDY_COUNT_STORAGE_KEY, String(nextCount));
   };
 
   const showDdayToast = (message: string) => {
@@ -879,7 +870,7 @@ const Home: FC = () => {
     <div className="mx-auto flex min-h-screen w-full max-w-app flex-col bg-white">
       <AlarmHeader />
 
-      <main className="flex-1 pb-24 pt-4">
+      <main className="flex-1 pb-[7.25rem] pt-4">
         <section className="px-6" aria-label="국가고시 D-Day">
           <div className="overflow-hidden rounded-2xl bg-primary p-5 text-primary-foreground">
             <div className="flex items-start justify-between gap-4">
@@ -900,8 +891,15 @@ const Home: FC = () => {
                   {activeDday?.source === "api"
                     ? "국시원 API 기준"
                     : "직접 설정"}{" "}
-                  · 현재 <b>{studyCount.toLocaleString("ko-KR")}명</b>의
-                  동기들이 열공 중🔥
+                  {onlineCount === null ? (
+                    " · 접속 인원 확인 중"
+                  ) : (
+                    <>
+                      {" "}
+                      · 현재 <b>{onlineCount.toLocaleString("ko-KR")}명</b>{" "}
+                      접속중
+                    </>
+                  )}
                 </p>
               </div>
               <button
@@ -943,18 +941,6 @@ const Home: FC = () => {
                   </button>
                 );
               })}
-              <button
-                type="button"
-                onClick={() => setIsDdayEditorOpen(true)}
-                className="shrink-0 rounded-full bg-white/15 px-2 py-1 text-label-small text-primary-foreground"
-                aria-label="D-Day 추가"
-              >
-                <Plus
-                  aria-hidden="true"
-                  className="h-3.5 w-3.5"
-                  strokeWidth={1.5}
-                />
-              </button>
             </div>
 
             <div className="relative mt-4">

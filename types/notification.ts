@@ -33,6 +33,10 @@ export interface NotificationSetting {
 
 export type NotificationSettingUpdateRequest = Partial<NotificationSetting>;
 
+export interface NotificationConsentStatus {
+  agreed: boolean;
+}
+
 export const DEFAULT_NOTIFICATION_SETTING: NotificationSetting = {
   notificationEnabled: true,
   nightNotificationEnabled: false,
