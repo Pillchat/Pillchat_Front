@@ -237,7 +237,7 @@ const FindPage = () => {
                     type="button"
                     variant={isCodeSent ? "stroke-brand" : "disabled"}
                     disabled={!isCodeSent || isSendingCode}
-                    className="h-[52px] w-[30%] rounded-[12px] px-0 text-[15px] font-medium"
+                    className="h-14 w-[30%] rounded-[12px] px-0 text-[15px] font-medium"
                     onClick={handleSendCode}
                   >
                     {isSendingCode ? "전송 중" : "재전송"}
@@ -258,7 +258,7 @@ const FindPage = () => {
               </div>
             </div>
 
-            <div className="mt-auto pb-[calc(env(safe-area-inset-bottom)+2.5rem)] pt-[3rem]">
+            <div className="mt-auto pb-[calc(env(safe-area-inset-bottom)+2.5rem)] pt-[3rem] text-white">
               <SolidButton
                 content={
                   !isCodeSent
@@ -272,7 +272,6 @@ const FindPage = () => {
                 variant={verifyButtonDisabled ? "disabled" : "brand"}
                 disabled={verifyButtonDisabled}
                 onClick={isCodeSent ? handleVerifyCode : handleSendCode}
-                className="text-[#999]"
               />
             </div>
           </>

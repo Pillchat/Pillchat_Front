@@ -232,7 +232,7 @@ export default function QuestionBankPage() {
         </Link>
 
         <Link
-          href="/questionbank/review"
+          href="/questionbank/wrong-notes"
           className="mt-6 flex min-h-20 items-center gap-4 rounded-[28px] bg-primary px-6 py-5 text-primary-foreground shadow-[0_14px_30px_rgba(255,65,46,0.18)] transition-transform active:scale-[0.98]"
           prefetch={false}
         >

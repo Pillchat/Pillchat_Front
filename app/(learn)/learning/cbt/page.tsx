@@ -1700,7 +1700,7 @@ export default function CbtPracticePage() {
                 <p className="text-[0.6875rem] font-bold">
                   {remainingSec <= 300 ? "5분 이하" : "남은시간"}
                 </p>
-                <p className="font-mono text-base font-extrabold tabular-nums">
+                <p className="text-base font-extrabold tabular-nums">
                   {formatDuration(remainingSec)}
                 </p>
               </div>
@@ -2450,7 +2450,7 @@ function FullWaitingPage({
               {nextSession.questionCount}문항 ·{" "}
               {formatDuration(nextSession.durationSec)}
             </p>
-            <p className="mt-5 font-mono text-4xl font-extrabold tabular-nums text-primary">
+            <p className="mt-5 text-4xl font-extrabold tabular-nums text-primary">
               {formatDuration(remainingSec)}
             </p>
             <p className="mt-2 text-xs font-bold text-muted-foreground">
@@ -3756,7 +3756,7 @@ function CalculatorDialog({ onClose }: { onClose: () => void }) {
         <div
           role="status"
           aria-label={`계산 결과 ${display}`}
-          className="mb-3 flex h-20 items-end justify-end overflow-hidden rounded-xl bg-foreground px-4 pb-3 font-mono text-3xl font-extrabold text-white"
+          className="mb-3 flex h-20 items-end justify-end overflow-hidden rounded-xl bg-foreground px-4 pb-3 text-3xl font-extrabold text-white"
         >
           {display}
         </div>

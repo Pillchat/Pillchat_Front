@@ -9,9 +9,7 @@ interface StepHeaderProps {
 function Name({ content, dark }: { content: string; dark?: boolean }) {
   return (
     <p
-      className={`font-[pretendard] text-[16px] font-bold ${
-        dark ? "text-white" : "text-black"
-      }`}
+      className={`text-[16px] font-bold ${dark ? "text-white" : "text-black"}`}
     >
       {content}
     </p>

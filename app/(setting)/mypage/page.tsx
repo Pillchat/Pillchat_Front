@@ -6,7 +6,7 @@ import { ChevronLeft, GraduationCap, Lock, Pencil } from "lucide-react";
 import { BottomNavbar } from "@/components/molecules";
 import { useRouter } from "@/lib/navigation";
 import { useMyPageContent, useMyProfile } from "./_hooks";
-import type { MyPost } from "./_hooks";
+import type { MyBadge, MyComment, MyPageContentTab, MyPost } from "./_hooks";
 
 const gradeLabels: Record<string, string> = {
   SAESSAK: "새싹",
@@ -16,7 +16,7 @@ const gradeLabels: Record<string, string> = {
   MYEONGYAK: "명약",
 };
 
-type ProfileTab = "posts" | "comments" | "badges";
+type ProfileTab = MyPageContentTab;
 
 const tabs: { id: ProfileTab; label: string }[] = [
   { id: "posts", label: "내가 쓴 글" },
@@ -110,6 +110,139 @@ function ContentList({
   );
 }
 
+function CommentList({
+  items,
+  onSelect,
+}: {
+  items: MyComment[];
+  onSelect: (boardId: number) => void;
+}) {
+  return (
+    <div className="px-6 pt-[1.625rem]">
+      {items.map((item, index) => (
+        <article
+          key={item.id}
+          className={`${index === 0 ? "" : "border-t border-[#ebe6e3]"} py-4`}
+        >
+          <button
+            type="button"
+            onClick={() => onSelect(item.boardId)}
+            className="w-full text-left active:opacity-70"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <p className="min-w-0 truncate text-[0.8125rem] leading-[18px] text-[#6f625d]">
+                {item.boardTitle}
+              </p>
+              <span className="shrink-0 text-[0.75rem] text-[#8d817c]">
+                {formatCreatedAt(item.createdAt)}
+              </span>
+            </div>
+            <p className="mt-1.5 line-clamp-2 text-[0.9375rem] font-medium leading-[22px] text-[#050505]">
+              {item.content}
+            </p>
+            <p className="mt-2 text-[0.75rem] text-[#9b5040]">
+              좋아요 {item.likeCount.toLocaleString("ko-KR")}
+            </p>
+          </button>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function BadgePanel({ badge }: { badge: MyBadge }) {
+  const currentGrade = gradeLabels[badge.grade] || badge.grade || "등급 없음";
+  const nextGrade = badge.nextGrade
+    ? gradeLabels[badge.nextGrade] || badge.nextGrade
+    : null;
+  const rate = Math.min(1, Math.max(0, badge.rate));
+  const ratePercent = Math.round(rate * 100);
+  const isHighestGrade = !nextGrade || badge.target <= 0;
+  const stats = [
+    { label: "질문", value: badge.questionCount },
+    { label: "답변", value: badge.answerCount },
+    { label: "채택", value: badge.acceptedCount },
+    { label: "받은 좋아요", value: badge.likeCount },
+  ];
+
+  return (
+    <div className="px-6 pb-8 pt-[1.625rem]">
+      <div className="rounded-[1.25rem] bg-[#fff5f1] px-5 py-5">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[0.8125rem] font-medium text-[#8d5548]">
+              현재 배지
+            </p>
+            <h2 className="mt-1 text-[1.5rem] font-bold text-[#c63821]">
+              {currentGrade}
+            </h2>
+          </div>
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#e85a35] shadow-[0_4px_16px_rgba(198,56,33,0.12)]">
+            <GraduationCap
+              aria-hidden="true"
+              className="h-7 w-7"
+              strokeWidth={1.9}
+            />
+          </div>
+        </div>
+
+        {isHighestGrade ? (
+          <p className="mt-5 text-[0.875rem] font-medium leading-6 text-[#6f625d]">
+            최고 등급을 달성했습니다.
+          </p>
+        ) : (
+          <div className="mt-5">
+            <div className="flex items-end justify-between gap-3 text-[0.8125rem]">
+              <p className="font-medium text-[#6f625d]">
+                다음 배지{" "}
+                <strong className="text-[#3f332f]">{nextGrade}</strong>
+              </p>
+              <span className="font-bold text-[#c63821]">{ratePercent}%</span>
+            </div>
+            <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#f0d7cf]">
+              <div
+                className="h-full rounded-full bg-[#e85a35] transition-[width]"
+                style={{ width: `${ratePercent}%` }}
+              />
+            </div>
+            <p className="mt-2 text-right text-[0.75rem] text-[#8d817c]">
+              {badge.progress.toLocaleString("ko-KR")} /{" "}
+              {badge.target.toLocaleString("ko-KR")}
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        {stats.map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-2xl border border-[#ebe6e3] bg-white px-4 py-4"
+          >
+            <p className="text-[0.8125rem] text-[#6f625d]">{stat.label}</p>
+            <p className="mt-1 text-[1.25rem] font-bold text-[#19110f]">
+              {stat.value.toLocaleString("ko-KR")}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ContentLoading({ label }: { label: string }) {
+  return (
+    <div className="space-y-4 px-6 pt-[1.625rem]" aria-label={label}>
+      {[0, 1, 2].map((item) => (
+        <div
+          key={item}
+          className="h-[54px] animate-pulse rounded-lg bg-[#f5f1ee]"
+        />
+      ))}
+    </div>
+  );
+}
+
 function ContentStatus({
   message,
   actionLabel,
@@ -137,14 +270,22 @@ function ContentStatus({
 
 export default function MyPage() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<ProfileTab>("posts");
   const { onMyProfile, isLoading, error, profile } = useMyProfile();
   const {
     posts,
-    isLoading: postsLoading,
-    error: postsError,
-    refetch: refetchPosts,
-  } = useMyPageContent();
-  const [activeTab, setActiveTab] = useState<ProfileTab>("posts");
+    postsLoading,
+    postsError,
+    refetchPosts,
+    comments,
+    commentsLoading,
+    commentsError,
+    refetchComments,
+    badge,
+    badgeLoading,
+    badgeError,
+    refetchBadge,
+  } = useMyPageContent(activeTab);
 
   useEffect(() => {
     onMyProfile();
@@ -300,17 +441,7 @@ export default function MyPage() {
             </div>
             {activeTab === "posts" &&
               (postsLoading ? (
-                <div
-                  className="space-y-4 px-6 pt-[1.625rem]"
-                  aria-label="내가 쓴 글 불러오는 중"
-                >
-                  {[0, 1, 2].map((item) => (
-                    <div
-                      key={item}
-                      className="h-[54px] animate-pulse rounded-lg bg-[#f5f1ee]"
-                    />
-                  ))}
-                </div>
+                <ContentLoading label="내가 쓴 글 불러오는 중" />
               ) : postsError ? (
                 <ContentStatus
                   message="내가 쓴 글을 불러오지 못했습니다."
@@ -325,12 +456,37 @@ export default function MyPage() {
                   onSelect={(id) => router.push(`/board/${id}`)}
                 />
               ))}
-            {activeTab === "comments" && (
-              <ContentStatus message="내가 쓴 댓글 목록 API가 아직 제공되지 않습니다." />
-            )}
-            {activeTab === "badges" && (
-              <ContentStatus message="배지 목록 API가 아직 제공되지 않습니다." />
-            )}
+            {activeTab === "comments" &&
+              (commentsLoading ? (
+                <ContentLoading label="내가 쓴 댓글 불러오는 중" />
+              ) : commentsError ? (
+                <ContentStatus
+                  message="내가 쓴 댓글을 불러오지 못했습니다."
+                  actionLabel="다시 시도"
+                  onAction={refetchComments}
+                />
+              ) : comments.length === 0 ? (
+                <ContentStatus message="아직 작성한 댓글이 없습니다." />
+              ) : (
+                <CommentList
+                  items={comments}
+                  onSelect={(boardId) => router.push(`/board/${boardId}`)}
+                />
+              ))}
+            {activeTab === "badges" &&
+              (badgeLoading ? (
+                <ContentLoading label="배지 정보 불러오는 중" />
+              ) : badgeError ? (
+                <ContentStatus
+                  message="배지 정보를 불러오지 못했습니다."
+                  actionLabel="다시 시도"
+                  onAction={refetchBadge}
+                />
+              ) : badge ? (
+                <BadgePanel badge={badge} />
+              ) : (
+                <ContentStatus message="배지 정보가 없습니다." />
+              ))}
           </section>
         </main>
       )}

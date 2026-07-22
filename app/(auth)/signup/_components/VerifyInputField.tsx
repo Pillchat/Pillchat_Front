@@ -26,7 +26,7 @@ export function VerifyInputField({
 }: InputFieldProps) {
   return (
     <div className="flex flex-col gap-[4px]">
-      <p className="font-regular font-[pretendard] text-[14px]">{content}</p>
+      <p className="font-regular text-[14px]">{content}</p>
       <div className="flex flex-row gap-[10px]">
         <div className="w-[70%]">
           <Input
@@ -42,7 +42,7 @@ export function VerifyInputField({
 
         <button
           onClick={api}
-          className="h-[52px] w-[30%] rounded-[12px] border border-[#FF412E] bg-white font-[pretendard] text-[#FF412E]"
+          className="h-[52px] w-[30%] rounded-[12px] border border-[#FF412E] bg-white text-[#FF412E]"
         >
           재전송
         </button>

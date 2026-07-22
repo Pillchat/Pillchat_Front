@@ -1,8 +1,11 @@
 type AuthStorageMode = "local" | "session";
+type TokenPair = { access_token: string; refresh_token: string };
 
 const AUTH_STORAGE_MODE_KEY = "auth_storage_mode";
 const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
+
+let refreshPromise: Promise<TokenPair | false> | null = null;
 
 const isBrowser = () => typeof window !== "undefined";
 
@@ -126,9 +129,7 @@ export const clearTokens = () => {
   document.cookie = "access_token=; path=/; max-age=0; SameSite=Lax";
 };
 
-export const refreshTokens = async (): Promise<
-  { access_token: string; refresh_token: string } | false
-> => {
+const requestTokenRefresh = async (): Promise<TokenPair | false> => {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return false;
   const rememberMe = getStoredAuthMode() !== "session";
@@ -174,6 +175,34 @@ export const refreshTokens = async (): Promise<
   return false;
 };
 
+export const refreshTokens = (): Promise<TokenPair | false> => {
+  if (!refreshPromise) {
+    refreshPromise = requestTokenRefresh().finally(() => {
+      refreshPromise = null;
+    });
+  }
+
+  return refreshPromise;
+};
+
+export const recoverAccessToken = async (failedToken?: string | null) => {
+  const normalizedFailedToken = failedToken
+    ? normalizeToken(failedToken)
+    : null;
+  const currentToken = getToken();
+
+  if (
+    currentToken &&
+    currentToken !== normalizedFailedToken &&
+    !isStoredTokenExpired(currentToken)
+  ) {
+    return currentToken;
+  }
+
+  const refreshed = await refreshTokens();
+  return refreshed ? refreshed.access_token : null;
+};
+
 export const fetchPost = async (url: string, data: any) => {
   const token = url === "/api/auth/login" ? null : await getValidAccessToken();
   const headers: Record<string, string> = {};
@@ -196,15 +225,15 @@ export const fetchPost = async (url: string, data: any) => {
     (response.status === 401 || response.status === 403) &&
     url !== "/api/auth/login"
   ) {
-    const refreshed = await refreshTokens();
-    if (refreshed) {
+    const recoveredToken = await recoverAccessToken(token);
+    if (recoveredToken) {
       response = await fetch(url, {
         method: "POST",
         body: JSON.stringify(data),
         credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
-          Authorization: toBearerHeader(refreshed.access_token),
+          Authorization: toBearerHeader(recoveredToken),
         },
       });
     }
@@ -267,13 +296,13 @@ export const fetchAPI = async (url: string, method: string, data?: any) => {
   let response = await fetch(requestUrl, requestOptions);
 
   if ((response.status === 401 || response.status === 403) && !isAuthRequest) {
-    const refreshed = await refreshTokens();
-    if (refreshed) {
+    const recoveredToken = await recoverAccessToken(token);
+    if (recoveredToken) {
       response = await fetch(requestUrl, {
         ...requestOptions,
         headers: {
           ...headers,
-          Authorization: toBearerHeader(refreshed.access_token),
+          Authorization: toBearerHeader(recoveredToken),
         },
       });
     }

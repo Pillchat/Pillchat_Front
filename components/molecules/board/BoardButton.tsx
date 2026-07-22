@@ -34,7 +34,7 @@ export const BoardButton: FC<BoardButtonProps> = ({
           />
         </div>
         <div className="flex min-w-0 items-center">
-          <span className="font-Pretendard truncate text-[14px] font-medium text-gray-800">
+          <span className="truncate text-[14px] font-medium text-gray-800">
             {text}
           </span>
         </div>

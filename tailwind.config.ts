@@ -82,7 +82,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["var(--font-pretendard)"],
+        sans: ["var(--font-pretendard)", "sans-serif"],
       },
       maxWidth: {
         app: "52.125rem",

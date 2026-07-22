@@ -1,7 +1,7 @@
 import {
   fetchAPI,
   getValidAccessToken,
-  refreshTokens,
+  recoverAccessToken,
 } from "@/lib/client/fetch";
 import type {
   BlindMask,
@@ -343,11 +343,12 @@ async function fetchFormData(url: string, formData: FormData) {
       credentials: "same-origin",
     });
 
-  let response = await send(await getValidAccessToken());
+  const token = await getValidAccessToken();
+  let response = await send(token);
 
   if (response.status === 401 || response.status === 403) {
-    const refreshed = await refreshTokens();
-    if (refreshed) response = await send(refreshed.access_token);
+    const recoveredToken = await recoverAccessToken(token);
+    if (recoveredToken) response = await send(recoveredToken);
   }
 
   const responseText = await response.text();

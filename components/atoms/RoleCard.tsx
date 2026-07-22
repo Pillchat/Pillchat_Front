@@ -13,7 +13,7 @@ export function RoleCard({ title, imageSrc, onClick }: RoleCardProps) {
       onClick={onClick}
     >
       <div className="flex h-[210px] w-full flex-col items-center justify-center gap-[18px] rounded-[12px] border border-primary">
-        <p className="font-[pretendard] text-[22px] font-semibold">{title}</p>
+        <p className="text-[22px] font-semibold">{title}</p>
         <img src={imageSrc} alt={title} className="h-[120px] pr-2" />
       </div>
     </div>
