@@ -171,9 +171,8 @@ function MarketPageContent() {
               selectionMode="single"
               showDropdown
               showDropdownButton
-              hasBottombar
               modalSelectionMode="manual"
-              modalMaxHeightClassName="max-h-[calc(100dvh-6.75rem)]"
+              modalMaxHeightClassName="max-h-[calc(100dvh-24px)]"
               modalClassName="shadow-none"
               showModalCloseButton={false}
               categoryTitleClassName="sr-only"
@@ -186,9 +185,8 @@ function MarketPageContent() {
               selectionMode="single"
               showDropdown
               showDropdownButton
-              hasBottombar
               modalSelectionMode="manual"
-              modalMaxHeightClassName="max-h-[calc(100dvh-6.75rem)]"
+              modalMaxHeightClassName="max-h-[calc(100dvh-24px)]"
               modalClassName="shadow-none"
               showModalCloseButton={false}
               categoryTitleClassName="sr-only"
