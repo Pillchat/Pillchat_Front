@@ -1,6 +1,6 @@
 // validations/email.ts
 import { RegisterOptions } from "react-hook-form";
-import { LoginFormData } from "@/app/(auth)/login/page";
+import type { LoginFormData } from "@/app/(auth)/login/types";
 
 export const emailRules: RegisterOptions<LoginFormData, "email"> = {
   required: "이메일을 입력해주세요.",

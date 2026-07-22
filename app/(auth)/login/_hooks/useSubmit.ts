@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LoginFormData } from "../page";
+import type { LoginFormData } from "../types";
 import { useAuth } from "@/hooks";
 import { useRouter } from "next/navigation";
 import { fetchAPI, setTokens } from "@/lib/client/fetch";
