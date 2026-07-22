@@ -231,7 +231,7 @@ const BoardClient = ({ kind = "free" }: BoardClientProps) => {
             </div>
           </div>
         ) : list.length > 0 ? (
-          <div className="mx-6 py-5 pb-[5.625rem]">
+          <div className="mx-6 py-5 pb-[6.875rem]">
             <div className="flex flex-col gap-5">
               {list.map((item: any, index: number) => {
                 const imageKeys = getBoardAttachmentKeys(item).filter(
@@ -276,7 +276,7 @@ const BoardClient = ({ kind = "free" }: BoardClientProps) => {
             </div>
           </div>
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center pb-[5.625rem]">
+          <div className="absolute inset-0 flex items-center justify-center pb-[6.875rem]">
             <div className="text-body-medium text-border">{emptyText}</div>
           </div>
         )}

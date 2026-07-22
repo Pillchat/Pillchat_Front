@@ -343,7 +343,7 @@ function MarketPageContent() {
         )}
       </main>
 
-      <div className="pointer-events-none fixed bottom-[calc(6.25rem+env(safe-area-inset-bottom))] left-1/2 z-30 flex w-full max-w-app -translate-x-1/2 justify-end px-6 md:px-8">
+      <div className="pointer-events-none fixed bottom-[calc(7.5rem+env(safe-area-inset-bottom))] left-1/2 z-30 flex w-full max-w-app -translate-x-1/2 justify-end px-6 md:px-8">
         <Link
           href="/market/upload"
           aria-label="자료 올리기"

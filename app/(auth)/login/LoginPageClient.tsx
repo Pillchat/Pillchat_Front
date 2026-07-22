@@ -19,6 +19,7 @@ import {
 import { FcGoogle } from "react-icons/fc";
 import { RiKakaoTalkFill } from "react-icons/ri";
 import type { LoginFormData } from "./types";
+import { clearSignupDraft } from "@/lib/client/signupDraft";
 
 export const LoginPageClient: FC = () => {
   const router = useRouter();
@@ -45,6 +46,16 @@ export const LoginPageClient: FC = () => {
   const { startKakaoLogin, isKakaoLoginLoading, kakaoLoginError } =
     useKakaoOAuth(rememberMe);
   const authError = loginError || googleLoginError || kakaoLoginError;
+
+  const startGoogleLoginFromLoginPage = () => {
+    clearSignupDraft();
+    startGoogleLogin();
+  };
+
+  const startKakaoLoginFromLoginPage = () => {
+    clearSignupDraft();
+    startKakaoLogin();
+  };
 
   useEffect(() => {
     const restoreLogin = async () => {
@@ -167,7 +178,7 @@ export const LoginPageClient: FC = () => {
                 isKakaoLoginLoading ||
                 isCheckingAuth
               }
-              onClick={startGoogleLogin}
+              onClick={startGoogleLoginFromLoginPage}
             >
               <FcGoogle className="!size-5" />
               Google로 로그인
@@ -183,7 +194,7 @@ export const LoginPageClient: FC = () => {
                 isKakaoLoginLoading ||
                 isCheckingAuth
               }
-              onClick={startKakaoLogin}
+              onClick={startKakaoLoginFromLoginPage}
             >
               <RiKakaoTalkFill className="!size-5 text-[#191919]" />
               카카오로 로그인

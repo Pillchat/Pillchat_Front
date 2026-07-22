@@ -2,8 +2,10 @@
 
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Send } from "lucide-react";
+import { useAtomValue } from "jotai";
 
 import { AppShell } from "@/components/molecules";
+import { onlineCountAtom } from "@/store/presence";
 import {
   calculateDday,
   formatDday,
@@ -16,6 +18,12 @@ type CheerMessage = {
   body: string;
   createdAt: string;
   mine?: boolean;
+};
+
+type NationalExamPayload = {
+  exam?: {
+    dDay?: number | null;
+  };
 };
 
 const initialMessages: CheerMessage[] = [
@@ -49,10 +57,11 @@ export default function CheerPage() {
   const [messages, setMessages] = useState(initialMessages);
   const [message, setMessage] = useState("");
   const [isComposing, setIsComposing] = useState(false);
-  const listRef = useRef<HTMLDivElement | null>(null);
-  const nationalExamDday = formatDday(
-    calculateDday(getNextJanuaryFourthFridayDate()),
+  const [nationalExamDday, setNationalExamDday] = useState(() =>
+    formatDday(calculateDday(getNextJanuaryFourthFridayDate())),
   );
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const onlineCount = useAtomValue(onlineCountAtom);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -85,19 +94,51 @@ export default function CheerPage() {
     });
   }, [messages]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchNationalExamDday = async () => {
+      try {
+        const response = await fetch("/api/exams/khp/dday", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        if (!response.ok) return;
+
+        const payload = (await response.json()) as NationalExamPayload;
+        if (typeof payload.exam?.dDay === "number") {
+          setNationalExamDday(formatDday(payload.exam.dDay));
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.warn("Failed to load the national exam D-Day:", error);
+        }
+      }
+    };
+
+    void fetchNationalExamDday();
+    return () => controller.abort();
+  }, []);
+
   return (
     <AppShell bottomSpacing="input" className="flex flex-col">
       <header className="sticky top-0 z-10 flex h-[60px] items-center border-b border-border bg-background px-6">
-        <div className="flex items-center justify-between">
+        <div className="flex w-full items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-brand">LIVE 응원방</p>
-            <h1 className="mt-1 text-xl font-bold text-foreground">
+            <h1 className="mt-1 text-headline-large text-foreground">
               D-Day 응원방
             </h1>
           </div>
           <div className="text-right">
-            <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-brand">
-              LIVE 128
+            <span
+              className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-brand"
+              aria-live="polite"
+            >
+              LIVE{" "}
+              {onlineCount === null
+                ? "집계 중"
+                : onlineCount.toLocaleString("ko-KR")}
             </span>
             <p className="mt-2 text-xs text-muted-foreground">
               국시 {nationalExamDday}
@@ -118,10 +159,8 @@ export default function CheerPage() {
               className={`flex ${item.mine ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[78%] rounded-2xl px-4 py-3 ${
-                  item.mine
-                    ? "rounded-br-md bg-primary text-primary-foreground"
-                    : "rounded-bl-md bg-secondary text-foreground"
+                className={`max-w-[78%] rounded-2xl bg-gray-100 px-4 py-3 text-foreground ${
+                  item.mine ? "rounded-br-md" : "rounded-bl-md"
                 }`}
               >
                 <div className="mb-1 flex items-center gap-2 text-[0.6875rem] opacity-75">
@@ -137,7 +176,7 @@ export default function CheerPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-full max-w-app -translate-x-1/2 gap-4 border-t border-border bg-background px-6 pb-1 pt-3 md:px-8"
+        className="fixed bottom-[calc(6.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-full max-w-app -translate-x-1/2 gap-2 border-t border-border bg-background px-6 py-3 md:px-8"
       >
         <input
           value={message}

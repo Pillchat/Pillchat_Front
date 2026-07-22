@@ -14,7 +14,7 @@ export const CircleButton = ({ onUploadPost, className = "" }: Props) => {
       aria-label="글쓰기"
       onClick={onUploadPost}
       className={cn(
-        "fixed bottom-[132px] right-6 z-[40]",
+        "fixed bottom-[152px] right-6 z-[40]",
         "flex h-[64px] items-center justify-center gap-2 rounded-full px-5",
         "bg-primary text-primary-foreground shadow-lg",
         "transition-transform duration-200 active:scale-95",

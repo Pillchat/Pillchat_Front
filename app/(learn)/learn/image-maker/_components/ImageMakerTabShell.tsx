@@ -83,7 +83,7 @@ export function ImageMakerEmptyState({
       bottomSpacing="none"
       className="min-h-dvh bg-background"
     >
-      <main className="mx-auto flex min-h-dvh w-full max-w-app flex-col items-center px-6 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-[7.375rem] text-center">
+      <main className="mx-auto flex min-h-dvh w-full max-w-app flex-col items-center px-6 pb-[calc(8.25rem+env(safe-area-inset-bottom))] pt-[7.375rem] text-center">
         <div className="flex h-[5.5rem] w-[5.5rem] items-center justify-center rounded-full bg-brandSecondary text-brand">
           <Icon aria-hidden="true" className="h-10 w-10" strokeWidth={2.25} />
         </div>
@@ -138,7 +138,7 @@ function ImageMakerBottomNav({ activeTab }: { activeTab: ImageMakerTab }) {
   return (
     <nav
       aria-label="이미지 메이커 전용 네비게이션"
-      className="fixed bottom-0 left-1/2 z-40 grid h-[calc(5.25rem+env(safe-area-inset-bottom))] w-full max-w-app -translate-x-1/2 grid-cols-5 border-t border-gray-100 bg-card px-3 pb-[env(safe-area-inset-bottom)] shadow-[0_-0.75rem_1.5rem_rgba(17,17,17,0.06)]"
+      className="fixed bottom-0 left-1/2 z-40 grid h-[calc(6.5rem+env(safe-area-inset-bottom))] w-full max-w-app -translate-x-1/2 grid-cols-5 border-t border-gray-100 bg-card px-3 pb-[env(safe-area-inset-bottom)] shadow-[0_-0.75rem_1.5rem_rgba(17,17,17,0.06)]"
     >
       <button
         type="button"

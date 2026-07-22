@@ -7,6 +7,7 @@ export * from "./useLikeStatusQuery";
 export * from "./useMarketQueries";
 export * from "./useMaterialsQuery";
 export * from "./useNotificationSettingsQuery";
+export * from "./useNotificationConsentQuery";
 export * from "./useQuestionQuery";
 export * from "./useQuestionsQuery";
 export * from "./useSubjectQuery";

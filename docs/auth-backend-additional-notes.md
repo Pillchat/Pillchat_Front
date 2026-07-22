@@ -39,19 +39,20 @@
 - agreeToTerms: true
 - realName
 - documentType: student
-- studentId
 - grade
+- signupSource
 
 일반 회원가입 선택값
 
 - university
-- department
 
 변경 포인트
 
 - documentType은 일반 회원가입에서 student만 허용합니다.
 - university는 선택값입니다.
-- grade는 필수값입니다.
+- studentId와 department는 일반 회원가입에서 더 이상 수집하지 않습니다.
+- grade는 필수값이며 `1학년`~`6학년`, `대학원생`, `약사`, `기타` 중 하나입니다.
+- signupSource는 정의된 8개 가입 경로 중 하나여야 합니다.
 - nickname은 일반 회원가입 요청 payload에 반드시 포함됩니다.
 - 약사/전문가용 licenseNumber, issueDate는 일반 회원가입에서 더 이상 사용하지 않습니다.
 
@@ -62,12 +63,13 @@
 백엔드 일반 회원가입 API에서 다음 조건을 반영해야 합니다.
 
 - documentType이 student가 아니면 거절
-- studentId 필수
-- grade 필수
+- studentId와 department 없이 가입 가능
+- grade는 허용된 9개 학년/상태 값 중 하나여야 함
+- signupSource는 허용된 8개 가입 경로 값 중 하나여야 함
 - university는 없어도 가입 가능
 - nickname 필수
 
-학교명은 사용자가 입력하지 않을 수 있으므로 DB 컬럼이 NOT NULL이면 빈 문자열 허용 또는 nullable 처리가 필요합니다.
+학교명은 사용자가 입력하지 않을 수 있고 학번·학과는 더 이상 수집하지 않으므로 관련 DB 컬럼이 NOT NULL이면 빈 문자열 허용 또는 nullable 처리가 필요합니다.
 
 ---
 
@@ -95,6 +97,15 @@
 
 /login에는 기존 일반 로그인과 Google/Kakao OAuth 로그인이 함께 존재합니다.
 
+일반 회원가입 흐름
+
+- 정보 입력
+- 서비스 이용약관 동의
+- 개인정보 처리방침 동의
+- 가입 방법 선택
+- Google/Kakao 선택: OAuth 인증 후 OAuth 가입 완료
+- 이메일 선택: 이메일 인증, 비밀번호 설정 후 일반 가입 완료
+
 ---
 
 ## 6. OAuth 관련 추가 주의사항
@@ -105,40 +116,37 @@ OAuth 참고 문서에 작성된 기본 흐름은 그대로 사용합니다.
 
 ### OAuth 온보딩의 가입 유형
 
-현재 OAuth 온보딩 화면에는 아직 학생 / 전문가 선택 분기가 남아 있습니다.
+OAuth 온보딩도 일반 회원가입과 동일하게 학생 가입만 지원합니다.
 
-즉 OAuth 최종 가입 요청에서는 documentType으로 다음 두 값이 올 수 있습니다.
-
-- student
-- professional
-
-백엔드에서 OAuth 전문가 가입을 지원하지 않을 계획이라면 프론트에서도 OAuth 온보딩의 전문가 선택을 제거해야 합니다.
+- documentType: student
+- 전문가 선택 및 전문가용 필드 제거
 
 ---
 
-## 7. 일반 회원가입과 OAuth 온보딩의 필드 기준 차이
+## 7. 일반 회원가입과 OAuth 온보딩의 공통 필드 기준
 
-현재 일반 회원가입 기준
+일반 회원가입과 OAuth 온보딩은 같은 정보 입력 화면과 필드 기준을 사용합니다.
 
-- studentId: 숫자 8~12자
-- grade: 필수
+- realName: 필수
+- nickname: 필수
+- documentType: student
+- grade: 9개 학년/상태 값 중 하나로 필수
 - university: 선택
+- signupSource: 가입 경로 8개 값 중 하나로 필수
+- studentId, department: 미수집
 
-현재 OAuth 온보딩 기준
+signupSource 허용값
 
-- studentId: 숫자 8~14자
-- grade: 선택
-- university: 필수
+- 친구/지인 추천
+- 인스타그램
+- 유튜브
+- 블로그/카페
+- 앱스토어 검색
+- 광고
+- 학교
+- 기타
 
-OAuth 온보딩은 기존 화면 재사용 영향으로 일반 회원가입과 일부 기준이 다릅니다.
-
-백엔드 기준을 하나로 정하면 프론트도 통일하는 것이 좋습니다.
-
-권장 기준
-
-- studentId: 숫자 8~12자 또는 8~14자 중 하나로 통일
-- grade: 필수
-- university: 선택
+OAuth 최종 가입 API도 위 기준에 맞춰 studentId와 department 없이 가입할 수 있어야 합니다.
 
 ---
 
@@ -160,7 +168,6 @@ OAuth 기존 유저 판단은 프론트가 아니라 백엔드 DB 기준으로 �
 - 같은 이메일이지만 provider가 다른 경우
 - OAuth 가입 완료 전 oauth_signup_token이 만료된 경우
 - 닉네임 중복인 경우
-- 학번 중복을 허용할지 여부
 
 백엔드 확정 정책
 

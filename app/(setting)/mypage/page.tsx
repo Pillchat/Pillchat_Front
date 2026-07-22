@@ -301,7 +301,7 @@ export default function MyPage() {
   const followingCount = profile.followingCount;
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-[393px] bg-white pb-[5.25rem] text-[#111]">
+    <div className="mx-auto min-h-dvh w-full max-w-[393px] bg-white pb-[6.5rem] text-[#111]">
       <header className="flex h-[60px] items-center justify-between px-6">
         <button
           type="button"

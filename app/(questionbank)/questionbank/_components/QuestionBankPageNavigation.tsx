@@ -67,7 +67,7 @@ export function QuestionBankPageNavigation() {
   return (
     <nav
       aria-label="문제은행 전용 네비게이션"
-      className="fixed bottom-0 left-1/2 z-50 grid h-[calc(4.5rem+env(safe-area-inset-bottom))] w-full max-w-app -translate-x-1/2 grid-cols-5 border-t border-gray-300 bg-white pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 left-1/2 z-50 grid h-[calc(5.75rem+env(safe-area-inset-bottom))] w-full max-w-app -translate-x-1/2 grid-cols-5 border-t border-gray-300 bg-white pb-[env(safe-area-inset-bottom)]"
     >
       {pageTabs.map((item) => {
         const Icon = item.icon;

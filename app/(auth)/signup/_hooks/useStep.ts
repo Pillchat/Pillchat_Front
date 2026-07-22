@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 export enum Step {
   Role = 1,
@@ -7,6 +7,7 @@ export enum Step {
   DepartMent,
   ServiceRule,
   PrivacyPolicy,
+  AuthMethod,
   Email,
   Password,
   Nickname,
@@ -15,17 +16,21 @@ export enum Step {
 export const useStep = () => {
   const [step, setStep] = useState<Step>(Step.DepartMent);
 
-  const nextStep = () => {
-    if (step < Step.Password) setStep((prev) => (prev + 1) as Step);
-  };
+  const nextStep = useCallback(() => {
+    setStep((currentStep) =>
+      currentStep < Step.Password ? ((currentStep + 1) as Step) : currentStep,
+    );
+  }, []);
 
-  const prevStep = () => {
-    if (step > Step.DepartMent) setStep((prev) => (prev - 1) as Step);
-  };
+  const prevStep = useCallback(() => {
+    setStep((currentStep) =>
+      currentStep > Step.DepartMent ? ((currentStep - 1) as Step) : currentStep,
+    );
+  }, []);
 
-  const goToStep = (targetStep: Step) => {
+  const goToStep = useCallback((targetStep: Step) => {
     setStep(targetStep);
-  };
+  }, []);
 
   return {
     step,
