@@ -128,7 +128,7 @@ export default function ImageMakerPage() {
         </Link>
       </header>
 
-      <main className="mx-auto flex w-full max-w-[40rem] flex-col px-6 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-6">
+      <main className="mx-auto flex w-full max-w-[40rem] flex-col px-6 pb-[calc(8.25rem+env(safe-area-inset-bottom))] pt-6">
         <section
           aria-labelledby="image-maker-title"
           className="rounded-[2rem] border border-gray-100 bg-card px-6 py-8 shadow-[0_1rem_2.5rem_rgba(17,17,17,0.06)] md:px-8"
