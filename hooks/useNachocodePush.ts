@@ -2,42 +2,6 @@ import { useCallback } from "react";
 import { useNotifications } from "./useNotifications";
 import { NotificationType } from "@/types/notification";
 
-declare global {
-  interface Window {
-    Nachocode?: {
-      initAsync: (apiKey: string) => Promise<void>;
-      env: {
-        isApp: () => boolean;
-      };
-      permission: {
-        checkPermission: (
-          options: { type: string; ask: boolean },
-          callback: (granted: boolean) => void,
-        ) => void;
-      };
-      push: {
-        registerPushToken: (userId: string) => Promise<{ status: string }>;
-        deletePushToken: () => Promise<{ status: string }>;
-        sendLocalPush: (
-          options: {
-            title: string;
-            content: string;
-            link?: string;
-            scheduledTime?: Date;
-            id?: number;
-          },
-          callback: (result: {
-            status: string;
-            id?: number;
-            message?: string;
-          }) => void,
-        ) => void;
-        cancelLocalPush: (id: number) => void;
-      };
-    };
-  }
-}
-
 const NACHOCODE_API_KEY = process.env.NEXT_PUBLIC_NACHOCODE_API_KEY || "";
 
 export const useNachocodePush = () => {
