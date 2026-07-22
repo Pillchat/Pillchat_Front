@@ -322,6 +322,7 @@ const PostPage = () => {
         title: trimmedTitle,
         content: trimmedContent,
         category: targetCategory,
+        isAnonymous,
         images: imageFiles.length > 0 ? imageFiles : undefined,
         pdf: pdfFile || undefined,
       });
