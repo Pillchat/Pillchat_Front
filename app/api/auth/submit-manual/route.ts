@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
+import { isSignupGrade, isSignupSource } from "@/constants/signup";
 
 export const POST = async (request: NextRequest) => {
   const body = await request.json();
@@ -9,11 +10,9 @@ export const POST = async (request: NextRequest) => {
     agreeToTerms,
     realName,
     documentType,
-    // 학생용 필드
-    studentId,
     university,
-    department,
     grade,
+    signupSource,
   } = body;
 
   // 1. 공통 필수 필드 검증
@@ -38,9 +37,16 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  if (!studentId || !grade) {
+  if (!isSignupGrade(grade)) {
     return NextResponse.json(
-      { error: "학생 회원은 학번과 학년이 필수입니다." },
+      { error: "학년 또는 상태를 선택해주세요." },
+      { status: 400 },
+    );
+  }
+
+  if (!isSignupSource(signupSource)) {
+    return NextResponse.json(
+      { error: "가입 경로를 선택해주세요." },
       { status: 400 },
     );
   }
@@ -62,10 +68,9 @@ export const POST = async (request: NextRequest) => {
           agreeToTerms,
           realName,
           documentType,
-          studentId,
           university,
-          department,
           grade,
+          signupSource,
         }),
       },
     );

@@ -1,29 +1,25 @@
 "use client";
 
-import { RoleCard, SolidButton, StrokeButton } from "@/components/atoms";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { IconInputField, StepHeader } from "@/components/molecules";
+import { SolidButton } from "@/components/atoms";
+import { StepHeader } from "@/components/molecules";
+import type { SignupGrade, SignupSource } from "@/constants/signup";
 import { useAuth } from "@/hooks";
+import { clearSignupDraft } from "@/lib/client/signupDraft";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { SignupInfoFlow } from "../../signup/_components/SignupInfoFlow";
+import { PRIVACY_TEXT, TERMS_TEXT } from "../../signup/_hooks";
 import {
   clearPendingOAuthSignup,
   getPendingOAuthSignup,
   type PendingOAuthSignup,
 } from "../../login/_utils/oauthSignup";
 
-type OAuthSignupStep = "role" | "info" | "nickname";
-type OAuthSignupRole = "student" | "professional";
+type OAuthSignupStep = "info" | "terms" | "privacy";
 
 const isValidNickname = (nickname: string) =>
   /^[가-힣A-Za-z0-9]{2,}$/.test(nickname.trim());
-
-const isValidStudentId = (value: string) => /^\d{8,14}$/.test(value);
-
-const getProviderLabel = (provider?: string) =>
-  provider === "kakao" ? "카카오" : "Google";
 
 const OAuthOnboardingPage = () => {
   const router = useRouter();
@@ -31,16 +27,12 @@ const OAuthOnboardingPage = () => {
   const [pendingSignup, setPendingSignup] = useState<PendingOAuthSignup | null>(
     null,
   );
-  const [step, setStep] = useState<OAuthSignupStep>("role");
-  const [role, setRole] = useState<OAuthSignupRole | "">("");
+  const [step, setStep] = useState<OAuthSignupStep>("info");
   const [realName, setRealName] = useState("");
   const [nickname, setNickname] = useState("");
   const [university, setUniversity] = useState("");
-  const [department, setDepartment] = useState("");
-  const [studentId, setStudentId] = useState("");
-  const [grade, setGrade] = useState("");
-  const [licenseNumber, setLicenseNumber] = useState("");
-  const [issueDate, setIssueDate] = useState("");
+  const [grade, setGrade] = useState<SignupGrade | "">("");
+  const [signupSource, setSignupSource] = useState<SignupSource | "">("");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [agreeToPrivacy, setAgreeToPrivacy] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,44 +46,52 @@ const OAuthOnboardingPage = () => {
       return;
     }
 
+    const draft = session.signupDraft;
+
     setPendingSignup(session);
-    setRealName(session.name ?? "");
+    setRealName(draft?.realName ?? session.name ?? "");
+    setNickname(draft?.nickname ?? "");
+    setUniversity(draft?.university ?? "");
+    setGrade(draft?.grade ?? "");
+    setSignupSource(draft?.signupSource ?? "");
+    setAgreeToTerms(draft?.agreeToTerms ?? false);
+    setAgreeToPrivacy(draft?.agreeToPrivacy ?? false);
   }, [router]);
 
-  const providerLabel = getProviderLabel(pendingSignup?.provider);
-
-  const isInfoValid = useMemo(() => {
-    if (!realName.trim() || !role) return false;
-
-    if (role === "student") {
-      return Boolean(university.trim() && isValidStudentId(studentId));
-    }
-
-    return Boolean(licenseNumber.trim());
-  }, [licenseNumber, realName, role, studentId, university]);
-
-  const isSubmitValid =
-    isValidNickname(nickname) && agreeToTerms && agreeToPrivacy;
+  const isInfoValid = Boolean(
+    realName.trim() && isValidNickname(nickname) && grade && signupSource,
+  );
+  const isReturningFromSignup = Boolean(pendingSignup?.signupDraft);
+  const isSubmitValid = Boolean(
+    isInfoValid && agreeToTerms && agreeToPrivacy && grade && signupSource,
+  );
 
   const goBack = () => {
     setError(null);
 
-    if (step === "role") {
-      clearPendingOAuthSignup();
-      router.replace("/login");
+    if (step === "privacy") {
+      setStep("terms");
       return;
     }
 
-    if (step === "info") {
-      setStep("role");
+    if (step === "terms") {
+      setStep("info");
       return;
     }
 
-    setStep("info");
+    clearPendingOAuthSignup();
+
+    if (isReturningFromSignup) {
+      router.replace("/signup");
+      return;
+    }
+
+    clearSignupDraft();
+    router.replace("/login");
   };
 
   const handleCompleteSignup = async () => {
-    if (!pendingSignup || !role || !isSubmitValid) return;
+    if (!pendingSignup || !grade || !signupSource || !isSubmitValid) return;
 
     setIsSubmitting(true);
     setError(null);
@@ -106,22 +106,14 @@ const OAuthOnboardingPage = () => {
           oauthSignupToken: pendingSignup.oauthSignupToken,
           provider: pendingSignup.provider,
           email: pendingSignup.email,
-          documentType: role,
+          documentType: "student",
           nickname: nickname.trim(),
           realName: realName.trim(),
           agreeToTerms,
           agreeToPrivacy,
-          ...(role === "student"
-            ? {
-                university: university.trim(),
-                department: department.trim(),
-                studentId,
-                grade: grade.trim(),
-              }
-            : {
-                licenseNumber: licenseNumber.trim(),
-                issueDate: issueDate.trim(),
-              }),
+          university: university.trim(),
+          grade,
+          signupSource,
         }),
       });
 
@@ -150,12 +142,28 @@ const OAuthOnboardingPage = () => {
         pendingSignup.rememberMe,
       );
       clearPendingOAuthSignup();
+      clearSignupDraft();
       router.replace("/");
-    } catch (error: any) {
-      setError(error.message || "OAuth 회원가입에 실패했습니다.");
+    } catch (caughtError: unknown) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "OAuth 회원가입에 실패했습니다.",
+      );
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleInfoNext = () => {
+    if (!isInfoValid) return;
+
+    if (agreeToTerms && agreeToPrivacy) {
+      void handleCompleteSignup();
+      return;
+    }
+
+    setStep("terms");
   };
 
   if (!pendingSignup) {
@@ -168,225 +176,128 @@ const OAuthOnboardingPage = () => {
 
   return (
     <div className="flex min-h-screen flex-col items-center">
-      <StepHeader content={`${providerLabel} 회원가입`} onIconClick={goBack} />
-
-      {step === "role" && (
-        <div className="flex w-full flex-1 flex-col items-center px-6">
-          <div className="mt-[5rem] text-xl font-semibold">
-            <p>현재 어떤 직종에 일하고 계신가요?</p>
-          </div>
-
-          <div className="mt-5 flex flex-row gap-[15px]">
-            <RoleCard
-              title="학생"
-              imageSrc="/illustrations/Student.svg"
-              onClick={() => {
-                setRole("student");
-                setStep("info");
-              }}
-            />
-
-            <RoleCard
-              title="전문가"
-              imageSrc="/illustrations/Specialist.svg"
-              onClick={() => {
-                setRole("professional");
-                setStep("info");
-              }}
-            />
-          </div>
-        </div>
-      )}
-
       {step === "info" && (
-        <div className="mt-[1rem] flex w-[90%] flex-col gap-[20px]">
-          <p className="text-xl font-semibold">
-            {role === "student" ? "학생" : "전문가"} 정보를 입력해주세요.
-          </p>
+        <SignupInfoFlow
+          realName={realName}
+          nickname={nickname}
+          grade={grade}
+          university={university}
+          signupSource={signupSource}
+          onRealNameChange={setRealName}
+          onNicknameChange={setNickname}
+          onGradeChange={setGrade}
+          onUniversityChange={setUniversity}
+          onSignupSourceChange={setSignupSource}
+          onExit={goBack}
+          onComplete={handleInfoNext}
+          completeLabel={isReturningFromSignup ? "가입 완료" : "다음"}
+          isCompleting={isSubmitting}
+          error={error}
+        />
+      )}
 
-          {pendingSignup.email && (
-            <IconInputField
-              content={`${providerLabel} 계정`}
-              value={pendingSignup.email}
+      {step === "terms" && (
+        <div className="flex w-full flex-1 flex-col">
+          <StepHeader content="서비스 이용약관" onIconClick={goBack} />
+
+          <div className="mx-auto flex min-h-0 w-[90%] flex-1 flex-col">
+            <textarea
+              className="scrollbar-hide min-h-0 w-full flex-1 overflow-y-auto whitespace-pre-wrap bg-white text-[13px] font-medium"
+              readOnly
               disabled
+              value={TERMS_TEXT}
             />
-          )}
+          </div>
 
-          <IconInputField
-            content="성명 (실명)"
-            value={realName}
-            onChange={(e) => setRealName(e.target.value)}
-            onIconClick={() => setRealName("")}
-            placeholder="홍길동"
-            iconSrc="/icons/Cancel.svg"
-            iconAsButton
-            iconSize={20}
-          />
-
-          {role === "student" ? (
-            <>
-              <IconInputField
-                content="학교명"
-                value={university}
-                onChange={(e) => setUniversity(e.target.value)}
-                onIconClick={() => setUniversity("")}
-                placeholder="한국대학교"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton
-                iconSize={20}
-              />
-              <IconInputField
-                content="학과"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                onIconClick={() => setDepartment("")}
-                placeholder="약학과"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton
-                iconSize={20}
-              />
-              <IconInputField
-                content="학번"
-                value={studentId}
-                onChange={(e) =>
-                  setStudentId(e.target.value.replace(/\D/g, ""))
+          <div className="z-[1] mb-14 mt-auto flex w-full flex-col items-center bg-[linear-gradient(to_top,_#FFFFFF_0%,_#FFFFFF_24%,_transparent_100%)] shadow-[0_-22px_24px_rgba(255,255,255,0.3),_0_-50px_40px_rgba(255,255,255,0.6)]">
+            <button
+              type="button"
+              aria-pressed={agreeToTerms}
+              className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]"
+              onClick={() => setAgreeToTerms((checked) => !checked)}
+            >
+              <Image
+                className="h-[26px] w-[26px]"
+                width={26}
+                height={26}
+                src={
+                  agreeToTerms
+                    ? "/icons/CheckedIcon.svg"
+                    : "/icons/UncheckIcon.svg"
                 }
-                onIconClick={() => setStudentId("")}
-                placeholder="20241234"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton
-                iconSize={20}
-                type="text"
-                maxLength={14}
-                inputMode="numeric"
-                errorMessage={
-                  studentId && !isValidStudentId(studentId)
-                    ? "학번은 숫자 8~14자로 입력해주세요."
-                    : undefined
-                }
+                alt=""
               />
-              <IconInputField
-                content="학년 (선택)"
-                value={grade}
-                onChange={(e) => setGrade(e.target.value)}
-                onIconClick={() => setGrade("")}
-                placeholder="1학년"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton
-                iconSize={20}
-              />
-            </>
-          ) : (
-            <>
-              <IconInputField
-                content="면허번호"
-                value={licenseNumber}
-                onChange={(e) => setLicenseNumber(e.target.value)}
-                onIconClick={() => setLicenseNumber("")}
-                placeholder="12345"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton
-                iconSize={20}
-              />
-              <IconInputField
-                content="발급일 (선택)"
-                value={issueDate}
-                onChange={(e) => setIssueDate(e.target.value)}
-                onIconClick={() => setIssueDate("")}
-                placeholder="YYYY-MM-DD"
-                iconSrc="/icons/Cancel.svg"
-                iconAsButton
-                iconSize={20}
-              />
-            </>
-          )}
+              <div className="flex flex-row text-sm font-medium">
+                <p className="text-brand underline underline-offset-2">
+                  서비스 이용약관
+                </p>
+                <p>에 동의합니다.</p>
+              </div>
+            </button>
 
-          <div className="mt-[2rem] flex w-full flex-col justify-center gap-[15px]">
-            <StrokeButton
-              content="이전으로"
-              variant="stroke-brand"
-              onClick={() => setStep("role")}
-            />
-            <SolidButton
-              content="다음"
-              variant={isInfoValid ? "brand" : "disabled"}
-              disabled={!isInfoValid}
-              onClick={() => setStep("nickname")}
-            />
+            <div className="font-regular mt-[1rem] w-[90%]">
+              <SolidButton
+                content="다음"
+                variant={agreeToTerms ? "brand" : "disabled"}
+                disabled={!agreeToTerms}
+                onClick={() => setStep("privacy")}
+              />
+            </div>
           </div>
         </div>
       )}
 
-      {step === "nickname" && (
-        <div className="mt-[2rem] flex w-[90%] flex-col gap-[20px]">
-          <p className="text-xl font-semibold">
-            필챗에서 활동할 닉네임을 입력해주세요.
-          </p>
+      {step === "privacy" && (
+        <div className="flex w-full flex-1 flex-col">
+          <StepHeader content="개인정보 처리방침" onIconClick={goBack} />
 
-          <IconInputField
-            content="닉네임"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            onIconClick={() => setNickname("")}
-            placeholder="닉네임을 적어주세요"
-            iconSrc="/icons/Cancel.svg"
-            iconAsButton
-            iconSize={20}
-            errorMessage={
-              nickname && !isValidNickname(nickname)
-                ? "닉네임은 한글, 영문, 숫자만 사용해 2자 이상 입력해주세요."
-                : undefined
-            }
-          />
-
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="oauth-agree-terms"
-                checked={agreeToTerms}
-                onCheckedChange={(checked) => setAgreeToTerms(checked === true)}
-              />
-              <Label
-                htmlFor="oauth-agree-terms"
-                className="text-sm font-medium text-button-foreground"
-              >
-                서비스 이용약관에 동의합니다.
-              </Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="oauth-agree-privacy"
-                checked={agreeToPrivacy}
-                onCheckedChange={(checked) =>
-                  setAgreeToPrivacy(checked === true)
-                }
-              />
-              <Label
-                htmlFor="oauth-agree-privacy"
-                className="text-sm font-medium text-button-foreground"
-              >
-                개인정보 처리방침에 동의합니다.
-              </Label>
-            </div>
+          <div className="mx-auto flex min-h-0 w-[90%] flex-1 flex-col">
+            <textarea
+              className="scrollbar-hide min-h-0 w-full flex-1 overflow-y-auto whitespace-pre-wrap bg-white text-[13px] font-medium"
+              readOnly
+              disabled
+              value={PRIVACY_TEXT}
+            />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
-
-          <div className="mt-[5rem] flex flex-col gap-[15px]">
-            <Button
+          <div className="z-[1] mb-14 mt-auto flex w-full flex-col items-center bg-[linear-gradient(to_top,_#FFFFFF_0%,_#FFFFFF_24%,_transparent_100%)] shadow-[0_-22px_24px_rgba(255,255,255,0.3),_0_-50px_40px_rgba(255,255,255,0.6)]">
+            <button
               type="button"
-              variant="stroke-brand"
-              className="h-[52px] w-full rounded-xl bg-white text-[1.125rem] font-medium"
-              onClick={() => setStep("info")}
+              aria-pressed={agreeToPrivacy}
+              className="mt-[1rem] flex flex-row items-center justify-center gap-[0.15rem]"
+              onClick={() => setAgreeToPrivacy((checked) => !checked)}
             >
-              이전으로
-            </Button>
-            <SolidButton
-              content={isSubmitting ? "가입 중..." : "완료"}
-              variant={isSubmitValid && !isSubmitting ? "brand" : "disabled"}
-              disabled={!isSubmitValid || isSubmitting}
-              onClick={handleCompleteSignup}
-            />
+              <Image
+                className="h-[26px] w-[26px]"
+                width={26}
+                height={26}
+                src={
+                  agreeToPrivacy
+                    ? "/icons/CheckedIcon.svg"
+                    : "/icons/UncheckIcon.svg"
+                }
+                alt=""
+              />
+              <div className="flex flex-row text-sm font-medium">
+                <p className="text-brand underline underline-offset-2">
+                  개인정보 처리방침
+                </p>
+                <p>에 동의합니다.</p>
+              </div>
+            </button>
+
+            {error && (
+              <p className="mt-3 w-[90%] text-sm text-destructive">{error}</p>
+            )}
+
+            <div className="font-regular mt-[1rem] w-[90%]">
+              <SolidButton
+                content={isSubmitting ? "가입 중..." : "완료"}
+                variant={isSubmitValid && !isSubmitting ? "brand" : "disabled"}
+                disabled={!isSubmitValid || isSubmitting}
+                onClick={() => void handleCompleteSignup()}
+              />
+            </div>
           </div>
         </div>
       )}

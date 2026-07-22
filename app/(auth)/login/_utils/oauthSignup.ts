@@ -1,3 +1,5 @@
+import { isSignupDraft, type SignupDraft } from "@/lib/client/signupDraft";
+
 export type OAuthProvider = "google" | "kakao";
 
 export type PendingOAuthSignup = {
@@ -6,6 +8,7 @@ export type PendingOAuthSignup = {
   rememberMe: boolean;
   email?: string;
   name?: string;
+  signupDraft?: SignupDraft;
 };
 
 const OAUTH_SIGNUP_SESSION_KEY = "oauth_signup_session";
@@ -99,6 +102,9 @@ export const getPendingOAuthSignup = (): PendingOAuthSignup | null => {
         rememberMe: Boolean(parsed.rememberMe),
         email: typeof parsed.email === "string" ? parsed.email : undefined,
         name: typeof parsed.name === "string" ? parsed.name : undefined,
+        signupDraft: isSignupDraft(parsed.signupDraft)
+          ? parsed.signupDraft
+          : undefined,
       };
     }
   } catch {
