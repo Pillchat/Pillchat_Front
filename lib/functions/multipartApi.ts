@@ -62,7 +62,6 @@ export async function uploadBoard(data: {
   title: string;
   content: string;
   category: string;
-  isAnonymous?: boolean;
   images?: File[];
   pdf?: File;
 }) {
@@ -70,9 +69,6 @@ export async function uploadBoard(data: {
   fd.append("title", data.title);
   fd.append("content", data.content);
   fd.append("category", data.category);
-  if (data.isAnonymous !== undefined) {
-    fd.append("isAnonymous", String(data.isAnonymous));
-  }
   data.images?.forEach((file) => fd.append("images", file));
   if (data.pdf) fd.append("pdf", data.pdf);
   return fetchWithFormData("/api/boards/upload", "POST", fd);
