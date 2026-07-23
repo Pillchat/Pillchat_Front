@@ -13,6 +13,7 @@ export function SolidButton({
       {...props}
       className={cn(
         "h-[3.625rem] w-full rounded-xl px-4 py-3 text-label-large",
+        (variant === "brand" || variant === "default") && "enabled:text-white",
         className,
       )}
     >

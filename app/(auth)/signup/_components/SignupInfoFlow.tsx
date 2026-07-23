@@ -198,15 +198,8 @@ export function SignupInfoFlow({
                 content="학교명"
                 value={university}
                 onChange={(event) => onUniversityChange(event.target.value)}
-                placeholder="한국대학교"
+                placeholder="ex) 한국대학교"
               />
-              <button
-                type="button"
-                className="mt-4 w-full text-center text-title-small text-primary underline underline-offset-4"
-                onClick={skipUniversity}
-              >
-                건너뛰기
-              </button>
             </div>
           </section>
         )}
@@ -250,7 +243,16 @@ export function SignupInfoFlow({
         )}
       </main>
 
-      <div className="fixed bottom-0 left-1/2 z-10 w-full max-w-app -translate-x-1/2 bg-gradient-to-t from-background via-background to-transparent px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-8">
+      <div className="fixed bottom-0 left-1/2 z-10 flex w-full max-w-app -translate-x-1/2 flex-col gap-3 bg-gradient-to-t from-background via-background to-transparent px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-8">
+        {stage === 3 && (
+          <button
+            type="button"
+            className="w-full text-center text-title-small text-primary underline underline-offset-4"
+            onClick={skipUniversity}
+          >
+            건너뛰기
+          </button>
+        )}
         <SolidButton
           content={
             isCompleting && stage === 4
