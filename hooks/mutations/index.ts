@@ -4,6 +4,7 @@ export * from "./useDeleteAnswerMutation";
 export * from "./useDeleteBoardMutation";
 export * from "./useDeleteMaterialMutation";
 export * from "./useDeleteQuestionMutation";
+export * from "./useExpectedFeatureSurveyMutation";
 export * from "./useMarketMutations";
 export * from "./useSaveAnswerMutation";
 export * from "./useSaveOnboardingMutation";

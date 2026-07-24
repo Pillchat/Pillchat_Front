@@ -51,6 +51,9 @@ export function Toast({
   return (
     <div className="pointer-events-none fixed inset-0 z-[1000] flex items-center justify-center">
       <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
         className={`pointer-events-auto relative z-[1001] mb-12 w-[90%] rounded-xl bg-foreground/70 px-5 py-3 text-center text-sm font-medium text-primary-foreground shadow-xl transition-opacity duration-1000 ease-out dark:bg-neutral-900 ${
           isFadingOut ? "opacity-0" : "opacity-100"
         }`}

@@ -13,10 +13,14 @@ export const normalizeNotificationConsentStatus = (
       ? ((response as { data?: unknown }).data ?? response)
       : response;
 
-  if (!source || typeof source !== "object") return { agreed: false };
+  if (!source || typeof source !== "object") {
+    return { agreed: false, surveyCompleted: false };
+  }
 
   return {
     agreed: (source as Record<string, unknown>).agreed === true,
+    surveyCompleted:
+      (source as Record<string, unknown>).surveyCompleted === true,
   };
 };
 
