@@ -1,10 +1,13 @@
 "use client";
 
 import { FC, useEffect, useMemo, useState } from "react";
+import { Lock } from "lucide-react";
 import { LeftArrowButton } from "@/components/atoms";
 import { ActionMenu, ActionMenuItem } from "@/components/molecules";
+import { getCurrentUserId } from "@/lib/client/auth";
 import { fetchAPI } from "@/lib/client/fetch";
 import { useRouter } from "@/lib/navigation";
+import { getFilePreviewUrl } from "@/lib/shared/filePreview";
 
 type BadgeItem = {
   id: string;
@@ -13,6 +16,7 @@ type BadgeItem = {
 };
 
 type UserProfile = {
+  isPublic: boolean | null;
   nickname: string;
   profileImage: string;
   affiliation: string;
@@ -101,14 +105,26 @@ const normalizeProfile = (result: unknown): UserProfile => {
   const affiliation = isProfessional
     ? [job, workplace].filter(Boolean).join(" / ")
     : [school, studentGrade].filter(Boolean).join(" / ");
+  const imageFromList = Array.isArray(payload.images)
+    ? payload.images
+        .map((image) =>
+          getFilePreviewUrl(image as Parameters<typeof getFilePreviewUrl>[0]),
+        )
+        .find(Boolean)
+    : undefined;
 
   return {
+    isPublic: payload.isPublic !== false,
     nickname:
       textValue(payload.nickname, payload.userNickname, payload.name) ||
       "사용자",
     profileImage:
-      textValue(payload.profileImg, payload.profileImage, payload.imageUrl) ||
-      "/defaultProfile.svg",
+      textValue(
+        imageFromList,
+        payload.profileImg,
+        payload.profileImage,
+        payload.imageUrl,
+      ) || "/defaultProfile.svg",
     affiliation: affiliation || "소속 정보 없음",
     followerCount: numberValue(
       payload.followerCount,
@@ -140,6 +156,7 @@ const normalizeProfile = (result: unknown): UserProfile => {
 };
 
 const initialProfile: UserProfile = {
+  isPublic: null,
   nickname: "사용자",
   profileImage: "/defaultProfile.svg",
   affiliation: "소속 정보 없음",
@@ -225,13 +242,16 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
   const [profile, setProfile] = useState<UserProfile>(initialProfile);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewerUserId, setViewerUserId] = useState<string | null>();
 
   useEffect(() => {
     let ignore = false;
+    setViewerUserId(getCurrentUserId());
 
     const loadProfile = async () => {
       setIsLoading(true);
       setError(null);
+      setProfile(initialProfile);
 
       try {
         const result = await fetchAPI(`/api/profile/${userId}`, "GET");
@@ -252,6 +272,10 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
   }, [userId]);
 
   const visibleBadges = useMemo(() => profile.badges.slice(0, 3), [profile]);
+  const isOwnProfile =
+    viewerUserId !== null &&
+    viewerUserId !== undefined &&
+    String(viewerUserId) === String(userId);
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-screen-sm bg-white">
@@ -271,6 +295,36 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
               다시 시도
             </button>
           </div>
+        ) : isLoading || viewerUserId === undefined ? (
+          <div
+            className="flex min-h-[28rem] flex-col items-center justify-center gap-4"
+            role="status"
+            aria-label="사용자 프로필 불러오는 중"
+          >
+            <div className="h-[4.25rem] w-[4.25rem] animate-pulse rounded-full bg-[#f1ece9]" />
+            <div className="h-6 w-28 animate-pulse rounded-full bg-[#f1ece9]" />
+            <div className="h-4 w-40 animate-pulse rounded-full bg-[#f5f1ee]" />
+          </div>
+        ) : profile.isPublic === false && !isOwnProfile ? (
+          <section className="flex min-h-[28rem] flex-col items-center justify-center text-center">
+            <img
+              src={profile.profileImage}
+              alt={`${profile.nickname} 프로필`}
+              className="h-[4.25rem] w-[4.25rem] rounded-full object-cover"
+            />
+            <h1 className="mt-3 text-xl font-bold text-[#171717]">
+              {profile.nickname}
+            </h1>
+            <span className="mt-8 flex h-14 w-14 items-center justify-center rounded-full bg-[#f1ece9] text-[#6f625d]">
+              <Lock aria-hidden="true" className="h-6 w-6" strokeWidth={1.8} />
+            </span>
+            <h2 className="mt-4 text-lg font-bold text-[#171717]">
+              비공개 프로필입니다
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#777]">
+              사용자가 마이페이지를 비공개로 설정했습니다.
+            </p>
+          </section>
         ) : (
           <>
             <section className="flex flex-col items-center pt-8 text-center">
@@ -298,7 +352,7 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
               </div>
 
               <h1 className="mt-3 text-xl font-bold text-[#171717]">
-                {isLoading ? "..." : profile.nickname}
+                {profile.nickname}
               </h1>
               <p className="mt-1 text-sm text-[#333]">{profile.affiliation}</p>
 

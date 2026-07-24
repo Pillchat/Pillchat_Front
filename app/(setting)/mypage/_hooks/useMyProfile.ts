@@ -23,6 +23,7 @@ import {
 
 type ProfileDetails = {
   userType: string;
+  isPublic: boolean | null;
   followerCount: number;
   followingCount: number;
   farmMoney: number;
@@ -33,6 +34,7 @@ type ProfileDetails = {
 
 const initialProfileDetails: ProfileDetails = {
   userType: "STUDENT",
+  isPublic: null,
   followerCount: 0,
   followingCount: 0,
   farmMoney: 0,
@@ -160,6 +162,8 @@ export const useMyProfile = () => {
 
       setProfileDetails({
         userType: payload.userType ?? "STUDENT",
+        isPublic:
+          typeof payload.isPublic === "boolean" ? payload.isPublic : true,
         followerCount: numberValue(
           payload.followerCount,
           payload.followersCount,
@@ -218,12 +222,18 @@ export const useMyProfile = () => {
 
   const resetProfile = useCallback(() => {
     clearProfile();
+    setProfileDetails(initialProfileDetails);
     setError(null);
   }, [clearProfile, setError]);
+
+  const setProfileVisibility = useCallback((isPublic: boolean) => {
+    setProfileDetails((current) => ({ ...current, isPublic }));
+  }, []);
 
   return {
     onMyProfile,
     resetProfile,
+    setProfileVisibility,
     isLoading,
     error,
     profile: {

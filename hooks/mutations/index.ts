@@ -13,4 +13,5 @@ export * from "./useSetSubjectFollowMutation";
 export * from "./useToggleLikeMutation";
 export * from "./useToggleBoardScrapMutation";
 export * from "./useUpdateNotificationSettingsMutation";
+export * from "./useUpdateProfileVisibilityMutation";
 export * from "./useNotificationConsentMutation";
