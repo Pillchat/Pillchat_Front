@@ -14,7 +14,9 @@ import { formatDiffDate } from "@/lib/shared/date";
 import {
   buildFileUrlMap,
   getFileKey,
-  isPdfFileKey,
+  getFilePreviewUrl,
+  isPdfFile,
+  resolveFilePreviewUrl,
 } from "@/lib/shared/filePreview";
 import {
   getRememberedBoardViewCounts,
@@ -83,12 +85,8 @@ const getCommentCount = (item: any) =>
   item?.repliesCount ??
   0;
 
-const getBoardAttachmentKeys = (item: any): string[] =>
-  Array.isArray(item?.images)
-    ? item.images
-        .map((image: any) => getFileKey(image))
-        .filter((key: unknown): key is string => typeof key === "string")
-    : [];
+const getBoardAttachments = (item: any): any[] =>
+  Array.isArray(item?.images) ? item.images : [];
 
 type BoardClientProps = {
   kind?: BoardPageKind;
@@ -165,9 +163,10 @@ const BoardClient = ({ kind = "free" }: BoardClientProps) => {
     return Array.from(
       new Set<string>(
         list.flatMap((item: any): string[] =>
-          getBoardAttachmentKeys(item).filter(
-            (key: string) => !isPdfFileKey(key),
-          ),
+          getBoardAttachments(item)
+            .filter((file: any) => !isPdfFile(file) && !getFilePreviewUrl(file))
+            .map((file: any) => getFileKey(file))
+            .filter(Boolean),
         ),
       ),
     );
@@ -234,12 +233,11 @@ const BoardClient = ({ kind = "free" }: BoardClientProps) => {
           <div className="mx-6 py-5 pb-[6.875rem]">
             <div className="flex flex-col gap-5">
               {list.map((item: any, index: number) => {
-                const imageKeys = getBoardAttachmentKeys(item).filter(
-                  (key: string) => !isPdfFileKey(key),
-                );
-
-                const imageUrls = imageKeys
-                  .map((key: string) => previewImageUrlMap[key])
+                const imageUrls = getBoardAttachments(item)
+                  .filter((file: any) => !isPdfFile(file))
+                  .map((file: any) =>
+                    resolveFilePreviewUrl(file, previewImageUrlMap),
+                  )
                   .filter(Boolean);
 
                 const previewContent =

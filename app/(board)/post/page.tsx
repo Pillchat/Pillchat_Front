@@ -19,7 +19,9 @@ import { getCurrentUserId } from "@/lib/client/auth";
 import {
   buildFileUrlMap,
   getFileKey,
+  getFilePreviewUrl,
   isPdfFileKey,
+  resolveFilePreviewUrl,
 } from "@/lib/shared/filePreview";
 import { useBoardQuery, useFilesQuery } from "@/hooks/queries";
 import {
@@ -383,6 +385,7 @@ const PostPage = () => {
     if (!Array.isArray(boardData?.images)) return [];
 
     return boardData.images
+      .filter((file: any) => !getFilePreviewUrl(file))
       .map((file: any) => getFileKey(file))
       .filter(Boolean);
   }, [boardData?.images]);
@@ -424,12 +427,12 @@ const PostPage = () => {
   }, [boardTarget.category, isEditMode]);
 
   useEffect(() => {
-    if (!isEditMode || !boardData?.images || !Array.isArray(filesData)) return;
+    if (!isEditMode || !boardData?.images) return;
 
     const items = boardData.images
       .map((file: any, index: number) => {
         const key = getFileKey(file);
-        const previewUrl = existingFileUrlMap[key];
+        const previewUrl = resolveFilePreviewUrl(file, existingFileUrlMap);
 
         if (!key || !previewUrl) return null;
 

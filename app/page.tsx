@@ -23,7 +23,9 @@ import { getValidAccessToken } from "@/lib/client/fetch";
 import {
   buildFileUrlMap,
   getFileKey,
-  isPdfFileKey,
+  getFilePreviewUrl,
+  isPdfFile,
+  resolveFilePreviewUrl,
 } from "@/lib/shared/filePreview";
 import { formatDiffDate } from "@/lib/shared/date";
 import {
@@ -759,9 +761,12 @@ const Home: FC = () => {
         boardPreviewItems.flatMap((item: any) =>
           Array.isArray(item?.images)
             ? item.images
+                .filter(
+                  (image: any) =>
+                    !isPdfFile(image) && !getFilePreviewUrl(image),
+                )
                 .map((image: any) => getFileKey(image))
                 .filter(Boolean)
-                .filter((key: string) => !isPdfFileKey(key))
             : [],
         ),
       ),
@@ -818,16 +823,14 @@ const Home: FC = () => {
     return (
       <div className="space-y-4">
         {items.map((board: any, index: number) => {
-          const imageKeys = Array.isArray(board?.images)
+          const imageUrls = Array.isArray(board?.images)
             ? board.images
-                .map((image: any) => getFileKey(image))
+                .filter((image: any) => !isPdfFile(image))
+                .map((image: any) =>
+                  resolveFilePreviewUrl(image, boardImageUrlMap),
+                )
                 .filter(Boolean)
-                .filter((key: string) => !isPdfFileKey(key))
             : [];
-
-          const imageUrls = imageKeys
-            .map((key: string) => boardImageUrlMap[key])
-            .filter(Boolean);
 
           const cardData = {
             ...board,

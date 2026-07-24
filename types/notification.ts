@@ -35,6 +35,17 @@ export type NotificationSettingUpdateRequest = Partial<NotificationSetting>;
 
 export interface NotificationConsentStatus {
   agreed: boolean;
+  surveyCompleted: boolean;
+}
+
+export type ExpectedFeature =
+  | "AI_FLASHCARD"
+  | "DESCRIPTIVE_HELPER"
+  | "QUESTION_BANK";
+
+export interface ExpectedFeatureSurveyRequest {
+  expectedFeature: ExpectedFeature;
+  additionalOpinion?: string | null;
 }
 
 export const DEFAULT_NOTIFICATION_SETTING: NotificationSetting = {

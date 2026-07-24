@@ -14,7 +14,9 @@ import { formatDiffDate } from "@/lib/shared/date";
 import {
   buildFileUrlMap,
   getFileKey,
-  isPdfFileKey,
+  getFilePreviewUrl,
+  isPdfFile,
+  resolveFilePreviewUrl,
 } from "@/lib/shared/filePreview";
 import { getCurrentUserId } from "@/lib/client/auth";
 import {
@@ -164,13 +166,20 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
     queryClient.invalidateQueries({ queryKey: ["home-boards-best"] });
   }, [boardData?.viewCount, boardId, queryClient]);
 
-  const boardFileKeys = useMemo(() => {
+  const boardFiles = useMemo(() => {
     if (!Array.isArray(boardData?.images)) return [];
 
-    return boardData.images
-      .map((file: any) => getFileKey(file))
-      .filter(Boolean);
+    return boardData.images;
   }, [boardData?.images]);
+
+  const boardFileKeys = useMemo(
+    () =>
+      boardFiles
+        .filter((file: any) => !getFilePreviewUrl(file))
+        .map((file: any) => getFileKey(file))
+        .filter(Boolean),
+    [boardFiles],
+  );
 
   const { data: filesData, isLoading: filesLoading } = useFilesQuery({
     keys: boardFileKeys,
@@ -183,20 +192,21 @@ export const BoardDetailPage: FC<{ boardId: string }> = ({ boardId }) => {
 
   const imageUrls = useMemo(
     () =>
-      boardFileKeys
-        .filter((key) => !isPdfFileKey(key))
-        .map((key) => fileUrlMap[key])
+      boardFiles
+        .filter((file: any) => !isPdfFile(file))
+        .map((file: any) => resolveFilePreviewUrl(file, fileUrlMap))
         .filter(Boolean),
-    [boardFileKeys, fileUrlMap],
+    [boardFiles, fileUrlMap],
   );
 
-  const pdfKey = useMemo(
-    () => boardFileKeys.find((key) => isPdfFileKey(key)) ?? "",
-    [boardFileKeys],
+  const pdfFile = useMemo(
+    () => boardFiles.find((file: any) => isPdfFile(file)),
+    [boardFiles],
   );
 
-  const pdfUrl = pdfKey ? (fileUrlMap[pdfKey] ?? "") : "";
-  const pdfName = pdfKey.split("/").pop() ?? "";
+  const pdfKey = getFileKey(pdfFile);
+  const pdfUrl = resolveFilePreviewUrl(pdfFile, fileUrlMap);
+  const pdfName = (pdfKey || pdfUrl.split("?")[0]).split("/").pop() ?? "";
 
   const { data: commentsData, isLoading: commentsLoading } =
     useBoardCommentsQuery(boardId);
