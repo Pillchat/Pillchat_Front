@@ -18,6 +18,13 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { fetchAPI, getToken } from "@/lib/client/fetch";
 import { formatDiffDate } from "@/lib/shared/date";
+import {
+  buildFileUrlMap,
+  getFileKey,
+  getFilePreviewUrl,
+  isPdfFile,
+  resolveFilePreviewUrl,
+} from "@/lib/shared/filePreview";
 import { getCurrentUserId } from "@/lib/client/auth";
 import { markBoardViewIntent } from "@/lib/client/boardView";
 import { map } from "lodash";
@@ -36,16 +43,8 @@ const TABS: { key: ArchiveTabKey; label: string }[] = [
   { key: "my-post", label: "게시글" },
 ];
 
-const getBoardFileKey = (file: any) => {
-  if (typeof file === "string") return file;
-  return file?.urlKey ?? file?.key ?? file?.fileKey ?? file?.name ?? "";
-};
-
 const resolveMaterialKey = (value: any, materialId: string | number) => {
-  const raw =
-    typeof value === "string"
-      ? value
-      : (value?.urlKey ?? value?.key ?? value?.fileKey ?? value?.name ?? "");
+  const raw = getFileKey(value);
 
   if (!raw) return "";
   return raw.includes("/") ? raw : `material/${materialId}/${raw}`;
@@ -175,7 +174,8 @@ const ArchivePage: FC = () => {
           myPosts.flatMap((item: any) =>
             Array.isArray(item?.images)
               ? item.images
-                  .map((file: any) => getBoardFileKey(file))
+                  .filter((file: any) => !getFilePreviewUrl(file))
+                  .map((file: any) => getFileKey(file))
                   .filter(Boolean)
               : [],
           ),
@@ -189,6 +189,7 @@ const ArchivePage: FC = () => {
           filteredMaterials.flatMap((item: any) =>
             item?.id && Array.isArray(item?.images)
               ? item.images
+                  .filter((value: any) => !getFilePreviewUrl(value))
                   .map((value: any) => resolveMaterialKey(value, item.id))
                   .filter(Boolean)
               : [],
@@ -202,27 +203,10 @@ const ArchivePage: FC = () => {
 
   const { data: previewFilesData } = useFilesQuery({ keys: previewFileKeys });
 
-  const previewImageUrlMap = useMemo(() => {
-    if (!Array.isArray(previewFilesData)) return {};
-
-    return previewFilesData.reduce<Record<string, string>>(
-      (acc, file: any, index: number) => {
-        const requestedKey = previewFileKeys[index];
-        const responseKey = file?.key ?? "";
-
-        if (requestedKey && file?.preSignedUrl) {
-          acc[requestedKey] = file.preSignedUrl;
-        }
-
-        if (responseKey && file?.preSignedUrl) {
-          acc[responseKey] = file.preSignedUrl;
-        }
-
-        return acc;
-      },
-      {},
-    );
-  }, [previewFilesData, previewFileKeys]);
+  const previewImageUrlMap = useMemo(
+    () => buildFileUrlMap(previewFileKeys, previewFilesData),
+    [previewFilesData, previewFileKeys],
+  );
 
   const subjectMap = useMemo(
     () => getSubjectMapForChips(),
@@ -316,20 +300,16 @@ const ArchivePage: FC = () => {
           {map(list, (item) => {
             const boardId = item?.id;
 
-            const fileKeys = Array.isArray(item?.images)
-              ? item.images
-                  .map((file: any) => getBoardFileKey(file))
-                  .filter(Boolean)
-              : [];
+            const attachments = Array.isArray(item?.images) ? item.images : [];
 
-            const imageUrls = fileKeys
-              .filter((key: string) => !key.toLowerCase().endsWith(".pdf"))
-              .map((key: string) => previewImageUrlMap[key])
+            const imageUrls = attachments
+              .filter((file: any) => !isPdfFile(file))
+              .map((file: any) =>
+                resolveFilePreviewUrl(file, previewImageUrlMap),
+              )
               .filter(Boolean);
 
-            const hasPdf = fileKeys.some((key: string) =>
-              key.toLowerCase().endsWith(".pdf"),
-            );
+            const hasPdf = attachments.some((file: any) => isPdfFile(file));
 
             const previewContent =
               typeof item?.content === "string" && item.content.trim()
@@ -388,16 +368,18 @@ const ArchivePage: FC = () => {
           {map(list, (item) => {
             const materialId = item?.id;
 
-            const imageKeys =
+            const imageUrls =
               item?.id && Array.isArray(item?.images)
                 ? item.images
-                    .map((value: any) => resolveMaterialKey(value, item.id))
+                    .map((value: any) => {
+                      const directUrl = getFilePreviewUrl(value);
+                      if (directUrl) return directUrl;
+
+                      const key = resolveMaterialKey(value, item.id);
+                      return key ? (previewImageUrlMap[key] ?? "") : "";
+                    })
                     .filter(Boolean)
                 : [];
-
-            const imageUrls = imageKeys
-              .map((key: string) => previewImageUrlMap[key])
-              .filter(Boolean);
 
             const material = {
               id: String(materialId ?? ""),

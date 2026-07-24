@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { Toast } from "@/components/atoms";
 import { AppShell } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
-import { useNotificationConsentMutation } from "@/hooks/mutations";
+import { useExpectedFeatureSurveyMutation } from "@/hooks/mutations";
 import {
   notificationConsentQueryKey,
   useNotificationConsentQuery,
@@ -18,6 +18,10 @@ import { getValidAccessToken } from "@/lib/client/fetch";
 import { useRouter } from "@/lib/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import type { NotificationConsentStatus } from "@/types/notification";
+import { ExpectedFeatureSurveyDialog } from "./_components/ExpectedFeatureSurveyDialog";
+
+const CONSENT_STATUS_ERROR_MESSAGE =
+  "알림 신청 상태를 불러오지 못했습니다. 다시 시도해 주세요.";
 
 const previewItems = [
   {
@@ -72,6 +76,7 @@ export default function LearnPage() {
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastKey, setToastKey] = useState(0);
+  const [surveyDialogOpen, setSurveyDialogOpen] = useState(false);
 
   useEffect(() => {
     let isCancelled = false;
@@ -95,6 +100,16 @@ export default function LearnPage() {
   const isAuthenticated = typeof authUserId === "string";
   const consentQuery = useNotificationConsentQuery(authUserId ?? null);
   const hasAgreed = consentQuery.data?.agreed === true;
+  const hasCompletedSurvey = consentQuery.data?.surveyCompleted === true;
+  const hasConsentStatusError = isAuthenticated && consentQuery.isError;
+
+  useEffect(() => {
+    if (!hasConsentStatusError) return;
+
+    setToastMessage(CONSENT_STATUS_ERROR_MESSAGE);
+    setToastKey((current) => current + 1);
+    setToastOpen(true);
+  }, [consentQuery.errorUpdatedAt, hasConsentStatusError]);
 
   const showToast = (message: string) => {
     setToastMessage(message);
@@ -102,20 +117,22 @@ export default function LearnPage() {
     setToastOpen(true);
   };
 
-  const consentMutation = useNotificationConsentMutation({
+  const surveyMutation = useExpectedFeatureSurveyMutation({
     onSuccess: () => {
       if (authUserId) {
         queryClient.setQueryData<NotificationConsentStatus>(
           notificationConsentQueryKey(authUserId),
-          { agreed: true },
+          { agreed: true, surveyCompleted: true },
         );
       }
-      showToast(
-        "알림 신청이 완료되었습니다! 9월 오픈 시 가장 먼저 안내해 드립니다.",
-      );
+      setSurveyDialogOpen(false);
+      showToast("알림 신청과 설문 참여가 완료되었습니다");
     },
     onError: (error) => {
-      showToast(error.message || "오픈 알림을 신청하지 못했습니다.");
+      showToast(
+        error.message ||
+          "알림 신청과 설문 참여를 완료하지 못했습니다. 다시 시도해 주세요.",
+      );
     },
   });
 
@@ -125,16 +142,18 @@ export default function LearnPage() {
       return;
     }
 
-    if (!isAuthenticated || hasAgreed) return;
-    consentMutation.mutate();
+    if (!isAuthenticated || hasCompletedSurvey) return;
+    surveyMutation.reset();
+    setSurveyDialogOpen(true);
   };
 
-  const isCheckingConsent = isAuthenticated && consentQuery.isLoading;
+  const isCheckingConsent = isAuthenticated && consentQuery.isFetching;
   const isButtonDisabled =
     authUserId === undefined ||
     isCheckingConsent ||
-    consentMutation.isPending ||
-    hasAgreed;
+    hasConsentStatusError ||
+    surveyMutation.isPending ||
+    hasCompletedSurvey;
 
   const buttonLabel =
     authUserId === undefined
@@ -143,11 +162,15 @@ export default function LearnPage() {
         ? "로그인하고 오픈 알림 신청하기"
         : isCheckingConsent
           ? "신청 여부 확인 중..."
-          : consentMutation.isPending
-            ? "오픈 알림 신청 중..."
-            : hasAgreed
-              ? "오픈 알림 신청 완료"
-              : "오픈 알림 신청하고 혜택 받기";
+          : hasConsentStatusError
+            ? "신청 상태를 확인하지 못했습니다"
+            : surveyMutation.isPending
+              ? "설문 제출 중..."
+              : hasCompletedSurvey
+                ? "알림 신청 및 설문 참여 완료"
+                : hasAgreed
+                  ? "기대 기능 설문 참여하기"
+                  : "오픈 알림 신청하고 혜택 받기";
 
   return (
     <AppShell bottomSpacing="cta" className="flex flex-col">
@@ -219,17 +242,42 @@ export default function LearnPage() {
       </main>
 
       <div className="fixed bottom-[calc(6.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-app -translate-x-1/2 bg-background px-6 py-3 md:px-8">
+        {hasConsentStatusError && (
+          <div className="mb-3 flex items-center justify-between gap-3 rounded-xl bg-destructive/10 px-4 py-3">
+            <p className="text-sm text-destructive">
+              알림 신청 상태를 확인할 수 없습니다.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="shrink-0"
+              disabled={consentQuery.isFetching}
+              onClick={() => void consentQuery.refetch()}
+            >
+              {consentQuery.isFetching ? "확인 중..." : "다시 시도"}
+            </Button>
+          </div>
+        )}
         <Button
           type="button"
           className="h-14 w-full gap-1 active:scale-[0.98] [&_svg]:size-6"
           disabled={isButtonDisabled}
-          aria-busy={consentMutation.isPending || isCheckingConsent}
+          aria-busy={surveyMutation.isPending || isCheckingConsent}
           onClick={handleNotificationConsent}
         >
           <Bell aria-hidden="true" strokeWidth={1.5} />
           <p>{buttonLabel}</p>
         </Button>
       </div>
+
+      <ExpectedFeatureSurveyDialog
+        open={surveyDialogOpen}
+        isSubmitting={surveyMutation.isPending}
+        hasSubmitError={surveyMutation.isError}
+        onOpenChange={setSurveyDialogOpen}
+        onSubmit={(request) => surveyMutation.mutate(request)}
+      />
 
       <Toast
         open={toastOpen}

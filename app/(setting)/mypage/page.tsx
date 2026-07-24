@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronLeft, GraduationCap, Lock, Pencil } from "lucide-react";
+import { ChevronLeft, Globe2, GraduationCap, Lock, Pencil } from "lucide-react";
 
+import { Toast } from "@/components/atoms";
 import { BottomNavbar } from "@/components/molecules";
+import { useUpdateProfileVisibilityMutation } from "@/hooks/mutations";
 import { useRouter } from "@/lib/navigation";
 import { useMyPageContent, useMyProfile } from "./_hooks";
 import type { MyBadge, MyComment, MyPageContentTab, MyPost } from "./_hooks";
@@ -271,7 +273,11 @@ function ContentStatus({
 export default function MyPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<ProfileTab>("posts");
-  const { onMyProfile, isLoading, error, profile } = useMyProfile();
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastKey, setToastKey] = useState(0);
+  const { onMyProfile, setProfileVisibility, isLoading, error, profile } =
+    useMyProfile();
   const {
     posts,
     postsLoading,
@@ -287,6 +293,28 @@ export default function MyPage() {
     refetchBadge,
   } = useMyPageContent(activeTab);
 
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setToastKey((current) => current + 1);
+    setToastOpen(true);
+  };
+
+  const visibilityMutation = useUpdateProfileVisibilityMutation({
+    onSuccess: ({ isPublic }) => {
+      setProfileVisibility(isPublic);
+      showToast(
+        isPublic
+          ? "마이페이지가 공개되었습니다."
+          : "마이페이지가 비공개되었습니다.",
+      );
+    },
+    onError: (mutationError) => {
+      showToast(
+        mutationError.message || "마이페이지 공개 설정을 변경하지 못했습니다.",
+      );
+    },
+  });
+
   useEffect(() => {
     onMyProfile();
   }, [onMyProfile]);
@@ -299,6 +327,11 @@ export default function MyPage() {
       : "등급 없음";
   const followerCount = profile.followerCount;
   const followingCount = profile.followingCount;
+
+  const handleVisibilityToggle = () => {
+    if (profile.isPublic === null || visibilityMutation.isPending) return;
+    visibilityMutation.mutate({ isPublic: !profile.isPublic });
+  };
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-[393px] bg-white pb-[6.5rem] text-[#111]">
@@ -429,14 +462,37 @@ export default function MyPage() {
             <div className="flex justify-end px-6 pt-[0.875rem]">
               <button
                 type="button"
-                className="inline-flex h-8 items-center gap-2 rounded-full bg-[#fff0ea] px-4 text-[0.9375rem] font-bold text-[#c63821] active:scale-95"
+                role="switch"
+                aria-checked={profile.isPublic === true}
+                aria-busy={visibilityMutation.isPending}
+                disabled={
+                  profile.isPublic === null || visibilityMutation.isPending
+                }
+                onClick={handleVisibilityToggle}
+                className={`inline-flex h-8 items-center gap-2 rounded-full px-4 text-[0.9375rem] font-bold active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 ${
+                  profile.isPublic === false
+                    ? "bg-[#f1ece9] text-[#5f524d]"
+                    : "bg-[#fff0ea] text-[#c63821]"
+                }`}
               >
-                <Lock
-                  aria-hidden="true"
-                  className="h-5 w-5"
-                  strokeWidth={1.9}
-                />
-                공개
+                {profile.isPublic === false ? (
+                  <Lock
+                    aria-hidden="true"
+                    className="h-5 w-5"
+                    strokeWidth={1.9}
+                  />
+                ) : (
+                  <Globe2
+                    aria-hidden="true"
+                    className="h-5 w-5"
+                    strokeWidth={1.9}
+                  />
+                )}
+                {profile.isPublic === null
+                  ? "확인 중"
+                  : profile.isPublic
+                    ? "공개"
+                    : "비공개"}
               </button>
             </div>
             {activeTab === "posts" &&
@@ -492,6 +548,12 @@ export default function MyPage() {
       )}
 
       <BottomNavbar className="max-w-[393px]" />
+      <Toast
+        open={toastOpen}
+        onClose={() => setToastOpen(false)}
+        message={toastMessage}
+        toastKey={toastKey}
+      />
     </div>
   );
 }

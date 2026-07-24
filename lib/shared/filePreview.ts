@@ -1,29 +1,67 @@
 type FileValue =
   | string
   | {
+      storageKey?: string;
       urlKey?: string;
       key?: string;
       fileKey?: string;
       name?: string;
+      url?: string;
       preSignedUrl?: string;
       presignedUrl?: string;
       uploadUrl?: string;
     };
 
+const isDirectFileUrl = (value: unknown): value is string =>
+  typeof value === "string" && /^(?:https?:|data:|blob:)/i.test(value.trim());
+
 export const getFileKey = (value: FileValue | null | undefined) => {
   if (!value) return "";
-  if (typeof value === "string") return value;
+  if (typeof value === "string") {
+    return isDirectFileUrl(value) ? "" : value;
+  }
 
-  return value.urlKey ?? value.key ?? value.fileKey ?? value.name ?? "";
+  return (
+    [value.storageKey, value.key, value.fileKey, value.urlKey, value.name].find(
+      (candidate) =>
+        typeof candidate === "string" &&
+        candidate.length > 0 &&
+        !isDirectFileUrl(candidate),
+    ) ?? ""
+  );
 };
 
 export const getFilePreviewUrl = (value: FileValue | null | undefined) => {
-  if (!value || typeof value === "string") return "";
+  if (!value) return "";
+  if (typeof value === "string") {
+    return isDirectFileUrl(value) ? value : "";
+  }
 
-  return value.preSignedUrl ?? value.presignedUrl ?? value.uploadUrl ?? "";
+  return (
+    value.url ??
+    value.preSignedUrl ??
+    value.presignedUrl ??
+    value.uploadUrl ??
+    (isDirectFileUrl(value.urlKey) ? value.urlKey : "")
+  );
 };
 
-export const isPdfFileKey = (key: string) => key.toLowerCase().endsWith(".pdf");
+export const resolveFilePreviewUrl = (
+  value: FileValue | null | undefined,
+  fileUrlMap: Record<string, string>,
+) => {
+  const directUrl = getFilePreviewUrl(value);
+  if (directUrl) return directUrl;
+
+  const key = getFileKey(value);
+  return key ? (fileUrlMap[key] ?? "") : "";
+};
+
+export const isPdfFileKey = (key: string) =>
+  /\.pdf(?:$|[?#])/i.test(key.trim());
+
+export const isPdfFile = (value: FileValue | null | undefined) =>
+  isPdfFileKey(getFileKey(value) || getFilePreviewUrl(value));
 
 export const buildFileUrlMap = (
   requestedKeys: string[],

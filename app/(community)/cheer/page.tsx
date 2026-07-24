@@ -121,7 +121,10 @@ export default function CheerPage() {
   }, []);
 
   return (
-    <AppShell bottomSpacing="input" className="flex flex-col">
+    <AppShell
+      bottomSpacing="input"
+      className="flex h-dvh flex-col overflow-hidden"
+    >
       <header className="sticky top-0 z-10 flex h-[60px] items-center border-b border-border bg-background px-6">
         <div className="flex w-full items-center justify-between">
           <div>
@@ -149,7 +152,7 @@ export default function CheerPage() {
 
       <main
         ref={listRef}
-        className="flex-1 overflow-y-auto px-6 py-5"
+        className="min-h-0 flex-1 overflow-y-auto px-6 py-5"
         aria-label="응원 메시지"
       >
         <div className="flex flex-col gap-4">
