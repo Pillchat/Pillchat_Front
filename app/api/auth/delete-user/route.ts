@@ -9,7 +9,13 @@ export const DELETE = async (request: NextRequest) => {
       request,
     });
 
-    return NextResponse.json({ success: true, data }, { status: 200 });
+    const response = NextResponse.json(
+      { success: true, data },
+      { status: 200 },
+    );
+    response.cookies.delete("access_token");
+
+    return response;
   } catch (error: any) {
     let parsedError;
     try {

@@ -10,12 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useGoogleOAuth, useKakaoOAuth, useSubmit } from "./_hooks";
 import { IconInputField } from "@/components/molecules";
 import { emailRules, passwordRules } from "@/validations";
-import {
-  getRefreshToken,
-  getToken,
-  isTokenExpired,
-  refreshTokens,
-} from "@/lib/functions";
+import { getRefreshToken, getToken, refreshTokens } from "@/lib/client/fetch";
+import { isTokenExpired } from "@/lib/functions";
 import { FcGoogle } from "react-icons/fc";
 import { RiKakaoTalkFill } from "react-icons/ri";
 import type { LoginFormData } from "./types";
