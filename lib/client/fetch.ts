@@ -6,6 +6,7 @@ const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
 
 let refreshPromise: Promise<TokenPair | false> | null = null;
+let authSessionRevision = 0;
 
 const isBrowser = () => typeof window !== "undefined";
 
@@ -100,6 +101,8 @@ export const setTokens = (
 ) => {
   if (!isBrowser()) return;
 
+  authSessionRevision += 1;
+
   const normalizedAccessToken = normalizeToken(accessToken);
   const normalizedRefreshToken = normalizeToken(refreshToken);
   const mode: AuthStorageMode = rememberMe ? "local" : "session";
@@ -120,6 +123,8 @@ export const setTokens = (
 export const clearTokens = () => {
   if (!isBrowser()) return;
 
+  authSessionRevision += 1;
+
   window.localStorage.removeItem(ACCESS_TOKEN_KEY);
   window.localStorage.removeItem(REFRESH_TOKEN_KEY);
   window.localStorage.removeItem(AUTH_STORAGE_MODE_KEY);
@@ -133,6 +138,7 @@ const requestTokenRefresh = async (): Promise<TokenPair | false> => {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return false;
   const rememberMe = getStoredAuthMode() !== "session";
+  const requestSessionRevision = authSessionRevision;
 
   try {
     const response = await fetch("/api/auth/refresh-token", {
@@ -157,6 +163,10 @@ const requestTokenRefresh = async (): Promise<TokenPair | false> => {
           refreshToken;
 
         if (accessToken) {
+          if (requestSessionRevision !== authSessionRevision) {
+            return false;
+          }
+
           const normalizedAccessToken = normalizeToken(accessToken);
           const normalizedRefreshToken = normalizeToken(nextRefreshToken);
           setTokens(normalizedAccessToken, normalizedRefreshToken, rememberMe);

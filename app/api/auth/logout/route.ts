@@ -8,7 +8,13 @@ export const POST = async (request: NextRequest) => {
       request,
     });
 
-    return NextResponse.json({ success: true, data }, { status: 200 });
+    const response = NextResponse.json(
+      { success: true, data },
+      { status: 200 },
+    );
+    response.cookies.delete("access_token");
+
+    return response;
   } catch (error: any) {
     let parsedError;
     try {
@@ -24,6 +30,9 @@ export const POST = async (request: NextRequest) => {
     const status = parsedError?.status || 500;
     let message = parsedError?.message || "서버 오류가 발생했습니다.";
 
-    return NextResponse.json({ success: false, message }, { status });
+    const response = NextResponse.json({ success: false, message }, { status });
+    response.cookies.delete("access_token");
+
+    return response;
   }
 };
