@@ -1,6 +1,5 @@
 export * from "./buttonSize";
 export * from "./buttonVariant";
-export * from "./cheer";
 export * from "./question";
 export * from "./onboarding";
 export * from "./questionbank";

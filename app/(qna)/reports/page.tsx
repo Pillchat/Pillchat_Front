@@ -34,7 +34,7 @@ export default function ReportPage() {
 
   const handleCompleteReport = () => {
     closeSubmitReport();
-    router.push("/board");
+    router.push("/");
   };
 
   return (

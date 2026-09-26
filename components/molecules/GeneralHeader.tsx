@@ -37,15 +37,13 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
 
   const resolvedBasePath = useMemo(() => {
     if (searchBasePath) return searchBasePath;
-    if (pathname.startsWith("/board")) return "/board";
     return "/qna";
   }, [pathname, searchBasePath]);
 
   const isSearchablePath = useMemo(
     () =>
       Boolean(searchBasePath) ||
-      pathname.startsWith("/qna") ||
-      pathname.startsWith("/board"),
+      pathname.startsWith("/qna"),
     [pathname, searchBasePath],
   );
 

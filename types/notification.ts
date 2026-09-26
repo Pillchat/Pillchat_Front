@@ -40,7 +40,6 @@ export interface NotificationConsentStatus {
 
 export type ExpectedFeature =
   | "AI_FLASHCARD"
-  | "DESCRIPTIVE_HELPER"
   | "QUESTION_BANK";
 
 export interface ExpectedFeatureSurveyRequest {

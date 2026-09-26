@@ -5,10 +5,14 @@ import { useSearchParams, usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 // 아카이브 탭 상태 타입 정의
-type ArchiveStatus = /*"my-questions" | */ "my-study" | "my-note" | "my-post";
+type ArchiveStatus = /*"my-questions" | */ "my-study" | "my-note";
 
 // 기본 상태
 const DEFAULT_STATUS: ArchiveStatus = "my-study";
+const VALID_STATUSES: ArchiveStatus[] = ["my-study", "my-note"];
+
+const isArchiveStatus = (value: string | null): value is ArchiveStatus =>
+  value !== null && VALID_STATUSES.includes(value as ArchiveStatus);
 
 /**
  * ✅ useArchiveTabState
@@ -22,15 +26,19 @@ export const useArchiveTabState = () => {
   const searchParams = useSearchParams();
 
   // 현재 status 값 추출
-  const currentStatus =
-    (searchParams.get("status") as ArchiveStatus) || DEFAULT_STATUS;
+  const requestedStatus = searchParams.get("status");
+  const currentStatus = isArchiveStatus(requestedStatus)
+    ? requestedStatus
+    : DEFAULT_STATUS;
 
-  // ✅ URL에 status 파라미터가 없으면 기본값으로 설정
+  // URL에 status 파라미터가 없거나 삭제된 탭이면 기본값으로 정리
   useEffect(() => {
-    if (!searchParams.get("status")) {
-      router.replace(`${pathname}?status=${DEFAULT_STATUS}`);
+    if (requestedStatus !== currentStatus) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("status", currentStatus);
+      router.replace(`${pathname}?${params.toString()}`);
     }
-  }, [router, searchParams, pathname]);
+  }, [currentStatus, pathname, requestedStatus, router, searchParams]);
 
   // ✅ 탭 전환 시 URL 파라미터 갱신
   const handleTabChange = (value: string) => {

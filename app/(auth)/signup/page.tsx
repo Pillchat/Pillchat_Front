@@ -548,7 +548,7 @@ const SignupPage: FC = () => {
 
   const leaveSignup = () => {
     clearSignupDraft();
-    router.push("/intro");
+    router.push("/login");
   };
 
   useEffect(() => {

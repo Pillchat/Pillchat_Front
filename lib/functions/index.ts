@@ -3,7 +3,6 @@ export * from "./serverFetch";
 export * from "./date";
 export * from "./buildQueryParams";
 export * from "./jwt";
-export * from "./boardView";
 export * from "./syncViewCount";
 export * from "./multipartApi";
 export * from "./serverProxyMultipart";
