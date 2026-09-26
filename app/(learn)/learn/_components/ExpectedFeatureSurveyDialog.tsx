@@ -23,7 +23,6 @@ const EXPECTED_FEATURE_OPTIONS: ReadonlyArray<{
   label: string;
 }> = [
   { value: "AI_FLASHCARD", label: "AI 플래시카드" },
-  { value: "DESCRIPTIVE_HELPER", label: "서술형 도우미" },
   { value: "QUESTION_BANK", label: "문제은행" },
 ];
 

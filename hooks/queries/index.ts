@@ -1,7 +1,5 @@
 export * from "./useAnswerQuery";
 export * from "./useAnswersQuery";
-export * from "./useBoardsQuery";
-export * from "./useBoardScrapStatusQuery";
 export * from "./useFilesQuery";
 export * from "./useLikeStatusQuery";
 export * from "./useMarketQueries";

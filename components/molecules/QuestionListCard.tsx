@@ -18,7 +18,7 @@ interface QuestionListCardProps {
     commentCount?: number;
     images?: string[] | QuestionImage[];
   };
-  onClick: () => void;
+  onClick?: () => void;
   hideStats?: boolean;
 }
 

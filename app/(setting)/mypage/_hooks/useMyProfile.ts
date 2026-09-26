@@ -226,14 +226,9 @@ export const useMyProfile = () => {
     setError(null);
   }, [clearProfile, setError]);
 
-  const setProfileVisibility = useCallback((isPublic: boolean) => {
-    setProfileDetails((current) => ({ ...current, isPublic }));
-  }, []);
-
   return {
     onMyProfile,
     resetProfile,
-    setProfileVisibility,
     isLoading,
     error,
     profile: {

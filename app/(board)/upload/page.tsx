@@ -500,9 +500,7 @@ const UploadPage = () => {
           <div className="shrink-0 border-b border-[#F2F2F2] bg-white">
             <BoardHeader
               title={isEditMode ? "학습자료 수정" : "학습자료 업로드"}
-              showIcon
-              onRightButtonClick={() => router.push("/")}
-              onLeftButtonClick={() => router.push("/board")}
+              onLeftButtonClick={() => router.push("/archive?status=my-study")}
             />
           </div>
 
@@ -582,17 +580,6 @@ const UploadPage = () => {
         <div className="flex min-h-screen flex-col bg-white">
           <BoardHeader
             title={isEditMode ? "학습자료 수정" : "학습자료 업로드"}
-            rightButtonLabel={
-              isSubmitting
-                ? isEditMode
-                  ? "수정 중..."
-                  : "업로드 중..."
-                : isEditMode
-                  ? "수정"
-                  : "업로드"
-            }
-            onRightButtonClick={openConfirmModal}
-            isActive={canSubmit}
             onLeftButtonClick={prevStep}
           />
 
@@ -757,6 +744,22 @@ const UploadPage = () => {
                 </div>
               )}
             </div>
+
+            <div className="mt-6 px-6 pb-4">
+              <SolidButton
+                disabled={!canSubmit}
+                onClick={openConfirmModal}
+                content={
+                  isSubmitting
+                    ? isEditMode
+                      ? "수정 중..."
+                      : "업로드 중..."
+                    : isEditMode
+                      ? "수정하기"
+                      : "업로드하기"
+                }
+              />
+            </div>
           </div>
         </div>
       )}
@@ -790,7 +793,7 @@ const UploadPage = () => {
               </p>
             </div>
             <p className="text-body-medium">
-              내가 올린 학습자료는 마이페이지에서 확인할 수 있어요.
+              내가 올린 학습자료는 아카이브에서 확인할 수 있어요.
             </p>
           </div>
           <div className="mx-6 mb-10 flex flex-col gap-3">
@@ -798,7 +801,7 @@ const UploadPage = () => {
               className="border border-primary text-primary"
               label="내 학습자료 보기"
               variant="teritary"
-              onClick={() => router.push("/archive")}
+              onClick={() => router.push("/archive?status=my-study")}
             />
             <TextButton
               label="다른 학습자료 올리기"

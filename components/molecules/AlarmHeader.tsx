@@ -4,7 +4,6 @@ import { FC, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAtomValue } from "jotai";
-import { UserRound } from "lucide-react";
 
 import { useRouter } from "@/lib/navigation";
 import { unreadCountAtom } from "@/store/notification";
@@ -66,7 +65,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
   return (
     <>
       <header
-        className={`sticky top-0 z-10 flex h-[60px] w-full items-center justify-between border-b-0 bg-white px-6 backdrop-blur ${
+        className={`sticky top-0 z-10 flex w-full items-center justify-between bg-background/95 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 ${
           hideBottomBorder ? "" : "border-b border-border/40"
         }`}
       >
@@ -96,7 +95,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
               }}
               onBlur={() => setOpen(false)}
               placeholder="검색어 입력"
-              className="h-10 w-full rounded-md border border-border bg-background px-3 text-label-medium outline-none focus:ring-2 focus:ring-brand/40"
+              className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-brand/40"
             />
             <button
               type="button"
@@ -141,15 +140,6 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
                   <span className="absolute right-0 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand" />
                 )}
               </div>
-
-              <button
-                type="button"
-                className="flex h-[3.625rem] items-center text-muted-foreground"
-                onClick={() => router.push("/mypage")}
-                aria-label="마이페이지"
-              >
-                <UserRound aria-hidden="true" className="h-7 w-7" />
-              </button>
             </div>
           </>
         )}

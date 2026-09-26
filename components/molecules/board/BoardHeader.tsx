@@ -46,7 +46,7 @@ export const BoardHeader: FC<BoardHeaderProps> = ({
             >
               <img src="/icons/Home.svg" alt="home" width={32} height={32} />
             </Button>
-          ) : (
+          ) : rightButtonLabel ? (
             <TextButton
               label={rightButtonLabel}
               variant="textOnly"
@@ -55,6 +55,8 @@ export const BoardHeader: FC<BoardHeaderProps> = ({
                 isActive ? "text-primary" : "text-gray-800"
               }`}
             />
+          ) : (
+            <div aria-hidden="true" className="h-9 w-9" />
           )}
 
           {boardIconSrc && (

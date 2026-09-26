@@ -1,6 +1,6 @@
 "use client";
 
-type ArchiveTabKey = /*"my-questions" | */ "my-study" | "my-note" | "my-post";
+type ArchiveTabKey = /*"my-questions" | */ "my-study" | "my-note";
 
 import { FC, Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "@/lib/navigation";
@@ -22,11 +22,8 @@ import {
   buildFileUrlMap,
   getFileKey,
   getFilePreviewUrl,
-  isPdfFile,
-  resolveFilePreviewUrl,
 } from "@/lib/shared/filePreview";
 import { getCurrentUserId } from "@/lib/client/auth";
-import { markBoardViewIntent } from "@/lib/client/boardView";
 import { map } from "lodash";
 import { useSubjects } from "@/hooks";
 import { useFilesQuery } from "@/hooks/queries";
@@ -36,11 +33,11 @@ import type {
   WrongNoteListItem,
   WrongNoteListResponse,
 } from "@/types/wrongnote";
+import { Plus, Upload } from "lucide-react";
 
 const TABS: { key: ArchiveTabKey; label: string }[] = [
   { key: "my-study", label: "학습자료" },
   { key: "my-note", label: "오답노트" },
-  { key: "my-post", label: "게시글" },
 ];
 
 const resolveMaterialKey = (value: any, materialId: string | number) => {
@@ -56,9 +53,6 @@ const ArchivePage: FC = () => {
   const { getSubjectMapForChips } = useSubjects();
   const router = useRouter();
   const currentUserId = getCurrentUserId();
-
-  const [myPosts, setMyPosts] = useState<any[]>([]);
-  const [postsLoading, setPostsLoading] = useState(false);
 
   const token = getToken();
 
@@ -125,31 +119,6 @@ const ArchivePage: FC = () => {
     fetchNotes();
   }, [currentStatus]);
 
-  useEffect(() => {
-    if (currentStatus !== "my-post") return;
-
-    const fetchMyPosts = async () => {
-      setPostsLoading(true);
-      try {
-        const raw = await fetchAPI("/api/boards", "GET");
-        const data = raw.data ?? raw;
-
-        const boards = Array.isArray(data) ? data : [];
-        const filtered = boards.filter(
-          (item: any) => Number(item?.userId) === Number(currentUserId),
-        );
-
-        setMyPosts(filtered);
-      } catch {
-        setMyPosts([]);
-      } finally {
-        setPostsLoading(false);
-      }
-    };
-
-    fetchMyPosts();
-  }, [currentStatus, currentUserId]);
-
   const filteredMaterials = useMemo(() => {
     if (selectedSubjects.length === 0) return myMaterials;
 
@@ -168,21 +137,6 @@ const ArchivePage: FC = () => {
   }, [wrongNotes, selectedSubjects]);
 
   const previewFileKeys = useMemo(() => {
-    if (currentStatus === "my-post") {
-      return [
-        ...new Set(
-          myPosts.flatMap((item: any) =>
-            Array.isArray(item?.images)
-              ? item.images
-                  .filter((file: any) => !getFilePreviewUrl(file))
-                  .map((file: any) => getFileKey(file))
-                  .filter(Boolean)
-              : [],
-          ),
-        ),
-      ];
-    }
-
     if (currentStatus === "my-study") {
       return [
         ...new Set(
@@ -199,7 +153,7 @@ const ArchivePage: FC = () => {
     }
 
     return [];
-  }, [currentStatus, myPosts, filteredMaterials]);
+  }, [currentStatus, filteredMaterials]);
 
   const { data: previewFilesData } = useFilesQuery({ keys: previewFileKeys });
 
@@ -215,7 +169,7 @@ const ArchivePage: FC = () => {
 
   const allSubjects = useMemo(
     () => ({
-      "과목 선택": [...new Set(Object.values(subjectMap).flat())],
+      "과목 필터": [...new Set(Object.values(subjectMap).flat())],
     }),
     [subjectMap],
   );
@@ -228,11 +182,6 @@ const ArchivePage: FC = () => {
 
   const pickQuestionId = (item: any): number | null => {
     return item?.question?.id ?? item?.questionId ?? item?.id ?? null;
-  };
-
-  const handleBoardClick = (boardId: string | number) => {
-    markBoardViewIntent(boardId);
-    router.push(`/board/${boardId}`);
   };
 
   const renderQuestionList = (list: any[] | undefined | null) => {
@@ -274,74 +223,6 @@ const ArchivePage: FC = () => {
                   onClick={() => {
                     if (qid) router.push(`/question/${qid}`);
                     else alert("질문 ID를 찾을 수 없습니다.");
-                  }}
-                />
-                <Separator className="last:hidden" />
-              </Fragment>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
-  const renderBoardList = (list: any[] | undefined | null) => {
-    if (!list || list.length === 0) {
-      return (
-        <div className="flex h-full items-center justify-center pb-[6.875rem]">
-          <div className="text-border">아직 작성한 게시글이 없습니다.</div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="mx-6 py-5 pb-[6.875rem]">
-        <div className="flex flex-col gap-5">
-          {map(list, (item) => {
-            const boardId = item?.id;
-
-            const attachments = Array.isArray(item?.images) ? item.images : [];
-
-            const imageUrls = attachments
-              .filter((file: any) => !isPdfFile(file))
-              .map((file: any) =>
-                resolveFilePreviewUrl(file, previewImageUrlMap),
-              )
-              .filter(Boolean);
-
-            const hasPdf = attachments.some((file: any) => isPdfFile(file));
-
-            const previewContent =
-              typeof item?.content === "string" && item.content.trim()
-                ? item.content.trim()
-                : hasPdf
-                  ? "PDF 첨부"
-                  : imageUrls.length > 0
-                    ? "이미지 첨부"
-                    : "첨부 파일 없음";
-
-            const board = {
-              id: String(boardId ?? ""),
-              title: item?.title ?? "제목 없음",
-              content: previewContent,
-              createdAt: formatDiffDate(
-                item?.createdAt ?? new Date().toISOString(),
-              ),
-              likeCount: item?.likeCount ?? 0,
-              answerCount: 0,
-              subjectName: item?.categoryName ?? "",
-              viewCount: item?.viewCount ?? 0,
-              userNickname: item?.nickname ?? item?.userNickname ?? "익명",
-              images: imageUrls,
-            };
-
-            return (
-              <Fragment key={boardId ?? Math.random()}>
-                <QuestionListCard
-                  question={board}
-                  onClick={() => {
-                    if (boardId) handleBoardClick(boardId);
-                    else alert("게시글 ID를 찾을 수 없습니다.");
                   }}
                 />
                 <Separator className="last:hidden" />
@@ -415,12 +296,6 @@ const ArchivePage: FC = () => {
       </div>
     );
   };
-
-  const renderPreparingText = (text: string) => (
-    <div className="flex h-full items-center justify-center pb-[6.875rem]">
-      <div className="text-border">{text}</div>
-    </div>
-  );
 
   return (
     <div className="flex h-screen flex-col">
@@ -513,17 +388,7 @@ const ArchivePage: FC = () => {
                 </button>
               </div>
             )
-          ) : currentStatus === "my-post" ? (
-            postsLoading ? (
-              <div className="flex h-full items-center justify-center">
-                <div className="text-border">불러오는 중...</div>
-              </div>
-            ) : (
-              renderBoardList(myPosts)
-            )
-          ) : (
-            renderPreparingText("게시글 목록은 준비 중입니다.")
-          )
+          ) : null
         }
       </div>
 
@@ -537,6 +402,24 @@ const ArchivePage: FC = () => {
           </button>
         </div>
       )} */}
+
+      {currentStatus === "my-study" && (
+        <FloatingActionButton
+          mainIcon={<Plus aria-hidden="true" className="h-6 w-6" />}
+          size="lg"
+          bottom={152}
+          right={24}
+          expandDirection="up"
+          actions={[
+            {
+              id: "upload-material",
+              label: "학습자료 올리기",
+              icon: <Upload aria-hidden="true" className="h-5 w-5" />,
+              onClick: () => router.push("/upload"),
+            },
+          ]}
+        />
+      )}
 
       {currentStatus === "my-note" && (
         <FloatingActionButton

@@ -113,7 +113,7 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["material", materialId] });
       queryClient.invalidateQueries({ queryKey: ["materials"] });
-      router.push("/board?status=study");
+      router.push("/market");
     },
     onError: (error) => {
       console.error("학습자료 삭제 실패:", error);

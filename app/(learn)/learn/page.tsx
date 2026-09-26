@@ -42,12 +42,6 @@ const previewItems = [
     href: "/learning/cbt",
     iconSrc: "/CBT.svg",
   },
-  {
-    title: "서술형 도우미",
-    description: "키워드와 이미지로 정리하는 암기 보조",
-    href: "/learn/image-maker",
-    iconSrc: "/Image2.svg",
-  },
 ];
 
 function ToolIcon({ src }: { src: string }) {
@@ -198,8 +192,8 @@ export default function LearnPage() {
             9월 전격 출시!
           </h1>
           <p className="mt-4 text-body-large text-muted-foreground">
-            약대생의 복습, 기출 풀이, 서술형 암기를 한 흐름으로 이어주는 학습
-            탭을 준비하고 있어요.
+            약대생의 복습과 기출 풀이를 한 흐름으로 이어주는 학습 탭을
+            준비하고 있어요.
           </p>
         </section>
 

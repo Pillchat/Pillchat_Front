@@ -3,7 +3,6 @@
 import {
   type CSSProperties,
   type FC,
-  Fragment,
   type ReactNode,
   useEffect,
   useMemo,
@@ -12,41 +11,16 @@ import {
 } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Flame, Pencil, X } from "lucide-react";
-import {
-  BottomNavbar,
-  AlarmHeader,
-  QuestionListCard,
-} from "@/components/molecules";
+import { BottomNavbar, AlarmHeader } from "@/components/molecules";
 import { Toast } from "@/components/atoms";
 import { useRouter } from "@/lib/navigation";
 import { getValidAccessToken } from "@/lib/client/fetch";
-import {
-  buildFileUrlMap,
-  getFileKey,
-  getFilePreviewUrl,
-  isPdfFile,
-  resolveFilePreviewUrl,
-} from "@/lib/shared/filePreview";
-import { formatDiffDate } from "@/lib/shared/date";
-import {
-  getRememberedBoardViewCounts,
-  markBoardViewIntent,
-} from "@/lib/client/boardView";
-import { getCurrentUserInfo } from "@/lib/client/auth";
 import {
   calculateDday,
   formatDday,
   getNextJanuaryFourthFridayDate,
 } from "@/lib/shared/dday";
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { useAtomValue } from "jotai";
-import { onlineCountAtom } from "@/store/presence";
-import {
-  useBoardsQuery,
-  useFilesQuery,
-  useMarketItemsQuery,
-} from "@/hooks/queries";
+import { useMarketItemsQuery } from "@/hooks/queries";
 import type { MarketItemCard } from "@/types/market";
 
 type DDayItem = {
@@ -286,31 +260,6 @@ const markNationalExamCacheRefreshFailed = () => {
   }
 };
 
-const getBoardCategoryText = (item: any) =>
-  String(item?.category ?? item?.categoryName ?? item?.boardType ?? "").trim();
-
-const hasCategoryAlias = (item: any, aliases: string[]) => {
-  const category = getBoardCategoryText(item);
-  if (!category) return false;
-  return aliases.some(
-    (alias) => category === alias || category.includes(alias),
-  );
-};
-
-const isFreeBoard = (item: any) => {
-  const category = getBoardCategoryText(item);
-  if (!category) return true;
-  return hasCategoryAlias(item, ["FREE", "자유", "자유게시판"]);
-};
-
-const getCommentCount = (item: any) =>
-  item?.answerCount ??
-  item?.commentCount ??
-  item?.commentsCount ??
-  item?.replyCount ??
-  item?.repliesCount ??
-  0;
-
 const HomeSection: FC<{
   title: string;
   subtitle?: string;
@@ -395,22 +344,9 @@ const Home: FC = () => {
     id: number;
     message: string;
   } | null>(null);
-  const [viewCountOverrides, setViewCountOverrides] = useState<
-    Record<string, number>
-  >({});
   const ddayListRef = useRef<HTMLDivElement | null>(null);
   const newDdayDraftListRef = useRef<HTMLDivElement | null>(null);
-  const userInfo = getCurrentUserInfo();
-  const onlineCount = useAtomValue(onlineCountAtom);
 
-  const {
-    data: boards,
-    isLoading: isBoardsLoading,
-    isError: isBoardsError,
-    refetch: refetchBoards,
-  } = useBoardsQuery("latest", {
-    enabled: isAuthenticated === true,
-  });
   const { data: marketData, isLoading: isMarketLoading } = useMarketItemsQuery(
     { page: 0, size: 4, sort: ["createdAt,desc"] },
     { enabled: isAuthenticated === true },
@@ -555,37 +491,9 @@ const Home: FC = () => {
 
   useEffect(() => {
     if (isAuthenticated === false) {
-      router.replace("/intro");
+      router.replace("/login");
     }
   }, [isAuthenticated, router]);
-
-  useEffect(() => {
-    const syncRememberedViewCounts = () => {
-      setViewCountOverrides(getRememberedBoardViewCounts());
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        syncRememberedViewCounts();
-      }
-    };
-
-    syncRememberedViewCounts();
-    window.addEventListener("pageshow", syncRememberedViewCounts);
-    window.addEventListener("popstate", syncRememberedViewCounts);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener("pageshow", syncRememberedViewCounts);
-      window.removeEventListener("popstate", syncRememberedViewCounts);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
-
-  const handleBoardClick = (boardId: string) => {
-    markBoardViewIntent(boardId);
-    router.push(`/board/${boardId}`);
-  };
 
   const handleCertifyStudy = () => {
     if (isStudyCertified) return;
@@ -698,166 +606,7 @@ const Home: FC = () => {
     return calculateDday(activeDday.date);
   }, [activeDday]);
 
-  const getPreviewBoards = (kind: "free" | "tips" | "reviews") => {
-    const aliases = {
-      free: [],
-      tips: ["TIP", "TIPS", "꿀팁", "꿀팁게시판", "꿀팁 게시판"],
-      reviews: ["REVIEW", "REVIEWS", "후기", "후기게시판", "후기 게시판"],
-    }[kind];
-
-    if (kind === "free") {
-      return rawBoardList.filter(isFreeBoard).slice(0, 3);
-    }
-
-    return rawBoardList
-      .filter((item: any) => hasCategoryAlias(item, aliases))
-      .slice(0, 3);
-  };
-
-  const rawBoardList = useMemo(() => {
-    if (Array.isArray(boards)) return boards;
-    if (Array.isArray(boards?.data)) return boards.data;
-    return [];
-  }, [boards]);
-
   const marketPreviewItems = marketData?.content ?? [];
-
-  const boardList = useMemo(() => {
-    return [...rawBoardList]
-      .sort((a: any, b: any) => {
-        const left = new Date(a?.createdAt ?? 0).getTime();
-        const right = new Date(b?.createdAt ?? 0).getTime();
-        return right - left;
-      })
-      .slice(0, 3);
-  }, [rawBoardList]);
-
-  const freePreviewBoards = useMemo(
-    () => getPreviewBoards("free"),
-    [rawBoardList],
-  );
-  const tipsPreviewBoards = useMemo(
-    () => getPreviewBoards("tips"),
-    [rawBoardList],
-  );
-  const reviewPreviewBoards = useMemo(
-    () => getPreviewBoards("reviews"),
-    [rawBoardList],
-  );
-
-  const boardPreviewItems = useMemo(
-    () => [
-      ...freePreviewBoards,
-      ...tipsPreviewBoards,
-      ...reviewPreviewBoards,
-      ...boardList,
-    ],
-    [boardList, freePreviewBoards, tipsPreviewBoards, reviewPreviewBoards],
-  );
-
-  const boardImageKeys = useMemo(() => {
-    return [
-      ...new Set(
-        boardPreviewItems.flatMap((item: any) =>
-          Array.isArray(item?.images)
-            ? item.images
-                .filter(
-                  (image: any) =>
-                    !isPdfFile(image) && !getFilePreviewUrl(image),
-                )
-                .map((image: any) => getFileKey(image))
-                .filter(Boolean)
-            : [],
-        ),
-      ),
-    ];
-  }, [boardPreviewItems]);
-
-  const { data: boardFilesData } = useFilesQuery({
-    keys: isAuthenticated === true ? boardImageKeys : [],
-  });
-
-  const boardImageUrlMap = useMemo(
-    () => buildFileUrlMap(boardImageKeys, boardFilesData),
-    [boardFilesData, boardImageKeys],
-  );
-
-  const renderBoardPreviewRows = (items: any[], emptyText: string) => {
-    if (isBoardsLoading) {
-      return (
-        <div className="space-y-3">
-          {[...Array(2)].map((_, index) => (
-            <div key={index} className="animate-pulse">
-              <div className="h-20 rounded-lg bg-primary-980" />
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    if (isBoardsError) {
-      return (
-        <Card className="p-5 text-center">
-          <p className="mb-3 text-body-medium text-muted-foreground">
-            게시글을 불러오지 못했습니다
-          </p>
-          <button
-            type="button"
-            onClick={() => void refetchBoards()}
-            className="text-label-medium text-primary hover:text-primary-800"
-          >
-            다시 시도
-          </button>
-        </Card>
-      );
-    }
-
-    if (items.length === 0) {
-      return (
-        <div className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-body-medium text-muted-foreground">
-          {emptyText}
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        {items.map((board: any, index: number) => {
-          const imageUrls = Array.isArray(board?.images)
-            ? board.images
-                .filter((image: any) => !isPdfFile(image))
-                .map((image: any) =>
-                  resolveFilePreviewUrl(image, boardImageUrlMap),
-                )
-                .filter(Boolean)
-            : [];
-
-          const cardData = {
-            ...board,
-            viewCount: Math.max(
-              Number(board?.viewCount ?? 0),
-              viewCountOverrides[String(board?.id ?? "")] ?? 0,
-            ),
-            userNickname: board?.userNickname ?? board?.nickname ?? "익명",
-            subjectName: board?.subjectName ?? board?.categoryName ?? "",
-            answerCount: getCommentCount(board),
-            createdAt: formatDiffDate(board?.createdAt),
-            images: imageUrls,
-          };
-
-          return (
-            <Fragment key={board.id}>
-              <QuestionListCard
-                question={cardData}
-                onClick={() => handleBoardClick(String(board.id))}
-              />
-              {index < items.length - 1 && <Separator className="mt-4" />}
-            </Fragment>
-          );
-        })}
-      </div>
-    );
-  };
 
   if (isAuthenticated === null) {
     return <div>Loading...</div>;
@@ -890,19 +639,8 @@ const Home: FC = () => {
                   {isDdayReady ? formatDday(dday) : "-"}
                 </div>
                 <p className="mt-2 text-body-small text-primary-foreground/90">
-                  {activeDday ? formatExamDate(activeDday.date) : "계산 중"} ·
-                  {activeDday?.source === "api"
-                    ? "국시원 API 기준"
-                    : "직접 설정"}{" "}
-                  {onlineCount === null ? (
-                    " · 접속 인원 확인 중"
-                  ) : (
-                    <>
-                      {" "}
-                      · 현재 <b>{onlineCount.toLocaleString("ko-KR")}명</b>{" "}
-                      접속중
-                    </>
-                  )}
+                  {activeDday ? formatExamDate(activeDday.date) : "계산 중"}
+                  {activeDday?.source === "api" ? " · 국시원 API 기준" : ""}
                 </p>
               </div>
               <button
@@ -1017,39 +755,6 @@ const Home: FC = () => {
                 );
               })}
             </div>
-          )}
-        </HomeSection>
-
-        <HomeSection
-          title="야매 팁으로 외우는 약물학"
-          subtitle="기발한 암기법 모음"
-          href="/tips"
-        >
-          {renderBoardPreviewRows(
-            tipsPreviewBoards,
-            "아직 올라온 꿀팁 게시글이 없습니다.",
-          )}
-        </HomeSection>
-
-        <HomeSection
-          title="자유 게시판"
-          subtitle="동기들과 자유롭게 나누는 이야기"
-          href="/board"
-        >
-          {renderBoardPreviewRows(
-            freePreviewBoards,
-            "아직 올라온 자유 게시글이 없습니다.",
-          )}
-        </HomeSection>
-
-        <HomeSection
-          title="실습 가기 전, 날 것의 후기부터"
-          subtitle="익명으로 안전하게"
-          href="/reviews"
-        >
-          {renderBoardPreviewRows(
-            reviewPreviewBoards,
-            "아직 올라온 후기 게시글이 없습니다.",
           )}
         </HomeSection>
 

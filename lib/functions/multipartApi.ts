@@ -55,29 +55,6 @@ export async function uploadProfile(nickname: string, image?: File) {
   return fetchWithFormData("/api/profile/upload", "PUT", fd);
 }
 
-// ─── 게시글 ──────────────────────────────────────────────────
-
-/** 게시글 생성 (multipart) */
-export async function uploadBoard(data: {
-  title: string;
-  content: string;
-  category: string;
-  isAnonymous?: boolean;
-  images?: File[];
-  pdf?: File;
-}) {
-  const fd = new FormData();
-  fd.append("title", data.title);
-  fd.append("content", data.content);
-  fd.append("category", data.category);
-  if (data.isAnonymous !== undefined) {
-    fd.append("isAnonymous", String(data.isAnonymous));
-  }
-  data.images?.forEach((file) => fd.append("images", file));
-  if (data.pdf) fd.append("pdf", data.pdf);
-  return fetchWithFormData("/api/boards/upload", "POST", fd);
-}
-
 // ─── 학습자료 ────────────────────────────────────────────────
 
 /** 학습자료 생성 (multipart) */
@@ -99,7 +76,7 @@ export async function uploadMaterial(data: {
 
 // ─── 대형 파일 업로드 (10MB 초과) ───────────────────────────
 
-type RefType = "QUESTION" | "ANSWER" | "PROFILE" | "MATERIAL" | "BOARD";
+type RefType = "QUESTION" | "ANSWER" | "PROFILE" | "MATERIAL";
 
 /** 대형 파일 업로드: init → S3 PUT → complete */
 export async function uploadLargeFile(file: File, refType: RefType) {

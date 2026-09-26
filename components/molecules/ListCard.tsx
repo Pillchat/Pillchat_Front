@@ -2,7 +2,7 @@ import { FC } from "react";
 import { IconWithCount, PharmMoney, Image } from "../atoms";
 
 export const ListCard: FC<{
-  onClick: () => void;
+  onClick?: () => void;
   title: string;
   content: string;
   createdAt: string;
@@ -25,7 +25,7 @@ export const ListCard: FC<{
   hideStats = false,
 }) => {
   return (
-    <div onClick={onClick} className="cursor-pointer">
+    <div onClick={onClick} className={onClick ? "cursor-pointer" : undefined}>
       <div
         className={`flex gap-3 ${image && image.length > 0 ? "items-start" : ""}`}
       >
