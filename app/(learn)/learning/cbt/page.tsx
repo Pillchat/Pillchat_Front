@@ -555,6 +555,7 @@ export default function CbtPracticePage() {
   const [highlightToolMode, setHighlightToolMode] =
     useState<HighlightToolMode>("off");
   const [viewportWidth, setViewportWidth] = useState(1024);
+  const isCompact = viewportWidth < 1024;
   const [listOpen, setListOpen] = useState(false);
   const [listFilter, setListFilter] = useState<ListFilter>("all");
   const [submitOpen, setSubmitOpen] = useState(false);
@@ -1376,21 +1377,25 @@ export default function CbtPracticePage() {
   }
 
   if (stage === "device-check" && preparedSet) {
-    const ready = !isPortrait && deviceChecks.readable && deviceChecks.touch;
+    const supportedOrientation = isCompact || !isPortrait;
+    const ready =
+      supportedOrientation && deviceChecks.readable && deviceChecks.touch;
     return (
       <FlowPage
         title="기기 확인"
         step="2 / 4"
         onBack={() => setStage("exam-info")}
       >
-        {isPortrait && <RotateNotice />}
+        {isPortrait && !isCompact && <RotateNotice />}
         <CheckRow
-          checked={!isPortrait}
-          title="가로 모드"
+          checked={supportedOrientation}
+          title={isCompact ? "모바일 화면" : "가로 모드"}
           description={
-            isPortrait
-              ? "패드를 가로로 돌려 주세요."
-              : "가로 화면이 확인됐어요."
+            isCompact
+              ? "현재 화면 크기에 맞춘 모바일 응시 화면을 사용합니다."
+              : isPortrait
+                ? "패드를 가로로 돌려 주세요."
+                : "가로 화면이 확인됐어요."
           }
           readOnly
         />
@@ -1594,26 +1599,35 @@ export default function CbtPracticePage() {
       : [currentQuestion];
 
   return (
-    <main className="h-dvh min-h-[640px] min-w-[1024px] overflow-hidden bg-[#f7f7f7] text-foreground">
-      <header className="fixed inset-x-0 top-0 z-40 h-[60px] border-b border-border bg-white">
-        <div className="grid h-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 px-5">
-          <div className="flex min-w-0 items-center gap-3">
+    <main className="h-dvh min-w-0 overflow-hidden bg-[#f7f7f7] text-foreground lg:min-h-[640px]">
+      <header className="fixed inset-x-0 top-0 z-40 h-[calc(60px+env(safe-area-inset-top))] border-b border-border bg-white pt-[env(safe-area-inset-top)]">
+        <div className="grid h-[60px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 lg:gap-4 lg:px-5">
+          <div className="flex min-w-0 items-center gap-2 lg:gap-3">
             <button
               type="button"
               onClick={() => setExitOpen(true)}
               aria-label="시험 나가기"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border lg:h-11 lg:w-11"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <div className="min-w-0">
+            <div className="hidden min-w-0 min-[480px]:block">
               <p className="truncate text-sm font-extrabold">{attempt.title}</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {attempt.session.title} · 현재 {currentQuestionIndex + 1}번
               </p>
             </div>
           </div>
-          {isPortrait ? (
+          {isCompact ? (
+            <button
+              type="button"
+              onClick={() => openQuestionList("all")}
+              className="h-10 rounded-xl bg-gray-100 px-3 text-xs font-extrabold"
+              aria-label="전체 문제 목록 열기"
+            >
+              {currentQuestionIndex + 1}/{attempt.questions.length}
+            </button>
+          ) : isPortrait ? (
             <span className="rounded-full bg-amber-100 px-3 py-2 text-xs font-extrabold text-amber-900">
               가로 모드 권장
             </span>
@@ -1686,16 +1700,18 @@ export default function CbtPracticePage() {
             </div>
           )}
           <div className="flex items-center justify-end gap-3">
-            {!isPortrait && <SaveStateBadge status={saveStatus} />}
+            {!isCompact && !isPortrait && (
+              <SaveStateBadge status={saveStatus} />
+            )}
             <div
               className={cn(
-                "flex min-w-[9.5rem] items-center gap-2 rounded-xl border px-3 py-2",
+                "flex min-w-[7.25rem] items-center gap-2 rounded-xl border px-2 py-1.5 lg:min-w-[9.5rem] lg:px-3 lg:py-2",
                 remainingSec <= 300
                   ? "border-red-300 bg-red-50 text-destructive"
                   : "border-border bg-white",
               )}
             >
-              <Clock3 className="h-5 w-5" />
+              <Clock3 className="hidden h-5 w-5 sm:block" />
               <div>
                 <p className="text-[0.6875rem] font-bold">
                   {remainingSec <= 300 ? "5분 이하" : "남은시간"}
@@ -1709,8 +1725,8 @@ export default function CbtPracticePage() {
         </div>
       </header>
 
-      {isPortrait && (
-        <div className="fixed inset-x-0 top-[60px] z-30 flex h-12 items-center justify-center gap-2 bg-amber-100 text-sm font-bold text-amber-900">
+      {isPortrait && !isCompact && (
+        <div className="fixed inset-x-0 top-[calc(60px+env(safe-area-inset-top))] z-30 flex h-12 items-center justify-center gap-2 bg-amber-100 text-sm font-bold text-amber-900">
           <RotateCcw className="h-4 w-4" />
           패드를 가로로 돌리면 더 편하게 응시할 수 있어요. 답안과 시간은
           유지됩니다.
@@ -1719,8 +1735,10 @@ export default function CbtPracticePage() {
 
       <div
         className={cn(
-          "fixed inset-x-0 bottom-[64px] top-[60px] grid grid-cols-[minmax(0,1fr)_280px] min-[1180px]:grid-cols-[minmax(0,1fr)_304px] min-[1280px]:grid-cols-[minmax(0,1fr)_320px]",
-          isPortrait && "top-[108px]",
+          "fixed inset-x-0 bottom-[calc(120px+env(safe-area-inset-bottom))] top-[calc(60px+env(safe-area-inset-top))] grid grid-cols-1 lg:bottom-[calc(64px+env(safe-area-inset-bottom))] lg:grid-cols-[minmax(0,1fr)_280px] min-[1180px]:grid-cols-[minmax(0,1fr)_304px] min-[1280px]:grid-cols-[minmax(0,1fr)_320px]",
+          isPortrait &&
+            !isCompact &&
+            "top-[calc(108px+env(safe-area-inset-top))]",
         )}
       >
         <section className="flex min-w-0 flex-col overflow-hidden">
@@ -1748,7 +1766,9 @@ export default function CbtPracticePage() {
                   }}
                   className={cn(
                     "h-full min-w-0 overflow-y-auto",
-                    effectiveLayoutMode === "single" ? "p-6" : "p-1",
+                    effectiveLayoutMode === "single"
+                      ? "p-3 sm:p-4 lg:p-6"
+                      : "p-1",
                   )}
                 >
                   <QuestionPane
@@ -1789,7 +1809,7 @@ export default function CbtPracticePage() {
         </section>
 
         <aside
-          className="overflow-hidden border-l border-border bg-white"
+          className="hidden overflow-hidden border-l border-border bg-white lg:block"
           aria-label="답안 표기란"
         >
           <div className="flex h-16 items-center justify-between border-b border-border px-4">
@@ -1889,77 +1909,156 @@ export default function CbtPracticePage() {
         </aside>
       </div>
 
-      <footer className="fixed inset-x-0 bottom-0 z-40 h-[64px] border-t border-border bg-white px-4">
-        <div className="grid h-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-          <div className="flex gap-2">
-            <NavButton
-              label="이전"
-              icon={<ChevronLeft className="h-4 w-4" />}
-              disabled={currentQuestionIndex === 0}
-              onClick={() =>
-                goToQuestion(attempt.questions[currentQuestionIndex - 1].id)
-              }
-            />
-            <NavButton
-              label="다음"
-              icon={<ChevronRight className="h-4 w-4" />}
-              iconAfter
-              disabled={currentQuestionIndex === attempt.questions.length - 1}
-              onClick={() =>
-                goToQuestion(attempt.questions[currentQuestionIndex + 1].id)
-              }
-            />
+      <footer
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white px-3 pb-[env(safe-area-inset-bottom)] lg:px-4",
+          isCompact
+            ? "h-[calc(120px+env(safe-area-inset-bottom))]"
+            : "h-[calc(64px+env(safe-area-inset-bottom))]",
+        )}
+      >
+        {isCompact ? (
+          <div className="flex h-[120px] flex-col justify-center gap-2 py-2">
+            <div className="grid grid-cols-[2.75rem_minmax(0,1fr)_auto_2.75rem] items-center gap-2">
+              <button
+                type="button"
+                aria-label="이전 문제"
+                disabled={currentQuestionIndex === 0}
+                onClick={() =>
+                  goToQuestion(attempt.questions[currentQuestionIndex - 1].id)
+                }
+                className="flex h-11 w-11 items-center justify-center rounded-xl border border-border disabled:opacity-40"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <span className="truncate text-center text-xs font-extrabold">
+                현재 {currentQuestionIndex + 1} / {attempt.questions.length}
+              </span>
+              <button
+                type="button"
+                onClick={() => openQuestionList("all")}
+                className="h-11 rounded-xl border border-border px-3 text-xs font-bold"
+              >
+                문제 목록
+              </button>
+              <button
+                type="button"
+                aria-label="다음 문제"
+                disabled={currentQuestionIndex === attempt.questions.length - 1}
+                onClick={() =>
+                  goToQuestion(attempt.questions[currentQuestionIndex + 1].id)
+                }
+                className="flex h-11 w-11 items-center justify-center rounded-xl border border-border disabled:opacity-40"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="grid grid-cols-[1fr_1fr_1.35fr] gap-2">
+              <button
+                type="button"
+                disabled={locked}
+                onClick={() => setCalculatorOpen(true)}
+                className="flex h-11 items-center justify-center gap-1 rounded-xl border border-border text-xs font-bold disabled:opacity-40"
+              >
+                <Calculator className="h-4 w-4" />
+                계산기
+              </button>
+              <button
+                type="button"
+                disabled={locked}
+                onClick={() => setDrawingOpen(true)}
+                className="flex h-11 items-center justify-center gap-1 rounded-xl border border-border text-xs font-bold disabled:opacity-40"
+              >
+                <Pencil className="h-4 w-4" />
+                그림판
+              </button>
+              <button
+                type="button"
+                disabled={locked}
+                onClick={() => setSubmitOpen(true)}
+                className="h-11 rounded-xl bg-foreground px-3 text-xs font-extrabold text-white disabled:opacity-50"
+              >
+                답안 제출
+              </button>
+            </div>
           </div>
-          <div className="flex min-w-0 items-center justify-center gap-2">
-            <span className="rounded-full bg-gray-100 px-3 py-2 text-xs font-extrabold">
-              현재 {currentQuestionIndex + 1} / {attempt.questions.length}
-            </span>
-            <FilterButton
-              label="전체 문제"
-              count={summary.total}
-              onClick={() => openQuestionList("all")}
-            />
-            <FilterButton
-              label="체크 문제"
-              count={summary.flagged}
-              onClick={() => openQuestionList("flagged")}
-            />
-            <FilterButton
-              label="안 푼 문제"
-              count={summary.unanswered}
-              accent={summary.unanswered > 0}
-              onClick={() => openQuestionList("unanswered")}
-            />
+        ) : (
+          <div className="grid h-[64px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+            <div className="flex gap-2">
+              <NavButton
+                label="이전"
+                icon={<ChevronLeft className="h-4 w-4" />}
+                disabled={currentQuestionIndex === 0}
+                onClick={() =>
+                  goToQuestion(attempt.questions[currentQuestionIndex - 1].id)
+                }
+              />
+              <NavButton
+                label="다음"
+                icon={<ChevronRight className="h-4 w-4" />}
+                iconAfter
+                disabled={currentQuestionIndex === attempt.questions.length - 1}
+                onClick={() =>
+                  goToQuestion(attempt.questions[currentQuestionIndex + 1].id)
+                }
+              />
+            </div>
+            <div className="flex min-w-0 items-center justify-center gap-2">
+              <span className="rounded-full bg-gray-100 px-3 py-2 text-xs font-extrabold">
+                현재 {currentQuestionIndex + 1} / {attempt.questions.length}
+              </span>
+              <FilterButton
+                label="전체 문제"
+                count={summary.total}
+                onClick={() => openQuestionList("all")}
+              />
+              <FilterButton
+                label="체크 문제"
+                count={summary.flagged}
+                onClick={() => openQuestionList("flagged")}
+              />
+              <FilterButton
+                label="안 푼 문제"
+                count={summary.unanswered}
+                accent={summary.unanswered > 0}
+                onClick={() => openQuestionList("unanswered")}
+              />
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <ToolButton
+                icon={<Calculator className="h-4 w-4" />}
+                label="계산기"
+                disabled={locked}
+                onClick={() => setCalculatorOpen(true)}
+              />
+              <ToolButton
+                icon={<Pencil className="h-4 w-4" />}
+                label="그림판"
+                disabled={locked}
+                onClick={() => setDrawingOpen(true)}
+              />
+              <button
+                type="button"
+                disabled={locked}
+                onClick={() => setSubmitOpen(true)}
+                className="h-11 rounded-xl bg-foreground px-5 text-sm font-extrabold text-white disabled:opacity-50"
+              >
+                답안 제출
+              </button>
+            </div>
           </div>
-          <div className="flex items-center justify-end gap-2">
-            <ToolButton
-              icon={<Calculator className="h-4 w-4" />}
-              label="계산기"
-              disabled={locked}
-              onClick={() => setCalculatorOpen(true)}
-            />
-            <ToolButton
-              icon={<Pencil className="h-4 w-4" />}
-              label="그림판"
-              disabled={locked}
-              onClick={() => setDrawingOpen(true)}
-            />
-            <button
-              type="button"
-              disabled={locked}
-              onClick={() => setSubmitOpen(true)}
-              className="h-11 rounded-xl bg-foreground px-5 text-sm font-extrabold text-white disabled:opacity-50"
-            >
-              답안 제출
-            </button>
-          </div>
-        </div>
+        )}
       </footer>
 
       {undoAnswer && (
         <div
           role="status"
-          className="fixed bottom-[76px] left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-xl bg-foreground px-4 py-3 text-sm font-bold text-white shadow-xl"
+          className={cn(
+            "fixed left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-xl bg-foreground px-4 py-3 text-sm font-bold text-white shadow-xl",
+            isCompact
+              ? "bottom-[calc(132px+env(safe-area-inset-bottom))]"
+              : "bottom-[calc(76px+env(safe-area-inset-bottom))]",
+          )}
         >
           <span>선택 답을 지웠어요.</span>
           <button
@@ -2095,7 +2194,7 @@ function HubPage({
       activeAttempt.status,
     );
   return (
-    <main className="min-h-dvh bg-[#f7f7f7] px-6 py-8 text-foreground">
+    <main className="min-h-dvh bg-[#f7f7f7] px-4 pb-8 pt-[calc(2rem+env(safe-area-inset-top))] text-foreground sm:px-6">
       <div className="mx-auto max-w-[1024px]">
         <header className="flex items-center gap-3">
           <Link
@@ -2107,14 +2206,16 @@ function HubPage({
           </Link>
           <div>
             <p className="text-sm font-bold text-primary">PillChat Practice</p>
-            <h1 className="text-2xl font-extrabold">약사국시 CBT 실전 연습</h1>
+            <h1 className="text-xl font-extrabold sm:text-2xl">
+              약사국시 CBT 실전 연습
+            </h1>
           </div>
         </header>
-        <section className="mt-7 rounded-2xl border border-primary-900 bg-primary-980 p-6">
+        <section className="mt-7 rounded-2xl border border-primary-900 bg-primary-980 p-5 sm:p-6">
           <p className="text-sm font-bold text-primary">
-            패드 가로 화면에 최적화
+            모바일·패드 화면에 최적화
           </p>
-          <h2 className="mt-2 text-3xl font-extrabold leading-tight">
+          <h2 className="mt-2 text-2xl font-extrabold leading-tight sm:text-3xl">
             실제 시험 흐름으로
             <br />
             시간 관리와 답안 선택을 연습해요
@@ -2144,7 +2245,7 @@ function HubPage({
             <ChevronRight className="h-5 w-5" />
           </button>
         )}
-        <div className="mt-5 grid grid-cols-2 gap-4">
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <ModeCard
             icon={<BookOpenCheck className="h-6 w-6" />}
             title="교시별 연습"
@@ -2160,7 +2261,7 @@ function HubPage({
             onClick={onTutorial}
           />
         </div>
-        <section className="mt-5 grid grid-cols-2 gap-4">
+        <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <button
             type="button"
             onClick={onFull}
@@ -2198,7 +2299,7 @@ function HubPage({
         {recentResult && (
           <section className="mt-5 rounded-2xl border border-border bg-white p-5">
             <p className="text-sm font-bold text-primary">최근 결과</p>
-            <div className="mt-2 flex items-end justify-between">
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <strong className="text-3xl font-extrabold">
                 {recentResult.score}점
               </strong>
@@ -2253,7 +2354,7 @@ function SessionSelectPage({
           {error}
         </div>
       )}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {SESSION_OPTIONS.map((session) => (
           <button
             key={session.id}
@@ -2304,24 +2405,24 @@ function ResultPage({
   onReview: (filter: "wrong" | "unknown") => void;
 }) {
   return (
-    <main className="min-h-dvh bg-[#f7f7f7] px-6 py-8 text-foreground">
+    <main className="min-h-dvh bg-[#f7f7f7] px-4 pb-8 pt-[calc(2rem+env(safe-area-inset-top))] text-foreground sm:px-6">
       <div className="mx-auto max-w-[960px]">
         <p className="text-sm font-bold text-primary">
           {full ? "전체 실전 종합 결과" : "교시 결과"}
         </p>
-        <h1 className="mt-2 text-3xl font-extrabold">
+        <h1 className="mt-2 text-2xl font-extrabold sm:text-3xl">
           {full ? "4교시 실전을 모두 완료했어요" : "연습을 완료했어요"}
         </h1>
         <section className="mt-6 rounded-2xl border border-primary-900 bg-primary-980 p-6">
-          <div className="flex items-end justify-between">
-            <strong className="text-5xl font-extrabold text-primary">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <strong className="text-4xl font-extrabold text-primary sm:text-5xl">
               {result.score}점
             </strong>
             <span className="text-sm font-bold text-muted-foreground">
               총 {result.total}문항
             </span>
           </div>
-          <div className="mt-6 grid grid-cols-5 gap-2">
+          <div className="mt-6 grid grid-cols-2 gap-2 min-[480px]:grid-cols-5">
             {[
               ["정답", result.correct],
               ["오답", result.incorrect],
@@ -2425,15 +2526,17 @@ function FullWaitingPage({
   onHome: () => void;
 }) {
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-[#f7f7f7] p-6 text-foreground">
-      <section className="w-full max-w-[760px] rounded-2xl border border-border bg-white p-7 text-center">
+    <main className="flex min-h-dvh items-center justify-center bg-[#f7f7f7] px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))] text-foreground sm:px-6">
+      <section className="w-full max-w-[760px] rounded-2xl border border-border bg-white p-5 text-center sm:p-7">
         <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-980 text-primary">
           <Check className="h-7 w-7" strokeWidth={3} />
         </span>
         <p className="mt-4 text-sm font-bold text-primary">
           {completedSession.title} 제출 완료
         </p>
-        <h1 className="mt-2 text-3xl font-extrabold">잠시 쉬어 가세요</h1>
+        <h1 className="mt-2 text-2xl font-extrabold sm:text-3xl">
+          잠시 쉬어 가세요
+        </h1>
         {sessionResult && (
           <p className="mt-3 text-sm font-bold text-muted-foreground">
             이번 교시 {sessionResult.correct}/{sessionResult.total} 정답 ·{" "}
@@ -2511,8 +2614,8 @@ function ReviewPage({
       />
     );
   return (
-    <main className="min-h-dvh bg-[#f7f7f7] px-6 py-8 text-foreground">
-      <article className="mx-auto max-w-[880px] rounded-2xl border border-border bg-white p-6">
+    <main className="min-h-dvh bg-[#f7f7f7] px-4 pb-8 pt-[calc(2rem+env(safe-area-inset-top))] text-foreground sm:px-6">
+      <article className="mx-auto max-w-[880px] rounded-2xl border border-border bg-white p-4 sm:p-6">
         <button
           type="button"
           onClick={onBack}
@@ -2617,7 +2720,7 @@ function FlowPage({
   children: ReactNode;
 }) {
   return (
-    <main className="min-h-dvh bg-[#f7f7f7] px-6 py-8 text-foreground">
+    <main className="min-h-dvh bg-[#f7f7f7] px-4 pb-8 pt-[calc(2rem+env(safe-area-inset-top))] text-foreground sm:px-6">
       <div className="mx-auto max-w-[860px]">
         <header className="flex items-center gap-3">
           <button
@@ -2630,10 +2733,10 @@ function FlowPage({
           </button>
           <div>
             <p className="text-sm font-bold text-primary">{step}</p>
-            <h1 className="text-2xl font-extrabold">{title}</h1>
+            <h1 className="text-xl font-extrabold sm:text-2xl">{title}</h1>
           </div>
         </header>
-        <section className="mt-6 rounded-2xl border border-border bg-white p-6">
+        <section className="mt-6 rounded-2xl border border-border bg-white p-4 sm:p-6">
           {children}
         </section>
       </div>

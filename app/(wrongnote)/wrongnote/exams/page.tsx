@@ -27,7 +27,7 @@ const ExamListPage = () => {
   }, []);
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="시험지 목록" showIcon />
 
       <div className="flex-1 overflow-y-auto">

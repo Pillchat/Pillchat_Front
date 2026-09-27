@@ -41,9 +41,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
   }, [pathname, searchBasePath]);
 
   const isSearchablePath = useMemo(
-    () =>
-      Boolean(searchBasePath) ||
-      pathname.startsWith("/qna"),
+    () => Boolean(searchBasePath) || pathname.startsWith("/qna"),
     [pathname, searchBasePath],
   );
 
@@ -127,7 +125,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
     <>
       <header
         className={cn(
-          "sticky top-0 z-10 flex h-[60px] w-full items-center justify-between bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+          "sticky top-0 z-10 flex h-[calc(60px+env(safe-area-inset-top))] w-full items-center justify-between bg-background/95 px-6 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/60",
           !hideBottomBorder && "border-b border-border/40",
         )}
       >
@@ -165,7 +163,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
                 }
               }}
               placeholder="검색어 입력"
-              className="h-10 w-full rounded-md border border-border bg-background px-3 text-label-medium outline-none focus:ring-2 focus:ring-brand/40"
+              className="h-10 w-full rounded-md border border-border bg-background px-3 text-base outline-none focus:ring-2 focus:ring-brand/40 md:text-label-medium"
             />
             <button
               type="button"

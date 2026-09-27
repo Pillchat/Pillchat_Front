@@ -62,7 +62,7 @@ const NewWrongNotePage = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="오답노트 작성" showIcon />
 
       <div className="flex-1 overflow-y-auto px-6 py-4">
@@ -136,7 +136,7 @@ const NewWrongNotePage = () => {
         {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
       </div>
 
-      <div className="flex-shrink-0 px-6 pb-6">
+      <div className="flex-shrink-0 px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <SolidButton
           content="저장"
           disabled={!isValid || submitting}

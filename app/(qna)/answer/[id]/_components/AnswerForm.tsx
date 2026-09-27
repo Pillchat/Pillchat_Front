@@ -33,7 +33,7 @@ export const AnswerForm = ({ questionId }: AnswerFormProps) => {
   } = useAnswerForm({ questionId });
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       <CustomHeader
         title={isEditMode ? "답변 수정" : "답변하기"}
         rightButtonLabel={

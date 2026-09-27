@@ -60,7 +60,7 @@ const SupportDetailClient = ({ inquiryId }: { inquiryId: string }) => {
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-dvh flex-col bg-white">
       <CustomHeader title={TEXT.headerTitle} showIcon />
 
       {!isReady && (

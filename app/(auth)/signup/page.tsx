@@ -81,7 +81,7 @@ export type SignupFormData = {
 //   };
 
 //   return (
-//     <div className="flex min-h-screen flex-col items-center">
+//     <div className="flex min-h-dvh flex-col items-center">
 //       {step === Step.Role && (
 //         <>
 //           <StepHeader content="직장 확인" onIconClick={prevStep} />
@@ -660,7 +660,7 @@ const SignupPage: FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center">
+    <div className="flex min-h-dvh flex-col items-center">
       {/* OCR 관련 단계(Guide, Ocr)는 수동 가입에서 사용하지 않으므로 제거 
          Step.DepartMent 단계를 "정보 수동 입력" 단계로 재사용합니다.
       */}

@@ -254,7 +254,7 @@ const PremiumPage = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="고퀄리티 AI 문제 제작" showIcon />
 
       <div className="flex-1 overflow-y-auto px-6 py-4">
@@ -389,7 +389,7 @@ const PremiumPage = () => {
       </div>
 
       {/* 하단 버튼 */}
-      <div className="flex-shrink-0 px-6 pb-6">
+      <div className="flex-shrink-0 px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <SolidButton
           content="문제 생성"
           disabled={!isFormValid || isLoading}

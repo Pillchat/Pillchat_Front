@@ -619,10 +619,10 @@ const Home: FC = () => {
   };
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-app flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col bg-white">
       <AlarmHeader />
 
-      <main className="flex-1 pb-[7.25rem] pt-4">
+      <main className="flex-1 pb-[calc(7.25rem+env(safe-area-inset-bottom))] pt-4">
         <section className="px-6" aria-label="국가고시 D-Day">
           <div className="overflow-hidden rounded-2xl bg-primary p-5 text-primary-foreground">
             <div className="flex items-start justify-between gap-4">
@@ -858,7 +858,7 @@ const Home: FC = () => {
                     return (
                       <div
                         key={draft.id}
-                        className="grid grid-cols-[minmax(5rem,0.7fr)_minmax(7.5rem,1fr)_2.25rem] items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 transition-colors focus-within:border-primary-800"
+                        className="grid grid-cols-[minmax(0,1fr)_2.25rem] items-center gap-x-2 gap-y-1 rounded-lg border border-border bg-background px-3 py-2 transition-colors focus-within:border-primary-800 min-[360px]:grid-cols-[minmax(5rem,0.7fr)_minmax(7.5rem,1fr)_2.25rem] min-[360px]:gap-y-0"
                       >
                         <input
                           type="text"
@@ -872,9 +872,9 @@ const Home: FC = () => {
                           }
                           placeholder="제목(최대 10자)"
                           aria-label="D-Day 제목"
-                          className="h-7 min-w-0 border-r border-border bg-transparent pr-2 text-body-medium text-foreground outline-none placeholder:text-muted-foreground"
+                          className="col-start-1 row-start-1 h-7 min-w-0 border-b border-border bg-transparent pb-1 text-body-medium text-foreground outline-none placeholder:text-muted-foreground min-[360px]:border-b-0 min-[360px]:border-r min-[360px]:pb-0 min-[360px]:pr-2"
                         />
-                        <div className="flex min-w-0 items-center gap-2">
+                        <div className="col-start-1 row-start-2 flex min-w-0 items-center gap-2 min-[360px]:col-start-2 min-[360px]:row-start-1">
                           <img src="/Calendar.svg" width={20} alt="" />
                           <input
                             type="date"
@@ -896,7 +896,7 @@ const Home: FC = () => {
                             className="h-7 min-w-0 flex-1 bg-transparent text-body-medium text-foreground outline-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                           />
                         </div>
-                        <div className="flex h-6 w-9 shrink-0 items-center justify-center">
+                        <div className="col-start-2 row-span-2 row-start-1 flex h-6 w-9 shrink-0 items-center justify-center min-[360px]:col-start-3 min-[360px]:row-span-1">
                           {canAddDraft && (
                             <button
                               type="button"

@@ -168,14 +168,14 @@ const OAuthOnboardingPage = () => {
 
   if (!pendingSignup) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-dvh items-center justify-center">
         <p className="text-sm text-muted-foreground">불러오는 중...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center">
+    <div className="flex min-h-dvh flex-col items-center">
       {step === "info" && (
         <SignupInfoFlow
           realName={realName}

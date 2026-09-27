@@ -90,7 +90,7 @@ const NotificationsPage: FC = () => {
   const hasUnread = notifications.some((n) => !n.isRead);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-dvh flex-col bg-white">
       <CustomHeader title="알림" />
 
       {notifications.length > 0 && (

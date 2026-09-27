@@ -65,7 +65,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
   return (
     <>
       <header
-        className={`sticky top-0 z-10 flex w-full items-center justify-between bg-background/95 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 ${
+        className={`sticky top-0 z-10 flex w-full items-center justify-between bg-background/95 px-6 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] backdrop-blur supports-[backdrop-filter]:bg-background/60 ${
           hideBottomBorder ? "" : "border-b border-border/40"
         }`}
       >
@@ -95,7 +95,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
               }}
               onBlur={() => setOpen(false)}
               placeholder="검색어 입력"
-              className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-brand/40"
+              className="h-10 w-full rounded-md border border-border bg-background px-3 text-base outline-none focus:ring-2 focus:ring-brand/40 md:text-sm"
             />
             <button
               type="button"

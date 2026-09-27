@@ -39,7 +39,7 @@ export default function ReportPage() {
 
   return (
     <>
-      <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-dvh flex-col">
         <CustomHeader title="신고하기" showIcon />
 
         <div className="sticky bottom-0 mx-6 mb-6 flex flex-col gap-5">

@@ -43,7 +43,7 @@ const MyPage: FC = () => {
 
   if (error) {
     return (
-      <div className="flex min-h-screen w-full flex-col items-center justify-center">
+      <div className="flex min-h-dvh w-full flex-col items-center justify-center">
         <div className="mx-4 max-w-md rounded-lg border border-red-200 bg-red-50 p-6">
           <h2 className="mb-2 text-lg font-semibold text-red-800">오류 발생</h2>
           <p className="mb-4 text-red-600">{error}</p>
@@ -60,7 +60,7 @@ const MyPage: FC = () => {
   }
 
   return (
-    <div className="min-h-screen w-full overflow-y-auto pb-[8.25rem]">
+    <div className="min-h-dvh w-full overflow-y-auto pb-[calc(8.25rem+env(safe-area-inset-bottom))]">
       <div className="flex w-full flex-col items-center">
         <MeaninglessHeader />
 
@@ -127,15 +127,9 @@ const MyPage: FC = () => {
 
             <SystemField iconSrc="/Notification.svg" title="공지사항" />
 
-            <SystemField
-              iconSrc="/Policy.svg"
-              title="개인정보 처리방침"
-            />
+            <SystemField iconSrc="/Policy.svg" title="개인정보 처리방침" />
 
-            <SystemField
-              iconSrc="/Terms.svg"
-              title="서비스 이용약관"
-            />
+            <SystemField iconSrc="/Terms.svg" title="서비스 이용약관" />
           </div>
 
           <div className="mt-8 h-px w-full bg-muted" />

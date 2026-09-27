@@ -32,7 +32,7 @@ export const BoardHeader: FC<BoardHeaderProps> = ({
 
   return (
     <>
-      <header className="fixed left-1/2 top-0 z-50 flex h-[60px] w-full max-w-app -translate-x-1/2 items-center justify-between bg-white px-6 md:px-8">
+      <header className="fixed left-1/2 top-0 z-50 flex h-[calc(60px+env(safe-area-inset-top))] w-full max-w-app -translate-x-1/2 items-center justify-between bg-white px-6 pt-[env(safe-area-inset-top)] md:px-8">
         <LeftArrowButton onClick={onLeftButtonClick ?? (() => router.back())} />
 
         <p className="text-lg font-semibold">{title}</p>
@@ -70,7 +70,10 @@ export const BoardHeader: FC<BoardHeaderProps> = ({
           )}
         </div>
       </header>
-      <div aria-hidden="true" className="h-[60px] shrink-0" />
+      <div
+        aria-hidden="true"
+        className="h-[calc(60px+env(safe-area-inset-top))] shrink-0"
+      />
     </>
   );
 };

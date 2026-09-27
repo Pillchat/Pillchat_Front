@@ -74,15 +74,15 @@ export default function QuestionBankSubjectsPage() {
             <Link
               key={subject.id}
               href="/questionbank/generate"
-              className="flex min-h-[5.5rem] items-center gap-4 rounded-[24px] border border-gray-300 bg-white px-4 py-4 shadow-[0_10px_24px_rgba(17,17,17,0.06)] transition-transform active:scale-[0.99] md:px-5"
+              className="flex min-h-[5.5rem] items-center gap-2 rounded-[24px] border border-gray-300 bg-white px-3 py-4 shadow-[0_10px_24px_rgba(17,17,17,0.06)] transition-transform active:scale-[0.99] min-[360px]:gap-4 min-[360px]:px-4 md:px-5"
               prefetch={false}
             >
               <span
-                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${subject.iconClassName}`}
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full min-[360px]:h-12 min-[360px]:w-12 ${subject.iconClassName}`}
               >
                 <Folder
                   aria-hidden="true"
-                  className="h-7 w-7"
+                  className="h-6 w-6 min-[360px]:h-7 min-[360px]:w-7"
                   strokeWidth={1.9}
                 />
               </span>
@@ -96,7 +96,7 @@ export default function QuestionBankSubjectsPage() {
                 </span>
               </span>
 
-              <span className="flex items-center gap-5 text-gray-800">
+              <span className="flex items-center gap-3 text-gray-800 min-[360px]:gap-5">
                 <Edit3
                   aria-hidden="true"
                   className="h-5 w-5"

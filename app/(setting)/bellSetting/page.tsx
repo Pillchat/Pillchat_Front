@@ -364,7 +364,7 @@ const BellSetting: FC = () => {
         : subjectFollowMessage;
 
   return (
-    <div className="flex min-h-screen flex-col items-center">
+    <div className="flex min-h-dvh flex-col items-center">
       <CustomHeader title="알림 설정" />
 
       <div className="mt-3 flex w-[90%] flex-col gap-7">

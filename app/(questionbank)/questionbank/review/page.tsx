@@ -140,7 +140,7 @@ const ReviewListPage = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="복습하기" showIcon />
 
       <TabsWithUnderline

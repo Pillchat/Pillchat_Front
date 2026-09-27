@@ -71,7 +71,7 @@ export default function QuestionBankPage() {
           aria-labelledby="quest-progress-title"
           className="mt-8 rounded-[28px] border border-primary-900 bg-primary-980 px-5 py-5 shadow-[0_12px_30px_rgba(17,17,17,0.05)]"
         >
-          <div className="flex flex-col gap-4 min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex min-w-0 items-center gap-3">
               <div className="flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_8px_18px_rgba(255,65,46,0.18)]">
                 <Target
@@ -93,7 +93,7 @@ export default function QuestionBankPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-3 min-[390px]:flex-col min-[390px]:items-end">
+            <div className="flex items-center justify-between gap-3 md:flex-col md:items-end">
               <div className="flex h-9 shrink-0 items-center gap-2 rounded-full bg-primary px-3.5 text-sm font-extrabold text-primary-foreground">
                 <Trophy
                   aria-hidden="true"
@@ -280,11 +280,11 @@ function QuestRow({
   return (
     <Link
       href={item.href}
-      className="flex min-h-[5.625rem] items-center gap-3 border-t border-border px-5 py-4 transition-colors first:border-t-0 active:bg-primary-980"
+      className="flex min-h-[5.625rem] items-center gap-2 border-t border-border px-3 py-4 transition-colors first:border-t-0 active:bg-primary-980 min-[360px]:gap-3 min-[360px]:px-5"
       prefetch={false}
     >
       <span
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-base font-extrabold ${
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-base font-extrabold min-[360px]:h-11 min-[360px]:w-11 ${
           index === 0
             ? "border-primary bg-primary-980 text-primary"
             : index === 1
@@ -295,7 +295,7 @@ function QuestRow({
         {marker}
       </span>
       <span className="min-w-0 flex-1">
-        <strong className="block truncate text-base font-extrabold text-foreground">
+        <strong className="line-clamp-2 block text-base font-extrabold text-foreground min-[400px]:line-clamp-1">
           {item.title}
         </strong>
         <span className="mt-1 block truncate text-sm text-muted-foreground">
@@ -303,7 +303,7 @@ function QuestRow({
           <span className="font-extrabold text-primary">{item.xp}</span>
         </span>
       </span>
-      <span className="flex h-10 shrink-0 items-center gap-1 rounded-full bg-primary px-4 text-sm font-extrabold text-primary-foreground">
+      <span className="flex h-10 shrink-0 items-center gap-1 rounded-full bg-primary px-3 text-sm font-extrabold text-primary-foreground min-[360px]:px-4">
         {item.action}
         <ChevronRight aria-hidden="true" className="h-4 w-4" strokeWidth={2} />
       </span>

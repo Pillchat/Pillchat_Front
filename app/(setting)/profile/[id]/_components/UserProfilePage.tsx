@@ -179,7 +179,7 @@ function ProfileHeader({ onReport }: { onReport: () => void }) {
   ];
 
   return (
-    <header className="sticky top-0 z-10 flex h-[60px] w-full items-center justify-between bg-white px-6">
+    <header className="sticky top-0 z-10 flex h-[calc(60px+env(safe-area-inset-top))] w-full items-center justify-between bg-white px-6 pt-[env(safe-area-inset-top)]">
       <LeftArrowButton onClick={() => router.back()} />
       <p className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-[#171717]">
         사용자 프로필
