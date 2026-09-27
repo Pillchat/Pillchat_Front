@@ -38,9 +38,7 @@ export interface NotificationConsentStatus {
   surveyCompleted: boolean;
 }
 
-export type ExpectedFeature =
-  | "AI_FLASHCARD"
-  | "QUESTION_BANK";
+export type ExpectedFeature = "AI_FLASHCARD" | "QUESTION_BANK";
 
 export interface ExpectedFeatureSurveyRequest {
   expectedFeature: ExpectedFeature;
