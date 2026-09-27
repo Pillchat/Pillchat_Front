@@ -14,6 +14,17 @@ body {
   margin-right: auto;
 }
 
+/* iOS는 16px 미만의 편집 필드에 포커스하면 페이지를 자동 확대한다. */
+@media (max-width: 743px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
+      [type="range"]
+    ),
+  textarea:not([readonly]),
+  select {
+    font-size: 16px !important;
+  }
+}
+
 /*
   피그마 기준으로 업데이트/피그마 컬러코드 참고
   - foreground: #111111

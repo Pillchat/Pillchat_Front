@@ -151,7 +151,7 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
       ];
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       <CustomHeader
         title="학습자료"
         showIcon

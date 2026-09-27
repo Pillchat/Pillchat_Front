@@ -5,7 +5,7 @@ import { CustomHeader } from "@/components/molecules";
 
 const gradeInfo: FC = () => {
   return (
-    <div className="flex min-h-screen flex-col items-center">
+    <div className="flex min-h-dvh flex-col items-center">
       <CustomHeader title="등급 상세정보" />
 
       <div className="flex w-[90%] flex-col gap-8">

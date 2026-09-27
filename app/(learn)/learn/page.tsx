@@ -168,7 +168,7 @@ export default function LearnPage() {
 
   return (
     <AppShell bottomSpacing="cta" className="flex flex-col">
-      <header className="sticky top-0 z-40 flex h-[60px] shrink-0 items-center justify-between bg-background px-6">
+      <header className="sticky top-0 z-40 flex h-[calc(60px+env(safe-area-inset-top))] shrink-0 items-center justify-between bg-background px-6 pt-[env(safe-area-inset-top)]">
         <Link href="/" aria-label="홈으로 이동" className="flex items-center">
           <Image
             src="/brand/PillChat.svg"
@@ -192,8 +192,8 @@ export default function LearnPage() {
             9월 전격 출시!
           </h1>
           <p className="mt-4 text-body-large text-muted-foreground">
-            약대생의 복습과 기출 풀이를 한 흐름으로 이어주는 학습 탭을
-            준비하고 있어요.
+            약대생의 복습과 기출 풀이를 한 흐름으로 이어주는 학습 탭을 준비하고
+            있어요.
           </p>
         </section>
 

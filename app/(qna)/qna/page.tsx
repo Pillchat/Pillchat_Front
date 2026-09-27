@@ -51,7 +51,7 @@ const QnaPage: FC = () => {
     : `아직 ${currentStatus === "pending" ? "등록된" : "답변이 달린"} 질문이 없습니다.`;
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <div className="flex-shrink-0">
         <GeneralHeader currentQ={q} currentStatus={currentStatus} />
         <TabsWithUnderline
@@ -68,7 +68,7 @@ const QnaPage: FC = () => {
             <div className="text-border">Loading...</div>
           </div>
         ) : list.length > 0 ? (
-          <div className="mx-6 py-5 pb-[6.875rem]">
+          <div className="mx-6 py-5 pb-[calc(6.875rem+env(safe-area-inset-bottom))]">
             <div className="flex flex-col gap-5">
               {map(list, (question: any) => (
                 <Fragment key={question.id}>
@@ -85,13 +85,13 @@ const QnaPage: FC = () => {
             </div>
           </div>
         ) : (
-          <div className="flex h-full items-center justify-center pb-[6.875rem]">
+          <div className="flex h-full items-center justify-center pb-[calc(6.875rem+env(safe-area-inset-bottom))]">
             <div className="text-border">{emptyText}</div>
           </div>
         )}
       </div>
 
-      <div className="absolute bottom-[8.25rem] right-6 z-50">
+      <div className="absolute bottom-[calc(8.25rem+env(safe-area-inset-bottom))] right-6 z-50">
         <FloatingActionButton
           mainIcon={
             <QuestionWithBubble

@@ -55,7 +55,7 @@ const SolvePage = () => {
 
   if (!session || !currentQuestion) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-dvh items-center justify-center">
         <div className="text-muted-foreground">로딩 중...</div>
       </div>
     );
@@ -170,7 +170,7 @@ const SolvePage = () => {
   const showPassage = questionType !== "FILL_IN_BLANK";
 
   return (
-    <div className="flex h-screen select-none flex-col">
+    <div className="flex h-dvh select-none flex-col">
       <CustomHeader title={session.title} showIcon />
       <QuizProgressBar />
 
@@ -185,7 +185,7 @@ const SolvePage = () => {
 
       <ExplanationPanel />
 
-      <div className="flex-shrink-0 border-t bg-white px-6 pb-6 pt-3">
+      <div className="flex-shrink-0 border-t bg-white px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3">
         {gradingState !== "graded" && (
           <button
             className="mb-3 w-full text-center text-sm text-muted-foreground underline"

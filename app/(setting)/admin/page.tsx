@@ -322,7 +322,7 @@ const AdminPage: FC = () => {
 
   if (!isAdmin) {
     return (
-      <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-dvh flex-col">
         <CustomHeader title="관리자" />
         <div className="flex flex-1 items-center justify-center">
           <p className="text-muted-foreground">접근 권한이 없습니다.</p>
@@ -340,7 +340,7 @@ const AdminPage: FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       <CustomHeader title="푸시 알림 관리" />
       <TabsWithUnderline
         className="px-6"

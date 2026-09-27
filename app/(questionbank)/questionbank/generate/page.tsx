@@ -170,7 +170,7 @@ const GeneratePage = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="문제 생성" showIcon />
 
       <div className="flex flex-1 flex-col items-center justify-center px-6">
@@ -222,7 +222,7 @@ const GeneratePage = () => {
         </div>
       </div>
 
-      <div className="flex-shrink-0 px-6 pb-6">
+      <div className="flex-shrink-0 px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <SolidButton
           content="문제 생성"
           disabled={!isFormValid || isLoading}

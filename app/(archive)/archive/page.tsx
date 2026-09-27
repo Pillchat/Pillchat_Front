@@ -187,14 +187,14 @@ const ArchivePage: FC = () => {
   const renderQuestionList = (list: any[] | undefined | null) => {
     if (!list || list.length === 0) {
       return (
-        <div className="flex h-full items-center justify-center pb-[6.875rem]">
+        <div className="flex h-full items-center justify-center pb-[calc(6.875rem+env(safe-area-inset-bottom))]">
           <div className="text-border">아직 올린 질문이 없습니다.</div>
         </div>
       );
     }
 
     return (
-      <div className="mx-6 py-5 pb-[6.875rem]">
+      <div className="mx-6 py-5 pb-[calc(6.875rem+env(safe-area-inset-bottom))]">
         <div className="flex flex-col gap-5">
           {map(list, (item) => {
             const qid = pickQuestionId(item);
@@ -237,14 +237,14 @@ const ArchivePage: FC = () => {
   const renderMaterialList = (list: any[] | undefined | null) => {
     if (!list || list.length === 0) {
       return (
-        <div className="flex h-full items-center justify-center pb-[6.875rem]">
+        <div className="flex h-full items-center justify-center pb-[calc(6.875rem+env(safe-area-inset-bottom))]">
           <div className="text-border">아직 작성한 학습자료가 없습니다.</div>
         </div>
       );
     }
 
     return (
-      <div className="mx-6 py-5 pb-[6.875rem]">
+      <div className="mx-6 py-5 pb-[calc(6.875rem+env(safe-area-inset-bottom))]">
         <div className="flex flex-col gap-5">
           {map(list, (item) => {
             const materialId = item?.id;
@@ -298,7 +298,7 @@ const ArchivePage: FC = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <div className="flex-shrink-0">
         <AlarmHeader hideBottomBorder />
         <ArrayList
@@ -356,7 +356,7 @@ const ArchivePage: FC = () => {
                 <div className="text-border">불러오는 중...</div>
               </div>
             ) : filteredNotes.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center gap-3 pb-[6.875rem]">
+              <div className="flex h-full flex-col items-center justify-center gap-3 pb-[calc(6.875rem+env(safe-area-inset-bottom))]">
                 <div className="text-border">
                   {wrongNotes.length === 0
                     ? "아직 작성된 오답노트가 없습니다."
@@ -372,7 +372,7 @@ const ArchivePage: FC = () => {
                 )}
               </div>
             ) : (
-              <div className="pb-[6.875rem]">
+              <div className="pb-[calc(6.875rem+env(safe-area-inset-bottom))]">
                 {filteredNotes.map((note) => (
                   <WrongNoteCard
                     key={note.id}

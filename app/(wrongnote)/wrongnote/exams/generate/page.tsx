@@ -90,7 +90,7 @@ const GenerateExamPage = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="AI 시험지 생성" showIcon />
 
       <div className="flex-1 overflow-y-auto px-6 py-4">
@@ -208,7 +208,7 @@ const GenerateExamPage = () => {
         {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
       </div>
 
-      <div className="flex-shrink-0 px-6 pb-6">
+      <div className="flex-shrink-0 px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <SolidButton
           content={generating ? "생성 중..." : "시험지 생성"}
           disabled={selectedIds.size === 0 || generating}

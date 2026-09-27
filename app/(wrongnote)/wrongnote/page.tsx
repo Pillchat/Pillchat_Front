@@ -65,7 +65,7 @@ const WrongNoteListPage = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="오답노트" showIcon />
 
       <TabsWithUnderline

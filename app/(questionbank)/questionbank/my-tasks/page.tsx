@@ -110,7 +110,7 @@ const MyTasksPage = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="내 학습자료로 문제 생성" showIcon />
 
       {/* 과목 필터 */}

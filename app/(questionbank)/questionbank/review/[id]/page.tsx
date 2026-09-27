@@ -47,7 +47,7 @@ const ReviewDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-dvh items-center justify-center">
         <div className="text-muted-foreground">불러오는 중...</div>
       </div>
     );
@@ -55,7 +55,7 @@ const ReviewDetailPage = () => {
 
   if (!result) {
     return (
-      <div className="flex h-screen flex-col">
+      <div className="flex h-dvh flex-col">
         <CustomHeader title="복습 상세" showIcon />
         <div className="flex flex-1 items-center justify-center">
           <p className="text-muted-foreground">결과를 불러올 수 없습니다.</p>
@@ -135,7 +135,7 @@ const ReviewDetailPage = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="복습 상세" showIcon />
 
       {/* 통계 요약 */}

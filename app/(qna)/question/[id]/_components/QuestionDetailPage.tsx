@@ -112,7 +112,7 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
     : [{ id: "report", label: "신고", onClick: handleReport }];
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       <CustomHeader
         title="질문광장"
         showIcon

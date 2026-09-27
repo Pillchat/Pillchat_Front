@@ -19,7 +19,7 @@ function Name({ content, dark }: { content: string; dark?: boolean }) {
 export function StepHeader({ content, onIconClick, dark }: StepHeaderProps) {
   return (
     <div
-      className={`relative flex h-[60px] w-full flex-row items-center justify-center ${dark ? "bg-black" : "bg-white"}`}
+      className={`relative flex h-[calc(60px+env(safe-area-inset-top))] w-full flex-row items-center justify-center pt-[env(safe-area-inset-top)] ${dark ? "bg-black" : "bg-white"}`}
     >
       <img
         src={dark ? "/icons/ReturnPage-white.svg" : "/icons/ReturnPage.svg"}

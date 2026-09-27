@@ -577,7 +577,7 @@ const UploadPage = () => {
       )}
 
       {step === Step.Upload && (
-        <div className="flex min-h-screen flex-col bg-white">
+        <div className="flex min-h-dvh flex-col bg-white">
           <BoardHeader
             title={isEditMode ? "학습자료 수정" : "학습자료 업로드"}
             onLeftButtonClick={prevStep}
@@ -777,7 +777,7 @@ const UploadPage = () => {
       />
 
       {step === Step.Complete && (
-        <div className="flex min-h-screen flex-col">
+        <div className="flex min-h-dvh flex-col">
           <div className="flex flex-grow flex-col items-center justify-center gap-3">
             <div className="flex flex-col items-center justify-center text-center">
               <img

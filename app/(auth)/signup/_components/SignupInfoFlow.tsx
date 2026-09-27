@@ -97,7 +97,7 @@ export function SignupInfoFlow({
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background">
+    <div className="flex min-h-dvh w-full flex-col bg-background">
       <header className="px-6 pt-[calc(1.25rem+env(safe-area-inset-top))]">
         <button
           type="button"

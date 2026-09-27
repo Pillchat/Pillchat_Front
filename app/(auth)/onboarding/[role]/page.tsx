@@ -189,7 +189,7 @@ const OnboardingForRolePage: FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       {currentStep < TOTAL_STEPS && (
         <OnboardingHeader
           step={currentStep}

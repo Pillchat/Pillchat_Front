@@ -56,7 +56,7 @@ const ExamDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-dvh items-center justify-center">
         <p className="text-muted-foreground">불러오는 중...</p>
       </div>
     );
@@ -64,7 +64,7 @@ const ExamDetailPage = () => {
 
   if (!exam) {
     return (
-      <div className="flex h-screen flex-col">
+      <div className="flex h-dvh flex-col">
         <CustomHeader title="시험지" showIcon />
         <div className="flex flex-1 items-center justify-center">
           <p className="text-muted-foreground">시험지를 찾을 수 없습니다.</p>
@@ -78,7 +78,7 @@ const ExamDetailPage = () => {
   );
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="시험지" showIcon />
 
       <div className="flex-1 overflow-y-auto">
