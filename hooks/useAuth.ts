@@ -20,7 +20,7 @@ export const useAuth = () => {
       }
     } catch (error: any) {
       console.error("토큰 갱신 실패:", error);
-      clearStoredTokens();
+      // Session invalidation is handled only by the refresh response.
     }
   }, []);
 

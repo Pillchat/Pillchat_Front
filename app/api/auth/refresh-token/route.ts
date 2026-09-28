@@ -27,13 +27,14 @@ export const POST = async (request: NextRequest) => {
       },
     );
 
-    const data = await response.json();
+    // Preserve the upstream status even when an error body is empty or not JSON.
+    const data = await response.json().catch(() => null);
 
     if (!response.ok) {
       return NextResponse.json(
         {
           success: false,
-          message: data.message || "토큰 갱신에 실패했습니다.",
+          message: data?.message || "토큰 갱신에 실패했습니다.",
         },
         { status: response.status },
       );

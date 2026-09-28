@@ -142,6 +142,14 @@ export const refreshTokens = async (): Promise<
       body: JSON.stringify({ refreshToken }),
     });
 
+    // Only an explicit refresh-token rejection ends the session. Transient
+    // failures must preserve credentials so a later request can retry.
+    if (response.status === 401 || response.status === 403) {
+      // A late response must not clear credentials from a newer login/refresh.
+      if (getRefreshToken() === refreshToken) clearTokens();
+      return false;
+    }
+
     if (response.ok) {
       const result = await response.json();
       if (result.success && result.data) {
@@ -170,7 +178,6 @@ export const refreshTokens = async (): Promise<
     console.error("토큰 갱신 실패:", error);
   }
 
-  clearTokens();
   return false;
 };
 
