@@ -6,11 +6,11 @@ import { gradeAtom } from "@/store/profile";
 
 // 등급 매핑
 const gradeLabels: Record<string, string> = {
-  SAESSAK: "새싹",
-  HANAL: "한알",
-  DUEAL: "두알",
-  GOSU: "고수",
-  MYEONGYAK: "명약",
+  SAESSAK: "1일",
+  HANAL: "20일",
+  DUEAL: "50일",
+  GOSU: "100일",
+  MYEONGYAK: "365일",
 };
 
 const gradeColors: Record<string, string> = {
