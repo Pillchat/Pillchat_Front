@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { FC, useState } from "react";
 import { useRouter } from "@/lib/navigation";
 import { CustomHeader } from "@/components/molecules";
@@ -8,15 +9,15 @@ import { formatDiffDate } from "@/lib/shared/date";
 import { Notification, NotificationType } from "@/types/notification";
 
 const NOTIFICATION_ICON: Record<NotificationType, string> = {
-  ANSWER: "/icons/QuestionWithBubble.svg",
-  ADOPT: "/icons/Like.svg",
-  SUBJECT_NEW_QUESTION: "/icons/QuestionWithBubble.svg",
-  SUBJECT_NEW_MATERIAL: "/icons/QuestionWithBubble.svg",
-  BENEFIT: "/icons/BellColor.svg",
-  EVENING_STUDY_REMINDER: "/icons/BellColor.svg",
-  QUESTION: "/icons/QuestionWithBubble.svg",
-  MATERIAL: "/icons/QuestionWithBubble.svg",
-  SYSTEM: "/icons/BellColor.svg",
+  ANSWER: PUBLIC_ASSETS.icons.questionBubble,
+  ADOPT: PUBLIC_ASSETS.icons.like,
+  SUBJECT_NEW_QUESTION: PUBLIC_ASSETS.icons.questionBubble,
+  SUBJECT_NEW_MATERIAL: PUBLIC_ASSETS.icons.questionBubble,
+  BENEFIT: PUBLIC_ASSETS.icons.bellColored,
+  EVENING_STUDY_REMINDER: PUBLIC_ASSETS.icons.bellColored,
+  QUESTION: PUBLIC_ASSETS.icons.questionBubble,
+  MATERIAL: PUBLIC_ASSETS.icons.questionBubble,
+  SYSTEM: PUBLIC_ASSETS.icons.bellColored,
 };
 
 const NotificationItem: FC<{
@@ -116,7 +117,7 @@ const NotificationsPage: FC = () => {
         {notifications.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center py-20">
             <img
-              src="/icons/Bell.svg"
+              src={PUBLIC_ASSETS.icons.bell}
               alt="no notifications"
               className="mb-4 h-12 w-12 opacity-30"
             />

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useAtomValue, useSetAtom } from "jotai";
+import { completeDailyQuest } from "@/lib/client/dailyQuest";
 import { fetchAPI } from "@/lib/client/fetch";
 import { quizSessionAtom, clearQuizSessionAtom } from "@/store/quizSession";
 import { CustomHeader } from "@/components/molecules";
@@ -27,6 +28,10 @@ const ResultPage = () => {
     if (!session) {
       router.replace("/questionbank");
       return;
+    }
+
+    if (session.sourceType === "PDF") {
+      completeDailyQuest("subject-study");
     }
 
     const fetchResult = async () => {
@@ -160,7 +165,7 @@ const ResultPage = () => {
             className="flex-1 rounded-xl bg-brand py-3.5 text-base font-medium text-white"
             onClick={() => {
               clearSession();
-              router.push("/questionbank/review");
+              router.push("/questionbank/review?category=AI");
             }}
           >
             복습하기

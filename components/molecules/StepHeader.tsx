@@ -1,3 +1,4 @@
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import React from "react";
 
 interface StepHeaderProps {
@@ -22,7 +23,11 @@ export function StepHeader({ content, onIconClick, dark }: StepHeaderProps) {
       className={`relative flex h-[calc(60px+env(safe-area-inset-top))] w-full flex-row items-center justify-center pt-[env(safe-area-inset-top)] ${dark ? "bg-black" : "bg-white"}`}
     >
       <img
-        src={dark ? "/icons/ReturnPage-white.svg" : "/icons/ReturnPage.svg"}
+        src={
+          dark
+            ? PUBLIC_ASSETS.icons.chevronLeftWhite
+            : PUBLIC_ASSETS.icons.chevronLeft
+        }
         className="absolute left-5 h-6 w-6 cursor-pointer"
         onClick={onIconClick}
         alt="뒤로가기"

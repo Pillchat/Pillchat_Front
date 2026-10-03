@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -172,7 +173,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
               onClick={() => inputRef.current?.focus()}
             >
               <img
-                src="/icons/search.svg"
+                src={PUBLIC_ASSETS.icons.search}
                 alt="search"
                 width={32}
                 height={32}
@@ -186,7 +187,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
               className="flex h-[3.625rem] cursor-pointer items-center"
             >
               <img
-                src="/brand/PillChat.svg"
+                src={PUBLIC_ASSETS.brand.pillchatLogo}
                 alt="logo"
                 width={82}
                 height={32}
@@ -201,7 +202,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
                 onClick={() => setOpen(true)}
               >
                 <img
-                  src="/icons/search.svg"
+                  src={PUBLIC_ASSETS.icons.search}
                   alt="search"
                   width={32}
                   height={32}
@@ -213,7 +214,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
                 onClick={() => router.push("/notifications")}
               >
                 <img
-                  src="/icons/Bell.svg"
+                  src={PUBLIC_ASSETS.icons.bell}
                   alt="notification"
                   width={32}
                   height={32}

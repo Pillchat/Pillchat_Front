@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { LeftArrowButton, TextButton } from "@/components/atoms";
 import { useRouter } from "@/lib/navigation";
 import { Button } from "../ui/button";
@@ -45,7 +46,12 @@ export const InfoHeader: FC<InfoHeaderProps> = ({
               size="icon"
               onClick={() => router.push("/")}
             >
-              <img src="/icons/Home.svg" alt="home" width={32} height={32} />
+              <img
+                src={PUBLIC_ASSETS.icons.home}
+                alt="home"
+                width={32}
+                height={32}
+              />
             </Button>
           ) : (
             <TextButton

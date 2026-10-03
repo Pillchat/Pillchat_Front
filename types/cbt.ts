@@ -2,18 +2,6 @@ export type CbtSessionId = 1 | 2 | 3 | 4 | "tutorial";
 
 export type CbtLayoutMode = "single" | "double";
 
-export interface CbtHighlightRange {
-  start: number;
-  end: number;
-}
-
-export type CbtHighlightPoint = [x: number, y: number];
-
-export interface CbtHighlightStroke {
-  id: string;
-  points: CbtHighlightPoint[];
-}
-
 export type CbtSubject =
   | "생명약학"
   | "산업약학"
@@ -62,8 +50,6 @@ export interface CbtAnswerSubmission {
   unknown?: boolean;
   memo?: string;
   excludedChoices?: number[];
-  highlightRanges?: CbtHighlightRange[];
-  highlightStrokes?: CbtHighlightStroke[];
 }
 
 export interface CbtReviewQuestion extends CbtExamQuestion {
@@ -72,8 +58,6 @@ export interface CbtReviewQuestion extends CbtExamQuestion {
   unknown: boolean;
   memo: string;
   excludedChoices: number[];
-  highlightRanges: CbtHighlightRange[];
-  highlightStrokes: CbtHighlightStroke[];
   correctChoice: number;
   explanation: string;
   conceptTags: string[];

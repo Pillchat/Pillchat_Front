@@ -1,3 +1,4 @@
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { FC } from "react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
@@ -18,7 +19,9 @@ export const LikeButton: FC<{
       onClick={onClick}
     >
       <img
-        src={isLiked ? "/icons/LikeFilled.svg" : "/icons/Like.svg"}
+        src={
+          isLiked ? PUBLIC_ASSETS.icons.likeFilled : PUBLIC_ASSETS.icons.like
+        }
         alt="like"
         className="h-8 w-8"
       />

@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { ProfileImg, GradeBadge } from "../atoms";
 import { useAtom } from "jotai";
 import {
@@ -27,8 +28,7 @@ export function UserInfoField({ onIconClick, author }: Option) {
   const displayNickname = author?.nickname || nickname || "익명";
   const displaySchool = author?.school || school || "학교정보없음";
   const displayGrade = author?.grade || studentGrade || "학년정보없음";
-  const displayProfileImg =
-    author?.avatarUrl || profileImg || "/icons/defaultProfile.svg";
+  const displayProfileImg = author?.avatarUrl || profileImg;
   const hasGrade = author ? !!author.grade : !!grade;
 
   return (
@@ -45,7 +45,7 @@ export function UserInfoField({ onIconClick, author }: Option) {
       </div>
       {onIconClick && (
         <img
-          src={"/icons/ArrowIcon.svg"}
+          src={PUBLIC_ASSETS.icons.chevronRight}
           className="ml-auto"
           onClick={onIconClick}
         />

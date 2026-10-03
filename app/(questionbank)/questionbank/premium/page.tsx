@@ -218,7 +218,7 @@ const PremiumPage = () => {
       initSession({
         sessionId: quizData.sessionId,
         sourceType: "PREMIUM",
-        title: `${selectedSubject.name} 수제 제작 문제`,
+        title: `${selectedSubject.name} AI 생성 문제`,
         questions: quizData.questions.map((q) => {
           const answer = answerByQuestionId.get(q.id);
           const quizQuestion = q as typeof q & {

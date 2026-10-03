@@ -1,3 +1,4 @@
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { IconWithCount } from "@/components/atoms";
 import { format } from "date-fns";
 import { FC } from "react";
@@ -15,7 +16,7 @@ export const QuestionTitleSection: FC<{
         <div className="flex flex-row items-center gap-3 align-middle">
           {/* 작성자 정보 표시 */}
           <span className="text-foreground">{userName}</span>
-          <IconWithCount src="/icons/Eye.svg" count={viewCount} />
+          <IconWithCount src={PUBLIC_ASSETS.icons.eye} count={viewCount} />
           <span>{format(createdAt, "yyyy-MM-dd HH:mm:ss")}</span>
         </div>
         {/* TODO: MVP 이후 도입 */}

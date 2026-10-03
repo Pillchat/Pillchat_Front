@@ -1,3 +1,4 @@
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { cn } from "@/lib/utils";
 
 interface AttendanceCalendarControllerProps {
@@ -57,7 +58,11 @@ export function AttendanceCalendarController({
         className="flex h-8 w-8 items-center justify-start"
         aria-label="이전 달"
       >
-        <img src="/ChevronLeft.svg" alt="" className="h-6 w-6 opacity-70" />
+        <img
+          src={PUBLIC_ASSETS.icons.chevronLeft}
+          alt=""
+          className="h-6 w-6 opacity-70"
+        />
       </button>
 
       <div className="flex items-center gap-2">
@@ -117,7 +122,7 @@ export function AttendanceCalendarController({
         aria-label="다음 달"
       >
         <img
-          src="/ChevronLeft.svg"
+          src={PUBLIC_ASSETS.icons.chevronLeft}
           alt=""
           className="h-6 w-6 rotate-180 opacity-70"
         />

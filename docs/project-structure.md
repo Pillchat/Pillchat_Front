@@ -61,7 +61,7 @@ types/                   API/domain type
 public/
   brand/                 로고/브랜드 SVG
   icons/                 UI icon SVG
-  illustrations/         화면용 일러스트 SVG
+  illustrations/         화면용 일러스트, 기본 프로필 SVG, 로딩 PNG
   fonts/                 font asset
 docs/                    개발 문서
 ```
@@ -84,7 +84,7 @@ docs/                    개발 문서
 | 공유 type                                | `types`                     | `question.ts`, `wrongnote.ts`                  |
 | 공유 validation                          | `validations`               | `email.ts`, `password.ts`                      |
 | Jotai state                              | `store`                     | `profile.ts`, `quizSession.ts`, `onboarding/*` |
-| URL로 참조하는 SVG/PNG/font              | `public/<asset-type>`       | `/brand/PillChat.svg`, `/icons/Bell.svg`       |
+| URL로 참조하는 SVG/PNG/font              | `public/<asset-type>`       | `/brand/pillchat-logo.svg`, `/icons/bell.svg`  |
 
 ## 변경 전후 요약
 
@@ -118,30 +118,85 @@ app/
 
 ```text
 public/PillChat.svg
-  -> public/brand/PillChat.svg
+  -> public/brand/pillchat-logo.svg
 
 public/Bell.svg
-  -> public/icons/Bell.svg
+  -> public/icons/bell.svg
 
-public/Student.svg
-  -> public/illustrations/Student.svg
+public/Human.svg
+  -> public/illustrations/person.svg
+
+public/defaultProfile.svg
+  -> public/illustrations/default-profile.svg
 
 public/fonts/PretendardVariable.woff2
-  -> public/fonts/PretendardVariable.woff2
+  -> public/fonts/pretendard-variable.woff2
 ```
 
 URL 참조도 같은 기준으로 바뀌었습니다.
 
 ```text
 /PillChat.svg
-  -> /brand/PillChat.svg
+  -> /brand/pillchat-logo.svg
 
 /Bell.svg
-  -> /icons/Bell.svg
+  -> /icons/bell.svg
 
-/Student.svg
-  -> /illustrations/Student.svg
+/Human.svg
+  -> /illustrations/person.svg
+
+/defaultProfile.svg
+  -> /illustrations/default-profile.svg
 ```
+
+`public` 루트의 이미지와 하위 폴더의 중복본을 정리하고, 실행 코드에서 참조하지 않는 SVG/PNG는 제거했습니다. 주석으로만 남은 과거 가입 화면의 일러스트와 Next.js 기본 이미지도 제거 대상에 포함했습니다. 새 이미지는 역할에 맞는 하위 폴더에 한 번만 추가하고, URL 참조와 SVG import를 함께 확인합니다.
+
+기본 프로필 경로는 `/illustrations/default-profile.svg`로 통일했습니다. 첨부 삭제 버튼은 기존 색상을 유지하도록 `/icons/remove-circle-white.svg`(흰 배경)와 `/icons/remove-circle-gray.svg`(회색 배경)를 구분합니다. `fonts/pretendard-variable.woff2`와 `illustrations/pill-loader-sprite.png`는 사용 중이므로 유지합니다.
+
+### public asset 네이밍 및 참조 규칙
+
+모든 `public` 파일은 **소문자 kebab-case**를 사용합니다. 기본 형식은 `<대상 또는 용도>[-<변형>].<확장자>`이며, 단어는 하이픈으로 연결합니다. 폴더가 역할을 나타내므로 `icon`, `image` 같은 접미사나 디자인 도구에서 붙은 임의 번호는 사용하지 않습니다. 해상도 등 실제 의미가 있는 숫자는 허용합니다.
+
+| 폴더            | 이름 기준                    | 예시                                                                   |
+| --------------- | ---------------------------- | ---------------------------------------------------------------------- |
+| `brand`         | 브랜드 + 자산 종류           | `pillchat-logo.svg`                                                    |
+| `icons`         | 형태 또는 기능 + 필요한 변형 | `chevron-right.svg`, `check-circle-filled.svg`                         |
+| `illustrations` | 화면에서의 대상 또는 용도    | `badge-placeholder.svg`, `coupon-ticket.svg`, `pill-loader-sprite.png` |
+| `fonts`         | 폰트 이름 + 스타일           | `pretendard-variable.woff2`                                            |
+
+변형은 기본 이름 뒤에 붙입니다. `filled`와 `outline`은 채움 여부, `muted`는 약한 강조, `colored`는 컬러 버전, `white`와 `gray`는 구분이 필요한 고정 색상을 뜻합니다. 방향은 `left`, `right`, `horizontal`, `vertical`로 명시합니다. 예를 들어 `check-circle-filled.svg`는 선택 상태, `check-circle-muted.svg`는 회색 미선택 상태, `check-circle-outline.svg`는 브랜드 색상의 테두리 버전입니다. 파일명이 달라도 그림이 동일하면 하나의 자산으로 합칩니다.
+
+| 이전 이름                           | 새 이름                 |
+| ----------------------------------- | ----------------------- |
+| `ArrowIcon.svg`                     | `chevron-right.svg`     |
+| `File2.svg`                         | `file.svg`              |
+| `More.svg`                          | `ellipsis-vertical.svg` |
+| `Idk.svg`                           | `badge-placeholder.svg` |
+| `BadgeIcon1.svg`                    | `attendance-badge.svg`  |
+| `Eye.svg`, `OpenEye.svg`            | `eye.svg`               |
+| `ChevronLeft.svg`, `ReturnPage.svg` | `chevron-left.svg`      |
+| `Money.svg`, `FarmMoney.svg`        | `pharm-coin.svg`        |
+
+URL로 사용하는 이미지 경로는 `constants/assets.ts`의 `PUBLIC_ASSETS`에 정의합니다. 페이지와 공통 컴포넌트는 경로 문자열을 반복해서 쓰는 대신 이 상수를 가져옵니다. API에서 받은 사용자 이미지 URL은 그대로 사용합니다.
+
+```tsx
+import { PUBLIC_ASSETS } from "@/constants/assets";
+
+<img src={PUBLIC_ASSETS.brand.pillchatLogo} alt="PillChat" />
+<img src={PUBLIC_ASSETS.icons.chevronRight} alt="" />
+```
+
+React 컴포넌트로 사용하는 SVG는 SVGR가 처리할 수 있도록 파일을 직접 import합니다. `next/font/local`의 폰트 경로도 빌드 시 분석할 수 있는 문자열 리터럴을 유지합니다.
+
+```tsx
+import HomeIcon from "@/public/icons/home.svg";
+
+const pretendard = localFont({
+  src: "../public/fonts/pretendard-variable.woff2",
+});
+```
+
+새 자산을 추가하거나 이름을 바꿀 때는 파일, `PUBLIC_ASSETS`, 직접 SVG import를 함께 수정합니다. 경로 대소문자 일치 여부와 프로덕션 빌드를 확인합니다.
 
 ## 상세 이동 맵
 
@@ -327,7 +382,6 @@ import { formatDiffDate } from "@/lib/shared/date";
 ## 남겨둔 정리 과제
 
 - `store/S3auth.ts`와 `store/ocrVerifyAtom.ts`는 보존했습니다. 제거 여부는 실제 사용처와 기능 흐름을 별도 검토한 뒤 결정합니다.
-- `public/icons` 안에는 현재 사용하지 않는 create-next-app 기본 SVG도 포함되어 있을 수 있습니다. 사용 여부 확인 후 제거할 수 있습니다.
 - `lib/client/auth.ts`는 JWT decode와 localStorage 기반 사용자 조회가 함께 있습니다. 추후 순수 JWT decode만 `lib/shared`로 더 잘게 분리할 수 있습니다.
 
 ## 참고한 외부 기준

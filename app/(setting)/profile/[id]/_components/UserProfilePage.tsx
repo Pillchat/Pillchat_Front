@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { FC, useEffect, useMemo, useState } from "react";
 import { Lock } from "lucide-react";
 import { LeftArrowButton } from "@/components/atoms";
@@ -74,14 +75,18 @@ const normalizeBadges = (payload: Record<string, unknown>): BadgeItem[] => {
       return {
         id: String(item.id ?? `badge-${index}`),
         name: item.name ?? item.title ?? item.badgeName ?? "뱃지",
-        icon: item.icon ?? item.iconUrl ?? item.image ?? "/Idk.svg",
+        icon:
+          item.icon ??
+          item.iconUrl ??
+          item.image ??
+          PUBLIC_ASSETS.illustrations.badgePlaceholder,
       };
     }
 
     return {
       id: `badge-${index}`,
       name: String(badge),
-      icon: "/Idk.svg",
+      icon: PUBLIC_ASSETS.illustrations.badgePlaceholder,
     };
   });
 };
@@ -124,7 +129,7 @@ const normalizeProfile = (result: unknown): UserProfile => {
         payload.profileImg,
         payload.profileImage,
         payload.imageUrl,
-      ) || "/defaultProfile.svg",
+      ) || PUBLIC_ASSETS.illustrations.defaultProfile,
     affiliation: affiliation || "소속 정보 없음",
     followerCount: numberValue(
       payload.followerCount,
@@ -158,7 +163,7 @@ const normalizeProfile = (result: unknown): UserProfile => {
 const initialProfile: UserProfile = {
   isPublic: null,
   nickname: "사용자",
-  profileImage: "/defaultProfile.svg",
+  profileImage: PUBLIC_ASSETS.illustrations.defaultProfile,
   affiliation: "소속 정보 없음",
   followerCount: 0,
   followingCount: 0,
@@ -192,7 +197,11 @@ function ProfileHeader({ onReport }: { onReport: () => void }) {
             className="flex h-10 w-10 items-center justify-center"
             aria-label="더보기"
           >
-            <img src="/More.svg" alt="" className="h-8 w-8" />
+            <img
+              src={PUBLIC_ASSETS.icons.ellipsisVertical}
+              alt=""
+              className="h-8 w-8"
+            />
           </button>
         }
       />
@@ -340,7 +349,7 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
                     aria-label={`${profile.attendanceStreak}일 연속 출석`}
                   >
                     <img
-                      src="/BadgeIcon1.svg"
+                      src={PUBLIC_ASSETS.illustrations.attendanceBadge}
                       alt=""
                       className="absolute inset-0 h-full w-full"
                     />
@@ -373,12 +382,12 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
               <h2 className="text-sm font-medium text-[#999]">학습 관리</h2>
               <div className="mt-4 flex h-[4.5rem] items-center">
                 <StudyStat
-                  icon="/Question.svg"
+                  icon={PUBLIC_ASSETS.icons.question}
                   value={profile.questionCount}
                   label="질문 수"
                 />
                 <StudyStat
-                  icon="/Answer.svg"
+                  icon={PUBLIC_ASSETS.icons.answer}
                   value={profile.answerCount}
                   label="답변 수"
                   bordered
