@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { ChangeEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchAPI } from "@/lib/client/fetch";
@@ -210,7 +211,7 @@ const FindPage = () => {
                 type="email"
                 iconAsButton={Boolean(email)}
                 iconPosition="right"
-                iconSrc={email ? "/icons/Cancel.svg" : undefined}
+                iconSrc={email ? PUBLIC_ASSETS.icons.inputClear : undefined}
                 iconSize={20}
                 placeholder="이메일을 입력해주세요."
                 autoFocus
@@ -291,7 +292,9 @@ const FindPage = () => {
                   onIconClick={() => setShowPassword((prev) => !prev)}
                   iconPosition="right"
                   iconSrc={
-                    showPassword ? "/icons/OpenEye.svg" : "/icons/ClosedEye.svg"
+                    showPassword
+                      ? PUBLIC_ASSETS.icons.eye
+                      : PUBLIC_ASSETS.icons.eyeOff
                   }
                   iconSize={20}
                   placeholder="비밀번호를 입력해주세요."
@@ -319,8 +322,8 @@ const FindPage = () => {
                     iconPosition="right"
                     iconSrc={
                       showPasswordConfirm
-                        ? "/icons/OpenEye.svg"
-                        : "/icons/ClosedEye.svg"
+                        ? PUBLIC_ASSETS.icons.eye
+                        : PUBLIC_ASSETS.icons.eyeOff
                     }
                     iconSize={20}
                     placeholder="비밀번호를 한 번 더 입력해주세요."

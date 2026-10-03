@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { FC, useEffect, useState } from "react";
 
 import { SystemField } from "@/components/atoms";
@@ -77,21 +78,21 @@ const MyPage: FC = () => {
           <p className="text-sm text-muted-foreground">정보</p>
           <div className="mt-4 flex flex-col gap-6">
             <SystemField
-              iconSrc="/icons/userUp.svg"
+              iconSrc={PUBLIC_ASSETS.icons.userUpgrade}
               title="승급 조건"
               description="다음 승급을 위한 조건을 알아보세요."
               onClick={() => router.push("/gradeInfo")}
             />
 
             <SystemField
-              iconSrc="/icons/BellColor.svg"
+              iconSrc={PUBLIC_ASSETS.icons.bellColored}
               title="알림 설정"
               description="원하는 알림만 받도록 설정해보세요."
               onClick={() => router.push("/bellSetting")}
             />
 
             <SystemField
-              iconSrc="/icons/userInfo.svg"
+              iconSrc={PUBLIC_ASSETS.icons.userInfo}
               title="맞춤형 정보 설정"
               description="내가 설정한 항목을 변경할 수 있어요."
               onClick={handleOnboardingClick}
@@ -106,7 +107,7 @@ const MyPage: FC = () => {
             <p className="text-sm text-muted-foreground">관리자</p>
             <div className="mt-4 flex flex-col gap-6">
               <SystemField
-                iconSrc="/icons/BellColor.svg"
+                iconSrc={PUBLIC_ASSETS.icons.bellColored}
                 title="푸시 알림 관리"
                 description="푸시 알림 발송 및 이력을 관리할 수 있어요."
                 onClick={() => router.push("/admin")}
@@ -120,16 +121,25 @@ const MyPage: FC = () => {
           <p className="text-sm text-muted-foreground">문의 및 안내</p>
           <div className="mt-4 flex flex-col gap-6">
             <SystemField
-              iconSrc="/icons/HeadPhone.svg"
+              iconSrc={PUBLIC_ASSETS.icons.headset}
               title="고객 센터"
               onClick={() => router.push("/support")}
             />
 
-            <SystemField iconSrc="/Notification.svg" title="공지사항" />
+            <SystemField
+              iconSrc={PUBLIC_ASSETS.icons.notice}
+              title="공지사항"
+            />
 
-            <SystemField iconSrc="/Policy.svg" title="개인정보 처리방침" />
+            <SystemField
+              iconSrc={PUBLIC_ASSETS.icons.privacyPolicy}
+              title="개인정보 처리방침"
+            />
 
-            <SystemField iconSrc="/Terms.svg" title="서비스 이용약관" />
+            <SystemField
+              iconSrc={PUBLIC_ASSETS.icons.terms}
+              title="서비스 이용약관"
+            />
           </div>
 
           <div className="mt-8 h-px w-full bg-muted" />
@@ -138,13 +148,13 @@ const MyPage: FC = () => {
         <div className="mt-8 w-[90%]">
           <div className="flex flex-col gap-6">
             <SystemField
-              iconSrc="/icons/Logout.svg"
+              iconSrc={PUBLIC_ASSETS.icons.logout}
               title="로그아웃"
               onClick={() => setOpenModal("logout")}
             />
 
             <SystemField
-              iconSrc="/icons/UserRemove.svg"
+              iconSrc={PUBLIC_ASSETS.icons.userRemove}
               title="계정 탈퇴"
               textColor="text-border"
               onClick={() => setOpenModal("withdraw")}

@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import {
   type CSSProperties,
   type FC,
@@ -875,7 +876,11 @@ const Home: FC = () => {
                           className="col-start-1 row-start-1 h-7 min-w-0 border-b border-border bg-transparent pb-1 text-body-medium text-foreground outline-none placeholder:text-muted-foreground min-[360px]:border-b-0 min-[360px]:border-r min-[360px]:pb-0 min-[360px]:pr-2"
                         />
                         <div className="col-start-1 row-start-2 flex min-w-0 items-center gap-2 min-[360px]:col-start-2 min-[360px]:row-start-1">
-                          <img src="/Calendar.svg" width={20} alt="" />
+                          <img
+                            src={PUBLIC_ASSETS.icons.calendar}
+                            width={20}
+                            alt=""
+                          />
                           <input
                             type="date"
                             onClick={(event) => handleClick(event)}

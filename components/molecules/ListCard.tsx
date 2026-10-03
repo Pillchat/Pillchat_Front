@@ -1,3 +1,4 @@
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { FC } from "react";
 import { IconWithCount, PharmMoney, Image } from "../atoms";
 
@@ -58,10 +59,13 @@ export const ListCard: FC<{
         </div>
         {!hideStats && (
           <div className="flex items-center gap-2 text-gray-500">
-            <IconWithCount src="/icons/Eye.svg" count={viewCount} />
-            <IconWithCount src="/icons/LikeGray500.svg" count={likeCount} />
+            <IconWithCount src={PUBLIC_ASSETS.icons.eye} count={viewCount} />
             <IconWithCount
-              src="/icons/QuestionWithBubbleGray500.svg"
+              src={PUBLIC_ASSETS.icons.likeMuted}
+              count={likeCount}
+            />
+            <IconWithCount
+              src={PUBLIC_ASSETS.icons.questionBubbleMuted}
               count={answerCount}
             />
           </div>

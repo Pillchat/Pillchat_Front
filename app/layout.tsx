@@ -1,3 +1,4 @@
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { ReactNode, Suspense } from "react";
@@ -7,7 +8,7 @@ import Providers from "./providers";
 import { TopRouteProgress } from "@/components/molecules";
 
 const pretendard = localFont({
-  src: "../public/fonts/PretendardVariable.woff2",
+  src: "../public/fonts/pretendard-variable.woff2",
   display: "swap",
   variable: "--font-pretendard",
 });
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
   title: "Pillchat",
   description: "Pillchat",
   icons: {
-    icon: "/brand/PillChat.svg",
+    icon: PUBLIC_ASSETS.brand.pillchatLogo,
   },
 };
 

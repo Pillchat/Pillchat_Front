@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import Image from "next/image";
 import { FC } from "react";
 
@@ -7,7 +8,7 @@ export const Logo: FC = () => (
   <div className="flex flex-col items-center justify-center gap-3">
     <div>
       <Image
-        src="/brand/PillChat.svg"
+        src={PUBLIC_ASSETS.brand.pillchatLogo}
         alt="PillChat logo"
         width={160}
         height={83}

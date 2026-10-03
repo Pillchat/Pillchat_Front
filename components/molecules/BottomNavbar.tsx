@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { FC, useEffect, useState } from "react";
-import HomeIcon from "@/public/icons/Home.svg";
-import QuestionBankIcon from "@/public/icons/Questionbank.svg";
-import ArchiveIcon from "@/public/icons/Archive.svg";
-import MyPageIcon from "@/public/icons/Mypage.svg";
+import { FC } from "react";
+import HomeIcon from "@/public/icons/home.svg";
+import QuestionBankIcon from "@/public/icons/question-bank.svg";
+import ArchiveIcon from "@/public/icons/archive.svg";
+import MyPageIcon from "@/public/icons/user.svg";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
@@ -33,17 +33,26 @@ const NAV_ITEMS = [
   },
 ];
 
+const LEARNING_PATHS = ["/learn", "/learning", "/questionbank", "/flashcards"];
+
+const matchesPath = (pathname: string, path: string) =>
+  pathname === path || pathname.startsWith(`${path}/`);
+
+const isNavItemActive = (pathname: string, href: string) => {
+  if (href === "/") return pathname === href;
+  if (href === "/learn") {
+    return LEARNING_PATHS.some((path) => matchesPath(pathname, path));
+  }
+
+  return matchesPath(pathname, href);
+};
+
 interface BottomNavbarProps {
   className?: string;
 }
 
 export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
   const pathname = usePathname();
-  const [activeHref, setActiveHref] = useState(pathname);
-
-  useEffect(() => {
-    setActiveHref(pathname);
-  }, [pathname]);
 
   return (
     <nav
@@ -54,13 +63,12 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
     >
       {NAV_ITEMS.map((item) => {
         const IconComponent = item.icon;
-        const isActive = activeHref === item.href;
+        const isActive = isNavItemActive(pathname, item.href);
 
         return (
           <Link
             key={`${item.href}-${item.label}`}
             href={item.href}
-            onClick={() => setActiveHref(item.href)}
             className={cn(
               "flex h-[3.125rem] w-[3.125rem] flex-col items-center justify-center text-border transition-colors hover:text-brand focus:text-brand",
               isActive && "text-brand",

@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { SolidButton, TextButton, TextareaWithLabel } from "@/components/atoms";
 import {
   IconInputField,
@@ -12,7 +13,7 @@ import { useStep, useUploadForm, useUploadFiles } from "./_hooks";
 import { useRouter } from "@/lib/navigation";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import CheckCircle from "@/public/icons/CheckCircle.svg";
+import CheckCircle from "@/public/icons/check-circle.svg";
 import { QUESTION_FORM_RULES } from "@/constants/formValidation";
 import { useSubjects } from "@/hooks";
 import { fetchAPI } from "@/lib/client/fetch";
@@ -669,14 +670,14 @@ const UploadPage = () => {
 
               <div className="grid w-full grid-cols-2 gap-4">
                 <BoardButton
-                  imageSrc="/icons/Image.svg"
+                  imageSrc={PUBLIC_ASSETS.icons.image}
                   className="max-w-[168.5px]"
                   text="이미지 업로드"
                   onClick={openImagePicker}
                   type="button"
                 />
                 <BoardButton
-                  imageSrc="/icons/File2.svg"
+                  imageSrc={PUBLIC_ASSETS.icons.file}
                   className="max-w-[168.5px]"
                   text="파일 업로드"
                   onClick={openPdfPicker}
@@ -714,7 +715,10 @@ const UploadPage = () => {
                           onClick={() => removeItem(item.id)}
                           className="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center"
                         >
-                          <img src="/icons/Remove.svg" alt="제거" />
+                          <img
+                            src={PUBLIC_ASSETS.icons.removeCircleWhite}
+                            alt="제거"
+                          />
                         </button>
 
                         {item.type === "image" ? (
@@ -781,7 +785,7 @@ const UploadPage = () => {
           <div className="flex flex-grow flex-col items-center justify-center gap-3">
             <div className="flex flex-col items-center justify-center text-center">
               <img
-                src="/icons/UncheckedIcon.svg"
+                src={PUBLIC_ASSETS.icons.checkCircleOutline}
                 alt="완료"
                 width={72}
                 className="mb-2"

@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { SectionWithChips } from "@/components/molecules";
 import { studentInfoAtom } from "@/store/onboarding";
 import { useSubjects, useCustomSubjects } from "@/hooks";
@@ -298,7 +299,10 @@ export const SelectSubjectByGrade = ({
                         className="gap-0 pr-0"
                         label="추가하기"
                         afterIcon={
-                          <img src="/icons/CirclePlus.svg" alt="plus" />
+                          <img
+                            src={PUBLIC_ASSETS.icons.plusCircle}
+                            alt="plus"
+                          />
                         }
                         variant="outline"
                         size="sm"
@@ -349,7 +353,10 @@ export const SelectSubjectByGrade = ({
                         className="gap-0 pr-0"
                         label="추가하기"
                         afterIcon={
-                          <img src="/icons/CirclePlus.svg" alt="plus" />
+                          <img
+                            src={PUBLIC_ASSETS.icons.plusCircle}
+                            alt="plus"
+                          />
                         }
                         variant="outline"
                         size="sm"

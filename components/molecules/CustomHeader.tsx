@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { type FC, type ReactNode } from "react";
 
 import { LeftArrowButton, TextButton } from "@/components/atoms";
@@ -41,7 +42,12 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
             size="icon"
             onClick={() => router.push("/")}
           >
-            <img src="/icons/Home.svg" alt="home" width={32} height={32} />
+            <img
+              src={PUBLIC_ASSETS.icons.home}
+              alt="home"
+              width={32}
+              height={32}
+            />
           </Button>
         ) : rightButtonLabel ? (
           <TextButton

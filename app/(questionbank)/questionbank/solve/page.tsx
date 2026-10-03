@@ -10,6 +10,9 @@ import {
   applyGradeResultAtom,
   nextQuestionAtom,
   choiceIdToText,
+  prevQuestionAtom,
+  toggleBookmarkAtom,
+  isCurrentBookmarkedAtom,
 } from "@/store/quizSession";
 import { CustomHeader } from "@/components/molecules";
 import { SolidButton } from "@/components/atoms";
@@ -19,6 +22,11 @@ import TrueFalseButtons from "../_components/TrueFalseButtons";
 import ShortAnswerInput from "../_components/ShortAnswerInput";
 import FillInBlankInput from "../_components/FillInBlankInput";
 import ExplanationPanel from "../_components/ExplanationPanel";
+import {
+  ReviewPlayerFrame,
+  ReviewControls,
+} from "../_components/ReviewPlayerFrame";
+import { REVIEW_MODE_LABELS } from "@/types/review";
 import type { SubmitAnswerResponse } from "@/types/questionbank";
 
 const SolvePage = () => {
@@ -28,6 +36,9 @@ const SolvePage = () => {
   const applyGrade = useSetAtom(applyGradeResultAtom);
   const nextAction = useSetAtom(nextQuestionAtom);
   const gradingRef = useRef(false);
+  const previousAction = useSetAtom(prevQuestionAtom);
+  const bookmarkAction = useSetAtom(toggleBookmarkAtom);
+  const isBookmarked = useAtomValue(isCurrentBookmarkedAtom);
 
   // 세션 없으면 진입 화면으로
   useEffect(() => {
@@ -168,6 +179,39 @@ const SolvePage = () => {
 
   // FILL_IN_BLANK은 passage 안에 빈칸이 포함되어 있으므로 별도 표시 불필요
   const showPassage = questionType !== "FILL_IN_BLANK";
+
+  if (session.reviewMode)
+    return (
+      <ReviewPlayerFrame
+        key={currentQuestion.id}
+        title={session.title}
+        modeLabel={REVIEW_MODE_LABELS[session.reviewMode]}
+        backHref="/questionbank/review?category=AI"
+        index={session.currentIndex}
+        total={session.questions.length}
+        onPrevious={previousAction}
+        onBookmark={bookmarkAction}
+        isBookmarked={isBookmarked}
+        hint={currentQuestion.hint}
+        explanation={<ExplanationPanel />}
+        footer={
+          <ReviewControls
+            graded={gradingState === "graded"}
+            disabled={isMainDisabled}
+            isLast={isLastQuestion}
+            onReveal={handleRevealAnswer}
+            onMain={handleMainButton}
+          />
+        }
+      >
+        {showPassage && (
+          <p className="mb-6 text-base font-medium leading-relaxed text-foreground">
+            {currentQuestion.passage}
+          </p>
+        )}
+        {renderQuestionInput()}
+      </ReviewPlayerFrame>
+    );
 
   return (
     <div className="flex h-dvh select-none flex-col">
