@@ -410,9 +410,7 @@ const UploadPage = () => {
         setStep(parsed.step);
       }
 
-      setHasDraftValues(
-        !!parsed.title || !!parsed.content,
-      );
+      setHasDraftValues(!!parsed.title || !!parsed.content);
     } catch (error) {
       console.error("학습자료 임시저장 복원 실패:", error);
     } finally {

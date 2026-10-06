@@ -17,9 +17,7 @@ const gradeInfo: FC = () => {
             <p>첫 출석을 시작했어요!</p>
           </div>
 
-          <p className="pl-8 text-muted-foreground">
-            · 누적 출석 1일 이상
-          </p>
+          <p className="pl-8 text-muted-foreground">· 누적 출석 1일 이상</p>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -30,9 +28,7 @@ const gradeInfo: FC = () => {
             <p>차곡차곡 20일 출석을 쌓았어요!</p>
           </div>
 
-          <p className="pl-8 text-muted-foreground">
-            · 누적 출석 20일 이상
-          </p>
+          <p className="pl-8 text-muted-foreground">· 누적 출석 20일 이상</p>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -43,9 +39,7 @@ const gradeInfo: FC = () => {
             <p>50일 연속으로 출석했어요!</p>
           </div>
 
-          <p className="pl-8 text-muted-foreground">
-            · 연속 출석 50일 이상
-          </p>
+          <p className="pl-8 text-muted-foreground">· 연속 출석 50일 이상</p>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -56,9 +50,7 @@ const gradeInfo: FC = () => {
             <p>100일 연속으로 출석했어요!</p>
           </div>
 
-          <p className="pl-8 text-muted-foreground">
-            · 연속 출석 100일 이상
-          </p>
+          <p className="pl-8 text-muted-foreground">· 연속 출석 100일 이상</p>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -69,9 +61,7 @@ const gradeInfo: FC = () => {
             <p>365일 연속으로 출석했어요!</p>
           </div>
 
-          <p className="pl-8 text-muted-foreground">
-            · 연속 출석 365일 이상
-          </p>
+          <p className="pl-8 text-muted-foreground">· 연속 출석 365일 이상</p>
         </div>
       </div>
     </div>

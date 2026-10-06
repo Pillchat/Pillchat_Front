@@ -39,7 +39,10 @@ export async function backendProxy(request: NextRequest, path?: string) {
       request.method === "POST" &&
       (path ?? request.nextUrl.pathname) === "/api/flashcards/sources"
     ) {
-      const error = await response.clone().json().catch(() => null);
+      const error = await response
+        .clone()
+        .json()
+        .catch(() => null);
       // Record the error contract and header presence, never tokens or file contents.
       console.error("AI 카드 원본 업로드 실패", {
         status: response.status,
