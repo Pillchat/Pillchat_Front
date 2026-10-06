@@ -491,6 +491,7 @@ const SignupPage: FC = () => {
 
             <div className="mt-[4rem]">
               <SolidButton
+                loading={isSubmitLoading}
                 content={isSubmitLoading ? "가입 중..." : "완료"}
                 variant={isSignupReady ? "brand" : "disabled"}
                 disabled={!isSignupReady || isSubmitLoading}

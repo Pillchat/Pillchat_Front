@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { PUBLIC_ASSETS } from "@/constants/assets";
 import { LikeButton } from "@/components/atoms";
 import {
@@ -126,7 +128,10 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
       />
 
       {questionLoading && (
-        <div className="mx-6 my-5 h-96 animate-pulse rounded bg-gray-100" />
+        <LoadingIndicator
+          label="질문을 불러오는 중..."
+          className="mx-6 my-5 h-96"
+        />
       )}
 
       {questionData && (

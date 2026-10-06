@@ -1,5 +1,7 @@
 "use client";
 
+import { PillLoader } from "@/components/atoms/PillLoader";
+
 import { PUBLIC_ASSETS } from "@/constants/assets";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -284,7 +286,7 @@ export const ImageButton = forwardRef<ImageButtonRef, ImageButtonProps>(
                   {/* 업로드 상태 표시 */}
                   {image.uploadStatus === "uploading" && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      <PillLoader size={32} label="이미지 업로드 중" />
                     </div>
                   )}
 

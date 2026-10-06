@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useSetAtom } from "jotai";
@@ -172,7 +174,10 @@ const MyTasksPage = () => {
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex h-full items-center justify-center">
-            <div className="text-muted-foreground">불러오는 중...</div>
+            <LoadingIndicator
+              label="불러오는 중..."
+              className="text-muted-foreground"
+            />
           </div>
         ) : filteredTasks.length > 0 ? (
           filteredTasks.map((task) => (

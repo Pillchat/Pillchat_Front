@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { FC, useState, useEffect, useCallback } from "react";
 import { fetchAPI } from "@/lib/client/fetch";
 import { getCurrentUserId } from "@/lib/client/auth";
@@ -103,7 +105,9 @@ const NoteSelectModal: FC<NoteSelectModalProps> = ({
 
         {/* 목록 */}
         <div className="flex-1 overflow-y-auto">
-          {notes.length === 0 && !loading ? (
+          {notes.length === 0 && loading ? (
+            <LoadingIndicator />
+          ) : notes.length === 0 ? (
             <p className="py-10 text-center text-sm text-muted-foreground">
               오답노트가 없습니다.
             </p>
@@ -157,7 +161,11 @@ const NoteSelectModal: FC<NoteSelectModalProps> = ({
                   onClick={handleLoadMore}
                   disabled={loading}
                 >
-                  {loading ? "불러오는 중..." : "더 보기"}
+                  {loading ? (
+                    <LoadingIndicator inline label="불러오는 중..." />
+                  ) : (
+                    "더 보기"
+                  )}
                 </button>
               )}
             </>

@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Check, ChevronDown, ChevronRight, X } from "lucide-react";
 import { useState } from "react";
@@ -61,7 +63,11 @@ export function MarketSubjectPicker({
         >
           <span className="truncate">
             {selectedSubject?.label ??
-              (isLoading ? "과목을 불러오는 중..." : "과목을 선택해주세요")}
+              (isLoading ? (
+                <LoadingIndicator inline label="과목을 불러오는 중..." />
+              ) : (
+                "과목을 선택해주세요"
+              ))}
           </span>
           <ChevronDown
             aria-hidden="true"
@@ -102,14 +108,7 @@ export function MarketSubjectPicker({
 
           <div className="flex-1 overflow-y-auto overscroll-contain px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3">
             {isLoading ? (
-              <div className="space-y-3 py-2" aria-label="과목을 불러오는 중">
-                {[...Array(6)].map((_, index) => (
-                  <div
-                    key={index}
-                    className="h-12 animate-pulse rounded-xl bg-primary-980"
-                  />
-                ))}
-              </div>
+              <LoadingIndicator label="과목을 불러오는 중..." />
             ) : sections.length === 0 ? (
               <p className="py-12 text-center text-body-medium text-muted-foreground">
                 선택할 수 있는 과목이 없습니다.

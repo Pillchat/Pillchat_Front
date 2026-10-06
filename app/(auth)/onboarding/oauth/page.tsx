@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { PUBLIC_ASSETS } from "@/constants/assets";
 import { SolidButton } from "@/components/atoms";
 import { StepHeader } from "@/components/molecules";
@@ -170,7 +172,10 @@ const OAuthOnboardingPage = () => {
   if (!pendingSignup) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
-        <p className="text-sm text-muted-foreground">불러오는 중...</p>
+        <LoadingIndicator
+          label="불러오는 중..."
+          className="text-sm text-muted-foreground"
+        />
       </div>
     );
   }
@@ -293,6 +298,7 @@ const OAuthOnboardingPage = () => {
 
             <div className="font-regular mt-[1rem] w-[90%]">
               <SolidButton
+                loading={isSubmitting}
                 content={isSubmitting ? "가입 중..." : "완료"}
                 variant={isSubmitValid && !isSubmitting ? "brand" : "disabled"}
                 disabled={!isSubmitValid || isSubmitting}

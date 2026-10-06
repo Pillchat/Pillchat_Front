@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useEffect, useMemo, useState } from "react";
 import { CustomHeader } from "@/components/molecules";
 
@@ -64,9 +66,7 @@ const SupportDetailClient = ({ inquiryId }: { inquiryId: string }) => {
       <CustomHeader title={TEXT.headerTitle} showIcon />
 
       {!isReady && (
-        <div className="mx-6 my-5 h-96 animate-pulse rounded bg-gray-100">
-          <span className="sr-only">{TEXT.loading}</span>
-        </div>
+        <LoadingIndicator label={TEXT.loading} className="mx-6 my-5 h-96" />
       )}
 
       {isReady && !inquiry && (

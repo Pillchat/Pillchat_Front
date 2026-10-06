@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useAtomValue, useSetAtom } from "jotai";
@@ -100,7 +102,10 @@ const ResultPage = () => {
   if (loading) {
     return (
       <div className="flex h-dvh items-center justify-center">
-        <div className="text-muted-foreground">결과 불러오는 중...</div>
+        <LoadingIndicator
+          label="결과 불러오는 중..."
+          className="text-muted-foreground"
+        />
       </div>
     );
   }

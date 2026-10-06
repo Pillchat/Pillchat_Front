@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 type ArchiveTabKey = /*"my-questions" | */ "my-study" | "my-note";
 
 import { FC, Fragment, useEffect, useMemo, useState } from "react";
@@ -345,7 +347,10 @@ const ArchivePage: FC = () => {
           currentStatus === "my-study" ? (
             materialsLoading ? (
               <div className="flex h-full items-center justify-center">
-                <div className="text-border">불러오는 중...</div>
+                <LoadingIndicator
+                  label="불러오는 중..."
+                  className="text-border"
+                />
               </div>
             ) : (
               renderMaterialList(filteredMaterials)
@@ -353,7 +358,10 @@ const ArchivePage: FC = () => {
           ) : currentStatus === "my-note" ? (
             notesLoading ? (
               <div className="flex h-full items-center justify-center">
-                <div className="text-border">불러오는 중...</div>
+                <LoadingIndicator
+                  label="불러오는 중..."
+                  className="text-border"
+                />
               </div>
             ) : filteredNotes.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center gap-3 pb-[calc(6.875rem+env(safe-area-inset-bottom))]">

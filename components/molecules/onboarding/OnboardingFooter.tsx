@@ -159,6 +159,7 @@ export const OnboardingFooter: FC<OnboardingFooterProps> = ({
           size="lg"
           className="h-14 w-full"
           disabled={isPending}
+          loading={isPending}
           onClick={handleClick}
         >
           {isPending ? "처리 중..." : label}

@@ -1,3 +1,4 @@
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 import { Suspense } from "react";
 import { GoogleOAuthCallback } from "./_components/GoogleOAuthCallback";
 
@@ -6,9 +7,10 @@ const GoogleOAuthCallbackPage = () => {
     <Suspense
       fallback={
         <div className="login-page">
-          <p className="text-sm font-medium text-muted-foreground">
-            Google 로그인 처리 중입니다.
-          </p>
+          <LoadingIndicator
+            label="Google 로그인 처리 중입니다."
+            className="text-sm font-medium text-muted-foreground"
+          />
         </div>
       }
     >

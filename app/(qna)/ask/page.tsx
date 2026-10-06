@@ -30,6 +30,7 @@ const QuestionPage = () => {
     <div className="flex min-h-dvh flex-col gap-7">
       <CustomHeader
         title={isEditMode ? "질문 수정" : "질문하기"}
+        rightButtonLoading={isLoading}
         rightButtonLabel={
           isLoading
             ? isEditMode

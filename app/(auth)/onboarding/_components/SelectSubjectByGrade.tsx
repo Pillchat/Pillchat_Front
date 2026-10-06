@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { PUBLIC_ASSETS } from "@/constants/assets";
 import { SectionWithChips } from "@/components/molecules";
 import { studentInfoAtom } from "@/store/onboarding";
@@ -229,7 +231,7 @@ export const SelectSubjectByGrade = ({
   }, [professionalPrefill, isLoading, setStudentInfo]);
 
   if (isLoading) {
-    return <div>과목 정보를 불러오는 중...</div>;
+    return <LoadingIndicator label="과목 정보를 불러오는 중..." />;
   }
 
   return (

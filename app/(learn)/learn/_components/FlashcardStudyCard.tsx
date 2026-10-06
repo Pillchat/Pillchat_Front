@@ -1,6 +1,8 @@
 "use client";
 
-import { Columns2, GitBranch, Loader2, RotateCcw, ScanEye } from "lucide-react";
+import { PillLoader } from "@/components/atoms/PillLoader";
+
+import { Columns2, GitBranch, RotateCcw, ScanEye } from "lucide-react";
 import {
   useEffect,
   useRef,
@@ -283,7 +285,7 @@ export function FlashcardStudyCard({
                   aria-hidden="true"
                   className="ml-auto inline-flex shrink-0 items-center gap-2 py-1.5 text-xs font-medium tabular-nums text-muted-foreground"
                 >
-                  {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  {saving && <PillLoader size={20} decorative />}
                   {positionLabel}
                 </span>
               </div>

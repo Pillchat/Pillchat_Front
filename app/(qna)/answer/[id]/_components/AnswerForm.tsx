@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { ImageButton, TextButton } from "@/components/atoms";
 import { CustomCard, CustomHeader } from "@/components/molecules";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,6 +38,7 @@ export const AnswerForm = ({ questionId }: AnswerFormProps) => {
     <div className="flex min-h-dvh flex-col">
       <CustomHeader
         title={isEditMode ? "답변 수정" : "답변하기"}
+        rightButtonLoading={mutation.isPending}
         rightButtonLabel={
           mutation.isPending
             ? isEditMode
@@ -52,7 +55,10 @@ export const AnswerForm = ({ questionId }: AnswerFormProps) => {
       />
 
       {isLoading ? (
-        <div className="mx-6 my-5 h-12 animate-pulse rounded bg-gray-100" />
+        <LoadingIndicator
+          label="질문을 불러오는 중..."
+          className="mx-6 my-5 min-h-32"
+        />
       ) : (
         question && <ViewQuestion question={question} />
       )}

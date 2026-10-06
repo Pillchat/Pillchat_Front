@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useSetAtom } from "jotai";
@@ -310,9 +312,10 @@ const PremiumPage = () => {
             </div>
           ))}
           {Object.keys(subjects).length === 0 && !error && (
-            <p className="text-sm text-muted-foreground">
-              과목 목록 로딩 중...
-            </p>
+            <LoadingIndicator
+              label="과목 목록 로딩 중..."
+              className="text-sm text-muted-foreground"
+            />
           )}
         </div>
 
