@@ -1,5 +1,7 @@
 "use client";
 
+import { PillLoader } from "@/components/atoms/PillLoader";
+
 import Link from "next/link";
 
 import {
@@ -8,7 +10,6 @@ import {
   Eraser,
   EyeOff,
   FileUp,
-  Loader2,
   PenLine,
   Plus,
   Sparkles,
@@ -244,7 +245,7 @@ function CreateActions({
         onClick={onComplete}
         disabled={busy || completeDisabled}
       >
-        {busy && <Loader2 className="mr-2 animate-spin" />}
+        {busy && <PillLoader size={24} className="mr-2" />}
         제작 완료
       </Button>
     </div>
@@ -703,7 +704,7 @@ function CreatePanel({
               disabled={busy || !collection || !sourceFile}
               onClick={() => void handleGenerate()}
             >
-              {generating && <Loader2 className="mr-2 animate-spin" />}
+              {generating && <PillLoader size={24} className="mr-2" />}
               카드 자동 생성
             </Button>
             {hasCreated && !sourceFile && (
@@ -1299,7 +1300,7 @@ export function FlashcardApp() {
           rightSlot={<FlashcardTutorialLink />}
         />
         <div className="flex min-h-[calc(100dvh-4rem)] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+          <PillLoader size={64} />
         </div>
       </AppShell>
     );

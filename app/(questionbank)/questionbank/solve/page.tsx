@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useEffect, useRef } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useAtomValue, useSetAtom } from "jotai";
@@ -67,7 +69,10 @@ const SolvePage = () => {
   if (!session || !currentQuestion) {
     return (
       <div className="flex h-dvh items-center justify-center">
-        <div className="text-muted-foreground">로딩 중...</div>
+        <LoadingIndicator
+          label="로딩 중..."
+          className="text-muted-foreground"
+        />
       </div>
     );
   }

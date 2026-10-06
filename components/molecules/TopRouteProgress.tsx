@@ -1,35 +1,19 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ROUTE_PROGRESS_START_EVENT } from "@/lib/routeProgress";
+import { PillLoader } from "@/components/atoms/PillLoader";
 
 export const TopRouteProgress = () => {
   const pathname = usePathname();
 
-  const barRef = useRef<HTMLDivElement | null>(null);
-  const timerRef = useRef<number | null>(null);
+  const [visible, setVisible] = useState(false);
   const hideTimerRef = useRef<number | null>(null);
   const fallbackTimerRef = useRef<number | null>(null);
-  const widthRef = useRef(0);
   const visibleRef = useRef(false);
   const finishingRef = useRef(false);
   const currentPathRef = useRef(pathname);
-
-  const syncBar = () => {
-    const bar = barRef.current;
-    if (!bar) return;
-
-    bar.style.width = `${widthRef.current}%`;
-    bar.style.opacity = visibleRef.current ? "1" : "0";
-  };
-
-  const clearTimer = () => {
-    if (timerRef.current) {
-      window.clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  };
 
   const clearHideTimer = () => {
     if (hideTimerRef.current) {
@@ -49,27 +33,11 @@ export const TopRouteProgress = () => {
     if (visibleRef.current && !finishingRef.current) return;
 
     clearHideTimer();
-    clearTimer();
     clearFallbackTimer();
 
     visibleRef.current = true;
     finishingRef.current = false;
-    widthRef.current =
-      widthRef.current > 0 && widthRef.current < 88 ? widthRef.current : 18;
-    syncBar();
-
-    timerRef.current = window.setInterval(() => {
-      if (widthRef.current >= 88) return;
-      if (widthRef.current < 40) {
-        widthRef.current += 12;
-      } else if (widthRef.current < 70) {
-        widthRef.current += 6;
-      } else {
-        widthRef.current += 2;
-      }
-
-      syncBar();
-    }, 120);
+    setVisible(true);
 
     fallbackTimerRef.current = window.setTimeout(() => {
       if (currentPathRef.current === window.location.pathname) {
@@ -81,19 +49,15 @@ export const TopRouteProgress = () => {
   const done = () => {
     if (!visibleRef.current) return;
 
-    clearTimer();
     clearHideTimer();
     clearFallbackTimer();
     finishingRef.current = true;
-    widthRef.current = 100;
-    syncBar();
 
     hideTimerRef.current = window.setTimeout(() => {
       visibleRef.current = false;
-      widthRef.current = 0;
       finishingRef.current = false;
       hideTimerRef.current = null;
-      syncBar();
+      setVisible(false);
     }, 220);
   };
 
@@ -147,7 +111,6 @@ export const TopRouteProgress = () => {
         ROUTE_PROGRESS_START_EVENT,
         handleProgressStart,
       );
-      clearTimer();
       clearHideTimer();
       clearFallbackTimer();
     };
@@ -160,12 +123,13 @@ export const TopRouteProgress = () => {
     done();
   }, [pathname]);
 
+  if (!visible) return null;
+
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-[9999]">
-      <div
-        ref={barRef}
-        className="h-[2px] w-0 bg-sky-500 opacity-0 transition-[width,opacity] duration-200 ease-out"
-      />
+    <div className="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top)+4rem)] z-[9999] flex justify-center">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-md">
+        <PillLoader size={40} label="페이지 이동 중" />
+      </div>
     </div>
   );
 };

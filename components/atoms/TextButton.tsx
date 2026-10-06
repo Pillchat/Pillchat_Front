@@ -11,6 +11,7 @@ export const TextButton = ({
   className,
   supportIcon,
   afterIcon,
+  loading = false,
 }: {
   label: ReactNode;
   onClick?: () => void;
@@ -19,6 +20,7 @@ export const TextButton = ({
   className?: string;
   supportIcon?: ReactNode;
   afterIcon?: ReactNode;
+  loading?: boolean;
 }) => {
   return (
     <Button
@@ -26,6 +28,7 @@ export const TextButton = ({
       variant={variant}
       onClick={onClick}
       className={cn(className)}
+      loading={loading}
     >
       {supportIcon}
       {label}

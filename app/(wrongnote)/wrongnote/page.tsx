@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentUserId } from "@/lib/client/auth";
@@ -78,7 +80,10 @@ const WrongNoteListPage = () => {
       <div className="flex-1 overflow-y-auto">
         {loading && notes.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <p className="text-muted-foreground">불러오는 중...</p>
+            <LoadingIndicator
+              label="불러오는 중..."
+              className="text-muted-foreground"
+            />
           </div>
         ) : notes.length > 0 ? (
           <>
@@ -95,7 +100,11 @@ const WrongNoteListPage = () => {
                 onClick={handleLoadMore}
                 disabled={loading}
               >
-                {loading ? "불러오는 중..." : "더 보기"}
+                {loading ? (
+                  <LoadingIndicator inline label="불러오는 중..." />
+                ) : (
+                  "더 보기"
+                )}
               </button>
             )}
           </>

@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { PUBLIC_ASSETS } from "@/constants/assets";
 import { ChangeEvent, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -241,7 +243,11 @@ const FindPage = () => {
                     className="h-14 w-[30%] rounded-[12px] px-0 text-[15px] font-medium"
                     onClick={handleSendCode}
                   >
-                    {isSendingCode ? "전송 중" : "재전송"}
+                    {isSendingCode ? (
+                      <LoadingIndicator inline label="전송 중" />
+                    ) : (
+                      "재전송"
+                    )}
                   </Button>
                 </div>
 
@@ -261,6 +267,7 @@ const FindPage = () => {
 
             <div className="mt-auto pb-[calc(env(safe-area-inset-bottom)+2.5rem)] pt-[3rem] text-white">
               <SolidButton
+                loading={isSendingCode || isVerifyingCode}
                 content={
                   !isCodeSent
                     ? isSendingCode
@@ -355,6 +362,7 @@ const FindPage = () => {
 
             <div className="mt-auto pb-[calc(env(safe-area-inset-bottom)+2.5rem)] pt-[3rem]">
               <SolidButton
+                loading={isResettingPassword}
                 content={
                   showPasswordConfirmField
                     ? isResettingPassword

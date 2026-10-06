@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { PUBLIC_ASSETS } from "@/constants/assets";
 import { FC, useEffect, useMemo, useState } from "react";
 import { Lock } from "lucide-react";
@@ -305,15 +307,10 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
             </button>
           </div>
         ) : isLoading || viewerUserId === undefined ? (
-          <div
-            className="flex min-h-[28rem] flex-col items-center justify-center gap-4"
-            role="status"
-            aria-label="사용자 프로필 불러오는 중"
-          >
-            <div className="h-[4.25rem] w-[4.25rem] animate-pulse rounded-full bg-[#f1ece9]" />
-            <div className="h-6 w-28 animate-pulse rounded-full bg-[#f1ece9]" />
-            <div className="h-4 w-40 animate-pulse rounded-full bg-[#f5f1ee]" />
-          </div>
+          <LoadingIndicator
+            label="사용자 프로필 불러오는 중..."
+            className="min-h-[28rem]"
+          />
         ) : profile.isPublic === false && !isOwnProfile ? (
           <section className="flex min-h-[28rem] flex-col items-center justify-center text-center">
             <img

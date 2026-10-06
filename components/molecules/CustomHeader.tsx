@@ -15,6 +15,7 @@ interface CustomHeaderProps {
   onRightButtonClick?: () => void;
   isActive?: boolean;
   rightSlot?: ReactNode;
+  rightButtonLoading?: boolean;
 }
 
 export const CustomHeader: FC<CustomHeaderProps> = ({
@@ -24,6 +25,7 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
   onRightButtonClick,
   isActive = false,
   rightSlot,
+  rightButtonLoading = false,
 }) => {
   const router = useRouter();
 
@@ -52,6 +54,7 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
         ) : rightButtonLabel ? (
           <TextButton
             label={rightButtonLabel}
+            loading={rightButtonLoading}
             variant="textOnly"
             onClick={onRightButtonClick}
             className={`text-md p-0 ${

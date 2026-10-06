@@ -1,3 +1,4 @@
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 // "use client";
 
 // import { useEffect } from "react";
@@ -74,7 +75,7 @@
 //   );
 // };
 
-"use client";
+("use client");
 
 import { useEffect, useCallback } from "react";
 import { useSetAtom } from "jotai";
@@ -189,7 +190,11 @@ export const CameraPage = ({ setStep, route, setOcrData }: CameraPageProps) => {
         disabled={isLoading}
         className="rounded-full bg-white px-8 py-4 font-bold text-black active:scale-95 disabled:bg-gray-400"
       >
-        {isLoading ? "이미지 분석 중..." : "카메라 열기"}
+        {isLoading ? (
+          <LoadingIndicator inline label="이미지 분석 중..." />
+        ) : (
+          "카메라 열기"
+        )}
       </button>
       {uploadError && <p className="mt-4 text-red-500">{uploadError}</p>}
     </div>

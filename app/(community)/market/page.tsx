@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -209,12 +211,10 @@ function MarketPageContent() {
           aria-label="자료 목록"
         >
           {activeQuery.isLoading ? (
-            [...Array(4)].map((_, index) => (
-              <div
-                key={index}
-                className="h-56 animate-pulse rounded-lg bg-primary-980"
-              />
-            ))
+            <LoadingIndicator
+              label="자료를 불러오는 중..."
+              className="col-span-2 min-h-56"
+            />
           ) : activeQuery.isError ? (
             <div className="col-span-2 rounded-lg border border-dashed border-border px-4 py-10 text-center">
               <p className="text-title-small text-foreground">
@@ -367,7 +367,10 @@ export default function MarketPage() {
       fallback={
         <AppShell>
           <MeaninglessHeader />
-          <div className="mx-6 mt-8 h-64 animate-pulse rounded-xl bg-primary-980" />
+          <LoadingIndicator
+            label="자료를 불러오는 중..."
+            className="mx-6 mt-8 h-64"
+          />
         </AppShell>
       }
     >

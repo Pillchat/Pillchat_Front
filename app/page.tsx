@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { PUBLIC_ASSETS } from "@/constants/assets";
 import {
   type CSSProperties,
@@ -610,7 +612,7 @@ const Home: FC = () => {
   const marketPreviewItems = marketData?.content ?? [];
 
   if (isAuthenticated === null) {
-    return <div>Loading...</div>;
+    return <LoadingIndicator label="불러오는 중..." />;
   }
 
   const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
@@ -715,14 +717,7 @@ const Home: FC = () => {
           href="/market"
         >
           {isMarketLoading ? (
-            <div className="-mx-6 flex gap-4 overflow-x-auto px-6 pb-1">
-              {[...Array(3)].map((_, index) => (
-                <div
-                  key={index}
-                  className="h-40 w-40 shrink-0 animate-pulse rounded-lg bg-primary-980"
-                />
-              ))}
-            </div>
+            <LoadingIndicator label="자료를 불러오는 중..." className="h-40" />
           ) : marketPreviewItems.length === 0 ? (
             <div className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-body-medium text-muted-foreground">
               등록된 자료가 없습니다.

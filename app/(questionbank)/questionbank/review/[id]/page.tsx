@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useParams } from "next/navigation";
@@ -48,7 +50,10 @@ const ReviewDetailPage = () => {
   if (loading) {
     return (
       <div className="flex h-dvh items-center justify-center">
-        <div className="text-muted-foreground">불러오는 중...</div>
+        <LoadingIndicator
+          label="불러오는 중..."
+          className="text-muted-foreground"
+        />
       </div>
     );
   }

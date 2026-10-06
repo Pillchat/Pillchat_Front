@@ -1,5 +1,7 @@
 "use client";
 
+import { PillLoader } from "@/components/atoms/PillLoader";
+
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -139,6 +141,7 @@ export const GoogleOAuthCallback = () => {
   return (
     <div className="login-page">
       <div className="flex w-full max-w-sm flex-col items-center gap-6 text-center">
+        {status === "loading" && <PillLoader size={64} label={message} />}
         <div className="flex flex-col gap-2">
           <h1 className="text-xl font-semibold text-foreground">
             {status === "loading" ? "로그인 중" : "로그인 실패"}

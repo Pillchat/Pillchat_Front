@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useSetAtom } from "jotai";
@@ -311,12 +313,10 @@ const ReviewListPage = () => {
         )}
         {category === "AI" ? (
           loading ? (
-            <p
-              role="status"
+            <LoadingIndicator
+              label="불러오는 중..."
               className="py-16 text-center text-sm text-muted-foreground"
-            >
-              불러오는 중...
-            </p>
+            />
           ) : remoteError ? (
             <div className="p-8 text-center">
               <p role="alert" className="text-sm text-muted-foreground">

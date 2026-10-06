@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { fetchAPI } from "@/lib/client/fetch";
@@ -90,7 +92,10 @@ const EditWrongNotePage = () => {
   if (loading) {
     return (
       <div className="flex h-dvh items-center justify-center">
-        <p className="text-muted-foreground">불러오는 중...</p>
+        <LoadingIndicator
+          label="불러오는 중..."
+          className="text-muted-foreground"
+        />
       </div>
     );
   }
