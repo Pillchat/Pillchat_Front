@@ -12,65 +12,65 @@ const gradeInfo: FC = () => {
         <div className="flex flex-col gap-3">
           <div className="flex flex-row items-center gap-3">
             <div className="flex h-[1.375rem] w-auto items-center justify-end rounded-full bg-[#00C922] px-8 py-5 text-lg text-white">
-              새싹
+              1일
             </div>
-            <p>삐약삐약! 자라나는 필챗 어린이!</p>
+            <p>첫 출석을 시작했어요!</p>
           </div>
 
           <p className="pl-8 text-muted-foreground">
-            · 질문 1개 이상 또는 답변 1개 이상
+            · 누적 출석 1일 이상
           </p>
         </div>
 
         <div className="flex flex-col gap-3">
           <div className="flex flex-row items-center gap-3">
             <div className="flex h-[1.375rem] w-auto items-center justify-end rounded-full bg-[#FF49B9] px-8 py-5 text-lg text-white">
-              한알
+              20일
             </div>
-            <p>적응완료한 성장기의 필챗터!</p>
+            <p>차곡차곡 20일 출석을 쌓았어요!</p>
           </div>
 
           <p className="pl-8 text-muted-foreground">
-            · 질문 5개 이상 또는 답변 5개 이상
+            · 누적 출석 20일 이상
           </p>
         </div>
 
         <div className="flex flex-col gap-3">
           <div className="flex flex-row items-center gap-3">
             <div className="flex h-[1.375rem] w-auto items-center justify-end rounded-full bg-[#FFD000] px-8 py-5 text-lg text-white">
-              두알
+              50일
             </div>
-            <p>필챗생활은 익숙해! 열심히 활동하는 필챗터!</p>
+            <p>50일 연속으로 출석했어요!</p>
           </div>
 
           <p className="pl-8 text-muted-foreground">
-            · 질문 15개 이상 또는 답변 15개 이상
+            · 연속 출석 50일 이상
           </p>
         </div>
 
         <div className="flex flex-col gap-3">
           <div className="flex flex-row items-center gap-3">
             <div className="flex h-[1.375rem] w-auto items-center justify-end rounded-full bg-brand px-8 py-5 text-lg text-white">
-              고수
+              100일
             </div>
-            <p>필챗생활은 완벽해! 뭐든지 잘하는 고수!</p>
+            <p>100일 연속으로 출석했어요!</p>
           </div>
 
           <p className="pl-8 text-muted-foreground">
-            · 질문 및 답변 합산 40개 이상
+            · 연속 출석 100일 이상
           </p>
         </div>
 
         <div className="flex flex-col gap-3">
           <div className="flex flex-row items-center gap-3">
             <div className="flex h-[1.375rem] w-auto items-center justify-end rounded-full bg-[#800C00] px-8 py-5 text-lg text-white">
-              명약
+              365일
             </div>
-            <p>필챗의 전설! 필챗의 레전드!</p>
+            <p>365일 연속으로 출석했어요!</p>
           </div>
 
           <p className="pl-8 text-muted-foreground">
-            · 질문 및 답변 합산 100개 이상
+            · 연속 출석 365일 이상
           </p>
         </div>
       </div>
