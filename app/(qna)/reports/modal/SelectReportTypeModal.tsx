@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { useEffect } from "react";
 import { useReportType } from "../hooks/useReportType";
 import { REPORT_TYPE_MAP } from "@/constants/reportTypes";
@@ -63,7 +64,7 @@ function SelectReportTypeModal({
                   {item}
                 </button>
                 <img
-                  src="/icons/ArrowIcon.svg"
+                  src={PUBLIC_ASSETS.icons.chevronRight}
                   alt="arrow-left"
                   width={20}
                   height={20}

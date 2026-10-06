@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { SolidButton } from "@/components/atoms";
 import { StepHeader } from "@/components/molecules";
 import type { SignupGrade, SignupSource } from "@/constants/signup";
@@ -222,8 +223,8 @@ const OAuthOnboardingPage = () => {
                 height={26}
                 src={
                   agreeToTerms
-                    ? "/icons/CheckedIcon.svg"
-                    : "/icons/UncheckIcon.svg"
+                    ? PUBLIC_ASSETS.icons.checkCircleFilled
+                    : PUBLIC_ASSETS.icons.checkCircleMuted
                 }
                 alt=""
               />
@@ -273,8 +274,8 @@ const OAuthOnboardingPage = () => {
                 height={26}
                 src={
                   agreeToPrivacy
-                    ? "/icons/CheckedIcon.svg"
-                    : "/icons/UncheckIcon.svg"
+                    ? PUBLIC_ASSETS.icons.checkCircleFilled
+                    : PUBLIC_ASSETS.icons.checkCircleMuted
                 }
                 alt=""
               />

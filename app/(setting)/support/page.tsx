@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { SolidButton, TextareaWithLabel } from "@/components/atoms";
 import { IconInputField } from "@/components/molecules";
@@ -241,13 +242,13 @@ const SupportPage = () => {
 
             <div className="grid w-full grid-cols-2 gap-4">
               <BoardButton
-                imageSrc="/Image.svg"
+                imageSrc={PUBLIC_ASSETS.icons.image}
                 text={TEXT.imageUpload}
                 onClick={openImagePicker}
                 type="button"
               />
               <BoardButton
-                imageSrc="/File2.svg"
+                imageSrc={PUBLIC_ASSETS.icons.file}
                 text={TEXT.fileUpload}
                 onClick={openPdfPicker}
                 type="button"
@@ -282,7 +283,10 @@ const SupportPage = () => {
                       onClick={() => removeItem(item.id)}
                       className="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center"
                     >
-                      <img src="/Remove.svg" alt={TEXT.remove} />
+                      <img
+                        src={PUBLIC_ASSETS.icons.removeCircleGray}
+                        alt={TEXT.remove}
+                      />
                     </button>
 
                     {item.type === "image" ? (
@@ -293,7 +297,11 @@ const SupportPage = () => {
                       />
                     ) : (
                       <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-2 text-center">
-                        <img src="/File2.svg" alt="" className="h-8 w-8" />
+                        <img
+                          src={PUBLIC_ASSETS.icons.file}
+                          alt=""
+                          className="h-8 w-8"
+                        />
                         <span className="line-clamp-2 text-xs text-[#666666]">
                           {item.name}
                         </span>

@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import {
   CustomHeader,
   ActionMenu,
@@ -191,7 +192,7 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
                   trigger={
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                       <img
-                        src="/icons/Ellipsis.svg"
+                        src={PUBLIC_ASSETS.icons.ellipsisHorizontal}
                         alt="더보기"
                         className="h-5 w-5"
                       />

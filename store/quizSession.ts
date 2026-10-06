@@ -215,7 +215,8 @@ export const applyGradeResultAtom = atom(
       isCorrect: payload.isCorrect,
       correctAnswer: payload.correctAnswer,
       explanation: payload.explanation,
-      isBookmarked: !payload.isCorrect, // 오답 → 자동 북마크
+      isBookmarked:
+        session.results[payload.questionId]?.isBookmarked || !payload.isCorrect, // 수동 북마크 유지, 오답은 자동 북마크
     };
 
     set(quizSessionAtom, {
@@ -353,13 +354,27 @@ export const initQuizSessionAtom = atom(
     payload: {
       sessionId: number;
       sourceType: QuizSourceType;
+      reviewMode?: "all" | "wrong" | "bookmarked";
+      bookmarkedQuestionIds?: number[];
       title: string;
       questions: QuizQuestion[];
     },
   ) => {
+    const { bookmarkedQuestionIds, ...initialSession } = payload;
     set(quizSessionAtom, {
-      ...payload,
-      results: {},
+      ...initialSession,
+      results: Object.fromEntries(
+        (bookmarkedQuestionIds ?? []).map((questionId) => [
+          questionId,
+          {
+            questionId,
+            selectedChoiceId: null,
+            userAnswer: null,
+            isCorrect: false,
+            isBookmarked: true,
+          },
+        ]),
+      ),
       draftAnswers: {},
       currentIndex: 0,
       gradingState: "unanswered",

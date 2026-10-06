@@ -4,21 +4,35 @@ import { FC } from "react";
 import type { ReviewCategoryItem } from "@/types/questionbank";
 
 interface CategoryCardProps {
-  item: ReviewCategoryItem;
+  item: Pick<
+    ReviewCategoryItem,
+    "title" | "subject" | "totalQuestionCount" | "wrongCount"
+  >;
   onClick: () => void;
+  unansweredCount?: number;
+  dateLabel?: string;
 }
 
-const CategoryCard: FC<CategoryCardProps> = ({ item, onClick }) => {
+const CategoryCard: FC<CategoryCardProps> = ({
+  item,
+  onClick,
+  unansweredCount = 0,
+  dateLabel,
+}) => {
   return (
-    <div
-      className="flex cursor-pointer items-center justify-between border-b px-6 py-4 active:bg-gray-50"
+    <button
+      type="button"
+      className="flex w-full items-center justify-between gap-3 border-b px-6 py-4 text-left hover:bg-gray-50 active:bg-gray-100"
       onClick={onClick}
     >
       <div className="min-w-0 flex-1">
         <p className="truncate text-base font-semibold text-foreground">
           {item.title}
         </p>
-        <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+        {dateLabel && (
+          <p className="mt-1 text-xs text-muted-foreground">{dateLabel}</p>
+        )}
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
           <span>{item.subject}</span>
           <span>·</span>
           <span>총 {item.totalQuestionCount}문제</span>
@@ -26,6 +40,7 @@ const CategoryCard: FC<CategoryCardProps> = ({ item, onClick }) => {
           <span className="font-medium text-red-500">
             오답 {item.wrongCount}
           </span>
+          {unansweredCount > 0 && <span>미응답 {unansweredCount}</span>}
         </div>
       </div>
       <svg
@@ -41,7 +56,7 @@ const CategoryCard: FC<CategoryCardProps> = ({ item, onClick }) => {
       >
         <polyline points="9 18 15 12 9 6" />
       </svg>
-    </div>
+    </button>
   );
 };
 

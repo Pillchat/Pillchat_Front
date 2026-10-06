@@ -1,3 +1,4 @@
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { PharmMoney, TextButton } from "@/components/atoms";
 import {
   Dialog,
@@ -41,7 +42,7 @@ export const ViewQuestion: FC<{ question: QuestionResponse }> = ({
             <div className="flex flex-row justify-between text-sm text-muted-foreground">
               <div className="flex flex-row items-center gap-3 align-middle">
                 <span className="text-foreground">{nickname}</span>
-                <IconWithCount src="/icons/Eye.svg" count={100} />
+                <IconWithCount src={PUBLIC_ASSETS.icons.eye} count={100} />
                 <span>{format(createdAt, "yyyy-MM-dd HH:mm:ss")}</span>
               </div>
             </div>

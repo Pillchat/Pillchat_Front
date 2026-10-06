@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -247,7 +248,7 @@ export const ImageButton = forwardRef<ImageButtonRef, ImageButtonProps>(
             className="pointer-events-none h-5 w-5"
           >
             <img
-              src="/icons/Camera_muted.svg"
+              src={PUBLIC_ASSETS.icons.cameraMuted}
               alt="camera"
               width={20}
               height={20}

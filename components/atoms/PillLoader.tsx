@@ -1,9 +1,11 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { CSSProperties, useEffect, useMemo, useRef } from "react";
 import { cn } from "@/lib/utils";
 
-export const PILL_LOADER_SPRITE_SRC = "/illustrations/pill-loader-sprite.png";
+export const PILL_LOADER_SPRITE_SRC =
+  PUBLIC_ASSETS.illustrations.pillLoaderSprite;
 
 type CssSize = number | string;
 

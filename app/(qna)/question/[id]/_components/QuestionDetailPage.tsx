@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { LikeButton } from "@/components/atoms";
 import {
   ActionMenu,
@@ -155,7 +156,7 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
                 trigger={
                   <Button variant="ghost" size="icon" className="h-8 w-8">
                     <img
-                      src="/icons/Ellipsis.svg"
+                      src={PUBLIC_ASSETS.icons.ellipsisHorizontal}
                       alt="더보기"
                       className="h-5 w-5"
                     />

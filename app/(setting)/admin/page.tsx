@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { FC, useState } from "react";
 import { useRouter } from "@/lib/navigation";
 import { CustomHeader, TabsWithUnderline } from "@/components/molecules";
@@ -256,7 +257,7 @@ const HistorySection: FC<{
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <img
-          src="/icons/Bell.svg"
+          src={PUBLIC_ASSETS.icons.bell}
           alt="no history"
           className="mb-4 h-12 w-12 opacity-30"
         />
