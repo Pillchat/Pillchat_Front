@@ -8,7 +8,7 @@ import { useAtomValue } from "jotai";
 
 import { useRouter } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
-import { unreadCountAtom } from "@/store/notification";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface GeneralHeaderProps {
   currentQ?: string;
@@ -27,7 +27,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
 }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const unreadCount = useAtomValue(unreadCountAtom);
+  const { unreadCount } = useNotifications();
 
   const [open, setOpen] = useState(Boolean(currentQ.trim()));
   const [value, setValue] = useState(currentQ.trim());

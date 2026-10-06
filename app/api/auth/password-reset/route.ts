@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const POST = async (request: NextRequest) => {
   try {
-    const { email, newPassword } = await request.json();
+    const { email, newPassword, resetToken } = await request.json();
 
     if (!email) {
       return NextResponse.json(
@@ -13,6 +13,15 @@ export const POST = async (request: NextRequest) => {
         { status: 400 },
       );
     }
+
+    if (!resetToken)
+      return NextResponse.json(
+        {
+          code: "RESET_TOKEN_REQUIRED",
+          message: "이메일 인증을 다시 진행해주세요.",
+        },
+        { status: 412 },
+      );
 
     if (!newPassword) {
       return NextResponse.json(
@@ -31,7 +40,7 @@ export const POST = async (request: NextRequest) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, newPassword }),
+        body: JSON.stringify({ email, newPassword, resetToken }),
       },
     );
 
@@ -40,6 +49,7 @@ export const POST = async (request: NextRequest) => {
     if (!response.ok) {
       return NextResponse.json(
         {
+          ...data,
           success: false,
           message:
             data?.message || data?.reason || "비밀번호 재설정에 실패했습니다.",

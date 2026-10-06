@@ -53,7 +53,7 @@ export const useUploadFiles = () => {
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files ?? []).filter((file) =>
-      file.type.startsWith("image/"),
+      ["image/jpeg", "image/png"].includes(file.type),
     );
 
     if (selectedFiles.length === 0) {

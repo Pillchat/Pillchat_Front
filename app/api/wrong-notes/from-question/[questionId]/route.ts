@@ -1,3 +1,5 @@
+import { parseBackendError } from "@/lib/server/apiError";
+import { mapWrongNoteResponse } from "@/lib/server/wrongNoteResponse";
 import { NextRequest, NextResponse } from "next/server";
 import { serverFetch } from "@/lib/server/fetch";
 
@@ -16,12 +18,15 @@ export async function POST(
       },
     );
 
-    return NextResponse.json(data, { status: 201 });
+    return NextResponse.json(mapWrongNoteResponse(data), { status: 201 });
   } catch (error: any) {
     console.error("Q&A 오답노트 생성 에러:", error);
-    const errorInfo = JSON.parse(error.message || "{}");
+    const errorInfo = parseBackendError(error);
     return NextResponse.json(
-      { message: errorInfo.message || "오답노트 생성에 실패했습니다." },
+      {
+        ...errorInfo.data,
+        message: errorInfo.message || "오답노트 생성에 실패했습니다.",
+      },
       { status: errorInfo.status || 500 },
     );
   }

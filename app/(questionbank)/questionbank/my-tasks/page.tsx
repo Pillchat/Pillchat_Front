@@ -1,4 +1,5 @@
 "use client";
+import { startQuiz } from "@/lib/client/startQuiz";
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "@/lib/navigation";
@@ -67,7 +68,7 @@ const MyTasksPage = () => {
         ),
       );
 
-      const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", {
+      const quizRaw = await startQuiz({
         type: "PDF",
         taskId: task.taskId,
       });

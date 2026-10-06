@@ -1,3 +1,29 @@
+export class ApiError extends Error {
+  readonly code?: string;
+  constructor(
+    readonly status: number,
+    readonly data: Record<string, unknown>,
+  ) {
+    super(
+      String(
+        data.message ?? data.error ?? data.code ?? `요청 실패 (${status})`,
+      ),
+    );
+    this.name = "ApiError";
+    this.code =
+      typeof data.code === "string"
+        ? data.code
+        : typeof data.error === "string"
+          ? data.error
+          : undefined;
+  }
+}
+
+const isPublicAuthRequest = (url: string) =>
+  /^\/api\/auth\/(login|refresh-token|password-reset|send-verify|check-verify|submit|signup|oauth)(?:[/?-]|$)/.test(
+    url,
+  );
+
 type AuthStorageMode = "local" | "session";
 type TokenPair = { access_token: string; refresh_token: string };
 
@@ -89,6 +115,12 @@ export const getValidAccessToken = async () => {
   if (getRefreshToken()) {
     const refreshed = await refreshTokens();
     if (refreshed) return refreshed.access_token;
+    if (getRefreshToken())
+      throw new ApiError(503, {
+        code: "REFRESH_UNAVAILABLE",
+        message:
+          "로그인 갱신을 완료하지 못했습니다. 잠시 후 다시 시도해주세요.",
+      });
   }
 
   return null;
@@ -118,6 +150,7 @@ export const setTokens = (
   targetStorage?.setItem(AUTH_STORAGE_MODE_KEY, mode);
 
   setAccessTokenCookie(normalizedAccessToken, rememberMe);
+  window.dispatchEvent(new Event("pillchat:auth"));
 };
 
 export const clearTokens = () => {
@@ -132,6 +165,7 @@ export const clearTokens = () => {
   window.sessionStorage.removeItem(REFRESH_TOKEN_KEY);
   window.sessionStorage.removeItem(AUTH_STORAGE_MODE_KEY);
   document.cookie = "access_token=; path=/; max-age=0; SameSite=Lax";
+  window.dispatchEvent(new Event("pillchat:auth"));
 };
 
 const requestTokenRefresh = async (): Promise<TokenPair | false> => {
@@ -159,11 +193,13 @@ const requestTokenRefresh = async (): Promise<TokenPair | false> => {
         const nextRefreshToken =
           result.data.refresh_token ??
           result.data.refreshToken ??
-          result.data.refresh ??
-          refreshToken;
+          result.data.refresh;
 
-        if (accessToken) {
-          if (requestSessionRevision !== authSessionRevision) {
+        if (accessToken && nextRefreshToken) {
+          if (
+            requestSessionRevision !== authSessionRevision ||
+            getRefreshToken() !== refreshToken
+          ) {
             return false;
           }
 
@@ -177,19 +213,50 @@ const requestTokenRefresh = async (): Promise<TokenPair | false> => {
         }
       }
     }
-  } catch (error) {
-    console.error("토큰 갱신 실패:", error);
+    // Only a definitive rejection of this exact session may clear credentials.
+    if (
+      (response.status === 400 ||
+        response.status === 401 ||
+        response.status === 403) &&
+      requestSessionRevision === authSessionRevision &&
+      getRefreshToken() === refreshToken
+    ) {
+      clearTokens();
+    }
+  } catch {
+    // A temporary network failure must not log the user out.
   }
-
-  clearTokens();
   return false;
 };
 
 export const refreshTokens = (): Promise<TokenPair | false> => {
   if (!refreshPromise) {
-    refreshPromise = requestTokenRefresh().finally(() => {
-      refreshPromise = null;
-    });
+    const initialRefreshToken = getRefreshToken();
+    const refresh = async (): Promise<TokenPair | false> => {
+      const currentRefreshToken = getRefreshToken();
+      const currentAccessToken = getToken();
+      if (
+        currentRefreshToken &&
+        currentRefreshToken !== initialRefreshToken &&
+        currentAccessToken &&
+        !isStoredTokenExpired(currentAccessToken)
+      ) {
+        return {
+          access_token: currentAccessToken,
+          refresh_token: currentRefreshToken,
+        };
+      }
+      return requestTokenRefresh();
+    };
+    const task =
+      typeof navigator !== "undefined" && navigator.locks
+        ? navigator.locks.request("pillchat:refresh", refresh)
+        : refresh();
+    refreshPromise = Promise.resolve(task)
+      .then((result) => result)
+      .finally(() => {
+        refreshPromise = null;
+      });
   }
 
   return refreshPromise;
@@ -214,10 +281,11 @@ export const recoverAccessToken = async (failedToken?: string | null) => {
 };
 
 export const fetchPost = async (url: string, data: any) => {
-  const token = url === "/api/auth/login" ? null : await getValidAccessToken();
+  const isAuthRequest = isPublicAuthRequest(url);
+  const token = isAuthRequest ? null : await getValidAccessToken();
   const headers: Record<string, string> = {};
 
-  if (url !== "/api/auth/login" && token) {
+  if (!isAuthRequest && token) {
     headers.Authorization = toBearerHeader(token);
   }
 
@@ -231,10 +299,7 @@ export const fetchPost = async (url: string, data: any) => {
     },
   });
 
-  if (
-    (response.status === 401 || response.status === 403) &&
-    url !== "/api/auth/login"
-  ) {
+  if (response.status === 401 && !isAuthRequest) {
     const recoveredToken = await recoverAccessToken(token);
     if (recoveredToken) {
       response = await fetch(url, {
@@ -253,20 +318,14 @@ export const fetchPost = async (url: string, data: any) => {
     const errorData = await response.json().catch(() => ({
       message: "서버 오류가 발생했습니다.",
     }));
-    throw new Error(
-      errorData.message ||
-        errorData.error ||
-        errorData.code ||
-        `HTTP error! status: ${response.status}`,
-    );
+    throw new ApiError(response.status, errorData);
   }
 
   return response;
 };
 
 export const fetchAPI = async (url: string, method: string, data?: any) => {
-  const isAuthRequest =
-    url === "/api/auth/login" || url === "/api/auth/refresh-token";
+  const isAuthRequest = isPublicAuthRequest(url);
   const token = isAuthRequest ? null : await getValidAccessToken();
   const headers: Record<string, string> = {};
 
@@ -305,7 +364,7 @@ export const fetchAPI = async (url: string, method: string, data?: any) => {
 
   let response = await fetch(requestUrl, requestOptions);
 
-  if ((response.status === 401 || response.status === 403) && !isAuthRequest) {
+  if (response.status === 401 && !isAuthRequest) {
     const recoveredToken = await recoverAccessToken(token);
     if (recoveredToken) {
       response = await fetch(requestUrl, {
@@ -322,12 +381,7 @@ export const fetchAPI = async (url: string, method: string, data?: any) => {
     const errorData = await response.json().catch(() => ({
       message: "서버 오류가 발생했습니다.",
     }));
-    throw new Error(
-      errorData.message ||
-        errorData.error ||
-        errorData.code ||
-        `HTTP error! status: ${response.status}`,
-    );
+    throw new ApiError(response.status, errorData);
   }
 
   if (response.status === 204) return null;

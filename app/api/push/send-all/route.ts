@@ -13,13 +13,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const data = await enqueueAdminPushJob(request, body);
+    const data = await enqueueAdminPushJob(request, {
+      ...body,
+      audience: "ALL",
+    });
 
     return NextResponse.json(data);
   } catch (error: any) {
     console.error("전체 푸시 발송 API 에러:", error);
 
-    let errorInfo: { message?: string; status?: number } = {};
+    let errorInfo: {
+      message?: string;
+      status?: number;
+      data?: Record<string, unknown>;
+    } = {};
     try {
       errorInfo = JSON.parse(error?.message || "{}");
     } catch {
@@ -28,6 +35,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
+        ...errorInfo.data,
         message:
           errorInfo.message || "백엔드 PushJob 적재 중 오류가 발생했습니다.",
       },

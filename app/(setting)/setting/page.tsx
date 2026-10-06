@@ -68,7 +68,11 @@ export default function SettingPage() {
             title="고객센터"
             onClick={() => router.push("/support")}
           />
-          <SettingItem icon={PUBLIC_ASSETS.icons.notice} title="공지사항" />
+          <SettingItem
+            icon={PUBLIC_ASSETS.icons.notice}
+            title="공지사항"
+            onClick={() => router.push("/notices")}
+          />
           <SettingItem
             icon={PUBLIC_ASSETS.icons.privacyPolicy}
             title="개인정보 처리방침"

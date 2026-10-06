@@ -1,7 +1,8 @@
 import { NextResponse, NextRequest } from "next/server";
 
 export const POST = async (request: NextRequest) => {
-  const { nickname, password, email, agreeToTerms } = await request.json();
+  const { nickname, password, email, emailVerificationToken, agreeToTerms } =
+    await request.json();
   const tempToken = request.headers.get("Temp-Token") || undefined;
 
   if (!nickname || !password || !email || agreeToTerms !== true) {
@@ -18,6 +19,15 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
+  if (!emailVerificationToken)
+    return NextResponse.json(
+      {
+        code: "EMAIL_VERIFICATION_REQUIRED",
+        message: "이메일 인증을 다시 진행해주세요.",
+      },
+      { status: 412 },
+    );
+
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_HOST}/api/auth/register`,
@@ -27,7 +37,13 @@ export const POST = async (request: NextRequest) => {
           "Content-Type": "application/json",
           "Temp-Token": tempToken,
         },
-        body: JSON.stringify({ nickname, password, email, agreeToTerms }),
+        body: JSON.stringify({
+          nickname,
+          password,
+          email,
+          emailVerificationToken,
+          agreeToTerms,
+        }),
       },
     );
 

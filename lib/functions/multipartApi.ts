@@ -24,7 +24,7 @@ async function fetchWithFormData(
     credentials: "same-origin",
   });
 
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401) {
     const refreshed = await refreshTokens();
     if (refreshed) {
       res = await fetch(url, {

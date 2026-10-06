@@ -7,7 +7,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useAtomValue } from "jotai";
 
 import { useRouter } from "@/lib/navigation";
-import { unreadCountAtom } from "@/store/notification";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface AlarmHeaderProps {
   hideBottomBorder?: boolean;
@@ -19,7 +19,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const unreadCount = useAtomValue(unreadCountAtom);
+  const { unreadCount } = useNotifications();
 
   const currentStatus = useMemo(() => {
     const status = searchParams.get("status");

@@ -157,6 +157,10 @@ export const useMyProfile = () => {
       }
 
       const payload = result.data ?? {};
+      const followSummary = await fetchAPI(
+        `/api/users/${payload.id}/follow-summary`,
+        "GET",
+      );
       const { fetchedKeys, profileImageUrl } =
         await resolveProfileImage(payload);
 
@@ -165,12 +169,12 @@ export const useMyProfile = () => {
         isPublic:
           typeof payload.isPublic === "boolean" ? payload.isPublic : true,
         followerCount: numberValue(
-          payload.followerCount,
+          followSummary.followerCount,
           payload.followersCount,
           payload.followers,
         ),
         followingCount: numberValue(
-          payload.followingCount,
+          followSummary.followingCount,
           payload.followingsCount,
           payload.following,
         ),

@@ -6,6 +6,7 @@ export type Rating = "again" | "hard" | "good" | "easy";
 
 export interface BaseFlashcard {
   id: string;
+  packId?: string;
   type: CardType;
   createdAt: number;
   updatedAt?: number;

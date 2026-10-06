@@ -2,11 +2,7 @@
 
 import { PUBLIC_ASSETS } from "@/constants/assets";
 import { SolidButton, TextButton, TextareaWithLabel } from "@/components/atoms";
-import {
-  IconInputField,
-  ExpandableChipSection,
-  SelectModal,
-} from "@/components/molecules";
+import { IconInputField, SelectModal } from "@/components/molecules";
 import { BoardHeader, BoardButton } from "@/components/molecules/board";
 import { Controller } from "react-hook-form";
 import { useStep, useUploadForm, useUploadFiles } from "./_hooks";
@@ -14,11 +10,23 @@ import { useRouter } from "@/lib/navigation";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CheckCircle from "@/public/icons/check-circle.svg";
-import { QUESTION_FORM_RULES } from "@/constants/formValidation";
-import { useSubjects } from "@/hooks";
 import { fetchAPI } from "@/lib/client/fetch";
 import { uploadMaterial } from "@/lib/client/upload";
-import { useFilesQuery, useMaterialQuery } from "@/hooks/queries";
+import {
+  getMaterials,
+  useFilesQuery,
+  useMaterialQuery,
+  useSubjectQuery,
+  useSubjectsQuery,
+} from "@/hooks/queries";
+import {
+  type ArchiveLibraryState,
+  readArchiveLibrary,
+  subscribeArchiveLibrary,
+  writeArchiveLibrary,
+} from "@/lib/client/archiveLibrary";
+import { getCurrentUserId } from "@/lib/client/auth";
+import { Plus, Tag, X } from "lucide-react";
 
 enum Step {
   Guide = 1,
@@ -149,8 +157,7 @@ type MaterialDraft = {
   checked: boolean;
   title: string;
   content: string;
-  selectedSubject: string;
-  subjectId: string;
+  selectedCategoryId: string;
   updatedAt: number;
 };
 
@@ -159,17 +166,78 @@ const getMaterialDraftKey = (editId: string | null) =>
     ? `material-upload-draft:edit:${editId}`
     : "material-upload-draft:create";
 
+const getCreatedMaterialId = (value: any): string | null => {
+  const candidates = [
+    value?.id,
+    value?.materialId,
+    value?.data?.id,
+    value?.data?.materialId,
+    value?.result?.id,
+    value?.result?.materialId,
+  ];
+  const id = candidates.find(
+    (candidate) => candidate !== undefined && candidate !== null,
+  );
+  return id === undefined ? null : String(id);
+};
+
+const findUploadedMaterialId = async (
+  title: string,
+  currentUserId: string | null,
+) => {
+  const response = await getMaterials();
+  const raw = response?.data ?? response;
+  if (!Array.isArray(raw)) return null;
+
+  const match = raw
+    .filter(
+      (item) =>
+        item?.title === title && Number(item?.userId) === Number(currentUserId),
+    )
+    .sort((a, b) => {
+      const aTime = a?.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b?.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime || Number(b?.id ?? 0) - Number(a?.id ?? 0);
+    })[0];
+
+  return match?.id === undefined || match?.id === null
+    ? null
+    : String(match.id);
+};
+
 const UploadPage = () => {
-  const { getSubjectMapForChips } = useSubjects();
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
   const isEditMode = !!editId;
+  const currentUserId = getCurrentUserId();
+
+  const { data: editMaterial } = useMaterialQuery(editId, {
+    enabled: isEditMode && !!editId,
+  });
+  const { data: subjectsResponse } = useSubjectsQuery();
+  const fallbackSubjectCode = useMemo(() => {
+    const items = subjectsResponse?.sections.flatMap(
+      (section) => section.items,
+    );
+    return (
+      items?.find((item) => item.label.includes("기타"))?.code ??
+      items?.[0]?.code
+    );
+  }, [subjectsResponse]);
+  const { data: fallbackSubject } = useSubjectQuery(fallbackSubjectCode);
+  const legacySubjectId = editMaterial?.subjectId ?? fallbackSubject?.id;
 
   const { step, nextStep, prevStep, setStep } = useStep();
   const [checked, setChecked] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [library, setLibrary] = useState<ArchiveLibraryState>(() =>
+    readArchiveLibrary(currentUserId),
+  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState("uncategorized");
+  const [isCategoryCreatorOpen, setIsCategoryCreatorOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   const draftKey = useMemo(() => getMaterialDraftKey(editId), [editId]);
   const [draftReady, setDraftReady] = useState(false);
@@ -177,6 +245,21 @@ const UploadPage = () => {
 
   const didRestoreDraftRef = useRef(false);
   const didApplyEditDataRef = useRef(false);
+  const didApplyEditCategoryRef = useRef(false);
+
+  useEffect(() => {
+    const syncLibrary = () => setLibrary(readArchiveLibrary(currentUserId));
+    syncLibrary();
+    return subscribeArchiveLibrary(syncLibrary);
+  }, [currentUserId]);
+
+  useEffect(() => {
+    if (!editId || didApplyEditCategoryRef.current) return;
+    didApplyEditCategoryRef.current = true;
+    setSelectedCategoryId(
+      library.materialFolderIds[String(editId)] ?? "uncategorized",
+    );
+  }, [editId, library.materialFolderIds]);
 
   const {
     imageInputRef,
@@ -194,14 +277,57 @@ const UploadPage = () => {
     setInitialFiles,
   } = useUploadFiles();
 
+  const saveLibrary = (next: ArchiveLibraryState) => {
+    setLibrary(next);
+    writeArchiveLibrary(next, currentUserId);
+  };
+
+  const addCategory = () => {
+    const name = newCategoryName.trim().slice(0, 20);
+    if (!name) return;
+
+    const existing = library.folders.find((folder) => folder.name === name);
+    if (existing) {
+      setSelectedCategoryId(existing.id);
+      setNewCategoryName("");
+      setIsCategoryCreatorOpen(false);
+      return;
+    }
+
+    const category = {
+      id: `folder-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      name,
+      createdAt: Date.now(),
+    };
+    saveLibrary({ ...library, folders: [...library.folders, category] });
+    setSelectedCategoryId(category.id);
+    setNewCategoryName("");
+    setIsCategoryCreatorOpen(false);
+  };
+
+  const assignCategoryToMaterial = (materialId: string) => {
+    const currentLibrary = readArchiveLibrary(currentUserId);
+    const nextAssignments = { ...currentLibrary.materialFolderIds };
+
+    if (selectedCategoryId === "uncategorized") {
+      delete nextAssignments[materialId];
+    } else {
+      nextAssignments[materialId] = selectedCategoryId;
+    }
+
+    const nextLibrary = {
+      ...currentLibrary,
+      materialFolderIds: nextAssignments,
+    };
+    setLibrary(nextLibrary);
+    writeArchiveLibrary(nextLibrary, currentUserId);
+  };
+
   const {
     control,
     errors,
-    selectedSubject,
-    subjectId,
     title,
     content,
-    handleSubjectToggle,
     handleContentChange,
     handleUpload,
     resetForm,
@@ -209,9 +335,9 @@ const UploadPage = () => {
     setValue,
   } = useUploadForm({
     onSubmit: async (data) => {
-      if (!data.subjectId) {
+      if (!legacySubjectId) {
         throw new Error(
-          "과목 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.",
+          "업로드 정보를 준비하고 있습니다. 잠시 후 다시 시도해주세요.",
         );
       }
 
@@ -235,23 +361,29 @@ const UploadPage = () => {
         const payload = {
           title: data.title.trim(),
           content: data.content.trim(),
-          subjectId: Number(data.subjectId),
+          subjectId: Number(legacySubjectId),
           urlKey: [...existingImageKeys, ...newImageKeys],
           pdfKey: newPdfKey ?? existingPdfKey,
         };
 
         await fetchAPI(`/api/materials/${editId}`, "PUT", payload);
+        assignCategoryToMaterial(String(editId));
         return;
       }
 
       // 생성 모드: V2 multipart API (파일 + 데이터 한번에)
-      await uploadMaterial({
+      const result = await uploadMaterial({
         title: data.title.trim(),
         content: data.content.trim(),
-        subjectId: Number(data.subjectId),
+        subjectId: Number(legacySubjectId),
         files: imageFiles.length > 0 ? imageFiles : undefined,
         pdf: pdfFile || undefined,
       });
+      const materialId =
+        getCreatedMaterialId(result) ??
+        (await findUploadedMaterialId(data.title.trim(), currentUserId));
+
+      if (materialId) assignCategoryToMaterial(materialId);
     },
   });
 
@@ -272,18 +404,14 @@ const UploadPage = () => {
 
       setValue("title", parsed.title ?? "");
       setValue("content", parsed.content ?? "");
-      setValue("subject", parsed.selectedSubject ?? "");
-      setValue("subjectId", parsed.subjectId ?? "");
+      setSelectedCategoryId(parsed.selectedCategoryId ?? "uncategorized");
 
       if (parsed.step && parsed.step !== Step.Complete) {
         setStep(parsed.step);
       }
 
       setHasDraftValues(
-        !!parsed.title ||
-          !!parsed.content ||
-          !!parsed.selectedSubject ||
-          !!parsed.subjectId,
+        !!parsed.title || !!parsed.content,
       );
     } catch (error) {
       console.error("학습자료 임시저장 복원 실패:", error);
@@ -291,10 +419,6 @@ const UploadPage = () => {
       setDraftReady(true);
     }
   }, [draftKey, setStep, setValue]);
-
-  const { data: editMaterial } = useMaterialQuery(editId, {
-    enabled: isEditMode && !!editId,
-  });
 
   const editFileKeys = useMemo(() => {
     if (!editMaterial?.id) return [];
@@ -345,8 +469,6 @@ const UploadPage = () => {
 
     setValue("title", editMaterial.title ?? "");
     setValue("content", editMaterial.content ?? "");
-    setValue("subject", editMaterial.subjectName ?? "");
-    setValue("subjectId", String(editMaterial.subjectId ?? ""));
 
     const initialImages = Array.isArray(editMaterial.images)
       ? editMaterial.images
@@ -404,8 +526,7 @@ const UploadPage = () => {
     const hasAnyDraftData =
       !!title ||
       !!content ||
-      !!selectedSubject ||
-      !!subjectId ||
+      selectedCategoryId !== "uncategorized" ||
       checked ||
       step !== Step.Guide;
 
@@ -419,22 +540,12 @@ const UploadPage = () => {
       checked,
       title: title ?? "",
       content: content ?? "",
-      selectedSubject: selectedSubject ?? "",
-      subjectId: subjectId ?? "",
+      selectedCategoryId,
       updatedAt: Date.now(),
     };
 
     window.localStorage.setItem(draftKey, JSON.stringify(draft));
-  }, [
-    draftKey,
-    draftReady,
-    step,
-    checked,
-    title,
-    content,
-    selectedSubject,
-    subjectId,
-  ]);
+  }, [draftKey, draftReady, step, checked, title, content, selectedCategoryId]);
 
   useEffect(() => {
     if (step !== Step.Guide) return;
@@ -452,11 +563,7 @@ const UploadPage = () => {
   }, [step]);
 
   const canSubmit =
-    !!title?.trim() &&
-    !!selectedSubject?.trim() &&
-    !!subjectId &&
-    hasFiles &&
-    !isSubmitting;
+    !!title?.trim() && !!legacySubjectId && hasFiles && !isSubmitting;
 
   const openConfirmModal = () => {
     if (!canSubmit) return;
@@ -484,12 +591,16 @@ const UploadPage = () => {
   const resetUploadPage = () => {
     window.localStorage.removeItem(draftKey);
     didApplyEditDataRef.current = false;
+    didApplyEditCategoryRef.current = false;
     didRestoreDraftRef.current = false;
     resetForm();
     clearFiles();
     setChecked(false);
     setInitialized(false);
     setHasDraftValues(false);
+    setSelectedCategoryId("uncategorized");
+    setIsCategoryCreatorOpen(false);
+    setNewCategoryName("");
     setDraftReady(false);
     setStep(Step.Guide);
   };
@@ -501,7 +612,7 @@ const UploadPage = () => {
           <div className="shrink-0 border-b border-[#F2F2F2] bg-white">
             <BoardHeader
               title={isEditMode ? "학습자료 수정" : "학습자료 업로드"}
-              onLeftButtonClick={() => router.push("/archive?status=my-study")}
+              onLeftButtonClick={() => router.push("/archive")}
             />
           </div>
 
@@ -633,34 +744,83 @@ const UploadPage = () => {
               />
             </div>
 
-            <Controller
-              name="subject"
-              control={control}
-              rules={QUESTION_FORM_RULES.subject}
-              render={() => (
-                <div className="mb-5 flex flex-col gap-1 px-6">
-                  <ExpandableChipSection
-                    data={{
-                      과목: Object.values(getSubjectMapForChips()).flat(),
-                    }}
-                    selectedItems={selectedSubject ? [selectedSubject] : []}
-                    onItemToggle={handleSubjectToggle}
-                    chipContainerClassName="flex gap-1"
-                    selectedChipClassName="border-primary bg-accent text-primary"
-                    selectionMode="single"
-                    showDropdown={true}
-                    maxVisibleChips={4}
-                    expandedData={getSubjectMapForChips()}
-                    showDropdownButton={true}
-                  />
-                  {errors.subject && (
-                    <p className="text-body-medium text-destructive">
-                      {errors.subject.message}
-                    </p>
+            <section className="mb-5 px-6" aria-label="자료 카테고리">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-label-medium text-foreground">카테고리</p>
+                  <p className="mt-1 text-body-small text-muted-foreground">
+                    직접 만든 카테고리로 자료를 정리할 수 있어요.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryCreatorOpen((open) => !open)}
+                  className="flex h-9 shrink-0 items-center gap-1 rounded-full border border-primary px-3 text-label-small text-primary"
+                >
+                  {isCategoryCreatorOpen ? (
+                    <X className="h-3.5 w-3.5" />
+                  ) : (
+                    <Plus className="h-3.5 w-3.5" />
                   )}
+                  {isCategoryCreatorOpen ? "닫기" : "새 카테고리"}
+                </button>
+              </div>
+
+              {isCategoryCreatorOpen && (
+                <div className="mt-3 flex gap-2">
+                  <input
+                    value={newCategoryName}
+                    onChange={(event) => setNewCategoryName(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        addCategory();
+                      }
+                    }}
+                    maxLength={20}
+                    placeholder="카테고리 이름"
+                    className="h-10 min-w-0 flex-1 rounded-lg border border-[#C4C4C4] px-3 text-base outline-none focus:border-primary md:text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={addCategory}
+                    disabled={!newCategoryName.trim()}
+                    className="h-10 rounded-lg bg-primary px-4 text-label-medium text-primary-foreground disabled:opacity-40"
+                  >
+                    추가
+                  </button>
                 </div>
               )}
-            />
+
+              <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategoryId("uncategorized")}
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-label-small ${
+                    selectedCategoryId === "uncategorized"
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-white text-muted-foreground"
+                  }`}
+                >
+                  미분류
+                </button>
+                {library.folders.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => setSelectedCategoryId(category.id)}
+                    className={`flex shrink-0 items-center gap-1 rounded-full border px-3 py-1.5 text-label-small ${
+                      selectedCategoryId === category.id
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-white text-muted-foreground"
+                    }`}
+                  >
+                    <Tag className="h-3.5 w-3.5" />
+                    {category.name}
+                  </button>
+                ))}
+              </div>
+            </section>
 
             <div className="px-6">
               <p className="mb-3 text-label-medium">업로드 할 파일</p>
@@ -688,7 +848,7 @@ const UploadPage = () => {
               <input
                 ref={imageInputRef}
                 type="file"
-                accept="image/*"
+                accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                 multiple
                 className="hidden"
                 onChange={handleImageChange}
@@ -805,7 +965,7 @@ const UploadPage = () => {
               className="border border-primary text-primary"
               label="내 학습자료 보기"
               variant="teritary"
-              onClick={() => router.push("/archive?status=my-study")}
+              onClick={() => router.push("/archive")}
             />
             <TextButton
               label="다른 학습자료 올리기"

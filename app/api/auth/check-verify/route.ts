@@ -19,12 +19,16 @@ export const POST = async (request: NextRequest) => {
     if (!response.ok) {
       const data = await response.json();
       return NextResponse.json(
-        { error: data.reason || "이메일 인증 확인에 실패하였습니다." },
+        {
+          ...data,
+          message:
+            data.message || data.reason || "이메일 인증 확인에 실패하였습니다.",
+        },
         { status: response.status },
       );
     }
 
-    return NextResponse.json({ message: "success" }, { status: 200 });
+    return NextResponse.json(await response.json(), { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { error: "서버 오류가 발생했습니다." },

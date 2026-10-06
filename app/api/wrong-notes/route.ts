@@ -1,3 +1,5 @@
+import { parseBackendError } from "@/lib/server/apiError";
+import { mapWrongNoteResponse } from "@/lib/server/wrongNoteResponse";
 import { NextRequest, NextResponse } from "next/server";
 import { serverFetch } from "@/lib/server/fetch";
 import { getRequestUserId, isOwnedByRequestUser } from "./_auth";
@@ -24,9 +26,7 @@ export async function GET(request: NextRequest) {
       );
       const filteredResponseData = {
         ...responseData,
-        content: filteredContent,
-        totalElements: filteredContent.length,
-        totalPages: filteredContent.length > 0 ? 1 : 0,
+        content: filteredContent.map(mapWrongNoteResponse),
       };
 
       return NextResponse.json(
@@ -36,12 +36,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json(mapWrongNoteResponse(data));
   } catch (error: any) {
     console.error("오답노트 목록 조회 에러:", error);
-    const errorInfo = JSON.parse(error.message || "{}");
+    const errorInfo = parseBackendError(error);
     return NextResponse.json(
-      { message: errorInfo.message || "오답노트 목록 조회에 실패했습니다." },
+      {
+        ...errorInfo.data,
+        message: errorInfo.message || "오답노트 목록 조회에 실패했습니다.",
+      },
       { status: errorInfo.status || 500 },
     );
   }
@@ -57,12 +60,15 @@ export async function POST(request: NextRequest) {
       request,
     });
 
-    return NextResponse.json(data, { status: 201 });
+    return NextResponse.json(mapWrongNoteResponse(data), { status: 201 });
   } catch (error: any) {
     console.error("오답노트 생성 에러:", error);
-    const errorInfo = JSON.parse(error.message || "{}");
+    const errorInfo = parseBackendError(error);
     return NextResponse.json(
-      { message: errorInfo.message || "오답노트 생성에 실패했습니다." },
+      {
+        ...errorInfo.data,
+        message: errorInfo.message || "오답노트 생성에 실패했습니다.",
+      },
       { status: errorInfo.status || 500 },
     );
   }

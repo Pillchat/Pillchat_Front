@@ -149,12 +149,10 @@ const BellSetting: FC = () => {
       return { previous };
     },
     onError: (mutationError, _patch, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(
-          notificationSettingsQueryKey,
-          context.previous,
-        );
-      }
+      queryClient.setQueryData(
+        notificationSettingsQueryKey,
+        context?.previous ?? DEFAULT_NOTIFICATION_SETTING,
+      );
 
       setStatusMessage(
         mutationError.message || "알림 설정을 저장하지 못했습니다.",
@@ -171,7 +169,7 @@ const BellSetting: FC = () => {
     },
   });
 
-  const disabled = isLoading || mutation.isPending;
+  const disabled = isLoading || isError || !data || mutation.isPending;
 
   const subjectFollowMutation = useSetSubjectFollowMutation<{
     previous?: SubjectFollow[];
@@ -234,6 +232,11 @@ const BellSetting: FC = () => {
           title: "전체 알림",
           description: "답변, 채택, 관심 과목, 혜택 알림 전체 수신 여부",
           ariaLabel: "전체 알림 토글",
+        },
+        {
+          field: "followNotificationEnabled",
+          title: "새 팔로워",
+          ariaLabel: "팔로우 알림 토글",
         },
         {
           field: "answerNotificationEnabled",

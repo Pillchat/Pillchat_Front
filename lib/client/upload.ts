@@ -39,7 +39,7 @@ const readUploadError = async (response: Response) => {
     }
   }
 
-  if (response.status === 401 || response.status === 403) {
+  if (response.status === 401) {
     return "인증이 만료되었거나 이 요청에 대한 권한이 없습니다. 다시 로그인해주세요.";
   }
 
@@ -72,7 +72,7 @@ async function fetchWithFormData(
     credentials: "same-origin",
   });
 
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401) {
     const recoveredToken = await recoverAccessToken(token);
     if (recoveredToken) {
       res = await fetch(url, {

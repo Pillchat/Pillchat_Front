@@ -1,5 +1,8 @@
 "use client";
 
+import { LearningCommands } from "@/lib/learning/api";
+import FlashcardGeneration from "@/components/learning/FlashcardGeneration";
+
 import Link from "next/link";
 
 import {
@@ -22,9 +25,9 @@ import { AppShell, PracticeHeader } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getValidAccessToken, recoverAccessToken } from "@/lib/client/fetch";
 import {
   createRemoteFlashcard,
+  fetchRemotePackNames,
   deleteRemoteFlashcard,
   fetchAllFlashcards,
   mergeFlashcards,
@@ -43,10 +46,6 @@ import {
   readFileAsDataUrl,
 } from "@/lib/flashcards/storage";
 import { FlashcardLibraryPanel } from "./FlashcardLibraryPanel";
-import {
-  FlashcardDraftReview,
-  type FlashcardReviewItem,
-} from "./FlashcardDraftReview";
 
 import type {
   BlindMask,
@@ -364,166 +363,18 @@ function CreatePanel({
   const [dateCollection] = useState(
     initialCollectionIsDate ? initialCollection : formatCollectionDate(),
   );
-  const [sourceFile, setSourceFile] = useState<File | null>(null);
-  const [generating, setGenerating] = useState(false);
-  const generateLock = useRef(false);
   const [formBusy, setFormBusy] = useState(false);
   const [hasCreated, setHasCreated] = useState(false);
-  const [aiReview, setAiReview] = useState<{
-    items: FlashcardReviewItem[];
-    fileName: string;
-  } | null>(null);
-  const reviewId = useRef(0);
-  const reviewLock = useRef(false);
-  const pendingReviewDraft = useRef<{
-    key: string;
-    draft: Extract<FlashcardDraft, { type: "concept" }>;
-  } | null>(null);
   const [error, setError] = useState("");
   const collection =
     collectionMode === "subject" ? collectionName.trim() : dateCollection;
-  const busy = generating || formBusy;
+  const busy = formBusy;
 
   const saveDrafts = async (drafts: FlashcardDraft[], complete: boolean) => {
     await onAddMany(drafts, collection);
     setHasCreated(true);
+
     if (complete) onComplete();
-  };
-
-  const createReviewItems = (
-    drafts: FlashcardDraft[],
-    source: FlashcardReviewItem["source"],
-  ): FlashcardReviewItem[] =>
-    drafts.map((draft) => ({
-      id: `draft-${++reviewId.current}`,
-      draft,
-      source,
-    }));
-
-  const addReviewDraft = (
-    draft: Extract<FlashcardDraft, { type: "concept" }>,
-  ) => {
-    if (busy || reviewLock.current) return;
-    const [item] = createReviewItems([draft], "manual");
-    setAiReview((prev) =>
-      prev ? { ...prev, items: [...prev.items, item] } : prev,
-    );
-  };
-
-  const removeReviewDraft = (id: string) => {
-    if (busy || reviewLock.current) return;
-    setAiReview((prev) =>
-      prev
-        ? { ...prev, items: prev.items.filter((item) => item.id !== id) }
-        : prev,
-    );
-  };
-
-  const completeReview = async (
-    pendingDraft?: Extract<FlashcardDraft, { type: "concept" }>,
-  ) => {
-    if (!aiReview || !collection || busy || reviewLock.current) return;
-    if (!aiReview.items.length && !pendingDraft) return;
-
-    reviewLock.current = true;
-    setFormBusy(true);
-    setError("");
-    try {
-      for (const item of aiReview.items) {
-        await onAddMany([item.draft], collection);
-        setHasCreated(true);
-        setAiReview((prev) =>
-          prev
-            ? {
-                ...prev,
-                items: prev.items.filter((card) => card.id !== item.id),
-              }
-            : prev,
-        );
-      }
-      if (pendingDraft) {
-        const key = JSON.stringify([
-          pendingDraft.term,
-          pendingDraft.definition,
-        ]);
-        if (pendingReviewDraft.current?.key !== key) {
-          pendingReviewDraft.current = { key, draft: pendingDraft };
-        }
-        await onAddMany([pendingReviewDraft.current.draft], collection);
-        setHasCreated(true);
-      }
-      onComplete();
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "카드를 저장하지 못했어요.",
-      );
-      throw err;
-    } finally {
-      reviewLock.current = false;
-      setFormBusy(false);
-    }
-  };
-
-  const handleGenerate = async () => {
-    if (busy || generateLock.current) return;
-    if (!collection || !sourceFile) return;
-
-    generateLock.current = true;
-    setGenerating(true);
-    setError("");
-
-    try {
-      const formData = new FormData();
-      formData.append("file", sourceFile);
-
-      const token = await getValidAccessToken();
-      if (!token) {
-        throw new Error("로그인이 필요합니다. 다시 로그인해주세요.");
-      }
-
-      const requestGeneration = (accessToken: string) =>
-        fetch("/api/flashcards/generate", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${accessToken}` },
-          body: formData,
-          credentials: "same-origin",
-        });
-
-      let response = await requestGeneration(token);
-
-      if (response.status === 401 || response.status === 403) {
-        const recoveredToken = await recoverAccessToken(token);
-        if (recoveredToken) {
-          response = await requestGeneration(recoveredToken);
-        }
-      }
-
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as {
-          message?: string;
-        } | null;
-        throw new Error(payload?.message || "카드를 생성하지 못했어요.");
-      }
-
-      const payload = (await response.json()) as { cards?: FlashcardDraft[] };
-      const drafts = Array.isArray(payload.cards) ? payload.cards : [];
-
-      if (drafts.length === 0) {
-        throw new Error("생성된 카드가 없어요.");
-      }
-
-      setAiReview({
-        items: createReviewItems(drafts, "ai"),
-        fileName: sourceFile.name,
-      });
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "카드를 생성하지 못했어요.",
-      );
-    } finally {
-      generateLock.current = false;
-      setGenerating(false);
-    }
   };
 
   return (
@@ -581,7 +432,7 @@ function CreatePanel({
         </div>
       )}
 
-      {!aiReview && (
+      {
         <div>
           <label className="mb-2 block text-sm font-bold text-foreground">
             카드 생성 방식
@@ -607,117 +458,11 @@ function CreatePanel({
             ))}
           </div>
         </div>
+      }
+
+      {mode === "ai" && (
+        <FlashcardGeneration title={collection} onBusyChange={setFormBusy} />
       )}
-
-      {mode === "ai" &&
-        (aiReview ? (
-          <div className="space-y-5">
-            <p className="truncate text-sm text-muted-foreground">
-              {aiReview.fileName}
-            </p>
-            <FlashcardDraftReview
-              items={aiReview.items}
-              disabled={busy || !collection}
-              onRemove={removeReviewDraft}
-              onAdd={addReviewDraft}
-              onComplete={completeReview}
-            />
-          </div>
-        ) : (
-          <div className="space-y-4 rounded-2xl border border-border p-4">
-            <div className="rounded-2xl border border-primary-900 bg-primary-980 p-4">
-              <div className="flex items-start gap-3">
-                <Sparkles
-                  aria-hidden="true"
-                  className="mt-0.5 h-5 w-5 shrink-0 text-brand"
-                  strokeWidth={1.8}
-                />
-                <div>
-                  <h3 className="text-base font-black text-foreground">
-                    AI 자동 생성
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    사진 필기, 교재 페이지, PDF에서 핵심을 뽑아 앞면·뒷면 카드
-                    초안을 만듭니다.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <label className="flex min-h-[8.75rem] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-primary-800 bg-primary-980/50 px-4 py-6 text-center transition active:scale-[0.99]">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-brand shadow-sm">
-                <FileUp
-                  aria-hidden="true"
-                  className="h-6 w-6"
-                  strokeWidth={1.7}
-                />
-              </span>
-              <span className="mt-3 flex items-center gap-2 text-base font-black text-foreground">
-                {sourceFile ? sourceFile.name : "파일 업로드"}
-                <span className="text-xs font-semibold text-brand">필수</span>
-              </span>
-              <span className="mt-1 text-sm leading-5 text-muted-foreground">
-                사진(PNG · JPG · WEBP), PDF, TXT · MD · CSV · 최대 8MB
-              </span>
-              <input
-                type="file"
-                required
-                aria-required="true"
-                aria-label="학습 자료 파일"
-                disabled={busy}
-                accept="image/png,image/jpeg,image/webp,application/pdf,text/plain,text/markdown,text/csv,.txt,.md,.csv"
-                className="sr-only"
-                onChange={(event) => {
-                  const file = event.target.files?.[0] ?? null;
-                  if (file && file.size > 8 * 1024 * 1024) {
-                    setError("8MB 이하의 파일만 업로드할 수 있어요.");
-                    event.target.value = "";
-                    return;
-                  }
-
-                  setSourceFile(file);
-                  setError("");
-                  event.target.value = "";
-                }}
-              />
-            </label>
-
-            {sourceFile && (
-              <button
-                type="button"
-                onClick={() => setSourceFile(null)}
-                disabled={busy}
-                className="flex w-full items-center justify-between rounded-xl bg-gray-100 px-4 py-3 text-left text-sm font-bold text-muted-foreground"
-              >
-                <span className="truncate">{sourceFile.name}</span>
-                <X aria-hidden="true" className="h-4 w-4 shrink-0" />
-              </button>
-            )}
-
-            {error && (
-              <p className="text-sm font-medium text-rose-600">{error}</p>
-            )}
-            <Button
-              type="button"
-              className="w-full"
-              disabled={busy || !collection || !sourceFile}
-              onClick={() => void handleGenerate()}
-            >
-              {generating && <Loader2 className="mr-2 animate-spin" />}
-              카드 자동 생성
-            </Button>
-            {hasCreated && !sourceFile && (
-              <Button
-                type="button"
-                className="w-full"
-                disabled={busy}
-                onClick={onComplete}
-              >
-                제작 완료
-              </Button>
-            )}
-          </div>
-        ))}
 
       {mode === "manual" && (
         <ManualCreateForm
@@ -1247,8 +992,19 @@ export function FlashcardApp() {
   );
 
   useEffect(() => {
-    setCollectionByCardId(readFlashcardCollections());
-  }, []);
+    if (!ready) return;
+    void fetchRemotePackNames()
+      .then((names) => {
+        setCollectionByCardId(
+          Object.fromEntries(
+            cards
+              .filter((c) => c.packId && names[c.packId])
+              .map((c) => [c.id, names[c.packId!]]),
+          ),
+        );
+      })
+      .catch((e) => setToast(e.message));
+  }, [ready, cards.map((card) => `${card.id}:${card.packId ?? ""}`).join(",")]);
 
   const deleteCard = async (cardId: string) => {
     try {
@@ -1338,14 +1094,32 @@ export function FlashcardCreateApp({
   const router = useRouter();
   const [toast, setToast] = useState("");
   const createdDrafts = useRef(new WeakMap<FlashcardDraft, Flashcard>());
+  const manualPacks = useRef(new Map<string, string>());
+  const packCommands = useRef(new LearningCommands());
 
   const addDrafts = async (drafts: FlashcardDraft[], collection: string) => {
     try {
+      if (
+        packCommands.current.pending &&
+        packCommands.current.pending.body.title !== collection
+      )
+        throw new Error("이전 팩 이름으로 다시 시도해주세요.");
+      let packId = manualPacks.current.get(collection);
+      if (!packId) {
+        const pack: { packId: string } = packCommands.current.pending
+          ? await packCommands.current.retry()
+          : await packCommands.current.send("/api/flashcard-packs", "POST", {
+              title: collection,
+              groupKind: "UNCLASSIFIED",
+            });
+        packId = pack.packId;
+        manualPacks.current.set(collection, packId);
+      }
       const createdCards: Flashcard[] = [];
       for (const draft of drafts) {
         let card = createdDrafts.current.get(draft);
         if (!card) {
-          card = await createRemoteFlashcard(draft);
+          card = await createRemoteFlashcard(draft, packId);
           createdDrafts.current.set(draft, card);
         }
         createdCards.push(card);

@@ -11,11 +11,12 @@ import { Button } from "@/components/ui/button";
 import { getCurrentUserId } from "@/lib/client/auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/lib/navigation";
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { MaterialTitleSection } from "./MaterialTitleSection";
 import { MaterialContents } from "./MaterialContents";
 import { useFilesQuery, useMaterialQuery } from "@/hooks/queries";
 import { useDeleteMaterialMutation } from "@/hooks/mutations";
+import { markArchiveMaterialOpened } from "@/lib/client/archiveLibrary";
 
 const resolveMaterialKey = (value: any, materialId: string | number) => {
   const raw =
@@ -110,11 +111,16 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
       ? Number(materialData.userId) === Number(currentUserId)
       : false);
 
+  useEffect(() => {
+    if (!materialData?.id || !isAuthor) return;
+    markArchiveMaterialOpened(materialData.id, currentUserId);
+  }, [currentUserId, isAuthor, materialData?.id]);
+
   const deleteMutation = useDeleteMaterialMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["material", materialId] });
       queryClient.invalidateQueries({ queryKey: ["materials"] });
-      router.push("/market");
+      router.push("/archive");
     },
     onError: (error) => {
       console.error("학습자료 삭제 실패:", error);
