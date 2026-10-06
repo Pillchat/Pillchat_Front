@@ -1,5 +1,8 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+import { PillLoader } from "@/components/atoms/PillLoader";
+
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type {
@@ -444,9 +447,10 @@ export default function CbtPracticePage() {
 function ReviewLoadingPage() {
   return (
     <main className="flex min-h-dvh items-center justify-center bg-white p-5">
-      <p role="status" className="text-sm text-muted-foreground">
-        CBT 기록을 불러오는 중...
-      </p>
+      <LoadingIndicator
+        label="CBT 기록을 불러오는 중..."
+        className="text-sm text-muted-foreground"
+      />
     </main>
   );
 }
@@ -2375,9 +2379,10 @@ function SessionSelectPage({
         ))}
       </div>
       {loading && (
-        <p className="mt-4 text-center text-sm font-bold text-muted-foreground">
-          문제 세트를 불러오는 중...
-        </p>
+        <LoadingIndicator
+          label="문제 세트를 불러오는 중..."
+          className="mt-4 text-center text-sm font-bold text-muted-foreground"
+        />
       )}
     </FlowPage>
   );
@@ -2568,7 +2573,11 @@ function FullWaitingPage({
           onClick={onStart}
           className="mt-5 h-14 w-full rounded-xl bg-primary font-extrabold text-white disabled:opacity-50"
         >
-          {loading ? "다음 교시 준비 중..." : "연습이므로 바로 시작"}
+          {loading ? (
+            <LoadingIndicator inline label="다음 교시 준비 중..." />
+          ) : (
+            "연습이므로 바로 시작"
+          )}
         </button>
         <button
           type="button"
@@ -3300,7 +3309,11 @@ function SaveStateBadge({ status }: { status: SaveStatus }) {
           : "bg-[#fafafa] text-muted-foreground",
       )}
     >
-      <Save className="h-4 w-4" />
+      {status === "saving" ? (
+        <PillLoader size={24} decorative />
+      ) : (
+        <Save className="h-4 w-4" />
+      )}
       {labels[status]}
     </div>
   );
@@ -3489,13 +3502,15 @@ function SubmitDialog({
           </SecondaryButton>
         )}
         <PrimaryButton compact disabled={submitting} onClick={onSubmit}>
-          {tutorial
-            ? "튜토리얼 마치기"
-            : submitting
-              ? "제출 중..."
-              : summary.unanswered > 0
-                ? "그래도 제출"
-                : "답안 제출"}
+          {tutorial ? (
+            "튜토리얼 마치기"
+          ) : submitting ? (
+            <LoadingIndicator inline label="제출 중..." />
+          ) : summary.unanswered > 0 ? (
+            "그래도 제출"
+          ) : (
+            "답안 제출"
+          )}
         </PrimaryButton>
         <button
           type="button"

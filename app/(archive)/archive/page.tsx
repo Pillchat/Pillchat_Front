@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import {
   EllipsisVertical,
   FileImage,
@@ -536,14 +538,7 @@ export default function ArchivePage() {
           </div>
 
           {isLoading && !isDemo ? (
-            <div className="space-y-3 px-6">
-              {[0, 1, 2].map((item) => (
-                <div
-                  key={item}
-                  className="h-24 animate-pulse rounded-xl bg-[#F6F6F6]"
-                />
-              ))}
-            </div>
+            <LoadingIndicator label="자료를 불러오는 중..." />
           ) : isError && !isDemo ? (
             <EmptyState
               title="자료를 불러오지 못했어요."

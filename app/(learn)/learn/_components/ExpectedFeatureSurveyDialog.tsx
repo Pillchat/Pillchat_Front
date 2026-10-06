@@ -150,6 +150,7 @@ export function ExpectedFeatureSurveyDialog({
             type="submit"
             className="mt-6 w-full"
             disabled={!selectedFeature || isSubmitting}
+            loading={isSubmitting}
             aria-busy={isSubmitting}
           >
             {isSubmitting

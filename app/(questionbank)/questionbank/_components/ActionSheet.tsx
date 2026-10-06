@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { FC } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Bookmark, RotateCcw, CircleX, X } from "lucide-react";
@@ -114,12 +116,10 @@ const ActionSheet: FC<ActionSheetProps> = ({
                 문제 목록
               </p>
               {questionsLoading ? (
-                <p
-                  role="status"
+                <LoadingIndicator
+                  label="문제 목록 불러오는 중..."
                   className="py-6 text-center text-sm text-muted-foreground"
-                >
-                  문제 목록 불러오는 중...
-                </p>
+                />
               ) : questions?.length ? (
                 <div className="max-h-60 overflow-y-auto">
                   {questions.map((question, index) => (

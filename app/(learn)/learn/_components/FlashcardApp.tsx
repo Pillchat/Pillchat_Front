@@ -1,5 +1,7 @@
 "use client";
 
+import { PillLoader } from "@/components/atoms/PillLoader";
+
 import { LearningCommands } from "@/lib/learning/api";
 import FlashcardGeneration from "@/components/learning/FlashcardGeneration";
 
@@ -11,7 +13,6 @@ import {
   Eraser,
   EyeOff,
   FileUp,
-  Loader2,
   PenLine,
   Plus,
   Sparkles,
@@ -243,7 +244,7 @@ function CreateActions({
         onClick={onComplete}
         disabled={busy || completeDisabled}
       >
-        {busy && <Loader2 className="mr-2 animate-spin" />}
+        {busy && <PillLoader size={24} className="mr-2" />}
         제작 완료
       </Button>
     </div>
@@ -1055,7 +1056,7 @@ export function FlashcardApp() {
           rightSlot={<FlashcardTutorialLink />}
         />
         <div className="flex min-h-[calc(100dvh-4rem)] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+          <PillLoader size={64} />
         </div>
       </AppShell>
     );

@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -127,12 +129,10 @@ export default function ReviewSetPage() {
       <main className="min-h-dvh bg-white">
         <PracticeHeader title="복습하기" backHref={backHref} />
         {!ready ? (
-          <p
-            role="status"
+          <LoadingIndicator
+            label="복습 기록을 불러오는 중..."
             className="p-8 text-center text-sm text-muted-foreground"
-          >
-            복습 기록을 불러오는 중...
-          </p>
+          />
         ) : !collection ? (
           <div className="p-8 text-center">
             <p

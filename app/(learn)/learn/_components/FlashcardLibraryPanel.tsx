@@ -1,10 +1,13 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
+import { PillLoader } from "@/components/atoms/PillLoader";
+
 import Link from "next/link";
 import {
   Check,
   List,
-  Loader2,
   Plus,
   RotateCcw,
   Shuffle,
@@ -546,10 +549,7 @@ function PackViewer({
                     className="flex h-9 items-center gap-1 rounded-lg bg-rose-50 px-2 text-xs font-bold text-rose-600 disabled:opacity-50"
                   >
                     {deletingId === card.id && (
-                      <Loader2
-                        aria-hidden="true"
-                        className="h-3 w-3 animate-spin"
-                      />
+                      <PillLoader size={20} decorative />
                     )}
                     삭제 확인
                   </button>
@@ -688,7 +688,9 @@ function PackViewer({
                 ? `${index + 1} / ${studyCards.length}`
                 : "선택한 카드"}
             </p>
-            {ratingPending && <span role="status">학습 기록 저장 중</span>}
+            {ratingPending && (
+              <LoadingIndicator inline label="학습 기록 저장 중" />
+            )}
           </div>
         </div>
       ) : null}

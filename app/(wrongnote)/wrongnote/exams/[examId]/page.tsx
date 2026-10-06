@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { fetchAPI, getToken } from "@/lib/client/fetch";
@@ -57,7 +59,10 @@ const ExamDetailPage = () => {
   if (loading) {
     return (
       <div className="flex h-dvh items-center justify-center">
-        <p className="text-muted-foreground">불러오는 중...</p>
+        <LoadingIndicator
+          label="불러오는 중..."
+          className="text-muted-foreground"
+        />
       </div>
     );
   }
@@ -120,7 +125,11 @@ const ExamDetailPage = () => {
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-                {downloading ? "다운로드 중..." : "PDF"}
+                {downloading ? (
+                  <LoadingIndicator inline label="다운로드 중..." />
+                ) : (
+                  "PDF"
+                )}
               </button>
             )}
           </div>

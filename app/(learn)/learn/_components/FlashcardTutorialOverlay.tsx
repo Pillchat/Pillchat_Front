@@ -1,8 +1,10 @@
 "use client";
 
+import { PillLoader } from "@/components/atoms/PillLoader";
+
 import { useEffect, useId, useRef, useState, type PointerEvent } from "react";
 import { createPortal } from "react-dom";
-import { Loader2, RotateCcw, X } from "lucide-react";
+import { RotateCcw, X } from "lucide-react";
 
 interface FlashcardTutorialOverlayProps {
   targetSelector: string;
@@ -445,12 +447,7 @@ export function FlashcardTutorialOverlay({
           >
             {target ? description : "연습할 화면을 준비하고 있어요."}
           </p>
-          {!target && (
-            <Loader2
-              className="mt-3 h-4 w-4 animate-spin text-brand"
-              aria-hidden="true"
-            />
-          )}
+          {!target && <PillLoader size={24} className="mt-3" decorative />}
         </div>
 
         {!completed && (

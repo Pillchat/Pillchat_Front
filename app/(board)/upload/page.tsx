@@ -911,6 +911,7 @@ const UploadPage = () => {
               <SolidButton
                 disabled={!canSubmit}
                 onClick={openConfirmModal}
+                loading={isSubmitting}
                 content={
                   isSubmitting
                     ? isEditMode

@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { PUBLIC_ASSETS } from "@/constants/assets";
 
 import {
@@ -152,7 +154,11 @@ const AnswerItem: FC<{
           onClick={() => setSelectAnser(true)}
           disabled={isAccepting}
         >
-          {isAccepting ? "채택 중..." : "채택하기"}
+          {isAccepting ? (
+            <LoadingIndicator inline label="채택 중..." />
+          ) : (
+            "채택하기"
+          )}
         </Button>
       )}
       <SelectModal
@@ -199,7 +205,8 @@ export const AnswerDetailPage: FC<{
     }
   };
 
-  if (answerLoading && page === 0) return <div>Loading...</div>;
+  if (answerLoading && page === 0)
+    return <LoadingIndicator label="불러오는 중..." />;
 
   return (
     <div>
@@ -218,6 +225,7 @@ export const AnswerDetailPage: FC<{
       {answerData?.hasNext && (
         <div className="mt-6 flex justify-center">
           <TextButton
+            loading={isFetching}
             label={isFetching ? "로딩 중..." : "답변 더보기"}
             variant={isFetching ? "disabled" : "outline"}
             onClick={handleLoadMore}

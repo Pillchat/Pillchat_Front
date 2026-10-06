@@ -1,3 +1,4 @@
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 import { ImageCarousel } from "@/components/molecules";
 import { FC } from "react";
 
@@ -11,8 +12,11 @@ export const QuestionContents: FC<{
       <div className="whitespace-pre-wrap text-foreground">{content}</div>
       {/* 이미지 표시 */}
       {filesLoading && images && images.length > 0 && (
-        <div className="mt-4 flex h-48 w-full animate-pulse items-center justify-center rounded-lg bg-brandSecondary">
-          <span className="text-gray-500">이미지 로딩 중...</span>
+        <div className="mt-4 flex h-48 w-full items-center justify-center rounded-lg bg-brandSecondary">
+          <LoadingIndicator
+            label="이미지 로딩 중..."
+            className="text-gray-500"
+          />
         </div>
       )}
       {/* 이미지 캐러셀 */}

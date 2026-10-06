@@ -1,6 +1,8 @@
 "use client";
 import ServerPushHistory from "@/components/learning/PushHistory";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { PUBLIC_ASSETS } from "@/constants/assets";
 import { FC, useState, useRef } from "react";
 import { useRouter } from "@/lib/navigation";
@@ -250,7 +252,11 @@ const SendPushSection: FC<{
         onClick={handleSend}
         disabled={isSending}
       >
-        {isSending ? "발송 중..." : "푸시 알림 발송"}
+        {isSending ? (
+          <LoadingIndicator inline label="발송 중..." />
+        ) : (
+          "푸시 알림 발송"
+        )}
       </Button>
     </div>
   );

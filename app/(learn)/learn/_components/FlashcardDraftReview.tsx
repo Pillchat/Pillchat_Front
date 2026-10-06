@@ -1,6 +1,8 @@
 "use client";
 
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { PillLoader } from "@/components/atoms/PillLoader";
+
+import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -282,12 +284,7 @@ export function FlashcardDraftReview({
           disabled={busy || !canComplete}
           onClick={() => void complete()}
         >
-          {completing && (
-            <Loader2
-              aria-hidden="true"
-              className="mr-2 !h-4 !w-4 animate-spin"
-            />
-          )}
+          {completing && <PillLoader size={24} className="mr-2" decorative />}
           제작 완료
         </Button>
       </div>

@@ -1,4 +1,5 @@
 "use client";
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CustomHeader } from "@/components/molecules";
@@ -263,7 +264,9 @@ export default function LearningWorkspace({ source }: { source: Source }) {
           <>
             <h1 className="text-xl font-semibold">{title} 시작하기</h1>
             {!catalog ? (
-              !error && <p>문제 목록을 불러오는 중입니다.</p>
+              !error && (
+                <LoadingIndicator label="문제 목록을 불러오는 중입니다." />
+              )
             ) : !catalog.banks.length ? (
               <p>아직 공개된 문제가 없습니다.</p>
             ) : (

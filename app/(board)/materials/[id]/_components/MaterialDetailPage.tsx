@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { PUBLIC_ASSETS } from "@/constants/assets";
 import {
   CustomHeader,
@@ -167,7 +169,10 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
       />
 
       {materialLoading && (
-        <div className="mx-6 my-5 h-96 animate-pulse rounded bg-gray-100" />
+        <LoadingIndicator
+          label="학습자료를 불러오는 중..."
+          className="mx-6 my-5 h-96"
+        />
       )}
 
       {materialData && (

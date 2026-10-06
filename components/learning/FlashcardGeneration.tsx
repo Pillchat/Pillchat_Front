@@ -1,4 +1,5 @@
 "use client";
+import { PillLoader } from "@/components/atoms/PillLoader";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -305,6 +306,7 @@ export default function FlashcardGeneration({
         }
         onClick={() => void run(generate)}
       >
+        {busy && <PillLoader size={24} className="mr-2" />}
         파일로 카드 생성
       </Button>
       {generation && (

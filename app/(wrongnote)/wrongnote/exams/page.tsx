@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { fetchAPI } from "@/lib/client/fetch";
@@ -33,7 +35,10 @@ const ExamListPage = () => {
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex h-full items-center justify-center">
-            <p className="text-muted-foreground">불러오는 중...</p>
+            <LoadingIndicator
+              label="불러오는 중..."
+              className="text-muted-foreground"
+            />
           </div>
         ) : exams.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center px-6">

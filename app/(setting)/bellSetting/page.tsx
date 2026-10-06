@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { FC, useMemo, useState } from "react";
 import { Toggle } from "@/components/atoms";
 import { CustomHeader, SectionWithChips } from "@/components/molecules";
@@ -435,7 +437,11 @@ const BellSetting: FC = () => {
               : "text-muted-foreground"
           }`}
         >
-          {subjectFollowStatusMessage}
+          {isSubjectsLoading || isSubjectFollowsLoading ? (
+            <LoadingIndicator inline label={subjectFollowStatusMessage} />
+          ) : (
+            subjectFollowStatusMessage
+          )}
         </p>
       )}
 
@@ -447,11 +453,13 @@ const BellSetting: FC = () => {
               : "text-muted-foreground"
           }`}
         >
-          {isLoading
-            ? "알림 설정을 불러오는 중입니다."
-            : isError
-              ? error?.message || "알림 설정을 불러오지 못했습니다."
-              : statusMessage}
+          {isLoading ? (
+            <LoadingIndicator inline label="알림 설정을 불러오는 중입니다." />
+          ) : isError ? (
+            error?.message || "알림 설정을 불러오지 못했습니다."
+          ) : (
+            statusMessage
+          )}
         </p>
       )}
     </div>

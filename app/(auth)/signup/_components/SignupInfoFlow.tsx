@@ -254,6 +254,7 @@ export function SignupInfoFlow({
           </button>
         )}
         <SolidButton
+          loading={isCompleting && stage === 4}
           content={
             isCompleting && stage === 4
               ? "가입 중..."

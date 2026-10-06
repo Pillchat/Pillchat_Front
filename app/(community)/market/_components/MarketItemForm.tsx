@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { Tags, X } from "lucide-react";
 import {
   type FormEvent,
@@ -345,9 +347,10 @@ export function MarketItemForm({ mode, marketId }: MarketItemFormProps) {
       <AppShell>
         <CustomHeader title="자료 수정" />
         <main className="px-6 py-8" aria-label="자료 정보를 불러오는 중">
-          <div className="h-12 animate-pulse rounded-xl bg-primary-980" />
-          <div className="mt-5 h-28 animate-pulse rounded-xl bg-primary-980" />
-          <div className="mt-5 h-48 animate-pulse rounded-xl bg-primary-980" />
+          <LoadingIndicator
+            label="자료 정보를 불러오는 중..."
+            className="min-h-96"
+          />
         </main>
       </AppShell>
     );
@@ -473,9 +476,11 @@ export function MarketItemForm({ mode, marketId }: MarketItemFormProps) {
               </span>
             )}
             {subjectCode && subjectQuery.isLoading && (
-              <span className="text-label-small text-muted-foreground">
-                과목 ID를 확인하는 중...
-              </span>
+              <LoadingIndicator
+                inline
+                label="과목 ID를 확인하는 중..."
+                className="text-label-small text-muted-foreground"
+              />
             )}
             {subjectCode && subjectQuery.isError && (
               <span className="flex items-center justify-between gap-2 text-label-small text-primary">
@@ -689,7 +694,16 @@ export function MarketItemForm({ mode, marketId }: MarketItemFormProps) {
             disabled={!formValid || isBusy || subjectsQuery.isError}
             className="h-[3.625rem] rounded-xl bg-primary text-label-large text-primary-foreground active:scale-[0.98] disabled:pointer-events-none disabled:bg-gray-100 disabled:text-gray-500"
           >
-            {uploadingLabel ?? (isEditMode ? "자료 수정하기" : "자료 등록하기")}
+            {isBusy ? (
+              <LoadingIndicator
+                inline
+                label={uploadingLabel ?? "자료를 저장하는 중..."}
+              />
+            ) : isEditMode ? (
+              "자료 수정하기"
+            ) : (
+              "자료 등록하기"
+            )}
           </button>
         </form>
       </main>

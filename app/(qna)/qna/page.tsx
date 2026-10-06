@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import {
   BottomNavbar,
   GeneralHeader,
@@ -65,7 +67,7 @@ const QnaPage: FC = () => {
       <div className="relative flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
-            <div className="text-border">Loading...</div>
+            <LoadingIndicator label="불러오는 중..." className="text-border" />
           </div>
         ) : list.length > 0 ? (
           <div className="mx-6 py-5 pb-[calc(6.875rem+env(safe-area-inset-bottom))]">

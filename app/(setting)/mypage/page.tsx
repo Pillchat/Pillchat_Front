@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { PUBLIC_ASSETS } from "@/constants/assets";
 import { FC, useEffect, useState } from "react";
 
@@ -11,7 +13,6 @@ import {
   UserInfoField,
 } from "@/components/molecules";
 import { isCurrentUserAdmin } from "@/lib/client/auth";
-import { fetchAPI } from "@/lib/client/fetch";
 import { useRouter } from "@/lib/navigation";
 import { useDelete, useLogout, useMyProfile } from "./_hooks";
 
@@ -28,19 +29,6 @@ const MyPage: FC = () => {
   useEffect(() => {
     onMyProfile();
   }, [onMyProfile]);
-
-  const handleOnboardingClick = async () => {
-    try {
-      const result = await fetchAPI("/api/auth/inquiry-myprofile", "GET");
-      const userType = result?.data?.userType;
-      const role = userType === "PROFESSIONAL" ? "professional" : "student";
-
-      router.push(`/onboarding/${role}`);
-    } catch (onboardingError) {
-      console.error("온보딩 진입 정보 조회 실패:", onboardingError);
-      router.push("/onboarding");
-    }
-  };
 
   if (error) {
     return (
@@ -66,10 +54,7 @@ const MyPage: FC = () => {
         <MeaninglessHeader />
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900" />
-            <span className="ml-2">프로필 정보를 불러오는 중...</span>
-          </div>
+          <LoadingIndicator label="프로필 정보를 불러오는 중..." />
         ) : (
           <UserInfoField onIconClick={() => router.push("/editprofile")} />
         )}
@@ -95,7 +80,7 @@ const MyPage: FC = () => {
               iconSrc={PUBLIC_ASSETS.icons.userInfo}
               title="맞춤형 정보 설정"
               description="내가 설정한 항목을 변경할 수 있어요."
-              onClick={handleOnboardingClick}
+              onClick={() => router.push("/onboarding")}
             />
           </div>
 
