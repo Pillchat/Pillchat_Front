@@ -144,11 +144,13 @@ const normalizeProfile = (result: unknown): UserProfile => {
       payload.following,
     ),
     questionCount: numberValue(
+      (payload.grade as Record<string, unknown> | undefined)?.questionCount,
       payload.questionCount,
       payload.questionsCount,
       payload.questions,
     ),
     answerCount: numberValue(
+      (payload.grade as Record<string, unknown> | undefined)?.answerCount,
       payload.answerCount,
       payload.answersCount,
       payload.answers,
@@ -251,6 +253,8 @@ function StudyStat({
 export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile>(initialProfile);
+  const [following, setFollowing] = useState(false);
+  const [followBusy, setFollowBusy] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewerUserId, setViewerUserId] = useState<string | null>();
@@ -265,8 +269,17 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
       setProfile(initialProfile);
 
       try {
-        const result = await fetchAPI(`/api/profile/${userId}`, "GET");
-        if (!ignore) setProfile(normalizeProfile(result));
+        const [result, summary] = await Promise.all([
+          fetchAPI(`/api/profile/${userId}`, "GET"),
+          fetchAPI(`/api/users/${userId}/follow-summary`, "GET"),
+        ]);
+        if (!ignore) setFollowing(summary.following);
+        if (!ignore)
+          setProfile({
+            ...normalizeProfile(result),
+            followerCount: summary.followerCount,
+            followingCount: summary.followingCount,
+          });
       } catch (err) {
         console.error("사용자 프로필 조회 실패:", err);
         if (!ignore) setError("사용자 정보를 불러오지 못했습니다.");
@@ -291,7 +304,7 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
   return (
     <div className="mx-auto min-h-dvh w-full max-w-screen-sm bg-white">
       <ProfileHeader
-        onReport={() => router.push(`/reports?type=PROFILE&id=${userId}`)}
+        onReport={() => router.push(`/reports?type=USER&id=${userId}`)}
       />
 
       <main className="px-6 pb-10">
@@ -369,9 +382,35 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
 
               <button
                 type="button"
+                disabled={followBusy || isOwnProfile}
+                onClick={async () => {
+                  setFollowBusy(true);
+                  try {
+                    await fetchAPI(
+                      `/api/follows/${userId}`,
+                      following ? "DELETE" : "POST",
+                    );
+                    const summary = await fetchAPI(
+                      `/api/users/${userId}/follow-summary`,
+                      "GET",
+                    );
+                    setFollowing(summary.following);
+                    setProfile((prev) => ({
+                      ...prev,
+                      followerCount: summary.followerCount,
+                      followingCount: summary.followingCount,
+                    }));
+                  } catch (e) {
+                    setError(
+                      e instanceof Error ? e.message : "팔로우 변경 실패",
+                    );
+                  } finally {
+                    setFollowBusy(false);
+                  }
+                }}
                 className="mt-5 h-12 w-full rounded-xl bg-primary text-sm font-semibold text-white"
               >
-                팔로우
+                {following ? "팔로우 해제" : "팔로우"}
               </button>
             </section>
 

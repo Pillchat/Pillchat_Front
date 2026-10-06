@@ -1,4 +1,5 @@
 "use client";
+import { startQuiz } from "@/lib/client/startQuiz";
 
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 
@@ -94,7 +95,7 @@ const ReviewDetailPage = () => {
       };
       const body = bodyMap[mode];
 
-      const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", body);
+      const quizRaw = await startQuiz(body);
       const quizData: QuizStartResponse = quizRaw.data ?? quizRaw;
       const answerByQuestionId = new Map(
         result.answers.map((answer) => [answer.questionId, answer]),

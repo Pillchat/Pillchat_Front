@@ -1,4 +1,5 @@
 "use client";
+import { startQuiz } from "@/lib/client/startQuiz";
 
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 
@@ -69,7 +70,7 @@ const MyTasksPage = () => {
         ),
       );
 
-      const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", {
+      const quizRaw = await startQuiz({
         type: "PDF",
         taskId: task.taskId,
       });

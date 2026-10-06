@@ -2,10 +2,10 @@
 
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useAtomValue, useSetAtom } from "jotai";
-import { fetchAPI } from "@/lib/client/fetch";
+import { fetchAPI, ApiError } from "@/lib/client/fetch";
 import {
   quizSessionAtom,
   currentQuestionAtom,
@@ -38,6 +38,9 @@ const SolvePage = () => {
   const applyGrade = useSetAtom(applyGradeResultAtom);
   const nextAction = useSetAtom(nextQuestionAtom);
   const gradingRef = useRef(false);
+  const [finishError, setFinishError] = useState(false);
+  const [finishRetry, setFinishRetry] = useState(0);
+  const pendingGrade = useRef<{ signature: string; key: string } | null>(null);
   const previousAction = useSetAtom(prevQuestionAtom);
   const bookmarkAction = useSetAtom(toggleBookmarkAtom);
   const isBookmarked = useAtomValue(isCurrentBookmarkedAtom);
@@ -45,7 +48,17 @@ const SolvePage = () => {
   // 세션 없으면 진입 화면으로
   useEffect(() => {
     if (!session) {
-      router.replace("/questionbank");
+      const saved = new URLSearchParams(window.location.search).get("session");
+      router.replace(
+        saved
+          ? `/learning/ai?session=${encodeURIComponent(saved)}`
+          : "/questionbank",
+      );
+    }
+    if (session) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("session", String(session.sessionId));
+      window.history.replaceState(null, "", url);
     }
   }, [session, router]);
 
@@ -58,13 +71,29 @@ const SolvePage = () => {
         await fetchAPI(`/api/questionbank/quiz/${session.sessionId}`, "POST", {
           action: "finish",
         });
+        setFinishError(false);
+        router.push("/questionbank/result");
       } catch {
-        // 종료 API 실패해도 결과 페이지로 이동
+        setFinishError(true);
       }
-      router.push("/questionbank/result");
     };
     finishQuiz();
-  }, [session?.isComplete, session?.sessionId, router]);
+  }, [session?.isComplete, session?.sessionId, router, finishRetry]);
+
+  if (finishError)
+    return (
+      <div className="p-6">
+        <p role="alert">제출 결과를 확인하지 못했습니다.</p>
+        <button
+          onClick={() => {
+            setFinishError(false);
+            setFinishRetry((n) => n + 1);
+          }}
+        >
+          종료 요청 다시 시도
+        </button>
+      </div>
+    );
 
   if (!session || !currentQuestion) {
     return (
@@ -99,9 +128,19 @@ const SolvePage = () => {
   };
 
   /** 채점하기 — 서버에 답안 제출 */
-  const handleGrade = async () => {
+  const handleGrade = async (action: "ANSWER" | "REVEAL" = "ANSWER") => {
     const userAnswerText = getUserAnswer();
-    if (!userAnswerText || gradingRef.current) return;
+    if ((action === "ANSWER" && !userAnswerText) || gradingRef.current) return;
+    const signature = JSON.stringify({
+      questionId: currentQuestion.id,
+      action,
+      userAnswerText: action === "ANSWER" ? userAnswerText : null,
+    });
+    if (pendingGrade.current && pendingGrade.current.signature !== signature) {
+      alert("이전 답안과 같은 내용으로 재시도해주세요.");
+      return;
+    }
+    pendingGrade.current ??= { signature, key: crypto.randomUUID() };
     gradingRef.current = true;
 
     try {
@@ -109,12 +148,14 @@ const SolvePage = () => {
         `/api/questionbank/quiz/${session.sessionId}`,
         "POST",
         {
-          action: "submit",
+          action,
+          idempotencyKey: pendingGrade.current.key,
           questionId: currentQuestion.id,
-          userAnswer: userAnswerText,
+          ...(action === "ANSWER" ? { userAnswer: userAnswerText } : {}),
         },
       );
       const result: SubmitAnswerResponse = raw.data ?? raw;
+      pendingGrade.current = null;
 
       applyGrade({
         questionId: result.questionId,
@@ -123,30 +164,21 @@ const SolvePage = () => {
         explanation: result.explanation,
         userAnswer: result.userAnswer,
       });
-    } catch {
-      alert("채점에 실패했습니다. 다시 시도해주세요.");
+    } catch (error) {
+      if (error instanceof ApiError && error.status < 500)
+        pendingGrade.current = null;
+      alert(
+        error instanceof Error
+          ? error.message
+          : "채점에 실패했습니다. 다시 시도해주세요.",
+      );
     } finally {
       gradingRef.current = false;
     }
   };
 
   const handleRevealAnswer = () => {
-    if (gradingRef.current) return;
-
-    const correctAnswer = currentQuestion.correctAnswer?.trim();
-
-    if (!correctAnswer) {
-      alert("정답 정보를 불러올 수 없습니다. 채점하기를 이용해주세요.");
-      return;
-    }
-
-    applyGrade({
-      questionId: currentQuestion.id,
-      isCorrect: false,
-      correctAnswer,
-      explanation: currentQuestion.explanation ?? "",
-      userAnswer: getUserAnswer() ?? "",
-    });
+    void handleGrade("REVEAL");
   };
 
   const handleMainButton = () => {

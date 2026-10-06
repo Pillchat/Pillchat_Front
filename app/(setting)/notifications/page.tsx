@@ -17,14 +17,16 @@ const NOTIFICATION_ICON: Record<NotificationType, string> = {
   EVENING_STUDY_REMINDER: PUBLIC_ASSETS.icons.bellColored,
   QUESTION: PUBLIC_ASSETS.icons.questionBubble,
   MATERIAL: PUBLIC_ASSETS.icons.questionBubble,
+  NEW_FOLLOWER: PUBLIC_ASSETS.icons.bellColored,
   SYSTEM: PUBLIC_ASSETS.icons.bellColored,
 };
 
 const NotificationItem: FC<{
   notification: Notification;
   onRead: (id: string) => void;
+  onDelete: (id: string) => void;
   onNavigate: (link?: string) => void;
-}> = ({ notification, onRead, onNavigate }) => {
+}> = ({ notification, onRead, onDelete, onNavigate }) => {
   const [expanded, setExpanded] = useState(false);
 
   const handleClick = () => {
@@ -70,6 +72,16 @@ const NotificationItem: FC<{
           {formatDiffDate(notification.createdAt)}
         </p>
       </div>
+      <button
+        aria-label={`${notification.title} 알림 삭제`}
+        className="self-start text-xs text-muted-foreground"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(notification.id);
+        }}
+      >
+        삭제
+      </button>
       {!notification.isRead && (
         <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-brand" />
       )}
@@ -79,11 +91,21 @@ const NotificationItem: FC<{
 
 const NotificationsPage: FC = () => {
   const router = useRouter();
-  const { notifications, markAsRead, markAllAsRead, clearAll } =
-    useNotifications();
+  const {
+    notifications,
+    markAsRead,
+    markAllAsRead,
+    clearAll,
+    removeNotification,
+    isLoading,
+    error,
+    hasNextPage,
+    loadMore,
+    isFetchingNextPage,
+  } = useNotifications();
 
   const handleNavigate = (link?: string) => {
-    if (link) {
+    if (link?.startsWith("/") && !link.startsWith("//")) {
       router.push(link);
     }
   };
@@ -114,7 +136,13 @@ const NotificationsPage: FC = () => {
       )}
 
       <div className="flex-1">
-        {notifications.length === 0 ? (
+        {error ? (
+          <p role="alert" className="p-6 text-destructive">
+            {error}
+          </p>
+        ) : isLoading ? (
+          <p className="p-6">알림을 불러오는 중입니다.</p>
+        ) : notifications.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center py-20">
             <img
               src={PUBLIC_ASSETS.icons.bell}
@@ -130,10 +158,20 @@ const NotificationsPage: FC = () => {
                 key={notification.id}
                 notification={notification}
                 onRead={markAsRead}
+                onDelete={removeNotification}
                 onNavigate={handleNavigate}
               />
             ))}
           </div>
+        )}
+        {hasNextPage && (
+          <button
+            className="w-full p-4 text-brand"
+            disabled={isFetchingNextPage}
+            onClick={() => void loadMore()}
+          >
+            더 보기
+          </button>
         )}
       </div>
     </div>

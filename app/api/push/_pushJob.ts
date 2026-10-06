@@ -3,6 +3,8 @@ import { AdminPushNotificationType } from "@/types/notification";
 import { NextRequest } from "next/server";
 
 type AdminPushJobRequest = {
+  audience: "USERS" | "ALL";
+  idempotencyKey: string;
   notificationType?: AdminPushNotificationType;
   title: string;
   content: string;
@@ -17,7 +19,7 @@ export const normalizeUserIds = (userIds: unknown) => {
 
   return userIds
     .map((id) => Number(String(id).trim()))
-    .filter((id) => Number.isFinite(id));
+    .filter((id) => Number.isSafeInteger(id) && id > 0);
 };
 
 export const enqueueAdminPushJob = (
@@ -31,13 +33,15 @@ export const enqueueAdminPushJob = (
     method: "POST",
     request,
     data: {
-      jobType: body.notificationType ?? "BENEFIT",
+      jobType: body.notificationType ?? "SYSTEM",
+      audience: body.audience,
+      idempotencyKey: body.idempotencyKey,
       title: body.title,
       body: body.content,
       deepLink: body.linkURL || undefined,
       dataPayload,
       scheduledAt: body.scheduleTime || undefined,
-      targetUserIds: targetUserIds.length > 0 ? targetUserIds : undefined,
+      ...(body.audience === "USERS" ? { targetUserIds } : {}),
     },
   });
 };

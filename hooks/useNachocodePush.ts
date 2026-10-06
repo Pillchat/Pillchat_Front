@@ -52,7 +52,7 @@ export const useNachocodePush = () => {
       content: string;
       link?: string;
     }) => {
-      addNotification(params);
+      void addNotification();
     },
     [addNotification],
   );

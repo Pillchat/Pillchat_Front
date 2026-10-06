@@ -1,3 +1,4 @@
+import { parseBackendError } from "@/lib/server/apiError";
 import { NextRequest, NextResponse } from "next/server";
 import { serverFetch } from "@/lib/server/fetch";
 
@@ -18,16 +19,22 @@ export async function POST(
 
     const data = await serverFetch(endpoint, {
       method: "POST",
-      data: action === "finish" ? undefined : rest,
+      data:
+        action === "finish"
+          ? undefined
+          : { ...rest, action: action === "submit" ? "ANSWER" : action },
       request,
     });
 
     return NextResponse.json(data);
   } catch (error: any) {
     console.error("퀴즈 액션 에러:", error);
-    const errorInfo = JSON.parse(error.message || "{}");
+    const errorInfo = parseBackendError(error);
     return NextResponse.json(
-      { message: errorInfo.message || "요청 처리에 실패했습니다." },
+      {
+        ...errorInfo.data,
+        message: errorInfo.message || "요청 처리에 실패했습니다.",
+      },
       { status: errorInfo.status || 500 },
     );
   }
@@ -40,17 +47,23 @@ export async function GET(
 ) {
   try {
     const { sessionId } = await params;
-    const data = await serverFetch(`/api/quiz/${sessionId}/result`, {
-      method: "GET",
-      request,
-    });
+    const data = await serverFetch(
+      `/api/quiz/${sessionId}${request.nextUrl.searchParams.get("resume") === "true" ? "" : "/result"}`,
+      {
+        method: "GET",
+        request,
+      },
+    );
 
     return NextResponse.json(data);
   } catch (error: any) {
     console.error("퀴즈 결과 조회 에러:", error);
-    const errorInfo = JSON.parse(error.message || "{}");
+    const errorInfo = parseBackendError(error);
     return NextResponse.json(
-      { message: errorInfo.message || "결과 조회에 실패했습니다." },
+      {
+        ...errorInfo.data,
+        message: errorInfo.message || "결과 조회에 실패했습니다.",
+      },
       { status: errorInfo.status || 500 },
     );
   }

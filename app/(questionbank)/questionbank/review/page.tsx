@@ -1,4 +1,7 @@
 "use client";
+import { startQuiz } from "@/lib/client/startQuiz";
+import Link from "next/link";
+import ServerReviewPage from "@/app/(learn)/learning/review/page";
 
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 
@@ -189,11 +192,7 @@ const ReviewListPage = () => {
         bookmarked: "BOOKMARK" as const,
       };
 
-      const quizRaw = await fetchAPI(
-        "/api/questionbank/quiz",
-        "POST",
-        bodyMap[mode],
-      );
+      const quizRaw = await startQuiz(bodyMap[mode]);
       const quizData: QuizStartResponse = quizRaw.data ?? quizRaw;
       if (!quizData.questions.length) {
         alert("선택한 범위에 복습할 문제가 없습니다.");
@@ -260,6 +259,12 @@ const ReviewListPage = () => {
   return (
     <div className="flex min-h-dvh flex-col bg-white">
       <PracticeHeader title="복습하기" backHref="/questionbank" />
+      <Link
+        className="m-5 block rounded-xl border border-brand p-4 text-brand"
+        href="/learning/review"
+      >
+        서버에 저장된 AI·수제·CBT 학습 복습
+      </Link>
       <div className="px-5 pb-5 pt-4">
         <div className="flex items-start gap-3">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent">
@@ -450,4 +455,12 @@ function EmptyState({ source }: { source: ReviewSource }) {
   );
 }
 
-export default ReviewListPage;
+export default function ReviewPage() {
+  const [local, setLocal] = useState(false);
+  useEffect(() => {
+    setLocal(
+      new URLSearchParams(window.location.search).get("mode") === "local",
+    );
+  }, []);
+  return local ? <ReviewListPage /> : <ServerReviewPage />;
+}

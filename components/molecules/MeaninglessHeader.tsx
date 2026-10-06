@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAtomValue } from "jotai";
 
 import { useRouter } from "@/lib/navigation";
-import { unreadCountAtom } from "@/store/notification";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface MeaninglessHeaderProps {
   showActions?: boolean;
@@ -16,7 +16,7 @@ export const MeaninglessHeader: FC<MeaninglessHeaderProps> = ({
   showActions = false,
 }) => {
   const router = useRouter();
-  const unreadCount = useAtomValue(unreadCountAtom);
+  const { unreadCount } = useNotifications();
 
   return (
     <header className="flex h-[calc(60px+env(safe-area-inset-top))] w-full items-center justify-between px-6 pt-[env(safe-area-inset-top)]">

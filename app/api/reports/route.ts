@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await response.json();
-    return NextResponse.json(result, { status: 200 });
+    return NextResponse.json(result, { status: response.status });
   } catch (error: any) {
     console.error("신고 API 에러:", error);
     return NextResponse.json(

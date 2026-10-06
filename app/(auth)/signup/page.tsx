@@ -32,6 +32,7 @@ import { SignupInfoFlow } from "./_components/SignupInfoFlow";
 
 export type SignupFormData = {
   email: string;
+  emailVerificationToken?: string;
   password: string;
   nickname: string;
   agreeToTerms: boolean;
@@ -41,10 +42,14 @@ export type SignupFormData = {
 const SignupPage: FC = () => {
   const { step, setStep, nextStep, prevStep } = useStep();
   const { onVerify, isLoading: isVerifyLoading, isVerified } = useVerify();
-  const { onCheckVerify } = useCheckVerify();
+  const { onCheckVerify, isLoading: isCheckingCode } = useCheckVerify();
 
   // 수동 회원가입 훅 사용
-  const { onSubmit, isLoading: isSubmitLoading } = useManualSubmit();
+  const {
+    onSubmit,
+    isLoading: isSubmitLoading,
+    error: submitError,
+  } = useManualSubmit();
 
   const [checkedTerms, setCheckedTerms] = useState(false);
   const [checkedPrivacy, setCheckedPrivacy] = useState(false);
@@ -59,6 +64,7 @@ const SignupPage: FC = () => {
   const [passwordRe, setPasswordRe] = useState("");
   const [nickname, setNickname] = useState("");
   const [code, setCode] = useState("");
+  const [emailVerificationToken, setEmailVerificationToken] = useState("");
 
   // 학생용
   const [university, setUniversity] = useState("");
@@ -96,6 +102,7 @@ const SignupPage: FC = () => {
 
   const handleVerify = async () => {
     if (!email) return;
+    setEmailVerificationToken("");
     await onVerify(email);
   };
 
@@ -103,7 +110,8 @@ const SignupPage: FC = () => {
     if (!email || !code) return;
     const result = await onCheckVerify(email, code);
 
-    if (result.status === 200) {
+    if (result.success && result.verificationToken) {
+      setEmailVerificationToken(result.verificationToken);
       nextStep();
     } else if (result.status === 400) {
       alert("인증코드가 잘못되었습니다.");
@@ -115,6 +123,7 @@ const SignupPage: FC = () => {
 
   const handleResendCode = async () => {
     if (!email) return;
+    setEmailVerificationToken("");
     await onVerify(email);
   };
 
@@ -153,7 +162,7 @@ const SignupPage: FC = () => {
   const isSignupReady = Boolean(
     isManualInfoValid &&
       isValidEmail(email) &&
-      code.trim() &&
+      emailVerificationToken &&
       password.length >= 8 &&
       passwordRe === password &&
       checkedTerms &&
@@ -171,7 +180,8 @@ const SignupPage: FC = () => {
       return;
     }
 
-    await onSubmit({
+    const status = await onSubmit({
+      emailVerificationToken,
       email,
       password,
       nickname: nickname.trim(),
@@ -182,10 +192,19 @@ const SignupPage: FC = () => {
       grade,
       signupSource,
     });
+    if (status === 412) {
+      setEmailVerificationToken("");
+      setStep(Step.Email);
+    }
   };
 
   return (
     <div className="flex min-h-dvh flex-col items-center">
+      {submitError && (
+        <p role="alert" className="p-4 text-sm text-destructive">
+          {submitError}
+        </p>
+      )}
       {/* OCR 관련 단계(Guide, Ocr)는 수동 가입에서 사용하지 않으므로 제거 
          Step.DepartMent 단계를 "정보 수동 입력" 단계로 재사용합니다.
       */}
@@ -384,7 +403,10 @@ const SignupPage: FC = () => {
             <IconInputField
               content="이메일"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setEmailVerificationToken("");
+              }}
               type="email"
               placeholder="이메일을 적어주세요"
               autoFocus={true}
@@ -418,7 +440,9 @@ const SignupPage: FC = () => {
                 <SolidButton
                   content="인증하기"
                   variant={isValidEmail(email) ? "brand" : "disabled"}
-                  disabled={!isValidEmail(email) || isVerifyLoading}
+                  disabled={
+                    !isValidEmail(email) || isVerifyLoading || isCheckingCode
+                  }
                   onClick={() => {
                     handleCheckVerify();
                   }}

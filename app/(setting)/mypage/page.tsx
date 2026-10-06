@@ -114,6 +114,7 @@ const MyPage: FC = () => {
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.notice}
               title="공지사항"
+              onClick={() => router.push("/notices")}
             />
 
             <SystemField

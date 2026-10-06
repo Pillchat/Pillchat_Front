@@ -18,6 +18,7 @@ type ApiRating = "AGAIN" | "HARD" | "GOOD" | "EASY";
 
 type FlashcardDto = {
   id: number | string;
+  packId?: string | null;
   type: ApiCardType | string;
   ease?: number | null;
   interval?: number | null;
@@ -186,8 +187,8 @@ const serializeMasks = (masks: BlindMask[]) =>
       id: mask.id,
       x: mask.x,
       y: mask.y,
-      w: mask.width,
-      h: mask.height,
+      width: mask.width,
+      height: mask.height,
       ...(mask.points?.length ? { points: mask.points } : {}),
     })),
   );
@@ -228,6 +229,7 @@ export function mapFlashcardDto(dto: FlashcardDto): Flashcard {
   const now = Date.now();
   const base = {
     id,
+    packId: dto.packId ?? undefined,
     type: toLocalType(dto.type),
     createdAt: toTime(dto.createdAt, now),
     updatedAt: toOptionalTime(dto.updatedAt),
@@ -346,7 +348,7 @@ async function fetchFormData(url: string, formData: FormData) {
   const token = await getValidAccessToken();
   let response = await send(token);
 
-  if (response.status === 401 || response.status === 403) {
+  if (response.status === 401) {
     const recoveredToken = await recoverAccessToken(token);
     if (recoveredToken) response = await send(recoveredToken);
   }
@@ -505,10 +507,14 @@ export async function fetchFlashcardStats() {
   return mapStats(payload);
 }
 
-export async function createRemoteFlashcard(draft: FlashcardDraft) {
+export async function createRemoteFlashcard(
+  draft: FlashcardDraft,
+  packId?: string,
+) {
   if (draft.type === "blind") {
     const formData = new FormData();
     formData.append("title", draft.title);
+    if (packId) formData.append("packId", packId);
     formData.append("masks", serializeMasks(draft.masks));
     formData.append(
       "image",
@@ -523,11 +529,10 @@ export async function createRemoteFlashcard(draft: FlashcardDraft) {
     return mapFlashcardDto(payload);
   }
 
-  const payload = (await fetchAPI(
-    "/api/flashcards",
-    "POST",
-    getCreatePayload(draft),
-  )) as FlashcardDto;
+  const payload = (await fetchAPI("/api/flashcards", "POST", {
+    ...getCreatePayload(draft),
+    ...(packId ? { packId } : {}),
+  })) as FlashcardDto;
   return mapFlashcardDto(payload);
 }
 
@@ -540,4 +545,17 @@ export async function reviewRemoteFlashcard(cardId: string, rating: Rating) {
     rating: localRatingToApi[rating],
   })) as FlashcardDto;
   return mapFlashcardDto(payload);
+}
+
+export async function fetchRemotePackNames(): Promise<Record<string, string>> {
+  const names: Record<string, string> = {};
+  for (let page = 0; ; page++) {
+    const response = await fetchAPI("/api/flashcard-packs", "GET", {
+      page,
+      size: 100,
+    });
+    for (const pack of response.items) names[pack.packId] = pack.title;
+    if (!response.hasNext) break;
+  }
+  return names;
 }

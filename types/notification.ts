@@ -5,6 +5,7 @@ export type BackendNotificationType =
   | "SUBJECT_NEW_MATERIAL"
   | "BENEFIT"
   | "EVENING_STUDY_REMINDER"
+  | "NEW_FOLLOWER"
   | "SYSTEM";
 
 export type LegacyNotificationType = "QUESTION" | "MATERIAL";
@@ -13,6 +14,9 @@ export type NotificationType = BackendNotificationType | LegacyNotificationType;
 
 export interface Notification {
   id: string;
+  messageId?: string;
+  sequence?: string;
+  readAt?: string | null;
   type: NotificationType;
   title: string;
   content: string;
@@ -29,6 +33,7 @@ export interface NotificationSetting {
   subjectQuestionEnabled: boolean;
   subjectMaterialEnabled: boolean;
   benefitNotificationEnabled: boolean;
+  followNotificationEnabled: boolean;
 }
 
 export type NotificationSettingUpdateRequest = Partial<NotificationSetting>;
@@ -53,6 +58,7 @@ export const DEFAULT_NOTIFICATION_SETTING: NotificationSetting = {
   subjectQuestionEnabled: true,
   subjectMaterialEnabled: true,
   benefitNotificationEnabled: true,
+  followNotificationEnabled: true,
 };
 
 export type AdminPushNotificationType = Extract<

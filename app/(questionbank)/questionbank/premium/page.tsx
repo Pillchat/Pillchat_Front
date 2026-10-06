@@ -1,4 +1,5 @@
 "use client";
+import { startQuiz } from "@/lib/client/startQuiz";
 
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 
@@ -81,53 +82,10 @@ const PremiumPage = () => {
   }, []);
 
   /** 과목 칩 클릭 — 토픽 fetch 후 분기 */
-  const handleSubjectClick = async (subject: PremiumSubject) => {
-    // 캐시 확인
-    if (topicCacheRef.current[subject.subjectId] !== undefined) {
-      const cached = topicCacheRef.current[subject.subjectId];
-      if (cached.length > 0) {
-        setTopicSubject(subject);
-        setTopics(cached);
-        setShowTopicModal(true);
-      } else {
-        // 토픽 없는 과목 → 바로 선택
-        setSelectedSubject(subject);
-        setSelectedTopic(null);
-        setSubjectHint("");
-      }
-      return;
-    }
-
-    // 토픽 fetch
-    setTopicSubject(subject);
-    setTopicLoading(true);
-    setShowTopicModal(true);
-
-    try {
-      const raw = await fetchAPI(
-        `/api/questionbank/ai-questions/subjects/${subject.subjectId}/topics`,
-        "GET",
-      );
-      const data: SubjectTopic[] = raw.data ?? raw;
-      const list = Array.isArray(data) ? data : [];
-      topicCacheRef.current[subject.subjectId] = list;
-      setTopics(list);
-
-      if (list.length === 0) {
-        // 토픽 없으면 모달 닫고 바로 선택
-        setShowTopicModal(false);
-        setSelectedSubject(subject);
-        setSelectedTopic(null);
-        setSubjectHint("");
-      }
-    } catch {
-      setShowTopicModal(false);
-      setSelectedSubject(subject);
-      setSelectedTopic(null);
-      setSubjectHint("");
-    } finally {
-      setTopicLoading(false);
-    }
+  const handleSubjectClick = (subject: PremiumSubject) => {
+    setSelectedSubject(subject);
+    setSelectedTopic(null);
+    setSubjectHint("");
   };
 
   /** 토픽 선택 */
@@ -210,7 +168,7 @@ const PremiumPage = () => {
         ),
       );
 
-      const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", {
+      const quizRaw = await startQuiz({
         type: "PREMIUM",
         taskId,
       });
@@ -371,22 +329,10 @@ const PremiumPage = () => {
           />
         </div>
 
-        {/* 추가 힌트 (선택) */}
-        <div className="mb-6">
-          <h3 className="mb-3 text-base font-semibold text-foreground">
-            추가 힌트
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
-              (선택)
-            </span>
-          </h3>
-          <input
-            type="text"
-            value={subjectHint}
-            onChange={(e) => setSubjectHint(e.target.value)}
-            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-base outline-none focus:border-brand"
-            placeholder="예: 항생제 중심으로"
-          />
-        </div>
+        <p className="mb-6 text-sm text-muted-foreground">
+          현재 AI 문제는 선택한 과목을 기준으로 생성됩니다. 세부 주제 지정은
+          아직 지원하지 않습니다.
+        </p>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
       </div>
