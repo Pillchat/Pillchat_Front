@@ -555,7 +555,7 @@ const Home: FC = () => {
             type="button"
             onClick={() => setIsDdayEditorOpen(true)}
             aria-label={`${activeDday?.label ?? "국시"}, ${isDdayReady ? formatDday(dday) : "D-Day 계산 중"}, D-Day 관리 열기`}
-            className="flex min-h-20 w-full items-center justify-between gap-4 bg-transparent px-1 py-3 text-left transition-opacity active:opacity-70 focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="flex min-h-20 w-full items-center justify-between gap-4 bg-transparent px-1 py-3 text-left transition-opacity focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-70"
           >
             <span className="flex min-w-0 flex-1 items-baseline gap-2">
               <span className="truncate text-base font-semibold leading-6 text-foreground">
