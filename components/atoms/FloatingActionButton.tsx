@@ -25,8 +25,8 @@ export interface FloatingActionButtonProps {
   className?: string;
   /** 확장 방향 */
   expandDirection?: "up" | "left" | "up-left";
-  /** 하단에서의 거리 (px) */
-  bottom?: number;
+  /** 하단에서의 거리 (숫자는 px, 문자열은 CSS 길이) */
+  bottom?: number | string;
   /** 우측에서의 거리 (px) */
   right?: number;
   /** 버튼 텍스트 */
@@ -100,7 +100,7 @@ export const FloatingActionButton: FC<FloatingActionButtonProps> = ({
       style={
         !isRelative
           ? {
-              bottom: `${bottom}px`,
+              bottom,
               right: `${right}px`,
             }
           : undefined

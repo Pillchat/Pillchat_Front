@@ -2489,7 +2489,7 @@ function ResultPage({
             복습하기
           </button>
           <Link
-            href="/learn/flashcards"
+            href="/flashcards"
             className="col-span-2 flex h-14 items-center justify-center rounded-xl bg-accent/50 font-extrabold"
           >
             AI 플래시카드로 학습하기

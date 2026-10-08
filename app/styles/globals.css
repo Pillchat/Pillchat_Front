@@ -38,6 +38,10 @@ body {
 */
 @layer base {
   :root {
+    --bottom-nav-content-height: 72px;
+    --bottom-nav-height: calc(
+      var(--bottom-nav-content-height) + env(safe-area-inset-bottom, 0px)
+    );
     --background: 0 0% 100%;
     --foreground: 0 0% 7%;
     --card: 0 0% 100%;

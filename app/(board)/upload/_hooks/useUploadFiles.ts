@@ -16,7 +16,15 @@ const MAX_IMAGE_COUNT = 10;
 
 const makeId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
-export const useUploadFiles = () => {
+type UseUploadFilesOptions = {
+  maxNewBytes?: number;
+  onSizeLimitExceeded?: () => void;
+};
+
+export const useUploadFiles = ({
+  maxNewBytes = Number.POSITIVE_INFINITY,
+  onSizeLimitExceeded,
+}: UseUploadFilesOptions = {}) => {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const objectUrlsRef = useRef<string[]>([]);
@@ -71,6 +79,25 @@ export const useUploadFiles = () => {
 
     const acceptedFiles = selectedFiles.slice(0, remainCount);
 
+    const currentLocalBytes = [
+      ...imageItems,
+      ...(pdfItem ? [pdfItem] : []),
+    ].reduce(
+      (total, item) =>
+        total + (item.source === "local" ? (item.file?.size ?? 0) : 0),
+      0,
+    );
+    const addedBytes = acceptedFiles.reduce(
+      (total, file) => total + file.size,
+      0,
+    );
+
+    if (currentLocalBytes + addedBytes > maxNewBytes) {
+      onSizeLimitExceeded?.();
+      e.target.value = "";
+      return;
+    }
+
     if (acceptedFiles.length < selectedFiles.length) {
       alert("이미지는 최대 10장까지 업로드할 수 있습니다.");
     }
@@ -94,6 +121,18 @@ export const useUploadFiles = () => {
     );
 
     if (!file) {
+      e.target.value = "";
+      return;
+    }
+
+    const currentImageBytes = imageItems.reduce(
+      (total, item) =>
+        total + (item.source === "local" ? (item.file?.size ?? 0) : 0),
+      0,
+    );
+
+    if (currentImageBytes + file.size > maxNewBytes) {
+      onSizeLimitExceeded?.();
       e.target.value = "";
       return;
     }

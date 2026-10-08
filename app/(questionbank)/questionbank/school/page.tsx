@@ -661,7 +661,7 @@ export default function SchoolExamPage() {
             ))}
           </div>
 
-          <div className="sticky bottom-[calc(5.75rem+env(safe-area-inset-bottom))] mt-8 rounded-xl border border-gray-200 bg-white p-3 shadow-lg print:hidden">
+          <div className="sticky bottom-[calc(var(--bottom-nav-height)+0.75rem)] mt-8 rounded-xl border border-gray-200 bg-white p-3 shadow-lg print:hidden">
             <div className="mb-2 flex items-center justify-between text-xs">
               <p className="font-semibold text-muted-foreground">
                 {answeredCount}/{examQuestions.length} 문항 작성 완료

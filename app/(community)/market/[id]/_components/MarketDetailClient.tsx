@@ -506,7 +506,7 @@ export function MarketDetailClient({ marketId }: { marketId: string }) {
         </section>
       </main>
 
-      <div className="fixed bottom-[calc(6.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-app -translate-x-1/2 bg-card px-6 pb-1 pt-3 md:px-8">
+      <div className="fixed bottom-[var(--bottom-nav-height)] left-1/2 z-40 w-full max-w-app -translate-x-1/2 bg-card px-6 pb-1 pt-3 md:px-8">
         <button
           type="button"
           disabled
