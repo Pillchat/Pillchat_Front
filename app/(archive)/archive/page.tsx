@@ -31,6 +31,7 @@ import { useDeleteMaterialMutation } from "@/hooks/mutations";
 import { useFilesQuery, useMaterialsQuery } from "@/hooks/queries";
 import {
   type ArchiveLibraryState,
+  getKnownFileSizeBytes,
   markArchiveMaterialOpened,
   readArchiveLibrary,
   subscribeArchiveLibrary,
@@ -148,6 +149,13 @@ const DEMO_LIBRARY: ArchiveLibraryState = {
     "demo-3": "demo-exam",
     "demo-4": "demo-notes",
   },
+  materialSizeBytes: {
+    "demo-1": 820 * 1024 * 1024,
+    "demo-2": 460 * 1024 * 1024,
+    "demo-3": 640 * 1024 * 1024,
+    "demo-4": 310 * 1024 * 1024,
+    "demo-5": 720 * 1024 * 1024,
+  },
 };
 
 export default function ArchivePage() {
@@ -193,14 +201,7 @@ export default function ArchivePage() {
   const previewFileKeys = useMemo(
     () => [
       ...new Set(
-        myMaterials.flatMap((item) =>
-          Array.isArray(item.images)
-            ? item.images
-                .filter((value) => !getFilePreviewUrl(value as never))
-                .map((value) => resolveMaterialKey(value, item.id))
-                .filter(Boolean)
-            : [],
-        ),
+        myMaterials.flatMap((item) => getAttachmentKeys(item)).filter(Boolean),
       ),
     ],
     [myMaterials],
@@ -210,6 +211,47 @@ export default function ArchivePage() {
     () => buildFileUrlMap(previewFileKeys, previewFilesData),
     [previewFileKeys, previewFilesData],
   );
+
+  useEffect(() => {
+    if (isDemo || myMaterials.length === 0) return;
+
+    const responseSizeByKey = new Map<string, number>();
+    if (Array.isArray(previewFilesData)) {
+      previewFilesData.forEach((file, index) => {
+        const size = getKnownFileSizeBytes(file);
+        const key = previewFileKeys[index];
+        if (key && size !== null) responseSizeByKey.set(key, size);
+      });
+    }
+
+    const nextSizes = { ...library.materialSizeBytes };
+    let changed = false;
+
+    myMaterials.forEach((item) => {
+      const id = String(item.id);
+      const explicitSize = getKnownFileSizeBytes(item);
+      const attachmentValues = [
+        ...(Array.isArray(item.images) ? item.images : []),
+        ...(item.pdfKey ? [item.pdfKey] : []),
+      ];
+      const attachmentSize = attachmentValues.reduce<number>((total, value) => {
+        const directSize = getKnownFileSizeBytes(value);
+        if (directSize !== null) return total + directSize;
+        const key = resolveMaterialKey(value, item.id);
+        return total + (responseSizeByKey.get(key) ?? 0);
+      }, 0);
+      const reportedSize = explicitSize ?? attachmentSize;
+
+      if (reportedSize > 0 && nextSizes[id] !== reportedSize) {
+        nextSizes[id] = reportedSize;
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      saveLibrary({ ...library, materialSizeBytes: nextSizes });
+    }
+  }, [isDemo, myMaterials, previewFileKeys, previewFilesData]);
 
   const materialMap = useMemo(
     () => new Map(myMaterials.map((item) => [String(item.id), item] as const)),
@@ -338,7 +380,9 @@ export default function ArchivePage() {
   const deleteMutation = useDeleteMaterialMutation({
     onSuccess: (_, deletedId) => {
       const nextAssignments = { ...library.materialFolderIds };
+      const nextSizes = { ...library.materialSizeBytes };
       delete nextAssignments[deletedId];
+      delete nextSizes[deletedId];
       saveLibrary({
         ...library,
         favoriteMaterialIds: library.favoriteMaterialIds.filter(
@@ -348,6 +392,7 @@ export default function ArchivePage() {
           (item) => item.materialId !== deletedId,
         ),
         materialFolderIds: nextAssignments,
+        materialSizeBytes: nextSizes,
       });
       queryClient.invalidateQueries({ queryKey: ["materials"] });
       setDeleteTarget(null);
@@ -397,7 +442,7 @@ export default function ArchivePage() {
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col bg-white">
       <AlarmHeader hideBottomBorder />
 
-      <main className="flex-1 pb-[calc(7.5rem+env(safe-area-inset-bottom))]">
+      <main className="flex-1 pb-[calc(var(--bottom-nav-height)+0.75rem)]">
         <header className="px-6 pb-4 pt-1">
           <div className="flex items-center justify-between">
             <div>
@@ -642,7 +687,7 @@ export default function ArchivePage() {
       <FloatingActionButton
         mainIcon={<Plus aria-hidden="true" className="h-6 w-6" />}
         size="lg"
-        bottom={152}
+        bottom="calc(var(--bottom-nav-height) + 24px)"
         right={24}
         expandDirection="up"
         actions={[

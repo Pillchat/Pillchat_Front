@@ -1,15 +1,17 @@
-import { PUBLIC_ASSETS } from "@/constants/assets";
+import { ArrowLeft } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 
 export const LeftArrowButton = ({ onClick }: { onClick: () => void }) => {
   return (
-    <Button variant="textOnly" size="icon" onClick={onClick}>
-      <img
-        src={PUBLIC_ASSETS.icons.chevronLeft}
-        alt="arrow-left"
-        width={32}
-        height={32}
-      />
+    <Button
+      variant="textOnly"
+      size="icon"
+      onClick={onClick}
+      aria-label="이전 화면"
+      className="[&_svg]:size-5"
+    >
+      <ArrowLeft aria-hidden="true" />
     </Button>
   );
 };

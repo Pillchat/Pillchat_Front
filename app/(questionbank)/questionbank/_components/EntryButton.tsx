@@ -7,6 +7,7 @@ interface EntryButtonProps {
   title: string;
   subtitle: string;
   onClick?: () => void;
+  compact?: boolean;
 }
 
 const EntryButton: FC<EntryButtonProps> = ({
@@ -14,12 +15,13 @@ const EntryButton: FC<EntryButtonProps> = ({
   title,
   subtitle,
   onClick,
+  compact = false,
 }) => {
   const isDisabled = !onClick;
 
   return (
     <button
-      className="flex w-full items-center gap-3 py-4 text-left transition-transform active:scale-[0.98] disabled:cursor-default disabled:opacity-60"
+      className={`flex w-full items-center text-left transition-transform active:scale-[0.98] disabled:cursor-default disabled:opacity-60 ${compact ? "gap-3.5 py-3.5 tracking-[0.01em]" : "gap-3 py-4"}`}
       onClick={onClick}
       disabled={isDisabled}
       aria-disabled={isDisabled}
@@ -30,7 +32,9 @@ const EntryButton: FC<EntryButtonProps> = ({
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-base font-semibold text-foreground">{title}</p>
-        <p className="mt-1 text-sm leading-5 text-muted-foreground">
+        <p
+          className={`text-sm leading-5 text-muted-foreground ${compact ? "mt-1.5" : "mt-1"}`}
+        >
           {subtitle}
         </p>
       </div>

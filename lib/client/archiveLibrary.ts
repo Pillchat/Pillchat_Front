@@ -14,7 +14,10 @@ export type ArchiveLibraryState = {
   recentItems: ArchiveRecentItem[];
   folders: ArchiveFolder[];
   materialFolderIds: Record<string, string>;
+  materialSizeBytes: Record<string, number>;
 };
+
+export const MAX_ARCHIVE_STORAGE_BYTES = 5 * 1024 * 1024 * 1024;
 
 const ARCHIVE_LIBRARY_STORAGE_KEY = "yakchat:archive-library";
 const ARCHIVE_LIBRARY_EVENT = "yakchat:archive-library-change";
@@ -24,6 +27,7 @@ const EMPTY_ARCHIVE_LIBRARY: ArchiveLibraryState = {
   recentItems: [],
   folders: [],
   materialFolderIds: {},
+  materialSizeBytes: {},
 };
 
 const getStorageKey = (userId?: string | number | null) =>
@@ -71,10 +75,43 @@ export const readArchiveLibrary = (
               ]),
             )
           : {},
+      materialSizeBytes:
+        parsed.materialSizeBytes && typeof parsed.materialSizeBytes === "object"
+          ? Object.fromEntries(
+              Object.entries(parsed.materialSizeBytes)
+                .map(([key, value]) => [String(key), Number(value)] as const)
+                .filter(([, value]) => Number.isFinite(value) && value >= 0),
+            )
+          : {},
     };
   } catch {
     return EMPTY_ARCHIVE_LIBRARY;
   }
+};
+
+export const getArchiveStorageUsageBytes = (state: ArchiveLibraryState) =>
+  Object.values(state.materialSizeBytes).reduce(
+    (total, size) => total + (Number.isFinite(size) ? size : 0),
+    0,
+  );
+
+export const getKnownFileSizeBytes = (value: unknown): number | null => {
+  if (!value || typeof value !== "object") return null;
+
+  const record = value as Record<string, unknown>;
+  const candidates = [
+    record.totalFileSize,
+    record.totalSizeBytes,
+    record.fileSize,
+    record.sizeBytes,
+    record.byteSize,
+    record.contentLength,
+  ];
+  const size = candidates
+    .map(Number)
+    .find((candidate) => Number.isFinite(candidate) && candidate >= 0);
+
+  return size ?? null;
 };
 
 export const writeArchiveLibrary = (

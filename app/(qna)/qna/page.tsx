@@ -70,7 +70,7 @@ const QnaPage: FC = () => {
             <LoadingIndicator label="불러오는 중..." className="text-border" />
           </div>
         ) : list.length > 0 ? (
-          <div className="mx-6 py-5 pb-[calc(6.875rem+env(safe-area-inset-bottom))]">
+          <div className="mx-6 py-5 pb-[calc(var(--bottom-nav-height)+0.125rem)]">
             <div className="flex flex-col gap-5">
               {map(list, (question: any) => (
                 <Fragment key={question.id}>
@@ -87,13 +87,13 @@ const QnaPage: FC = () => {
             </div>
           </div>
         ) : (
-          <div className="flex h-full items-center justify-center pb-[calc(6.875rem+env(safe-area-inset-bottom))]">
+          <div className="flex h-full items-center justify-center pb-[calc(var(--bottom-nav-height)+0.125rem)]">
             <div className="text-border">{emptyText}</div>
           </div>
         )}
       </div>
 
-      <div className="absolute bottom-[calc(8.25rem+env(safe-area-inset-bottom))] right-6 z-50">
+      <div className="absolute bottom-[calc(var(--bottom-nav-height)+1.5rem)] right-6 z-50">
         <FloatingActionButton
           mainIcon={
             <QuestionWithBubble

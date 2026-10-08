@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { FC } from "react";
 import HomeIcon from "@/public/icons/home.svg";
-import QuestionBankIcon from "@/public/icons/question-bank.svg";
 import ArchiveIcon from "@/public/icons/archive.svg";
 import MyPageIcon from "@/public/icons/user.svg";
 import { usePathname } from "next/navigation";
@@ -12,19 +11,14 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   {
-    href: "/",
-    icon: HomeIcon,
-    label: "홈",
-  },
-  {
-    href: "/learn",
-    icon: QuestionBankIcon,
-    label: "학습",
-  },
-  {
     href: "/archive",
     icon: ArchiveIcon,
     label: "아카이브",
+  },
+  {
+    href: "/",
+    icon: HomeIcon,
+    label: "홈",
   },
   {
     href: "/mypage",
@@ -33,16 +27,11 @@ const NAV_ITEMS = [
   },
 ];
 
-const LEARNING_PATHS = ["/learn", "/learning", "/questionbank", "/flashcards"];
-
 const matchesPath = (pathname: string, path: string) =>
   pathname === path || pathname.startsWith(`${path}/`);
 
 const isNavItemActive = (pathname: string, href: string) => {
   if (href === "/") return pathname === href;
-  if (href === "/learn") {
-    return LEARNING_PATHS.some((path) => matchesPath(pathname, path));
-  }
 
   return matchesPath(pathname, href);
 };
@@ -57,7 +46,7 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
   return (
     <nav
       className={cn(
-        "shadow-t dark:shadow-t-gray-800 fixed bottom-0 left-1/2 z-50 flex h-[calc(6.75rem+env(safe-area-inset-bottom))] w-full max-w-screen-sm -translate-x-1/2 items-start justify-between border-t-[1px] border-[#E2E2E2] bg-background px-3 pb-[env(safe-area-inset-bottom)] pt-4 transition-all duration-200 sm:px-6 md:max-w-app md:px-10",
+        "shadow-t dark:shadow-t-gray-800 fixed bottom-0 left-1/2 z-50 flex h-[var(--bottom-nav-height)] w-full max-w-screen-sm -translate-x-1/2 items-center justify-around border-t-[1px] border-[#E2E2E2] bg-background px-3 pb-[env(safe-area-inset-bottom,0px)] sm:px-6 md:max-w-app md:px-10",
         className,
       )}
     >

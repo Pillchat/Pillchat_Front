@@ -1051,7 +1051,7 @@ export function FlashcardApp() {
       <AppShell bottomNav={false} bottomSpacing="none">
         <PracticeHeader
           title="AI 플래시카드"
-          backHref="/learn"
+          backHref="/"
           separator={false}
           rightSlot={<FlashcardTutorialLink />}
         />
@@ -1066,7 +1066,7 @@ export function FlashcardApp() {
     <AppShell bottomNav={false} bottomSpacing="none">
       <PracticeHeader
         title="AI 플래시카드"
-        backHref="/learn"
+        backHref="/"
         separator={false}
         rightSlot={<FlashcardTutorialLink />}
       />

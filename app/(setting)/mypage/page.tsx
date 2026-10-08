@@ -49,7 +49,7 @@ const MyPage: FC = () => {
   }
 
   return (
-    <div className="min-h-dvh w-full overflow-y-auto pb-[calc(8.25rem+env(safe-area-inset-bottom))]">
+    <div className="min-h-dvh w-full overflow-y-auto pb-[calc(var(--bottom-nav-height)+1.5rem)]">
       <div className="flex w-full flex-col items-center">
         <MeaninglessHeader />
 

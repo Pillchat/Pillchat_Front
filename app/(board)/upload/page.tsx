@@ -1,7 +1,12 @@
 "use client";
 
 import { PUBLIC_ASSETS } from "@/constants/assets";
-import { SolidButton, TextButton, TextareaWithLabel } from "@/components/atoms";
+import {
+  SolidButton,
+  TextButton,
+  TextareaWithLabel,
+  Toast,
+} from "@/components/atoms";
 import { IconInputField, SelectModal } from "@/components/molecules";
 import { BoardHeader, BoardButton } from "@/components/molecules/board";
 import { Controller } from "react-hook-form";
@@ -21,6 +26,8 @@ import {
 } from "@/hooks/queries";
 import {
   type ArchiveLibraryState,
+  getArchiveStorageUsageBytes,
+  MAX_ARCHIVE_STORAGE_BYTES,
   readArchiveLibrary,
   subscribeArchiveLibrary,
   writeArchiveLibrary,
@@ -209,6 +216,8 @@ const UploadPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
+  const shouldPreviewCapacityToast =
+    searchParams.get("previewStorageToast") === "1";
   const isEditMode = !!editId;
   const currentUserId = getCurrentUserId();
 
@@ -238,6 +247,14 @@ const UploadPage = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState("uncategorized");
   const [isCategoryCreatorOpen, setIsCategoryCreatorOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [capacityToast, setCapacityToast] = useState("");
+
+  useEffect(() => {
+    if (!shouldPreviewCapacityToast) return;
+    setCapacityToast(
+      "아카이브는 최대 5GB까지 저장할 수 있어요. 기존 자료를 삭제하거나 더 작은 파일을 선택해주세요.",
+    );
+  }, [shouldPreviewCapacityToast]);
 
   const draftKey = useMemo(() => getMaterialDraftKey(editId), [editId]);
   const [draftReady, setDraftReady] = useState(false);
@@ -261,6 +278,20 @@ const UploadPage = () => {
     );
   }, [editId, library.materialFolderIds]);
 
+  const archiveUsageBytes = useMemo(
+    () => getArchiveStorageUsageBytes(library),
+    [library],
+  );
+  const remainingArchiveBytes = Math.max(
+    MAX_ARCHIVE_STORAGE_BYTES - archiveUsageBytes,
+    0,
+  );
+  const showCapacityToast = () => {
+    setCapacityToast(
+      "아카이브는 최대 5GB까지 저장할 수 있어요. 기존 자료를 삭제하거나 더 작은 파일을 선택해주세요.",
+    );
+  };
+
   const {
     imageInputRef,
     pdfInputRef,
@@ -275,7 +306,17 @@ const UploadPage = () => {
     pdfFile,
     hasFiles,
     setInitialFiles,
-  } = useUploadFiles();
+  } = useUploadFiles({
+    maxNewBytes: remainingArchiveBytes,
+    onSizeLimitExceeded: showCapacityToast,
+  });
+
+  const newFileBytes = useMemo(
+    () =>
+      imageFiles.reduce((total, file) => total + file.size, 0) +
+      (pdfFile?.size ?? 0),
+    [imageFiles, pdfFile],
+  );
 
   const saveLibrary = (next: ArchiveLibraryState) => {
     setLibrary(next);
@@ -305,7 +346,10 @@ const UploadPage = () => {
     setIsCategoryCreatorOpen(false);
   };
 
-  const assignCategoryToMaterial = (materialId: string) => {
+  const assignCategoryToMaterial = (
+    materialId: string,
+    materialSizeBytes: number,
+  ) => {
     const currentLibrary = readArchiveLibrary(currentUserId);
     const nextAssignments = { ...currentLibrary.materialFolderIds };
 
@@ -318,6 +362,10 @@ const UploadPage = () => {
     const nextLibrary = {
       ...currentLibrary,
       materialFolderIds: nextAssignments,
+      materialSizeBytes: {
+        ...currentLibrary.materialSizeBytes,
+        [materialId]: materialSizeBytes,
+      },
     };
     setLibrary(nextLibrary);
     writeArchiveLibrary(nextLibrary, currentUserId);
@@ -367,7 +415,14 @@ const UploadPage = () => {
         };
 
         await fetchAPI(`/api/materials/${editId}`, "PUT", payload);
-        assignCategoryToMaterial(String(editId));
+        const previousSize = library.materialSizeBytes[String(editId)] ?? 0;
+        const hasRetainedRemoteFiles = previewItems.some(
+          (item) => item.source === "remote",
+        );
+        assignCategoryToMaterial(
+          String(editId),
+          (hasRetainedRemoteFiles ? previousSize : 0) + newFileBytes,
+        );
         return;
       }
 
@@ -383,7 +438,7 @@ const UploadPage = () => {
         getCreatedMaterialId(result) ??
         (await findUploadedMaterialId(data.title.trim(), currentUserId));
 
-      if (materialId) assignCategoryToMaterial(materialId);
+      if (materialId) assignCategoryToMaterial(materialId, newFileBytes);
     },
   });
 
@@ -565,6 +620,10 @@ const UploadPage = () => {
 
   const openConfirmModal = () => {
     if (!canSubmit) return;
+    if (archiveUsageBytes + newFileBytes > MAX_ARCHIVE_STORAGE_BYTES) {
+      showCapacityToast();
+      return;
+    }
     setIsConfirmOpen(true);
   };
 
@@ -973,6 +1032,13 @@ const UploadPage = () => {
           </div>
         </div>
       )}
+
+      <Toast
+        open={Boolean(capacityToast)}
+        message={capacityToast}
+        onClose={() => setCapacityToast("")}
+        duration={shouldPreviewCapacityToast ? 15000 : undefined}
+      />
     </>
   );
 };

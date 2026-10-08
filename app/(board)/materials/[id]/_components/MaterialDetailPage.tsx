@@ -18,7 +18,11 @@ import { MaterialTitleSection } from "./MaterialTitleSection";
 import { MaterialContents } from "./MaterialContents";
 import { useFilesQuery, useMaterialQuery } from "@/hooks/queries";
 import { useDeleteMaterialMutation } from "@/hooks/mutations";
-import { markArchiveMaterialOpened } from "@/lib/client/archiveLibrary";
+import {
+  markArchiveMaterialOpened,
+  readArchiveLibrary,
+  writeArchiveLibrary,
+} from "@/lib/client/archiveLibrary";
 
 const resolveMaterialKey = (value: any, materialId: string | number) => {
   const raw =
@@ -120,6 +124,25 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
 
   const deleteMutation = useDeleteMaterialMutation({
     onSuccess: () => {
+      const library = readArchiveLibrary(currentUserId);
+      const materialFolderIds = { ...library.materialFolderIds };
+      const materialSizeBytes = { ...library.materialSizeBytes };
+      delete materialFolderIds[String(materialId)];
+      delete materialSizeBytes[String(materialId)];
+      writeArchiveLibrary(
+        {
+          ...library,
+          favoriteMaterialIds: library.favoriteMaterialIds.filter(
+            (id) => id !== String(materialId),
+          ),
+          recentItems: library.recentItems.filter(
+            (item) => item.materialId !== String(materialId),
+          ),
+          materialFolderIds,
+          materialSizeBytes,
+        },
+        currentUserId,
+      );
       queryClient.invalidateQueries({ queryKey: ["material", materialId] });
       queryClient.invalidateQueries({ queryKey: ["materials"] });
       router.push("/archive");
