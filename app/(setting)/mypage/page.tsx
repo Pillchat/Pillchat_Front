@@ -24,11 +24,15 @@ const MyPage: FC = () => {
   const { onDelete } = useDelete();
   const { onLogout } = useLogout();
   const { onMyProfile, isLoading, error } = useMyProfile();
-  const isAdmin = isCurrentUserAdmin();
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     onMyProfile();
   }, [onMyProfile]);
+
+  useEffect(() => {
+    setIsAdmin(isCurrentUserAdmin());
+  }, [isLoading]);
 
   if (error) {
     return (
@@ -96,6 +100,12 @@ const MyPage: FC = () => {
                 title="푸시 알림 관리"
                 description="푸시 알림 발송 및 이력을 관리할 수 있어요."
                 onClick={() => router.push("/admin")}
+              />
+              <SystemField
+                iconSrc={PUBLIC_ASSETS.icons.questionBank}
+                title="수제 문제 · CBT 관리"
+                description="문제를 제작하고 등록할 수 있어요."
+                onClick={() => router.push("/admin/questions")}
               />
             </div>
             <div className="mt-8 h-px w-full bg-muted" />
