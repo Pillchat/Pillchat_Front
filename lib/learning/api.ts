@@ -109,7 +109,12 @@ export class LearningCommands {
       this.pending = null;
       return result;
     } catch (error) {
-      if (error instanceof ApiError && error.status < 500) this.pending = null;
+      if (
+        error instanceof ApiError &&
+        error.status < 500 &&
+        error.status !== 408
+      )
+        this.pending = null;
       throw error;
     }
   }

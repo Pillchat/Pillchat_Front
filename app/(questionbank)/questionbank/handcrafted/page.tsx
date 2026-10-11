@@ -1,3 +1,4 @@
+import TutorialGate from "@/components/learning/TutorialGate";
 import LearningWorkspace from "@/components/learning/LearningWorkspace";
 import LegacyPractice from "./_components/LegacyPractice";
 export default async function Page({
@@ -12,7 +13,9 @@ export default async function Page({
         <p className="bg-amber-50 p-3 text-sm">
           체험용 예제입니다. 학습 기록은 서버에 저장되지 않습니다.
         </p>
-        <LegacyPractice />
+        <TutorialGate kind="handcrafted">
+          <LegacyPractice />
+        </TutorialGate>
       </>
     );
   return <LearningWorkspace source="HANDCRAFTED" />;

@@ -1,81 +1,101 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { loader, storage } from "./helpers/load-ts.mjs";
+import { loader } from "./helpers/load-ts.mjs";
+import { NextRequest } from "next/server.js";
 
-const today = new Date(2026, 9, 8, 23, 59);
-const tomorrow = new Date(2026, 9, 9, 0, 1);
-const loadAttendance = (localStorage) =>
-  loader({ window: { localStorage } })("lib/client/attendance.ts");
+const summary = {
+  date: "2026-10-11",
+  timezone: "Asia/Seoul",
+  todayChecked: true,
+  totalDays: 20,
+  currentStreak: 3,
+  longestStreak: 8,
+  grade: "HANAL",
+};
+const loadAttendance = (fetchAPI) =>
+  loader(
+    {
+      window: {
+        get localStorage() {
+          throw new Error("must not read local attendance");
+        },
+      },
+    },
+    { "@/lib/client/fetch": { fetchAPI } },
+  )("lib/client/attendance.ts");
 
-test("check-in survives reload and counts each calendar day only once", () => {
-  const localStorage = storage();
-  const api = loadAttendance(localStorage);
-  assert.equal(api.readAttendance(today).days, 0);
-  assert.equal(api.checkInAttendance(today).days, 1);
-
-  const reloaded = loadAttendance(localStorage);
-  assert.equal(reloaded.readAttendance(today).completed, true);
-  assert.equal(reloaded.checkInAttendance(today).days, 1);
-  assert.equal(reloaded.readAttendance(tomorrow).completed, false);
-  assert.equal(reloaded.readAttendance(tomorrow).days, 1);
-  assert.equal(reloaded.checkInAttendance(tomorrow).days, 2);
-  assert.equal(reloaded.readAttendance(tomorrow).completed, true);
+test("attendance reads the server counts and earned grade, not device history", async () => {
+  const calls = [];
+  const api = loadAttendance(async (...args) => {
+    calls.push(args);
+    return summary;
+  });
+  assert.deepEqual(await api.readAttendance(), summary);
+  assert.deepEqual(calls, [["/api/attendance", "GET"]]);
 });
 
-test("uses local calendar components even when the UTC date is different", () => {
-  const api = loadAttendance(storage());
-  const localDate = {
-    getFullYear: () => 2026,
-    getMonth: () => 9,
-    getDate: () => 9,
-    toISOString: () => "2026-10-08T15:01:00.000Z",
-  };
-  assert.equal(api.getAttendanceDate(localDate), "2026-10-09");
+test("repeated check-ins use the server's idempotent endpoint without client dates or totals", async () => {
+  const calls = [];
+  const api = loadAttendance(async (...args) => {
+    calls.push(args);
+    return summary;
+  });
+  assert.equal((await api.checkInAttendance()).totalDays, 20);
+  assert.equal((await api.checkInAttendance()).totalDays, 20);
+  assert.deepEqual(calls, [
+    ["/api/attendance/check-ins", "POST"],
+    ["/api/attendance/check-ins", "POST"],
+  ]);
 });
 
-test("a stale tab rereads saved check-ins instead of losing previous days", () => {
-  const localStorage = storage();
-  const first = loadAttendance(localStorage);
-  const second = loadAttendance(localStorage);
-  second.readAttendance(today);
-  first.checkInAttendance(today);
-  assert.equal(second.checkInAttendance(today).days, 1);
-  assert.equal(second.checkInAttendance(tomorrow).days, 2);
-  assert.equal(first.readAttendance(tomorrow).days, 2);
+test("failed check-in rejects instead of creating a local success", async () => {
+  const api = loadAttendance(async () => {
+    throw new Error("offline");
+  });
+  await assert.rejects(api.checkInAttendance(), /offline/);
 });
 
-test("invalid storage recovers, and duplicate or invalid dates are not counted", () => {
-  const localStorage = storage();
-  const api = loadAttendance(localStorage);
-  for (const raw of ["{broken", "null", '{"days":99}']) {
-    localStorage.setItem(api.ATTENDANCE_STORAGE_KEY, raw);
-    assert.equal(api.readAttendance(today).days, 0);
-    assert.equal(api.checkInAttendance(today).days, 1);
-  }
-  localStorage.setItem(
-    api.ATTENDANCE_STORAGE_KEY,
-    JSON.stringify(["2026-10-08", "2026-10-08", "2026-02-30", null, 123]),
+test("calendar reads the requested month from the server", async () => {
+  const calls = [];
+  const api = loadAttendance(async (...args) => {
+    calls.push(args);
+    return ["2026-09-30"];
+  });
+  assert.deepEqual(await api.readAttendanceCalendar("2026-09"), ["2026-09-30"]);
+  assert.deepEqual(JSON.parse(JSON.stringify(calls)), [
+    ["/api/attendance/calendar", "GET", { month: "2026-09" }],
+  ]);
+});
+
+test("attendance proxy forwards auth, method, query and backend failures", async () => {
+  const calls = [];
+  const load = loader({
+    process: { env: { NEXT_PUBLIC_API_HOST: "https://backend.example" } },
+    fetch: async (url, options) => {
+      calls.push({ url, options });
+      return Response.json({ code: "UNAUTHORIZED" }, { status: 401 });
+    },
+  });
+  const route = load("app/api/attendance/[[...path]]/route.ts");
+  const response = await route.GET(
+    new NextRequest(
+      "https://app.example/api/attendance/calendar?month=2026-10",
+      { headers: { authorization: "Bearer test-token" } },
+    ),
   );
-  assert.equal(api.readAttendance(today).days, 1);
-});
-
-test("storage failures do not return a successful check-in", () => {
-  const localStorage = storage();
-  const api = loadAttendance(localStorage);
-  localStorage.setItem = () => {
-    throw new Error("QuotaExceededError");
-  };
-  assert.throws(() => api.checkInAttendance(today), /QuotaExceededError/);
-  assert.equal(api.readAttendance(today).completed, false);
-
-  localStorage.getItem = () => {
-    throw new Error("SecurityError");
-  };
-  assert.throws(() => api.checkInAttendance(today), /SecurityError/);
-});
-
-test("reading on the server does not access browser storage", () => {
-  const api = loader()("lib/client/attendance.ts");
-  assert.equal(api.readAttendance(today).days, 0);
-  assert.equal(api.readAttendance(today).completed, false);
+  assert.equal(response.status, 401);
+  assert.equal(
+    calls[0].url,
+    "https://backend.example/api/attendance/calendar?month=2026-10",
+  );
+  assert.equal(
+    calls[0].options.headers.get("authorization"),
+    "Bearer test-token",
+  );
+  await route.POST(
+    new NextRequest("https://app.example/api/attendance/check-ins", {
+      method: "POST",
+    }),
+  );
+  assert.equal(calls[1].options.method, "POST");
 });

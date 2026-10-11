@@ -13,6 +13,7 @@ interface CbtTutorialOverlayProps {
   title: string;
   description: string;
   onExit: () => void;
+  canExit?: boolean;
   onNext?: () => void;
   nextDisabled?: boolean;
   completed?: boolean;
@@ -128,6 +129,7 @@ export function CbtTutorialOverlay({
   title,
   description,
   onExit,
+  canExit = true,
   onNext,
   nextDisabled = false,
   completed = false,
@@ -421,14 +423,18 @@ export function CbtTutorialOverlay({
           <span className="text-xs font-bold tabular-nums text-primary">
             {stepNumber} / {totalSteps}
           </span>
-          <button
-            type="button"
-            onClick={onExit}
-            className="-mr-1 -mt-1 flex min-h-9 items-center gap-1 rounded-lg px-2 text-xs text-muted-foreground hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <span className={compactGuide ? "sr-only" : undefined}>나가기</span>
-            <X className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
+          {canExit && (
+            <button
+              type="button"
+              onClick={onExit}
+              className="-mr-1 -mt-1 flex min-h-9 items-center gap-1 rounded-lg px-2 text-xs text-muted-foreground hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <span className={compactGuide ? "sr-only" : undefined}>
+                나가기
+              </span>
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          )}
         </div>
         <div aria-live="polite" aria-atomic="true">
           <h2

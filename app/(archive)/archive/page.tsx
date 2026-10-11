@@ -275,9 +275,7 @@ export default function ArchivePage() {
         libraryFilter === "all" ||
         (libraryFilter === "favorites"
           ? library.favoriteMaterialIds.includes(id)
-          : libraryFilter === "uncategorized"
-            ? !library.materialFolderIds[id]
-            : library.materialFolderIds[id] === libraryFilter);
+          : library.materialFolderIds[id] === libraryFilter);
       const categoryName = library.folders.find(
         (folder) => folder.id === library.materialFolderIds[id],
       )?.name;
@@ -299,6 +297,7 @@ export default function ArchivePage() {
   }, [
     library.favoriteMaterialIds,
     library.materialFolderIds,
+    library.folders,
     libraryFilter,
     myMaterials,
     query,
@@ -540,27 +539,24 @@ export default function ArchivePage() {
         <section className="border-t-[10px] border-[#F7F7F7] pt-5">
           <div className="flex gap-2 overflow-x-auto px-6 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <FilterChip
-              active={libraryFilter === "all"}
-              onClick={() => setLibraryFilter("all")}
-              label="전체 자료"
-            />
-            <FilterChip
               active={libraryFilter === "favorites"}
-              onClick={() => setLibraryFilter("favorites")}
+              onClick={() =>
+                setLibraryFilter(
+                  libraryFilter === "favorites" ? "all" : "favorites",
+                )
+              }
               label="즐겨찾기"
               icon={<Star className="h-3.5 w-3.5" />}
-            />
-            <FilterChip
-              active={libraryFilter === "uncategorized"}
-              onClick={() => setLibraryFilter("uncategorized")}
-              label="미분류"
-              icon={<Tag className="h-3.5 w-3.5" />}
             />
             {library.folders.map((folder) => (
               <FilterChip
                 key={folder.id}
                 active={libraryFilter === folder.id}
-                onClick={() => setLibraryFilter(folder.id)}
+                onClick={() =>
+                  setLibraryFilter(
+                    libraryFilter === folder.id ? "all" : folder.id,
+                  )
+                }
                 label={folder.name}
                 icon={<Tag className="h-3.5 w-3.5" />}
               />
@@ -571,11 +567,8 @@ export default function ArchivePage() {
             <h2 className="text-title-medium text-foreground">
               {libraryFilter === "favorites"
                 ? "즐겨찾기"
-                : libraryFilter === "uncategorized"
-                  ? "미분류"
-                  : (library.folders.find(
-                      (folder) => folder.id === libraryFilter,
-                    )?.name ?? "전체 자료")}
+                : (library.folders.find((folder) => folder.id === libraryFilter)
+                    ?.name ?? "내 학습자료")}
             </h2>
             <span className="text-label-small text-muted-foreground">
               {filteredMaterials.length}개
@@ -630,7 +623,7 @@ export default function ArchivePage() {
                             {getMaterialType(item)}
                           </span>
                           <span className="truncate text-label-small text-muted-foreground">
-                            {categoryName ?? "미분류"}
+                            {categoryName}
                           </span>
                         </div>
                         <h3 className="mt-1.5 truncate text-title-small text-foreground">
@@ -831,7 +824,7 @@ export default function ArchivePage() {
                 {getMaterialType(previewTarget)}
               </span>
               <span className="text-label-small text-muted-foreground">
-                {getCategoryName(previewTarget) ?? "미분류"}
+                {getCategoryName(previewTarget)}
               </span>
             </div>
             <h3 className="mt-3 text-title-large text-foreground">

@@ -1,15 +1,18 @@
 "use client";
 
+import { TutorialButton } from "@/components/learning/TutorialButton";
+
+import { flashcardErrorMessage } from "@/lib/flashcards/messages";
+import TutorialGate from "@/components/learning/TutorialGate";
 import { PillLoader } from "@/components/atoms/PillLoader";
 
 import { LearningCommands } from "@/lib/learning/api";
+import FlashcardContents from "@/components/learning/FlashcardContents";
 import FlashcardGeneration from "@/components/learning/FlashcardGeneration";
 
 import Link from "next/link";
 
 import {
-  BadgeCheck,
-  CalendarDays,
   Eraser,
   EyeOff,
   FileUp,
@@ -28,6 +31,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   createRemoteFlashcard,
+  fetchFlashcardPacks,
+  type FlashcardPack,
   fetchRemotePackNames,
   deleteRemoteFlashcard,
   fetchAllFlashcards,
@@ -35,7 +40,6 @@ import {
   reviewRemoteFlashcard,
 } from "@/lib/flashcards/api";
 import {
-  readFlashcardCollections,
   writeFlashcardCollections,
   type FlashcardCollectionMap,
 } from "@/lib/flashcards/collections";
@@ -56,22 +60,9 @@ import type {
 } from "@/types/flashcard";
 
 type CreateMode = "ai" | "manual" | "blind";
-type CollectionMode = "subject" | "date";
 type BlindTool = "box" | "pen" | "eraser";
 
 const emptyConcept = { term: "", definition: "" };
-
-function formatCollectionDate(value = Date.now()) {
-  return new Intl.DateTimeFormat("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(value);
-}
-
-function isDateCollectionTitle(value: string) {
-  return /^\d{4}년 \d{1,2}월 \d{1,2}일$/.test(value);
-}
 
 const MIN_BLIND_MASK_SIZE = 0.03;
 const STROKE_MASK_PADDING = 0.015;
@@ -190,11 +181,7 @@ function useFlashcardData() {
 
       return true;
     } catch (error) {
-      setToast(
-        error instanceof Error
-          ? error.message
-          : "플래시카드를 불러오지 못했어요.",
-      );
+      setToast(flashcardErrorMessage(error, "플래시카드를 불러오지 못했어요."));
       return false;
     } finally {
       if (showLoading) setReady(true);
@@ -353,85 +340,197 @@ function CreatePanel({
   onComplete: () => void;
   initialCollection?: string;
 }) {
-  const initialCollectionIsDate = isDateCollectionTitle(initialCollection);
   const [mode, setMode] = useState<CreateMode>("ai");
-  const [collectionMode, setCollectionMode] = useState<CollectionMode>(
-    initialCollectionIsDate ? "date" : "subject",
-  );
-  const [collectionName, setCollectionName] = useState(
-    initialCollectionIsDate ? "" : initialCollection,
-  );
-  const [dateCollection] = useState(
-    initialCollectionIsDate ? initialCollection : formatCollectionDate(),
-  );
+  const [packs, setPacks] = useState<FlashcardPack[]>([]);
+  const [packId, setPackId] = useState("");
+  const [newPackTitle, setNewPackTitle] = useState("");
+  const [creatingPack, setCreatingPack] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [savedCards, setSavedCards] = useState<Flashcard[]>([]);
+  const [cardsLoading, setCardsLoading] = useState(false);
   const [formBusy, setFormBusy] = useState(false);
   const [hasCreated, setHasCreated] = useState(false);
   const [error, setError] = useState("");
-  const collection =
-    collectionMode === "subject" ? collectionName.trim() : dateCollection;
-  const busy = formBusy;
+  const commands = useRef(new LearningCommands());
+  const packLock = useRef(false);
+  const busy = formBusy || creatingPack;
+  const selectedPack = packs.find((pack) => pack.packId === packId);
 
+  const loadPacks = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const next = await fetchFlashcardPacks();
+      setPacks(next);
+      setPackId(
+        (current) =>
+          current ||
+          next.find(
+            (pack) =>
+              pack.packId === initialCollection ||
+              pack.title === initialCollection,
+          )?.packId ||
+          "",
+      );
+    } catch (cause) {
+      setError(
+        flashcardErrorMessage(
+          cause,
+          "카드팩을 불러오지 못했어요. 다시 시도해 주세요.",
+        ),
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    void loadPacks();
+  }, []);
+  const refreshCards = async () => {
+    const cards = await fetchAllFlashcards();
+    setSavedCards(cards);
+  };
+  useEffect(() => {
+    if (!packId || packId === "__new__") return;
+    let active = true;
+    setCardsLoading(true);
+    setError("");
+    void fetchAllFlashcards()
+      .then((cards) => {
+        if (active) setSavedCards(cards);
+      })
+      .catch((cause) => {
+        if (active) setError(flashcardErrorMessage(cause));
+      })
+      .finally(() => {
+        if (active) setCardsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [packId]);
+  const createPack = async () => {
+    if (packLock.current || !newPackTitle.trim()) return;
+    packLock.current = true;
+    setCreatingPack(true);
+    setError("");
+    try {
+      const pack: FlashcardPack = commands.current.pending
+        ? await commands.current.retry()
+        : await commands.current.send("/api/flashcard-packs", "POST", {
+            title: newPackTitle.trim(),
+            groupKind: "UNCLASSIFIED",
+          });
+      const normalized = { ...pack, packId: String(pack.packId) };
+      setPacks((prev) => [...prev, normalized]);
+      setPackId(normalized.packId);
+      setHasCreated(false);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("generation");
+      url.searchParams.set("pack", normalized.packId);
+      window.history.replaceState(null, "", url);
+      setNewPackTitle("");
+    } catch (cause) {
+      setError(
+        flashcardErrorMessage(
+          cause,
+          "카드팩을 만들지 못했어요. 다시 시도해 주세요.",
+        ),
+      );
+    } finally {
+      setCreatingPack(false);
+      packLock.current = false;
+    }
+  };
   const saveDrafts = async (drafts: FlashcardDraft[], complete: boolean) => {
-    await onAddMany(drafts, collection);
+    if (!selectedPack) throw new Error("카드팩을 선택해 주세요.");
+    await onAddMany(drafts, packId);
     setHasCreated(true);
-
+    await refreshCards().catch(() =>
+      setError("카드는 저장했지만 목록을 새로 불러오지 못했어요."),
+    );
     if (complete) onComplete();
   };
 
   return (
     <div className="space-y-6">
-      <div>
-        <label className="mb-2 block text-sm font-bold text-foreground">
-          통합 카드 분류
+      <div className="space-y-3">
+        <label htmlFor="destination-pack" className="block text-sm font-bold">
+          저장할 카드팩
         </label>
-        <div className="grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1">
-          {(
-            [
-              { key: "subject", label: "과목" },
-              { key: "date", label: "날짜" },
-            ] as Array<{ key: CollectionMode; label: string }>
-          ).map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => setCollectionMode(item.key)}
-              disabled={busy}
-              className={cn(
-                "h-10 rounded-lg text-sm font-bold text-muted-foreground transition",
-                collectionMode === item.key &&
-                  "bg-white text-foreground shadow-sm",
-              )}
-            >
-              {item.label}
-            </button>
+        <select
+          id="destination-pack"
+          value={packId}
+          disabled={busy || loading}
+          onChange={(event) => {
+            setPackId(event.target.value);
+            setHasCreated(false);
+            const url = new URL(window.location.href);
+            url.searchParams.delete("generation");
+            url.searchParams.set("pack", event.target.value);
+            window.history.replaceState(null, "", url);
+          }}
+          className="h-12 w-full rounded-xl border border-border bg-white px-3 text-sm"
+        >
+          <option value="">
+            {loading ? "카드팩을 불러오는 중…" : "카드팩을 선택해 주세요"}
+          </option>
+          {mode === "ai" && <option value="__new__">새 카드팩에 저장</option>}
+          {packs.map((pack) => (
+            <option key={pack.packId} value={pack.packId}>
+              {pack.title}
+            </option>
           ))}
-        </div>
-      </div>
-
-      {collectionMode === "subject" ? (
-        <div>
-          <label className="mb-2 flex items-center gap-2 text-sm font-bold text-foreground">
-            과목 이름
-            <span className="text-xs font-semibold text-brand">필수</span>
-          </label>
+        </select>
+        {mode === "ai" && packId === "__new__" && (
           <Input
-            value={collectionName}
+            aria-label="새 카드팩 이름"
+            placeholder="새 카드팩 이름"
+            value={newPackTitle}
             disabled={busy}
-            onChange={(event) => setCollectionName(event.target.value)}
-            placeholder="예: 약제학"
+            onChange={(event) => setNewPackTitle(event.target.value)}
           />
-        </div>
-      ) : (
-        <div>
-          <p className="mb-2 text-sm font-bold text-foreground">
-            통합 카드 제목
+        )}
+        {mode !== "ai" && (
+          <details>
+            <summary className="cursor-pointer py-2 text-sm text-brand">
+              새 카드팩 만들기
+            </summary>
+            <div className="mt-2 flex gap-2">
+              <Input
+                aria-label="새 카드팩 이름"
+                placeholder="카드팩 이름"
+                value={newPackTitle}
+                disabled={busy || !!commands.current.pending}
+                onChange={(event) => setNewPackTitle(event.target.value)}
+              />
+              <Button
+                disabled={busy || !newPackTitle.trim()}
+                onClick={() => void createPack()}
+              >
+                {commands.current.pending ? "다시 시도" : "만들기"}
+              </Button>
+            </div>
+          </details>
+        )}
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+            <button
+              className="ml-2 underline"
+              disabled={busy}
+              onClick={() => {
+                void loadPacks();
+                void refreshCards().catch(() =>
+                  setError("카드 목록을 불러오지 못했어요."),
+                );
+              }}
+            >
+              목록 다시 불러오기
+            </button>
           </p>
-          <div className="flex h-12 items-center gap-2 rounded-xl border border-border bg-gray-50 px-3 text-sm font-bold text-foreground">
-            <CalendarDays aria-hidden="true" className="h-4 w-4 text-brand" />
-            {collection}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {
         <div>
@@ -447,7 +546,10 @@ function CreatePanel({
               <button
                 key={item.key}
                 type="button"
-                onClick={() => setMode(item.key as CreateMode)}
+                onClick={() => {
+                  setMode(item.key as CreateMode);
+                  if (packId === "__new__") setPackId("");
+                }}
                 disabled={busy}
                 className={cn(
                   "min-h-11 rounded-lg px-1 text-[0.8125rem] font-bold leading-5 text-muted-foreground",
@@ -462,13 +564,28 @@ function CreatePanel({
       }
 
       {mode === "ai" && (
-        <FlashcardGeneration title={collection} onBusyChange={setFormBusy} />
+        <FlashcardGeneration
+          key={packId}
+          packId={packId === "__new__" ? "" : packId}
+          newPackTitle={packId === "__new__" ? newPackTitle : undefined}
+          onPackCreated={(pack) => {
+            const normalized = { ...pack, packId: String(pack.packId) };
+            setPacks((previous) => [
+              ...previous.filter((item) => item.packId !== normalized.packId),
+              normalized,
+            ]);
+            setPackId(normalized.packId);
+            setNewPackTitle("");
+          }}
+          onBusyChange={setFormBusy}
+          onSaved={refreshCards}
+        />
       )}
 
       {mode === "manual" && (
         <ManualCreateForm
           disabled={busy}
-          saveDisabled={!collection}
+          saveDisabled={!selectedPack}
           hasCreated={hasCreated}
           onBusyChange={setFormBusy}
           onAdd={(draft, complete) => saveDrafts([draft], complete)}
@@ -478,7 +595,7 @@ function CreatePanel({
 
       {mode === "blind" && (
         <BlindEditor
-          saveDisabled={!collection}
+          saveDisabled={!selectedPack}
           disabled={busy}
           hasCreated={hasCreated}
           onBusyChange={setFormBusy}
@@ -486,6 +603,16 @@ function CreatePanel({
           onComplete={onComplete}
         />
       )}
+      {selectedPack &&
+        (cardsLoading ? (
+          <p role="status" className="text-sm text-muted-foreground">
+            카드 목록을 불러오는 중…
+          </p>
+        ) : (
+          <FlashcardContents
+            cards={savedCards.filter((card) => String(card.packId) === packId)}
+          />
+        ))}
     </div>
   );
 }
@@ -589,7 +716,7 @@ function BlindEditor({
 
     if (file.type === "application/pdf") {
       setToast(
-        "PDF 첫 페이지 렌더링은 아직 지원하지 않아요. JPG 또는 PNG를 올려주세요.",
+        "이미지 가림 카드는 JPG 또는 PNG로 만들 수 있어요. PDF의 필요한 부분을 이미지로 저장해 주세요.",
       );
       event.target.value = "";
       return;
@@ -613,9 +740,7 @@ function BlindEditor({
       lastStrokePointRef.current = null;
       draftStartRef.current = null;
     } catch (error) {
-      setToast(
-        error instanceof Error ? error.message : "이미지를 불러오지 못했어요.",
-      );
+      setToast(flashcardErrorMessage(error, "이미지를 불러오지 못했어요."));
     } finally {
       saveLock.current = false;
       setSaving(false);
@@ -791,9 +916,7 @@ function BlindEditor({
       draftStartRef.current = null;
     } catch (error) {
       setToast(
-        error instanceof Error
-          ? error.message
-          : "블라인드 카드를 저장하지 못했어요.",
+        flashcardErrorMessage(error, "블라인드 카드를 저장하지 못했어요."),
       );
     } finally {
       saveLock.current = false;
@@ -842,11 +965,11 @@ function BlindEditor({
           placeholder="카드 제목"
         />
         <label className="mt-3 flex h-14 cursor-pointer items-center justify-center rounded-xl border border-dashed border-border text-sm font-bold text-muted-foreground">
-          JPG/PNG 업로드
+          카드로 만들 이미지 선택
           <input
             type="file"
             disabled={disabled || saving}
-            accept="image/png,image/jpeg,application/pdf"
+            accept="image/png,image/jpeg"
             className="sr-only"
             onChange={handleFile}
           />
@@ -973,17 +1096,22 @@ function BlindEditor({
 
 function FlashcardTutorialLink() {
   return (
-    <Link
+    <TutorialButton
       href="/flashcards/tutorial"
-      aria-label="AI 플래시카드 튜토리얼"
-      className="flex h-10 w-10 items-center justify-center rounded-lg text-xl transition hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-    >
-      <BadgeCheck aria-hidden="true" className="h-5 w-5 text-primary" />
-    </Link>
+      label="AI 플래시카드 튜토리얼"
+    />
   );
 }
 
 export function FlashcardApp() {
+  return (
+    <TutorialGate kind="flashcards">
+      <FlashcardLibraryApp />
+    </TutorialGate>
+  );
+}
+
+function FlashcardLibraryApp() {
   const { cards, ready, toast, setToast, setCards, refresh } =
     useFlashcardData();
   const [collectionByCardId, setCollectionByCardId] =
@@ -1004,7 +1132,7 @@ export function FlashcardApp() {
           ),
         );
       })
-      .catch((e) => setToast(e.message));
+      .catch((e) => setToast(flashcardErrorMessage(e)));
   }, [ready, cards.map((card) => `${card.id}:${card.packId ?? ""}`).join(",")]);
 
   const deleteCard = async (cardId: string) => {
@@ -1020,9 +1148,7 @@ export function FlashcardApp() {
       setToast("카드를 삭제했어요.");
       void refresh();
     } catch (error) {
-      setToast(
-        error instanceof Error ? error.message : "카드를 삭제하지 못했어요.",
-      );
+      setToast(flashcardErrorMessage(error, "카드를 삭제하지 못했어요."));
       throw error;
     }
   };
@@ -1039,9 +1165,7 @@ export function FlashcardApp() {
 
       void refresh();
     } catch (error) {
-      setToast(
-        error instanceof Error ? error.message : "평가를 저장하지 못했어요.",
-      );
+      setToast(flashcardErrorMessage(error, "평가를 저장하지 못했어요."));
       throw error;
     }
   };
@@ -1095,27 +1219,10 @@ export function FlashcardCreateApp({
   const router = useRouter();
   const [toast, setToast] = useState("");
   const createdDrafts = useRef(new WeakMap<FlashcardDraft, Flashcard>());
-  const manualPacks = useRef(new Map<string, string>());
-  const packCommands = useRef(new LearningCommands());
 
-  const addDrafts = async (drafts: FlashcardDraft[], collection: string) => {
+  const addDrafts = async (drafts: FlashcardDraft[], packId: string) => {
     try {
-      if (
-        packCommands.current.pending &&
-        packCommands.current.pending.body.title !== collection
-      )
-        throw new Error("이전 팩 이름으로 다시 시도해주세요.");
-      let packId = manualPacks.current.get(collection);
-      if (!packId) {
-        const pack: { packId: string } = packCommands.current.pending
-          ? await packCommands.current.retry()
-          : await packCommands.current.send("/api/flashcard-packs", "POST", {
-              title: collection,
-              groupKind: "UNCLASSIFIED",
-            });
-        packId = pack.packId;
-        manualPacks.current.set(collection, packId);
-      }
+      if (!packId) throw new Error("카드팩을 선택해 주세요.");
       const createdCards: Flashcard[] = [];
       for (const draft of drafts) {
         let card = createdDrafts.current.get(draft);
@@ -1125,16 +1232,12 @@ export function FlashcardCreateApp({
         }
         createdCards.push(card);
       }
-      const nextCollections = readFlashcardCollections();
-
-      createdCards.forEach((card) => {
-        nextCollections[card.id] = collection;
-      });
-      writeFlashcardCollections(nextCollections);
       setToast(`${createdCards.length}장의 카드를 저장했어요.`);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "카드를 저장하지 못했어요.";
+      const message = flashcardErrorMessage(
+        error,
+        "카드를 저장하지 못했어요. 다시 시도해 주세요.",
+      );
       setToast(message);
       throw new Error(message);
     }
@@ -1142,7 +1245,11 @@ export function FlashcardCreateApp({
 
   return (
     <AppShell bottomNav={false} bottomSpacing="none">
-      <PracticeHeader title="카드 만들기" backHref="/flashcards" />
+      <PracticeHeader
+        title="카드 만들기"
+        backHref="/flashcards"
+        rightSlot={<FlashcardTutorialLink />}
+      />
 
       <main className="px-4 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-5 sm:px-6">
         <CreatePanel

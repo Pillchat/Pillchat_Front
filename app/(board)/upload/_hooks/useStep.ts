@@ -7,14 +7,14 @@ export enum Step {
 }
 
 export const useStep = () => {
-  const [step, setStep] = useState<Step>(Step.Guide);
+  const [step, setStep] = useState<Step>(Step.Upload);
 
   const nextStep = () => {
     if (step < Step.Complete) setStep((prev) => (prev + 1) as Step);
   };
 
   const prevStep = () => {
-    if (step > Step.Guide) setStep((prev) => (prev - 1) as Step);
+    if (step > Step.Upload) setStep((prev) => (prev - 1) as Step);
   };
 
   const goToStep = (targetStep: Step) => {

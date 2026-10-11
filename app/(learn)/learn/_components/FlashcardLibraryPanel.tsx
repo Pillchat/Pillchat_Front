@@ -477,21 +477,6 @@ function PackViewer({
           </p>
         )}
         <div className="mt-3 flex items-center gap-5">
-          <Link
-            href={`/flashcards/create?pack=${encodeURIComponent(name)}`}
-            aria-disabled={busy}
-            tabIndex={busy ? -1 : undefined}
-            onClick={(event) => {
-              if (busy) event.preventDefault();
-            }}
-            className={cn(
-              "flex min-h-10 items-center gap-1.5 rounded-lg px-1 text-xs font-bold text-brand transition hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
-              busy && "pointer-events-none opacity-50",
-            )}
-          >
-            <Plus aria-hidden="true" className="h-3.5 w-3.5" />
-            카드 추가
-          </Link>
           <button
             ref={managementButtonRef}
             type="button"

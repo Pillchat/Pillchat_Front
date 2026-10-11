@@ -10,8 +10,10 @@ import {
   SelectModal,
 } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
-import { getCurrentUserId } from "@/lib/client/auth";
-import { useQueryClient } from "@tanstack/react-query";
+import { getMaterialMetadata } from "@/lib/client/materialMetadata";
+import { useAuthIdentity } from "@/hooks/useAuthIdentity";
+import { fetchAPI } from "@/lib/client/fetch";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/lib/navigation";
 import { FC, useEffect, useMemo, useState } from "react";
 import { MaterialTitleSection } from "./MaterialTitleSection";
@@ -22,6 +24,7 @@ import {
   markArchiveMaterialOpened,
   readArchiveLibrary,
   writeArchiveLibrary,
+  subscribeArchiveLibrary,
 } from "@/lib/client/archiveLibrary";
 
 const resolveMaterialKey = (value: any, materialId: string | number) => {
@@ -39,7 +42,15 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
 }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const currentUserId = getCurrentUserId();
+  const currentUserId = useAuthIdentity();
+  const [library, setLibrary] = useState(() =>
+    readArchiveLibrary(currentUserId),
+  );
+  useEffect(() => {
+    const refresh = () => setLibrary(readArchiveLibrary(currentUserId));
+    refresh();
+    return subscribeArchiveLibrary(refresh);
+  }, [currentUserId]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const { data: materialData, isLoading: materialLoading } =
@@ -111,11 +122,28 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
   }, [materialData]);
 
   const isAuthor =
-    materialData &&
-    currentUserId &&
-    (materialData.userId
-      ? Number(materialData.userId) === Number(currentUserId)
-      : false);
+    !!currentUserId &&
+    materialData?.userId != null &&
+    String(materialData.userId) === currentUserId;
+  const { data: authorProfile } = useQuery({
+    queryKey: ["material-author", currentUserId, materialData?.userId],
+    enabled: materialData?.userId != null && !!currentUserId,
+    queryFn: async () => {
+      const result = await fetchAPI(
+        isAuthor
+          ? "/api/auth/inquiry-myprofile"
+          : `/api/profile/${encodeURIComponent(materialData.userId)}`,
+        "GET",
+      );
+      return result.data ?? result;
+    },
+  });
+  const { authorName, subjectName } = getMaterialMetadata(
+    materialData ?? {},
+    authorProfile,
+    library,
+    currentUserId,
+  );
 
   useEffect(() => {
     if (!materialData?.id || !isAuthor) return;
@@ -204,12 +232,8 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
             <div className="flex flex-col gap-6">
               <MaterialTitleSection
                 title={materialData.title}
-                userName={
-                  materialData.nickname ?? materialData.userNickname ?? "익명"
-                }
-                subjectName={
-                  materialData.subjectName ?? materialData.subject?.name ?? ""
-                }
+                userName={authorName}
+                subjectName={subjectName}
                 createdAt={materialData.createdAt}
               />
               <MaterialContents

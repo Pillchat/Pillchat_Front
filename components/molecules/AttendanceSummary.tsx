@@ -3,7 +3,7 @@
 import { Check } from "lucide-react";
 
 interface AttendanceSummaryProps {
-  days: number;
+  days?: number;
   completed: boolean;
   onCheckIn: () => void;
   pending?: boolean;
@@ -21,7 +21,7 @@ export function AttendanceSummary({
         <p className="flex items-baseline gap-2 text-sm" aria-live="polite">
           <span className="text-muted-foreground">출석</span>
           <span className="font-semibold tabular-nums text-foreground">
-            {days}일
+            {days === undefined ? "–" : `${days}일`}
           </span>
         </p>
         <button

@@ -13,6 +13,7 @@ interface FlashcardTutorialOverlayProps {
   title: string;
   description: string;
   onExit: () => void;
+  canExit?: boolean;
   onRestart?: () => void;
   completed?: boolean;
   onFinish?: () => void;
@@ -65,6 +66,7 @@ export function FlashcardTutorialOverlay({
   title,
   description,
   onExit,
+  canExit = true,
   onRestart,
   completed = false,
   onFinish,
@@ -425,14 +427,16 @@ export function FlashcardTutorialOverlay({
           <span className="text-xs font-bold tabular-nums text-brand">
             {Math.min(stepNumber, totalSteps)} / {totalSteps}
           </span>
-          <button
-            type="button"
-            onClick={onExit}
-            className="-mr-2 -mt-2 flex min-h-10 items-center gap-1 rounded-xl px-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand [@media(max-height:450px)]:min-h-8"
-          >
-            <span className="[@media(max-height:450px)]:sr-only">나가기</span>
-            <X className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
+          {canExit && (
+            <button
+              type="button"
+              onClick={onExit}
+              className="-mr-2 -mt-2 flex min-h-10 items-center gap-1 rounded-xl px-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand [@media(max-height:450px)]:min-h-8"
+            >
+              <span className="[@media(max-height:450px)]:sr-only">나가기</span>
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          )}
         </div>
         <div aria-live="polite" aria-atomic="true">
           <h2

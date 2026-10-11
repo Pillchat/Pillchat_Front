@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useAtom } from "jotai";
 
+import { readAttendance } from "@/lib/client/attendance";
 import { fetchAPI } from "@/lib/client/fetch";
 import {
   buildFileUrlMap,
@@ -157,6 +158,7 @@ export const useMyProfile = () => {
       }
 
       const payload = result.data ?? {};
+      const attendance = await readAttendance();
       const followSummary = await fetchAPI(
         `/api/users/${payload.id}/follow-summary`,
         "GET",
@@ -195,7 +197,7 @@ export const useMyProfile = () => {
       updateProfile({
         nickname: payload.nickname ?? null,
         school: payload.school ?? null,
-        grade: textValue(payload.grade) || null,
+        grade: attendance.grade,
         studentGrade: payload.studentGrade ?? null,
         id: payload.id ?? null,
         keys: fetchedKeys,

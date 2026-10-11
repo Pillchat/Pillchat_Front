@@ -62,7 +62,7 @@ export function PracticeHeader({
         )}
       </div>
 
-      <div className="flex h-10 w-10 items-center justify-center">
+      <div className="flex h-10 min-w-10 shrink-0 items-center justify-center">
         {rightSlot}
       </div>
     </header>

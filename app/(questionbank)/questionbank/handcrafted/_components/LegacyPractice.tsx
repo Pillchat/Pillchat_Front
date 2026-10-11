@@ -1,8 +1,9 @@
 "use client";
 
+import { TutorialButton } from "@/components/learning/TutorialButton";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  BadgeCheck,
   Bookmark,
   BookmarkCheck,
   Check,
@@ -240,9 +241,7 @@ export default function HandcraftedPage() {
         onBack={() =>
           stage === "setup" ? router.push("/questionbank") : reset()
         }
-        rightSlot={
-          <BadgeCheck className="h-5 w-5 text-primary" aria-hidden="true" />
-        }
+        rightSlot={<TutorialButton onClick={() => setShowTutorial(true)} />}
       />
 
       {reviewSaveFailed && (
@@ -268,15 +267,6 @@ export default function HandcraftedPage() {
               원하는 범위와 문항 수를 선택하면 바로 풀이를 시작합니다.
             </p>
           </section>
-
-          <button
-            type="button"
-            onClick={() => setShowTutorial(true)}
-            className="mt-5 flex items-center gap-2 text-sm font-semibold text-primary"
-          >
-            <CircleHelp className="h-4 w-4" />
-            풀이·북마크 사용법 익히기
-          </button>
 
           {savedAttempt && (
             <button
