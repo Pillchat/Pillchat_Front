@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "title": "약리학 수제 문제 예시",
+  "kind": "HANDCRAFTED",
+  "sessionId": 1,
+  "durationMinutes": 90,
+  "isActive": true,
+  "questions": [
+    {
+      "id": "question-1",
+      "subject": "약리학",
+      "topic": "자율신경계",
+      "subtopic": "무스카린 수용체",
+      "prompt": "무스카린 수용체를 차단하여 산동을 유발하는 약물은?",
+      "referenceContent": "",
+      "choices": [
+        {
+          "id": "choice-1",
+          "text": "아트로핀",
+          "explanation": "무스카린 수용체를 경쟁적으로 차단하므로 정답입니다."
+        },
+        {
+          "id": "choice-2",
+          "text": "필로카르핀",
+          "explanation": "무스카린 수용체 작용제로 축동을 유발합니다."
+        }
+      ],
+      "correctChoiceId": "choice-1",
+      "explanation": "아트로핀은 무스카린 수용체 길항제로 동공괄약근의 부교감 자극을 차단해 산동을 유발합니다.",
+      "isActive": true
+    }
+  ]
+}

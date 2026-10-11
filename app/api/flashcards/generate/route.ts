@@ -314,24 +314,6 @@ function buildCardsFromQuestions(input: GenerationInput): FlashcardDraft[] {
     };
   });
 
-  if (questions.length >= 2) {
-    cards.push({
-      type: "compare",
-      nameA: compact(questions[0]?.subject ?? title, `${title} A`, 24),
-      nameB: compact(questions[1]?.subject ?? "관련 개념", `${title} B`, 24),
-      common: compact(
-        questions[0]?.content ?? "",
-        "같은 자료에서 함께 출제된 핵심 개념입니다.",
-        110,
-      ),
-      difference: compact(
-        questions[1]?.content ?? "",
-        "정답, 해설, 임상 포인트의 차이를 비교하세요.",
-        130,
-      ),
-    });
-  }
-
   return cards.slice(0, 5);
 }
 
@@ -349,72 +331,21 @@ function buildCards(input: GenerationInput): FlashcardDraft[] {
     "학습 자료",
     34,
   );
-  const first = compact(
-    sentences[0] ?? "",
-    `${title}의 핵심 개념을 정리하세요.`,
-  );
-  const second = compact(
-    sentences[1] ?? sentences[0] ?? "",
-    `${title}의 작용 기전과 임상 포인트를 연결하세요.`,
-  );
-  const relationSource =
-    sentences.find((sentence) =>
-      /→|->|억제|차단|증가|감소|활성|분해|축적|유발|원인|결과/.test(sentence),
-    ) ?? second;
-  const relationParts = relationSource
-    .split(/→|->/)
-    .map((part) => part.trim())
-    .filter(Boolean);
-  const trigger = compact(
-    relationParts[0] ?? input.topic,
-    `${title} 관련 자극`,
-    42,
-  );
-  const effect = compact(
-    relationParts.slice(1).join(" → ") || relationSource,
-    `${title}의 결과`,
-    58,
-  );
-  const comparisonSeeds = source
-    .split(/,|\/| vs | VS |와 |과 | 및 /)
-    .map((part) => part.trim())
-    .filter((part) => part.length >= 2 && part.length <= 24);
-  const nameA = compact(comparisonSeeds[0] ?? title, `${title} A`, 24);
-  const nameB = compact(comparisonSeeds[1] ?? "임상 포인트", `${title} B`, 24);
+  const cardSources = sentences.length ? sentences : [source];
 
-  return [
-    {
-      type: "concept",
-      term: title,
-      definition: first,
-    },
-    {
-      type: "relation",
-      trigger,
-      effect,
-      mechanism: compact(
-        relationSource,
-        `${trigger} → ${effect} 흐름을 기전 중심으로 설명하세요.`,
-        140,
-      ),
-    },
-    {
-      type: "compare",
-      nameA,
-      nameB,
-      common: compact(
-        sentences[2] ?? `${nameA}와 ${nameB}는 같은 주제에서 함께 비교됩니다.`,
-        `${nameA}와 ${nameB}의 공통점을 정리하세요.`,
-        110,
-      ),
-      difference: compact(
-        sentences[3] ??
-          "적응증, 부작용, 금기, 작용 시간 중 시험에 자주 나오는 차이를 정리하세요.",
-        "차이점을 정리하세요.",
-        130,
-      ),
-    },
-  ];
+  return cardSources.slice(0, 5).map((sentence, index) => ({
+    type: "concept" as const,
+    term: compact(
+      index === 0 && input.topic ? input.topic : `${title} 핵심 ${index + 1}`,
+      `${title} 핵심 ${index + 1}`,
+      88,
+    ),
+    definition: compact(
+      sentence,
+      `${title}에서 기억해야 할 내용을 정리하세요.`,
+      180,
+    ),
+  }));
 }
 
 export async function POST(request: Request) {

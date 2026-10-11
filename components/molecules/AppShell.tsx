@@ -10,9 +10,9 @@ type BottomSpacing = "none" | "nav" | "cta" | "input";
 
 const bottomSpacingClass: Record<BottomSpacing, string> = {
   none: "",
-  nav: "pb-[calc(6.75rem+env(safe-area-inset-bottom))]",
-  cta: "pb-[calc(11.25rem+env(safe-area-inset-bottom))]",
-  input: "pb-[calc(11.25rem+env(safe-area-inset-bottom))]",
+  nav: "pb-[var(--bottom-nav-height)]",
+  cta: "pb-[calc(var(--bottom-nav-height)+5rem)]",
+  input: "pb-[calc(var(--bottom-nav-height)+5rem)]",
 };
 
 interface AppShellProps {

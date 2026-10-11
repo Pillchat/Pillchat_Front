@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Bookmark, Heart, Lock, MessageCircle, Star } from "lucide-react";
@@ -71,7 +73,10 @@ export function MarketDetailClient({ marketId }: { marketId: string }) {
     return (
       <AppShell>
         <CustomHeader title="자료 상세" />
-        <div className="mx-6 mt-4 h-[32rem] animate-pulse rounded-xl bg-primary-980" />
+        <LoadingIndicator
+          label="자료를 불러오는 중..."
+          className="mx-6 mt-4 h-[32rem]"
+        />
       </AppShell>
     );
   }
@@ -363,7 +368,10 @@ export function MarketDetailClient({ marketId }: { marketId: string }) {
           </div>
 
           {commentsQuery.isLoading ? (
-            <div className="mt-4 h-28 animate-pulse rounded-xl bg-primary-980" />
+            <LoadingIndicator
+              label="댓글을 불러오는 중..."
+              className="mt-4 h-28"
+            />
           ) : commentsQuery.isError ? (
             <div className="mt-4 rounded-xl border border-dashed border-border p-5 text-center">
               <p className="text-body-medium text-muted-foreground">
@@ -498,7 +506,7 @@ export function MarketDetailClient({ marketId }: { marketId: string }) {
         </section>
       </main>
 
-      <div className="fixed bottom-[calc(6.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-app -translate-x-1/2 bg-card px-6 pb-1 pt-3 md:px-8">
+      <div className="fixed bottom-[var(--bottom-nav-height)] left-1/2 z-40 w-full max-w-app -translate-x-1/2 bg-card px-6 pb-1 pt-3 md:px-8">
         <button
           type="button"
           disabled

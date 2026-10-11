@@ -1,6 +1,10 @@
 "use client";
+import ServerPushHistory from "@/components/learning/PushHistory";
 
-import { FC, useState } from "react";
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
+import { PUBLIC_ASSETS } from "@/constants/assets";
+import { FC, useState, useRef } from "react";
 import { useRouter } from "@/lib/navigation";
 import { CustomHeader, TabsWithUnderline } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
@@ -11,8 +15,6 @@ import { fetchAPI } from "@/lib/client/fetch";
 import { isCurrentUserAdmin } from "@/lib/client/auth";
 import { formatDiffDate } from "@/lib/shared/date";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useAtom } from "jotai";
-import { pushHistoryAtom } from "@/store/notification";
 import {
   AdminPushNotificationType,
   PushHistory,
@@ -47,7 +49,7 @@ const SendPushSection: FC<{
   const { addNotification } = useNotifications();
   const [pushType, setPushType] = useState<AdminPushSendType>("all");
   const [notificationType, setNotificationType] =
-    useState<AdminPushNotificationType>("BENEFIT");
+    useState<AdminPushNotificationType>("SYSTEM");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [linkURL, setLinkURL] = useState("");
@@ -59,7 +61,9 @@ const SendPushSection: FC<{
     message: string;
   } | null>(null);
 
+  const pendingSend = useRef<{ signature: string; key: string } | null>(null);
   const handleSend = async () => {
+    if (isSending) return;
     if (!title.trim() || !content.trim()) {
       setResult({ type: "error", message: "제목과 내용을 입력해주세요." });
       return;
@@ -87,7 +91,8 @@ const SendPushSection: FC<{
       switch (pushType) {
         case "all":
           endpoint = "/api/push/send-all";
-          if (scheduleTime) payload.scheduleTime = scheduleTime;
+          if (scheduleTime)
+            payload.scheduleTime = new Date(scheduleTime).toISOString();
           break;
         case "personal":
           if (!userIds.trim()) {
@@ -101,14 +106,21 @@ const SendPushSection: FC<{
           break;
       }
 
-      await fetchAPI(endpoint, "POST", payload);
-
-      addNotification({
-        type: notificationType,
-        title,
-        content,
-        link: linkURL || undefined,
+      if (scheduleTime)
+        payload.scheduleTime = new Date(scheduleTime).toISOString();
+      const signature = JSON.stringify({ endpoint, payload });
+      if (pendingSend.current && pendingSend.current.signature !== signature) {
+        throw new Error(
+          "이전 발송 결과가 불확실합니다. 기존 내용으로 재시도하거나 발송 이력을 먼저 확인해주세요.",
+        );
+      }
+      pendingSend.current ??= { signature, key: crypto.randomUUID() };
+      await fetchAPI(endpoint, "POST", {
+        ...payload,
+        idempotencyKey: pendingSend.current.key,
       });
+      pendingSend.current = null;
+      void addNotification();
 
       onSent(historyEntry);
       router.push("/mypage");
@@ -144,9 +156,7 @@ const SendPushSection: FC<{
       <div className="space-y-2">
         <Label>알림 유형</Label>
         <div className="flex gap-2">
-          {(
-            Object.keys(NOTIFICATION_TYPE_LABELS) as AdminPushNotificationType[]
-          ).map((type) => (
+          {(["SYSTEM"] as AdminPushNotificationType[]).map((type) => (
             <Button
               key={type}
               variant={notificationType === type ? "brand" : "outline"}
@@ -242,7 +252,11 @@ const SendPushSection: FC<{
         onClick={handleSend}
         disabled={isSending}
       >
-        {isSending ? "발송 중..." : "푸시 알림 발송"}
+        {isSending ? (
+          <LoadingIndicator inline label="발송 중..." />
+        ) : (
+          "푸시 알림 발송"
+        )}
       </Button>
     </div>
   );
@@ -256,7 +270,7 @@ const HistorySection: FC<{
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <img
-          src="/icons/Bell.svg"
+          src={PUBLIC_ASSETS.icons.bell}
           alt="no history"
           className="mb-4 h-12 w-12 opacity-30"
         />
@@ -317,12 +331,11 @@ const HistorySection: FC<{
 
 const AdminPage: FC = () => {
   const [currentTab, setCurrentTab] = useState("send");
-  const [pushHistory, setPushHistory] = useAtom(pushHistoryAtom);
   const isAdmin = isCurrentUserAdmin();
 
   if (!isAdmin) {
     return (
-      <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-dvh flex-col">
         <CustomHeader title="관리자" />
         <div className="flex flex-1 items-center justify-center">
           <p className="text-muted-foreground">접근 권한이 없습니다.</p>
@@ -332,15 +345,15 @@ const AdminPage: FC = () => {
   }
 
   const handlePushSent = (entry: PushHistory) => {
-    setPushHistory((prev) => [entry, ...prev]);
+    setCurrentTab("history");
   };
 
   const handleClearHistory = () => {
-    setPushHistory([]);
+    setCurrentTab("history");
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       <CustomHeader title="푸시 알림 관리" />
       <TabsWithUnderline
         className="px-6"
@@ -353,7 +366,7 @@ const AdminPage: FC = () => {
         {currentTab === "send" ? (
           <SendPushSection onSent={handlePushSent} />
         ) : (
-          <HistorySection history={pushHistory} onClear={handleClearHistory} />
+          <ServerPushHistory />
         )}
       </div>
     </div>

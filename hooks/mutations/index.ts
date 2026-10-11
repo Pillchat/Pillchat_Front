@@ -1,7 +1,5 @@
 export * from "./useAcceptAnswerMutation";
-export * from "./useBoardCommentMutations";
 export * from "./useDeleteAnswerMutation";
-export * from "./useDeleteBoardMutation";
 export * from "./useDeleteMaterialMutation";
 export * from "./useDeleteQuestionMutation";
 export * from "./useExpectedFeatureSurveyMutation";
@@ -11,7 +9,5 @@ export * from "./useSaveOnboardingMutation";
 export * from "./useSaveQuestionMutation";
 export * from "./useSetSubjectFollowMutation";
 export * from "./useToggleLikeMutation";
-export * from "./useToggleBoardScrapMutation";
 export * from "./useUpdateNotificationSettingsMutation";
-export * from "./useUpdateProfileVisibilityMutation";
 export * from "./useNotificationConsentMutation";

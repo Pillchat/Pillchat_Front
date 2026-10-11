@@ -7,7 +7,12 @@ export const useCheckVerify = () => {
   const onCheckVerify = async (
     email: string,
     code: string,
-  ): Promise<{ success: boolean; status: number; message?: string }> => {
+  ): Promise<{
+    success: boolean;
+    status: number;
+    message?: string;
+    verificationToken?: string;
+  }> => {
     setIsLoading(true);
     setError(null);
 
@@ -26,7 +31,10 @@ export const useCheckVerify = () => {
         return { success: false, status: response.status, message };
       }
 
+      if (!data.verificationToken)
+        throw new Error("이메일 인증 증명을 받지 못했습니다.");
       return {
+        verificationToken: data.verificationToken,
         success: true,
         status: 200,
         message: data.message || "인증 성공",

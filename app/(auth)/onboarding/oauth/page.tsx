@@ -1,5 +1,8 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { SolidButton } from "@/components/atoms";
 import { StepHeader } from "@/components/molecules";
 import type { SignupGrade, SignupSource } from "@/constants/signup";
@@ -168,14 +171,17 @@ const OAuthOnboardingPage = () => {
 
   if (!pendingSignup) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">불러오는 중...</p>
+      <div className="flex min-h-dvh items-center justify-center">
+        <LoadingIndicator
+          label="불러오는 중..."
+          className="text-sm text-muted-foreground"
+        />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center">
+    <div className="flex min-h-dvh flex-col items-center">
       {step === "info" && (
         <SignupInfoFlow
           realName={realName}
@@ -222,8 +228,8 @@ const OAuthOnboardingPage = () => {
                 height={26}
                 src={
                   agreeToTerms
-                    ? "/icons/CheckedIcon.svg"
-                    : "/icons/UncheckIcon.svg"
+                    ? PUBLIC_ASSETS.icons.checkCircleFilled
+                    : PUBLIC_ASSETS.icons.checkCircleMuted
                 }
                 alt=""
               />
@@ -273,8 +279,8 @@ const OAuthOnboardingPage = () => {
                 height={26}
                 src={
                   agreeToPrivacy
-                    ? "/icons/CheckedIcon.svg"
-                    : "/icons/UncheckIcon.svg"
+                    ? PUBLIC_ASSETS.icons.checkCircleFilled
+                    : PUBLIC_ASSETS.icons.checkCircleMuted
                 }
                 alt=""
               />
@@ -292,6 +298,7 @@ const OAuthOnboardingPage = () => {
 
             <div className="font-regular mt-[1rem] w-[90%]">
               <SolidButton
+                loading={isSubmitting}
                 content={isSubmitting ? "가입 중..." : "완료"}
                 variant={isSubmitValid && !isSubmitting ? "brand" : "disabled"}
                 disabled={!isSubmitValid || isSubmitting}

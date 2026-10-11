@@ -1,5 +1,8 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import {
   CustomHeader,
   ActionMenu,
@@ -7,14 +10,22 @@ import {
   SelectModal,
 } from "@/components/molecules";
 import { Button } from "@/components/ui/button";
-import { getCurrentUserId } from "@/lib/client/auth";
-import { useQueryClient } from "@tanstack/react-query";
+import { getMaterialMetadata } from "@/lib/client/materialMetadata";
+import { useAuthIdentity } from "@/hooks/useAuthIdentity";
+import { fetchAPI } from "@/lib/client/fetch";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/lib/navigation";
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { MaterialTitleSection } from "./MaterialTitleSection";
 import { MaterialContents } from "./MaterialContents";
 import { useFilesQuery, useMaterialQuery } from "@/hooks/queries";
 import { useDeleteMaterialMutation } from "@/hooks/mutations";
+import {
+  markArchiveMaterialOpened,
+  readArchiveLibrary,
+  writeArchiveLibrary,
+  subscribeArchiveLibrary,
+} from "@/lib/client/archiveLibrary";
 
 const resolveMaterialKey = (value: any, materialId: string | number) => {
   const raw =
@@ -31,7 +42,15 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
 }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const currentUserId = getCurrentUserId();
+  const currentUserId = useAuthIdentity();
+  const [library, setLibrary] = useState(() =>
+    readArchiveLibrary(currentUserId),
+  );
+  useEffect(() => {
+    const refresh = () => setLibrary(readArchiveLibrary(currentUserId));
+    refresh();
+    return subscribeArchiveLibrary(refresh);
+  }, [currentUserId]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const { data: materialData, isLoading: materialLoading } =
@@ -103,17 +122,58 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
   }, [materialData]);
 
   const isAuthor =
-    materialData &&
-    currentUserId &&
-    (materialData.userId
-      ? Number(materialData.userId) === Number(currentUserId)
-      : false);
+    !!currentUserId &&
+    materialData?.userId != null &&
+    String(materialData.userId) === currentUserId;
+  const { data: authorProfile } = useQuery({
+    queryKey: ["material-author", currentUserId, materialData?.userId],
+    enabled: materialData?.userId != null && !!currentUserId,
+    queryFn: async () => {
+      const result = await fetchAPI(
+        isAuthor
+          ? "/api/auth/inquiry-myprofile"
+          : `/api/profile/${encodeURIComponent(materialData.userId)}`,
+        "GET",
+      );
+      return result.data ?? result;
+    },
+  });
+  const { authorName, subjectName } = getMaterialMetadata(
+    materialData ?? {},
+    authorProfile,
+    library,
+    currentUserId,
+  );
+
+  useEffect(() => {
+    if (!materialData?.id || !isAuthor) return;
+    markArchiveMaterialOpened(materialData.id, currentUserId);
+  }, [currentUserId, isAuthor, materialData?.id]);
 
   const deleteMutation = useDeleteMaterialMutation({
     onSuccess: () => {
+      const library = readArchiveLibrary(currentUserId);
+      const materialFolderIds = { ...library.materialFolderIds };
+      const materialSizeBytes = { ...library.materialSizeBytes };
+      delete materialFolderIds[String(materialId)];
+      delete materialSizeBytes[String(materialId)];
+      writeArchiveLibrary(
+        {
+          ...library,
+          favoriteMaterialIds: library.favoriteMaterialIds.filter(
+            (id) => id !== String(materialId),
+          ),
+          recentItems: library.recentItems.filter(
+            (item) => item.materialId !== String(materialId),
+          ),
+          materialFolderIds,
+          materialSizeBytes,
+        },
+        currentUserId,
+      );
       queryClient.invalidateQueries({ queryKey: ["material", materialId] });
       queryClient.invalidateQueries({ queryKey: ["materials"] });
-      router.push("/board?status=study");
+      router.push("/archive");
     },
     onError: (error) => {
       console.error("학습자료 삭제 실패:", error);
@@ -151,7 +211,7 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
       ];
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       <CustomHeader
         title="학습자료"
         showIcon
@@ -160,7 +220,10 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
       />
 
       {materialLoading && (
-        <div className="mx-6 my-5 h-96 animate-pulse rounded bg-gray-100" />
+        <LoadingIndicator
+          label="학습자료를 불러오는 중..."
+          className="mx-6 my-5 h-96"
+        />
       )}
 
       {materialData && (
@@ -169,12 +232,8 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
             <div className="flex flex-col gap-6">
               <MaterialTitleSection
                 title={materialData.title}
-                userName={
-                  materialData.nickname ?? materialData.userNickname ?? "익명"
-                }
-                subjectName={
-                  materialData.subjectName ?? materialData.subject?.name ?? ""
-                }
+                userName={authorName}
+                subjectName={subjectName}
                 createdAt={materialData.createdAt}
               />
               <MaterialContents
@@ -191,7 +250,7 @@ export const MaterialDetailPage: FC<{ materialId: string }> = ({
                   trigger={
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                       <img
-                        src="/icons/Ellipsis.svg"
+                        src={PUBLIC_ASSETS.icons.ellipsisHorizontal}
                         alt="더보기"
                         className="h-5 w-5"
                       />

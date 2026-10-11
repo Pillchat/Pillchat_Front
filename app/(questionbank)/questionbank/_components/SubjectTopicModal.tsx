@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { FC } from "react";
 import { cn } from "@/lib/utils";
 import type { SubjectTopic } from "@/types/questionbank";
@@ -52,7 +54,10 @@ const SubjectTopicModal: FC<SubjectTopicModalProps> = ({
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {loading ? (
           <div className="flex h-full items-center justify-center">
-            <p className="text-muted-foreground">토픽 불러오는 중...</p>
+            <LoadingIndicator
+              label="토픽 불러오는 중..."
+              className="text-muted-foreground"
+            />
           </div>
         ) : topics.length === 0 ? (
           <div className="flex h-full items-center justify-center">

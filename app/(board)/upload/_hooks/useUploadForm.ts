@@ -1,14 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useSubjects } from "@/hooks";
-import { useSubjectQuery } from "@/hooks/queries";
 
 export type UploadFormData = {
   title: string;
-  subject: string;
-  subjectId: string;
   content: string;
 };
 
@@ -18,14 +14,11 @@ type UseUploadFormParams = {
 
 const DEFAULT_VALUES: UploadFormData = {
   title: "",
-  subject: "",
-  subjectId: "",
   content: "",
 };
 
 export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { getSubjectCodeByLabel } = useSubjects();
 
   const {
     control,
@@ -39,31 +32,8 @@ export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
     defaultValues: DEFAULT_VALUES,
   });
 
-  const selectedSubject = watch("subject");
-  const selectedSubjectCode = getSubjectCodeByLabel(selectedSubject);
-  const subjectId = watch("subjectId");
   const title = watch("title");
   const content = watch("content");
-
-  const { data } = useSubjectQuery(selectedSubjectCode);
-
-  useEffect(() => {
-    if (data?.id) {
-      setValue("subjectId", String(data.id), { shouldValidate: true });
-    }
-  }, [data, setValue]);
-
-  const handleSubjectToggle = (subject: string) => {
-    setValue("subject", subject, {
-      shouldValidate: true,
-      shouldDirty: true,
-      shouldTouch: true,
-    });
-    setValue("subjectId", "", {
-      shouldValidate: true,
-      shouldDirty: true,
-    });
-  };
 
   const handleContentChange = (value: string) => {
     setValue("content", value, {
@@ -78,8 +48,6 @@ export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
       setIsSubmitting(true);
       await onSubmit?.({
         title: formData.title.trim(),
-        subject: formData.subject,
-        subjectId: formData.subjectId,
         content: formData.content.trim(),
       });
     } finally {
@@ -94,11 +62,8 @@ export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
   return {
     control,
     errors,
-    selectedSubject,
-    subjectId,
     title,
     content,
-    handleSubjectToggle,
     handleContentChange,
     handleUpload,
     resetForm,

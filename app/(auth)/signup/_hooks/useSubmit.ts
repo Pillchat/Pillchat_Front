@@ -30,6 +30,7 @@ export const useSubmit = () => {
         },
         body: JSON.stringify({
           email: data.email,
+          emailVerificationToken: data.emailVerificationToken,
           password: data.password,
           nickname: data.nickname,
           agreeToTerms: data.agreeToTerms,

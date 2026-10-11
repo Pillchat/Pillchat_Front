@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -7,7 +8,7 @@ import { useAtomValue } from "jotai";
 
 import { useRouter } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
-import { unreadCountAtom } from "@/store/notification";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface GeneralHeaderProps {
   currentQ?: string;
@@ -26,7 +27,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
 }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const unreadCount = useAtomValue(unreadCountAtom);
+  const { unreadCount } = useNotifications();
 
   const [open, setOpen] = useState(Boolean(currentQ.trim()));
   const [value, setValue] = useState(currentQ.trim());
@@ -37,15 +38,11 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
 
   const resolvedBasePath = useMemo(() => {
     if (searchBasePath) return searchBasePath;
-    if (pathname.startsWith("/board")) return "/board";
     return "/qna";
   }, [pathname, searchBasePath]);
 
   const isSearchablePath = useMemo(
-    () =>
-      Boolean(searchBasePath) ||
-      pathname.startsWith("/qna") ||
-      pathname.startsWith("/board"),
+    () => Boolean(searchBasePath) || pathname.startsWith("/qna"),
     [pathname, searchBasePath],
   );
 
@@ -129,7 +126,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
     <>
       <header
         className={cn(
-          "sticky top-0 z-10 flex h-[60px] w-full items-center justify-between bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+          "sticky top-0 z-10 flex h-[calc(60px+env(safe-area-inset-top))] w-full items-center justify-between bg-background/95 px-6 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/60",
           !hideBottomBorder && "border-b border-border/40",
         )}
       >
@@ -167,7 +164,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
                 }
               }}
               placeholder="검색어 입력"
-              className="h-10 w-full rounded-md border border-border bg-background px-3 text-label-medium outline-none focus:ring-2 focus:ring-brand/40"
+              className="h-10 w-full rounded-md border border-border bg-background px-3 text-base outline-none focus:ring-2 focus:ring-brand/40 md:text-label-medium"
             />
             <button
               type="button"
@@ -176,7 +173,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
               onClick={() => inputRef.current?.focus()}
             >
               <img
-                src="/icons/search.svg"
+                src={PUBLIC_ASSETS.icons.search}
                 alt="search"
                 width={32}
                 height={32}
@@ -190,7 +187,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
               className="flex h-[3.625rem] cursor-pointer items-center"
             >
               <img
-                src="/brand/PillChat.svg"
+                src={PUBLIC_ASSETS.brand.pillchatLogo}
                 alt="logo"
                 width={82}
                 height={32}
@@ -205,7 +202,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
                 onClick={() => setOpen(true)}
               >
                 <img
-                  src="/icons/search.svg"
+                  src={PUBLIC_ASSETS.icons.search}
                   alt="search"
                   width={32}
                   height={32}
@@ -217,7 +214,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
                 onClick={() => router.push("/notifications")}
               >
                 <img
-                  src="/icons/Bell.svg"
+                  src={PUBLIC_ASSETS.icons.bell}
                   alt="notification"
                   width={32}
                   height={32}

@@ -1,8 +1,11 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useAtomValue, useSetAtom } from "jotai";
+import { completeDailyQuest } from "@/lib/client/dailyQuest";
 import { fetchAPI } from "@/lib/client/fetch";
 import { quizSessionAtom, clearQuizSessionAtom } from "@/store/quizSession";
 import { CustomHeader } from "@/components/molecules";
@@ -27,6 +30,10 @@ const ResultPage = () => {
     if (!session) {
       router.replace("/questionbank");
       return;
+    }
+
+    if (session.sourceType === "PDF") {
+      completeDailyQuest("subject-study");
     }
 
     const fetchResult = async () => {
@@ -94,14 +101,17 @@ const ResultPage = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-muted-foreground">결과 불러오는 중...</div>
+      <div className="flex h-dvh items-center justify-center">
+        <LoadingIndicator
+          label="결과 불러오는 중..."
+          className="text-muted-foreground"
+        />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="문제풀이 결과" showIcon />
 
       <div className="flex-1 overflow-y-auto px-6 py-6">
@@ -145,7 +155,7 @@ const ResultPage = () => {
         </div>
       </div>
 
-      <div className="flex-shrink-0 border-t bg-white px-6 pb-6 pt-3">
+      <div className="flex-shrink-0 border-t bg-white px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3">
         <div className="flex gap-3">
           <button
             className="flex-1 rounded-xl border border-gray-200 py-3.5 text-base font-medium text-foreground"
@@ -160,7 +170,7 @@ const ResultPage = () => {
             className="flex-1 rounded-xl bg-brand py-3.5 text-base font-medium text-white"
             onClick={() => {
               clearSession();
-              router.push("/questionbank/review");
+              router.push("/questionbank/review?category=AI");
             }}
           >
             복습하기

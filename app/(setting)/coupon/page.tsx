@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { useState } from "react";
 
 import { CustomHeader } from "@/components/molecules";
@@ -29,7 +30,11 @@ export default function CouponPage() {
                 className="absolute right-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center"
                 aria-label="쿠폰번호 삭제"
               >
-                <img src="/Remove.svg" alt="" className="h-5 w-5" />
+                <img
+                  src={PUBLIC_ASSETS.icons.removeCircleGray}
+                  alt=""
+                  className="h-5 w-5"
+                />
               </button>
             )}
           </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { FC, useMemo, useState } from "react";
 import { Toggle } from "@/components/atoms";
 import { CustomHeader, SectionWithChips } from "@/components/molecules";
@@ -149,12 +151,10 @@ const BellSetting: FC = () => {
       return { previous };
     },
     onError: (mutationError, _patch, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(
-          notificationSettingsQueryKey,
-          context.previous,
-        );
-      }
+      queryClient.setQueryData(
+        notificationSettingsQueryKey,
+        context?.previous ?? DEFAULT_NOTIFICATION_SETTING,
+      );
 
       setStatusMessage(
         mutationError.message || "알림 설정을 저장하지 못했습니다.",
@@ -171,7 +171,7 @@ const BellSetting: FC = () => {
     },
   });
 
-  const disabled = isLoading || mutation.isPending;
+  const disabled = isLoading || isError || !data || mutation.isPending;
 
   const subjectFollowMutation = useSetSubjectFollowMutation<{
     previous?: SubjectFollow[];
@@ -234,6 +234,11 @@ const BellSetting: FC = () => {
           title: "전체 알림",
           description: "답변, 채택, 관심 과목, 혜택 알림 전체 수신 여부",
           ariaLabel: "전체 알림 토글",
+        },
+        {
+          field: "followNotificationEnabled",
+          title: "새 팔로워",
+          ariaLabel: "팔로우 알림 토글",
         },
         {
           field: "answerNotificationEnabled",
@@ -364,7 +369,7 @@ const BellSetting: FC = () => {
         : subjectFollowMessage;
 
   return (
-    <div className="flex min-h-screen flex-col items-center">
+    <div className="flex min-h-dvh flex-col items-center">
       <CustomHeader title="알림 설정" />
 
       <div className="mt-3 flex w-[90%] flex-col gap-7">
@@ -432,7 +437,11 @@ const BellSetting: FC = () => {
               : "text-muted-foreground"
           }`}
         >
-          {subjectFollowStatusMessage}
+          {isSubjectsLoading || isSubjectFollowsLoading ? (
+            <LoadingIndicator inline label={subjectFollowStatusMessage} />
+          ) : (
+            subjectFollowStatusMessage
+          )}
         </p>
       )}
 
@@ -444,11 +453,13 @@ const BellSetting: FC = () => {
               : "text-muted-foreground"
           }`}
         >
-          {isLoading
-            ? "알림 설정을 불러오는 중입니다."
-            : isError
-              ? error?.message || "알림 설정을 불러오지 못했습니다."
-              : statusMessage}
+          {isLoading ? (
+            <LoadingIndicator inline label="알림 설정을 불러오는 중입니다." />
+          ) : isError ? (
+            error?.message || "알림 설정을 불러오지 못했습니다."
+          ) : (
+            statusMessage
+          )}
         </p>
       )}
     </div>

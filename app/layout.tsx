@@ -1,3 +1,4 @@
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { ReactNode, Suspense } from "react";
@@ -7,7 +8,7 @@ import Providers from "./providers";
 import { TopRouteProgress } from "@/components/molecules";
 
 const pretendard = localFont({
-  src: "../public/fonts/PretendardVariable.woff2",
+  src: "../public/fonts/pretendard-variable.woff2",
   display: "swap",
   variable: "--font-pretendard",
 });
@@ -16,16 +17,14 @@ export const metadata: Metadata = {
   title: "Pillchat",
   description: "Pillchat",
   icons: {
-    icon: "/brand/PillChat.svg",
+    icon: PUBLIC_ASSETS.brand.pillchatLogo,
   },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  minimumScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -35,47 +34,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={pretendard.variable} suppressHydrationWarning>
-      <head>
-        <Script id="block-zoom" strategy="beforeInteractive">{`
-          (function () {
-            function onWheel(e) {
-              if (e.ctrlKey || e.metaKey) e.preventDefault();
-            }
-
-            function onKeyDown(e) {
-              var key = (e.key || "").toLowerCase();
-              var code = e.code || "";
-
-              if (!(e.ctrlKey || e.metaKey)) return;
-
-              if (
-                key === "+" ||
-                key === "-" ||
-                key === "=" ||
-                code === "NumpadAdd" ||
-                code === "NumpadSubtract"
-              ) {
-                e.preventDefault();
-              }
-            }
-
-            function onTouchMove(e) {
-              if (e.touches && e.touches.length >= 2) e.preventDefault();
-            }
-
-            function block(e) {
-              e.preventDefault();
-            }
-
-            window.addEventListener("wheel", onWheel, { passive: false, capture: true });
-            window.addEventListener("keydown", onKeyDown, { capture: true });
-            document.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
-            document.addEventListener("gesturestart", block, { passive: false, capture: true });
-            document.addEventListener("gesturechange", block, { passive: false, capture: true });
-            document.addEventListener("gestureend", block, { passive: false, capture: true });
-          })();
-        `}</Script>
-      </head>
       <body className="font-sans">
         <Script
           src="https://developers.kakao.com/sdk/js/kakao.min.js"

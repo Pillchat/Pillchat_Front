@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { fetchAPI } from "@/lib/client/fetch";
@@ -51,15 +53,18 @@ const WrongNoteDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-muted-foreground">불러오는 중...</p>
+      <div className="flex h-dvh items-center justify-center">
+        <LoadingIndicator
+          label="불러오는 중..."
+          className="text-muted-foreground"
+        />
       </div>
     );
   }
 
   if (!note) {
     return (
-      <div className="flex h-screen flex-col">
+      <div className="flex h-dvh flex-col">
         <CustomHeader title="오답노트" showIcon />
         <div className="flex flex-1 items-center justify-center">
           <p className="text-muted-foreground">오답노트를 찾을 수 없습니다.</p>
@@ -73,7 +78,7 @@ const WrongNoteDetailPage = () => {
   const sortedSteps = [...note.steps].sort((a, b) => a.stepOrder - b.stepOrder);
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="오답노트" showIcon />
 
       <div className="flex-1 overflow-y-auto">

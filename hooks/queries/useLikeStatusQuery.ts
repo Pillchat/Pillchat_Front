@@ -10,7 +10,11 @@ export type LikeStatus = {
 
 const normalizeLikeStatus = (response: any): LikeStatus => ({
   isLiked: Boolean(response?.likeWhether ?? response?.liked ?? false),
-  likeCount: Number(response?.likeCount ?? response?.likes ?? 0),
+  likeCount: Number(
+    typeof response === "number"
+      ? response
+      : (response?.likeCount ?? response?.likes ?? 0),
+  ),
 });
 
 export const likeStatusQueryKey = (type: LikeTargetType, id: string) =>

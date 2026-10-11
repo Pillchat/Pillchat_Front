@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { ReactNode } from "react";
 
 import { CustomHeader } from "@/components/molecules";
@@ -7,9 +8,13 @@ import { CustomHeader } from "@/components/molecules";
 function HeroHuman() {
   return (
     <div className="relative">
-      <img src="/Human.svg" alt="" className="h-[140px] w-[100px]" />
       <img
-        src="/HeartBubble.svg"
+        src={PUBLIC_ASSETS.illustrations.person}
+        alt=""
+        className="h-[140px] w-[100px]"
+      />
+      <img
+        src={PUBLIC_ASSETS.illustrations.heartBubble}
         alt=""
         className="absolute -right-10 -top-0 h-[52px] w-[52px]"
       />
@@ -20,9 +25,13 @@ function HeroHuman() {
 function FriendHuman() {
   return (
     <div className="relative">
-      <img src="/Human.svg" alt="" className="h-[92px] w-[84px]" />
       <img
-        src="/glasses.svg"
+        src={PUBLIC_ASSETS.illustrations.person}
+        alt=""
+        className="h-[92px] w-[84px]"
+      />
+      <img
+        src={PUBLIC_ASSETS.illustrations.glasses}
         alt=""
         className="absolute left-1/2 top-[20px] h-4 w-9 -translate-x-1/2"
       />
@@ -92,9 +101,17 @@ export default function InvitePage() {
               <strong className="mb-3 text-2xl font-bold text-[#111]">
                 나
               </strong>
-              <img src="/Human.svg" alt="" className="h-[92px] w-[84px]" />
+              <img
+                src={PUBLIC_ASSETS.illustrations.person}
+                alt=""
+                className="h-[92px] w-[84px]"
+              />
               <div className="mt-2 flex items-center gap-2">
-                <img src="/FarmMoney.svg" alt="" className="h-8 w-8" />
+                <img
+                  src={PUBLIC_ASSETS.icons.pharmCoin}
+                  alt=""
+                  className="h-8 w-8"
+                />
                 <span className="text-xl font-medium text-primary">150</span>
               </div>
             </div>
@@ -106,7 +123,7 @@ export default function InvitePage() {
               <FriendHuman />
               <div className="relative mt-2 h-8 w-[132px]">
                 <img
-                  src="/SaleTicket.svg"
+                  src={PUBLIC_ASSETS.illustrations.couponTicket}
                   alt=""
                   className="absolute inset-0 h-full w-full"
                 />
@@ -129,7 +146,11 @@ export default function InvitePage() {
             </HistoryCard>
             <HistoryCard label="받은 팜머니">
               <span className="flex items-center gap-1 text-primary">
-                <img src="/FarmMoney.svg" alt="" className="h-8 w-8" />
+                <img
+                  src={PUBLIC_ASSETS.icons.pharmCoin}
+                  alt=""
+                  className="h-8 w-8"
+                />
                 {earnedFarmMoney.toLocaleString("ko-KR")}
               </span>
             </HistoryCard>

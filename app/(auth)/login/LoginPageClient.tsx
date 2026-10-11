@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { Logo } from "@/components/atoms";
 import { Button } from "@/components/ui/button";
 import { Label } from "@radix-ui/react-label";
@@ -10,12 +11,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useGoogleOAuth, useKakaoOAuth, useSubmit } from "./_hooks";
 import { IconInputField } from "@/components/molecules";
 import { emailRules, passwordRules } from "@/validations";
-import {
-  getRefreshToken,
-  getToken,
-  isTokenExpired,
-  refreshTokens,
-} from "@/lib/functions";
+import { getRefreshToken, getToken, refreshTokens } from "@/lib/client/fetch";
+import { isTokenExpired } from "@/lib/functions";
 import { FcGoogle } from "react-icons/fc";
 import { RiKakaoTalkFill } from "react-icons/ri";
 import type { LoginFormData } from "./types";
@@ -111,7 +108,9 @@ export const LoginPageClient: FC = () => {
                   content="비밀번호"
                   placeholder="비밀번호를 입력해주세요"
                   type={eye ? "text" : "password"}
-                  iconSrc={eye ? "/icons/ClosedEye.svg" : "/icons/Eye.svg"}
+                  iconSrc={
+                    eye ? PUBLIC_ASSETS.icons.eyeOff : PUBLIC_ASSETS.icons.eye
+                  }
                   iconAlt="비밀번호 보기"
                   iconAsButton
                   iconSize={20}

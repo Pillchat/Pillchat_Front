@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { SectionWithChips } from "@/components/molecules";
 import {
   currentStepAtom,
@@ -199,7 +201,8 @@ export const SelectSubject = ({
     }
   };
 
-  if (!prefillFormData) return <div>과목 정보를 불러오는 중...</div>;
+  if (!prefillFormData)
+    return <LoadingIndicator label="과목 정보를 불러오는 중..." />;
 
   return (
     <>

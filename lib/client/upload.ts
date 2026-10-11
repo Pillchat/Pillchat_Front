@@ -39,7 +39,7 @@ const readUploadError = async (response: Response) => {
     }
   }
 
-  if (response.status === 401 || response.status === 403) {
+  if (response.status === 401) {
     return "인증이 만료되었거나 이 요청에 대한 권한이 없습니다. 다시 로그인해주세요.";
   }
 
@@ -72,7 +72,7 @@ async function fetchWithFormData(
     credentials: "same-origin",
   });
 
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401) {
     const recoveredToken = await recoverAccessToken(token);
     if (recoveredToken) {
       res = await fetch(url, {
@@ -102,29 +102,6 @@ export async function uploadProfile(nickname: string, image?: File) {
   return fetchWithFormData("/api/profile/upload", "PUT", fd);
 }
 
-// ─── 게시글 ──────────────────────────────────────────────────
-
-/** 게시글 생성 (multipart) */
-export async function uploadBoard(data: {
-  title: string;
-  content: string;
-  category: string;
-  isAnonymous?: boolean;
-  images?: File[];
-  pdf?: File;
-}) {
-  const fd = new FormData();
-  fd.append("title", data.title);
-  fd.append("content", data.content);
-  fd.append("category", data.category);
-  if (data.isAnonymous !== undefined) {
-    fd.append("isAnonymous", String(data.isAnonymous));
-  }
-  data.images?.forEach((file) => fd.append("images", file));
-  if (data.pdf) fd.append("pdf", data.pdf);
-  return fetchWithFormData("/api/boards/upload", "POST", fd);
-}
-
 // ─── 학습자료 ────────────────────────────────────────────────
 
 /** 학습자료 생성 (multipart) */
@@ -151,8 +128,7 @@ export type FileRefType =
   | "ANSWER"
   | "PROFILE"
   | "MATERIAL"
-  | "MARKET"
-  | "BOARD";
+  | "MARKET";
 
 export type CompletedFileUpload = {
   fileId: number;

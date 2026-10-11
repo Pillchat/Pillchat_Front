@@ -26,3 +26,4 @@ export * from "./LikeButton";
 export * from "./RoundedInput";
 export * from "./Image";
 export * from "./PillLoader";
+export * from "./LoadingIndicator";

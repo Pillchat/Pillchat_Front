@@ -1,5 +1,8 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { LikeButton } from "@/components/atoms";
 import {
   ActionMenu,
@@ -112,7 +115,7 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
     : [{ id: "report", label: "신고", onClick: handleReport }];
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       <CustomHeader
         title="질문광장"
         showIcon
@@ -125,7 +128,10 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
       />
 
       {questionLoading && (
-        <div className="mx-6 my-5 h-96 animate-pulse rounded bg-gray-100" />
+        <LoadingIndicator
+          label="질문을 불러오는 중..."
+          className="mx-6 my-5 h-96"
+        />
       )}
 
       {questionData && (
@@ -155,7 +161,7 @@ export const QuestionDetailPage: FC<{ questionId: string }> = ({
                 trigger={
                   <Button variant="ghost" size="icon" className="h-8 w-8">
                     <img
-                      src="/icons/Ellipsis.svg"
+                      src={PUBLIC_ASSETS.icons.ellipsisHorizontal}
                       alt="더보기"
                       className="h-5 w-5"
                     />

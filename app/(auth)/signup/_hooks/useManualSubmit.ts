@@ -8,6 +8,7 @@ export interface ManualSignupFormData {
   nickname: string;
   password: string;
   email: string;
+  emailVerificationToken: string;
   agreeToTerms: boolean;
   realName: string;
   documentType: "student";
@@ -61,7 +62,8 @@ export const useManualSubmit = () => {
           setError("회원가입은 성공했으나 자동 로그인 정보를 받지 못했습니다.");
         }
       } else {
-        setError(result.error || result.message || "회원가입에 실패했습니다.");
+        setError(result.message || result.error || "회원가입에 실패했습니다.");
+        return response.status;
       }
     } catch (err: any) {
       setError(err.message || "회원가입에 실패했습니다. 다시 시도해주세요.");

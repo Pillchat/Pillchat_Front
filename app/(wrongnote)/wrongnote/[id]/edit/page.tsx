@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { fetchAPI } from "@/lib/client/fetch";
@@ -89,14 +91,17 @@ const EditWrongNotePage = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-muted-foreground">불러오는 중...</p>
+      <div className="flex h-dvh items-center justify-center">
+        <LoadingIndicator
+          label="불러오는 중..."
+          className="text-muted-foreground"
+        />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="오답노트 수정" showIcon />
 
       <div className="flex-1 overflow-y-auto px-6 py-4">
@@ -173,7 +178,7 @@ const EditWrongNotePage = () => {
         {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
       </div>
 
-      <div className="flex-shrink-0 px-6 pb-6">
+      <div className="flex-shrink-0 px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <SolidButton
           content="수정 완료"
           disabled={!isValid || submitting}

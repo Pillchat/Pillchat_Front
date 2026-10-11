@@ -1,8 +1,11 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { ChangeEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { fetchAPI } from "@/lib/client/fetch";
+import { fetchAPI, ApiError, clearTokens } from "@/lib/client/fetch";
 import { Input, SolidButton } from "@/components/atoms";
 import {
   IconInputField,
@@ -19,6 +22,7 @@ const FindPage = () => {
   const [step, setStep] = useState<Step>("verify");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
+  const [resetToken, setResetToken] = useState("");
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
@@ -41,6 +45,7 @@ const FindPage = () => {
     passwordConfirm.length > 0 && password === passwordConfirm;
 
   const resetVerificationState = () => {
+    setResetToken("");
     setIsCodeSent(false);
     setCode("");
     setVerificationMessage("");
@@ -77,6 +82,7 @@ const FindPage = () => {
   const handleSendCode = async () => {
     if (!isValidEmail || isSendingCode) return;
 
+    setResetToken("");
     setIsSendingCode(true);
     setVerificationMessage("");
     setVerificationError("");
@@ -126,6 +132,9 @@ const FindPage = () => {
         );
       }
 
+      if (!result.data?.resetToken)
+        throw new Error("재설정 인증 증명을 받지 못했습니다.");
+      setResetToken(result.data.resetToken);
       setStep("reset");
     } catch (error: any) {
       console.error("비밀번호 재설정 인증번호 확인 실패:", error);
@@ -159,11 +168,20 @@ const FindPage = () => {
       await fetchAPI("/api/auth/password-reset", "POST", {
         email: email.trim(),
         newPassword: password,
+        resetToken,
       });
 
+      clearTokens();
+      setResetToken("");
       setIsSubmitModalOpen(true);
     } catch (error: any) {
-      console.error("비밀번호 재설정 실패:", error);
+      if (error instanceof ApiError && error.status === 412) {
+        resetVerificationState();
+        setStep("verify");
+        setVerificationError(
+          "인증이 만료되었습니다. 이메일 인증을 다시 진행해주세요.",
+        );
+      }
       setPasswordResetError(
         error.message || "비밀번호 재설정에 실패했습니다. 다시 시도해주세요.",
       );
@@ -210,7 +228,7 @@ const FindPage = () => {
                 type="email"
                 iconAsButton={Boolean(email)}
                 iconPosition="right"
-                iconSrc={email ? "/icons/Cancel.svg" : undefined}
+                iconSrc={email ? PUBLIC_ASSETS.icons.inputClear : undefined}
                 iconSize={20}
                 placeholder="이메일을 입력해주세요."
                 autoFocus
@@ -240,7 +258,11 @@ const FindPage = () => {
                     className="h-14 w-[30%] rounded-[12px] px-0 text-[15px] font-medium"
                     onClick={handleSendCode}
                   >
-                    {isSendingCode ? "전송 중" : "재전송"}
+                    {isSendingCode ? (
+                      <LoadingIndicator inline label="전송 중" />
+                    ) : (
+                      "재전송"
+                    )}
                   </Button>
                 </div>
 
@@ -260,6 +282,7 @@ const FindPage = () => {
 
             <div className="mt-auto pb-[calc(env(safe-area-inset-bottom)+2.5rem)] pt-[3rem] text-white">
               <SolidButton
+                loading={isSendingCode || isVerifyingCode}
                 content={
                   !isCodeSent
                     ? isSendingCode
@@ -291,7 +314,9 @@ const FindPage = () => {
                   onIconClick={() => setShowPassword((prev) => !prev)}
                   iconPosition="right"
                   iconSrc={
-                    showPassword ? "/icons/OpenEye.svg" : "/icons/ClosedEye.svg"
+                    showPassword
+                      ? PUBLIC_ASSETS.icons.eye
+                      : PUBLIC_ASSETS.icons.eyeOff
                   }
                   iconSize={20}
                   placeholder="비밀번호를 입력해주세요."
@@ -319,8 +344,8 @@ const FindPage = () => {
                     iconPosition="right"
                     iconSrc={
                       showPasswordConfirm
-                        ? "/icons/OpenEye.svg"
-                        : "/icons/ClosedEye.svg"
+                        ? PUBLIC_ASSETS.icons.eye
+                        : PUBLIC_ASSETS.icons.eyeOff
                     }
                     iconSize={20}
                     placeholder="비밀번호를 한 번 더 입력해주세요."
@@ -352,6 +377,7 @@ const FindPage = () => {
 
             <div className="mt-auto pb-[calc(env(safe-area-inset-bottom)+2.5rem)] pt-[3rem]">
               <SolidButton
+                loading={isResettingPassword}
                 content={
                   showPasswordConfirmField
                     ? isResettingPassword

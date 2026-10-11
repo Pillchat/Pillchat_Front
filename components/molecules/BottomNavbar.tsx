@@ -1,57 +1,40 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { FC } from "react";
+import HomeIcon from "@/public/icons/home.svg";
+import ArchiveIcon from "@/public/icons/archive.svg";
+import MyPageIcon from "@/public/icons/user.svg";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   {
+    href: "/archive",
+    icon: ArchiveIcon,
+    label: "아카이브",
+  },
+  {
     href: "/",
-    iconSrc: "/Home.svg",
-    checkedIconSrc: "/CheckedHome.svg",
+    icon: HomeIcon,
     label: "홈",
-    isActive: (pathname: string) => pathname === "/",
   },
   {
-    href: "/learn",
-    iconSrc: "/learn.svg",
-    checkedIconSrc: "/CheckedLearn.svg",
-    label: "학습",
-    isActive: (pathname: string) =>
-      pathname.startsWith("/learn") ||
-      pathname.startsWith("/flashcards") ||
-      pathname.startsWith("/questionbank"),
-  },
-  {
-    href: "/boards",
-    iconSrc: "/Board.svg",
-    checkedIconSrc: "/CheckedBoard.svg",
-    label: "게시판",
-    isActive: (pathname: string) =>
-      pathname.startsWith("/boards") ||
-      pathname.startsWith("/board") ||
-      pathname.startsWith("/post") ||
-      pathname.startsWith("/tips") ||
-      pathname.startsWith("/reviews"),
-  },
-  {
-    href: "/cheer",
-    iconSrc: "/cheer.svg",
-    checkedIconSrc: "/CheckedCheer.svg",
-    label: "응원방",
-    isActive: (pathname: string) => pathname.startsWith("/cheer"),
-  },
-  {
-    href: "/market",
-    iconSrc: "/market.svg",
-    checkedIconSrc: "/CheckedMarket.svg",
-    label: "마켓",
-    isActive: (pathname: string) => pathname.startsWith("/market"),
+    href: "/mypage",
+    icon: MyPageIcon,
+    label: "마이 페이지",
   },
 ];
+
+const matchesPath = (pathname: string, path: string) =>
+  pathname === path || pathname.startsWith(`${path}/`);
+
+const isNavItemActive = (pathname: string, href: string) => {
+  if (href === "/") return pathname === href;
+
+  return matchesPath(pathname, href);
+};
 
 interface BottomNavbarProps {
   className?: string;
@@ -62,53 +45,32 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
 
   return (
     <nav
-      aria-label="하단 네비게이션"
       className={cn(
-        "fixed bottom-0 left-1/2 z-50 grid h-[calc(6.5rem+env(safe-area-inset-bottom))] w-full max-w-app -translate-x-1/2 grid-cols-5 items-start border-t border-gray-300 bg-white pb-[env(safe-area-inset-bottom)]",
+        "shadow-t dark:shadow-t-gray-800 fixed bottom-0 left-1/2 z-50 flex h-[var(--bottom-nav-height)] w-full max-w-screen-sm -translate-x-1/2 items-center justify-around border-t-[1px] border-[#E2E2E2] bg-background px-3 pb-[env(safe-area-inset-bottom,0px)] sm:px-6 md:max-w-app md:px-10",
         className,
       )}
     >
       {NAV_ITEMS.map((item) => {
-        const isActive = item.isActive(pathname);
+        const IconComponent = item.icon;
+        const isActive = isNavItemActive(pathname, item.href);
 
         return (
           <Link
-            key={item.href}
+            key={`${item.href}-${item.label}`}
             href={item.href}
             className={cn(
-              "relative flex h-[70px] w-full min-w-0 flex-col items-center justify-center gap-0.5 text-[10px] leading-[14px] text-gray-300 transition-colors active:scale-95",
-              isActive && "text-foreground",
+              "flex h-[3.125rem] w-[3.125rem] flex-col items-center justify-center text-border transition-colors hover:text-brand focus:text-brand",
+              isActive && "text-brand",
             )}
             prefetch={false}
-            aria-current={isActive ? "page" : undefined}
           >
-            <span className="relative flex h-8 w-8 items-center justify-center">
-              {isActive ? (
-                <Image
-                  src={item.checkedIconSrc}
-                  alt=""
-                  width={32}
-                  height={32}
-                  className="h-8 w-8"
-                />
-              ) : (
-                <span
-                  aria-hidden="true"
-                  className="h-8 w-8 bg-current transition-colors"
-                  style={{
-                    WebkitMaskImage: `url(${item.iconSrc})`,
-                    WebkitMaskPosition: "center",
-                    WebkitMaskRepeat: "no-repeat",
-                    WebkitMaskSize: "contain",
-                    maskImage: `url(${item.iconSrc})`,
-                    maskPosition: "center",
-                    maskRepeat: "no-repeat",
-                    maskSize: "contain",
-                  }}
-                />
+            <IconComponent
+              className={cn(
+                "h-8 w-8 focus:text-brand",
+                isActive && "text-brand",
               )}
-            </span>
-            <span>{item.label}</span>
+            />
+            <span className="text-[0.625rem]">{item.label}</span>
           </Link>
         );
       })}

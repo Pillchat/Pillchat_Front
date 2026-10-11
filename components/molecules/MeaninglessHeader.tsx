@@ -1,11 +1,12 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { FC } from "react";
 import Link from "next/link";
 import { useAtomValue } from "jotai";
 
 import { useRouter } from "@/lib/navigation";
-import { unreadCountAtom } from "@/store/notification";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface MeaninglessHeaderProps {
   showActions?: boolean;
@@ -15,12 +16,17 @@ export const MeaninglessHeader: FC<MeaninglessHeaderProps> = ({
   showActions = false,
 }) => {
   const router = useRouter();
-  const unreadCount = useAtomValue(unreadCountAtom);
+  const { unreadCount } = useNotifications();
 
   return (
-    <header className="flex h-[60px] w-full items-center justify-between px-6">
+    <header className="flex h-[calc(60px+env(safe-area-inset-top))] w-full items-center justify-between px-6 pt-[env(safe-area-inset-top)]">
       <Link href="/" className="flex h-[3.625rem] cursor-pointer items-center">
-        <img src="/brand/PillChat.svg" alt="logo" width={82} height={32} />
+        <img
+          src={PUBLIC_ASSETS.brand.pillchatLogo}
+          alt="logo"
+          width={82}
+          height={32}
+        />
       </Link>
 
       {showActions && (
@@ -31,7 +37,7 @@ export const MeaninglessHeader: FC<MeaninglessHeaderProps> = ({
             onClick={() => router.push("/notifications")}
             aria-label="알림"
           >
-            <img src="/Bell.svg" alt="" width={32} height={32} />
+            <img src={PUBLIC_ASSETS.icons.bell} alt="" width={32} height={32} />
             {unreadCount > 0 && (
               <span className="absolute right-0 top-2 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand" />
             )}
@@ -42,7 +48,12 @@ export const MeaninglessHeader: FC<MeaninglessHeaderProps> = ({
             onClick={() => router.push("/setting")}
             aria-label="설정"
           >
-            <img src="/Setting.svg" alt="" width={32} height={32} />
+            <img
+              src={PUBLIC_ASSETS.icons.settings}
+              alt=""
+              width={32}
+              height={32}
+            />
           </button>
         </div>
       )}

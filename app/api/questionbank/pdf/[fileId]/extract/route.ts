@@ -1,3 +1,4 @@
+import { parseBackendError } from "@/lib/server/apiError";
 import { NextRequest, NextResponse } from "next/server";
 import { serverFetch } from "@/lib/server/fetch";
 
@@ -16,9 +17,12 @@ export async function GET(
     return NextResponse.json(data);
   } catch (error: any) {
     console.error("PDF 추출 상태 조회 에러:", error);
-    const errorInfo = JSON.parse(error.message || "{}");
+    const errorInfo = parseBackendError(error);
     return NextResponse.json(
-      { message: errorInfo.message || "PDF 추출 상태 조회에 실패했습니다." },
+      {
+        ...errorInfo.data,
+        message: errorInfo.message || "PDF 추출 상태 조회에 실패했습니다.",
+      },
       { status: errorInfo.status || 500 },
     );
   }

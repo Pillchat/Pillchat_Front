@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { FC } from "react";
 
 export const MaterialContents: FC<{
@@ -11,8 +13,8 @@ export const MaterialContents: FC<{
   return (
     <div className="flex flex-col gap-4">
       {filesLoading && (
-        <div className="flex h-48 w-full animate-pulse items-center justify-center rounded-lg bg-brandSecondary">
-          <span className="text-gray-500">파일 로딩 중...</span>
+        <div className="flex h-48 w-full items-center justify-center rounded-lg bg-brandSecondary">
+          <LoadingIndicator label="파일 로딩 중..." className="text-gray-500" />
         </div>
       )}
 

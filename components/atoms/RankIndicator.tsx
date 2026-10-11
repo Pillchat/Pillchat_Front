@@ -2,11 +2,11 @@ import { useAtom } from "jotai";
 import { profileImgAtom } from "@/store";
 
 const ranks = [
-  { id: "새싹", label: "새싹", color: "#4CAF50" },
-  { id: "한알", label: "한알", color: "#00BCD4" },
-  { id: "두알", label: "두알", color: "#FFCC00" },
-  { id: "고수", label: "고수", color: "#FF412E" },
-  { id: "명약", label: "명약", color: "#C71200" },
+  { id: "새싹", label: "1일", color: "#4CAF50" },
+  { id: "한알", label: "20일", color: "#00BCD4" },
+  { id: "두알", label: "50일", color: "#FFCC00" },
+  { id: "고수", label: "100일", color: "#FF412E" },
+  { id: "명약", label: "365일", color: "#C71200" },
 ];
 
 interface RankIndicatorProps {
@@ -43,7 +43,7 @@ export const RankIndicator: React.FC<RankIndicatorProps> = ({
           >
             {isActive && profileImg ? (
               <img
-                src={profileImg || "/icons/defaultProfile.svg"}
+                src={profileImg}
                 alt="Profile"
                 className="h-16 w-16 rounded-full object-cover"
               />

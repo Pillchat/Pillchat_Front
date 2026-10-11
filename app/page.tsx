@@ -1,53 +1,29 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
+import { PUBLIC_ASSETS } from "@/constants/assets";
+import { type FC, useEffect, useMemo, useRef, useState } from "react";
 import {
-  type CSSProperties,
-  type FC,
-  Fragment,
-  type ReactNode,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import Link from "next/link";
-import { ArrowRight, CheckCircle2, Flame, Pencil, X } from "lucide-react";
-import {
-  BottomNavbar,
-  AlarmHeader,
-  QuestionListCard,
-} from "@/components/molecules";
+  BadgeCheck,
+  ChevronRight,
+  GalleryVerticalEnd,
+  Monitor,
+  RotateCcw,
+  Sparkles,
+} from "lucide-react";
+import { BottomNavbar, AlarmHeader } from "@/components/molecules";
+import { AttendanceSummary } from "@/components/molecules/AttendanceSummary";
 import { Toast } from "@/components/atoms";
+import EntryButton from "@/app/(questionbank)/questionbank/_components/EntryButton";
 import { useRouter } from "@/lib/navigation";
 import { getValidAccessToken } from "@/lib/client/fetch";
-import {
-  buildFileUrlMap,
-  getFileKey,
-  getFilePreviewUrl,
-  isPdfFile,
-  resolveFilePreviewUrl,
-} from "@/lib/shared/filePreview";
-import { formatDiffDate } from "@/lib/shared/date";
-import {
-  getRememberedBoardViewCounts,
-  markBoardViewIntent,
-} from "@/lib/client/boardView";
-import { getCurrentUserInfo } from "@/lib/client/auth";
+import { useAttendance } from "@/hooks/useAttendance";
 import {
   calculateDday,
   formatDday,
   getNextJanuaryFourthFridayDate,
 } from "@/lib/shared/dday";
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { useAtomValue } from "jotai";
-import { onlineCountAtom } from "@/store/presence";
-import {
-  useBoardsQuery,
-  useFilesQuery,
-  useMarketItemsQuery,
-} from "@/hooks/queries";
-import type { MarketItemCard } from "@/types/market";
 
 type DDayItem = {
   id: string;
@@ -65,18 +41,6 @@ type NewDdayDraft = {
   date: string;
   isConfirmed: boolean;
   ddayId?: string;
-};
-
-type StudyCelebrationParticle = {
-  id: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotate: number;
-  delay: number;
-  color: string;
-  shape: "dot" | "pill" | "square";
 };
 
 type NationalExamPayload = {
@@ -98,18 +62,10 @@ const DDAY_STORAGE_KEY = "yakchat:national-exam-date";
 const DDAY_LIST_STORAGE_KEY = "yakchat:ddays";
 const DDAY_ACTIVE_STORAGE_KEY = "yakchat:active-dday-id";
 const NATIONAL_EXAM_CACHE_STORAGE_KEY = "yakchat:khp-national-exam-cache";
-const STUDY_CERT_STORAGE_KEY = "yakchat:study-certified-date";
 const NATIONAL_EXAM_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const NATIONAL_EXAM_RETRY_COOLDOWN_MS = 60 * 60 * 1000;
 const PREVIOUS_DEFAULT_NATIONAL_EXAM_DATES = ["2027-01-15"];
 const MAX_DDAY_TITLE_LENGTH = 10;
-const STUDY_CELEBRATION_COLORS = [
-  "#FF412E",
-  "#FFD166",
-  "#06D6A0",
-  "#118AB2",
-  "#FFFFFF",
-];
 
 const DEFAULT_DDAYS: DDayItem[] = [
   {
@@ -141,28 +97,6 @@ const trimTrailingNewDdayDrafts = (drafts: NewDdayDraft[]) => {
   return drafts.slice(0, lastIndex + 1);
 };
 
-const STUDY_CELEBRATION_PARTICLES: StudyCelebrationParticle[] = Array.from(
-  { length: 28 },
-  (_, index) => {
-    const angle = (index / 28) * Math.PI * 2;
-    const distance = 42 + (index % 5) * 9;
-    const size = 5 + (index % 4);
-    const shape = index % 7 === 0 ? "pill" : index % 5 === 0 ? "square" : "dot";
-
-    return {
-      id: index,
-      x: Math.round(Math.cos(angle) * distance),
-      y: Math.round(Math.sin(angle) * distance),
-      width: shape === "pill" ? size * 2 : size,
-      height: shape === "pill" ? Math.max(3, size - 2) : size,
-      rotate: (index * 37) % 180,
-      delay: (index % 6) * 16,
-      color: STUDY_CELEBRATION_COLORS[index % STUDY_CELEBRATION_COLORS.length],
-      shape,
-    };
-  },
-);
-
 const formatExamDate = (dateValue: string) => {
   const [year, month, day] = dateValue.split("-").map(Number);
 
@@ -178,8 +112,6 @@ const isUpcomingDate = (dateValue: string) => {
   const days = calculateDday(dateValue);
   return days !== null && days >= 0;
 };
-
-const todayKey = () => new Date().toISOString().slice(0, 10);
 
 const buildNationalExamDday = (payload: NationalExamPayload): DDayItem => ({
   id: "guksi",
@@ -286,102 +218,11 @@ const markNationalExamCacheRefreshFailed = () => {
   }
 };
 
-const getBoardCategoryText = (item: any) =>
-  String(item?.category ?? item?.categoryName ?? item?.boardType ?? "").trim();
-
-const hasCategoryAlias = (item: any, aliases: string[]) => {
-  const category = getBoardCategoryText(item);
-  if (!category) return false;
-  return aliases.some(
-    (alias) => category === alias || category.includes(alias),
-  );
-};
-
-const isFreeBoard = (item: any) => {
-  const category = getBoardCategoryText(item);
-  if (!category) return true;
-  return hasCategoryAlias(item, ["FREE", "자유", "자유게시판"]);
-};
-
-const getCommentCount = (item: any) =>
-  item?.answerCount ??
-  item?.commentCount ??
-  item?.commentsCount ??
-  item?.replyCount ??
-  item?.repliesCount ??
-  0;
-
-const HomeSection: FC<{
-  title: string;
-  subtitle?: string;
-  href: string;
-  children: ReactNode;
-}> = ({ title, subtitle, href, children }) => (
-  <>
-    <div aria-hidden="true" className="my-8 h-3 bg-primary-980" />
-    <section className="px-6">
-      <div className="mb-3 flex items-end justify-between gap-3">
-        <div>
-          <h2 className="text-headline-small text-foreground">{title}</h2>
-          {subtitle && (
-            <p className="mt-1 text-body-small text-muted-foreground">
-              {subtitle}
-            </p>
-          )}
-        </div>
-        <Link
-          href={href}
-          className="flex shrink-0 items-center gap-0.5 text-label-medium text-gray-500"
-        >
-          더보기
-          <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-        </Link>
-      </div>
-      {children}
-    </section>
-  </>
-);
-
-const StudyCelebrationParticles: FC<{ burstId: number }> = ({ burstId }) => {
-  if (burstId === 0) return null;
-
-  return (
-    <div
-      key={burstId}
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-10 overflow-visible motion-reduce:hidden"
-    >
-      <span className="absolute left-1/2 top-1/2 h-9 w-9 animate-study-celebration-ring rounded-full border-2 border-primary/30 bg-primary/10" />
-      {STUDY_CELEBRATION_PARTICLES.map((particle) => {
-        const style = {
-          "--particle-x": `${particle.x}px`,
-          "--particle-y": `${particle.y}px`,
-          "--particle-rotate": `${particle.rotate}deg`,
-          width: `${particle.width}px`,
-          height: `${particle.height}px`,
-          backgroundColor: particle.color,
-          animationDelay: `${particle.delay}ms`,
-          boxShadow: `0 0 8px ${particle.color}`,
-        } as CSSProperties;
-        const shapeClassName =
-          particle.shape === "square" ? "rounded-[2px]" : "rounded-full";
-
-        return (
-          <span
-            key={particle.id}
-            className={`absolute left-1/2 top-1/2 animate-study-particle-burst opacity-0 ${shapeClassName}`}
-            style={style}
-          />
-        );
-      })}
-    </div>
-  );
-};
-
 const Home: FC = () => {
   const router = useRouter();
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const attendance = useAttendance(isAuthenticated === true);
   const [isDdayReady, setIsDdayReady] = useState(false);
   const [ddays, setDdays] = useState<DDayItem[]>(DEFAULT_DDAYS);
   const [activeDdayId, setActiveDdayId] = useState(DEFAULT_DDAYS[0].id);
@@ -389,32 +230,12 @@ const Home: FC = () => {
   const [newDdayDrafts, setNewDdayDrafts] = useState<NewDdayDraft[]>([
     { id: "draft-0", title: "", date: "", isConfirmed: false },
   ]);
-  const [isStudyCertified, setIsStudyCertified] = useState(false);
-  const [studyCelebrationBurstId, setStudyCelebrationBurstId] = useState(0);
   const [ddayToast, setDdayToast] = useState<{
     id: number;
     message: string;
   } | null>(null);
-  const [viewCountOverrides, setViewCountOverrides] = useState<
-    Record<string, number>
-  >({});
   const ddayListRef = useRef<HTMLDivElement | null>(null);
   const newDdayDraftListRef = useRef<HTMLDivElement | null>(null);
-  const userInfo = getCurrentUserInfo();
-  const onlineCount = useAtomValue(onlineCountAtom);
-
-  const {
-    data: boards,
-    isLoading: isBoardsLoading,
-    isError: isBoardsError,
-    refetch: refetchBoards,
-  } = useBoardsQuery("latest", {
-    enabled: isAuthenticated === true,
-  });
-  const { data: marketData, isLoading: isMarketLoading } = useMarketItemsQuery(
-    { page: 0, size: 4, sort: ["createdAt,desc"] },
-    { enabled: isAuthenticated === true },
-  );
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -429,8 +250,6 @@ const Home: FC = () => {
     const legacyExamDate = window.localStorage.getItem(DDAY_STORAGE_KEY) ?? "";
     const savedDdays = window.localStorage.getItem(DDAY_LIST_STORAGE_KEY);
     const savedActiveId = window.localStorage.getItem(DDAY_ACTIVE_STORAGE_KEY);
-    const savedStudyDate = window.localStorage.getItem(STUDY_CERT_STORAGE_KEY);
-
     let nextDdays = DEFAULT_DDAYS;
 
     try {
@@ -468,7 +287,6 @@ const Home: FC = () => {
       setActiveDdayId(savedActiveId);
     }
 
-    setIsStudyCertified(savedStudyDate === todayKey());
     setIsDdayReady(true);
 
     if (cachedNationalExam?.isFresh || cachedNationalExam?.isRetryBlocked) {
@@ -555,45 +373,9 @@ const Home: FC = () => {
 
   useEffect(() => {
     if (isAuthenticated === false) {
-      router.replace("/intro");
+      router.replace("/login");
     }
   }, [isAuthenticated, router]);
-
-  useEffect(() => {
-    const syncRememberedViewCounts = () => {
-      setViewCountOverrides(getRememberedBoardViewCounts());
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        syncRememberedViewCounts();
-      }
-    };
-
-    syncRememberedViewCounts();
-    window.addEventListener("pageshow", syncRememberedViewCounts);
-    window.addEventListener("popstate", syncRememberedViewCounts);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener("pageshow", syncRememberedViewCounts);
-      window.removeEventListener("popstate", syncRememberedViewCounts);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
-
-  const handleBoardClick = (boardId: string) => {
-    markBoardViewIntent(boardId);
-    router.push(`/board/${boardId}`);
-  };
-
-  const handleCertifyStudy = () => {
-    if (isStudyCertified) return;
-
-    setStudyCelebrationBurstId((prev) => prev + 1);
-    setIsStudyCertified(true);
-    window.localStorage.setItem(STUDY_CERT_STORAGE_KEY, todayKey());
-  };
 
   const showDdayToast = (message: string) => {
     setDdayToast((prev) => ({
@@ -698,169 +480,8 @@ const Home: FC = () => {
     return calculateDday(activeDday.date);
   }, [activeDday]);
 
-  const getPreviewBoards = (kind: "free" | "tips" | "reviews") => {
-    const aliases = {
-      free: [],
-      tips: ["TIP", "TIPS", "꿀팁", "꿀팁게시판", "꿀팁 게시판"],
-      reviews: ["REVIEW", "REVIEWS", "후기", "후기게시판", "후기 게시판"],
-    }[kind];
-
-    if (kind === "free") {
-      return rawBoardList.filter(isFreeBoard).slice(0, 3);
-    }
-
-    return rawBoardList
-      .filter((item: any) => hasCategoryAlias(item, aliases))
-      .slice(0, 3);
-  };
-
-  const rawBoardList = useMemo(() => {
-    if (Array.isArray(boards)) return boards;
-    if (Array.isArray(boards?.data)) return boards.data;
-    return [];
-  }, [boards]);
-
-  const marketPreviewItems = marketData?.content ?? [];
-
-  const boardList = useMemo(() => {
-    return [...rawBoardList]
-      .sort((a: any, b: any) => {
-        const left = new Date(a?.createdAt ?? 0).getTime();
-        const right = new Date(b?.createdAt ?? 0).getTime();
-        return right - left;
-      })
-      .slice(0, 3);
-  }, [rawBoardList]);
-
-  const freePreviewBoards = useMemo(
-    () => getPreviewBoards("free"),
-    [rawBoardList],
-  );
-  const tipsPreviewBoards = useMemo(
-    () => getPreviewBoards("tips"),
-    [rawBoardList],
-  );
-  const reviewPreviewBoards = useMemo(
-    () => getPreviewBoards("reviews"),
-    [rawBoardList],
-  );
-
-  const boardPreviewItems = useMemo(
-    () => [
-      ...freePreviewBoards,
-      ...tipsPreviewBoards,
-      ...reviewPreviewBoards,
-      ...boardList,
-    ],
-    [boardList, freePreviewBoards, tipsPreviewBoards, reviewPreviewBoards],
-  );
-
-  const boardImageKeys = useMemo(() => {
-    return [
-      ...new Set(
-        boardPreviewItems.flatMap((item: any) =>
-          Array.isArray(item?.images)
-            ? item.images
-                .filter(
-                  (image: any) =>
-                    !isPdfFile(image) && !getFilePreviewUrl(image),
-                )
-                .map((image: any) => getFileKey(image))
-                .filter(Boolean)
-            : [],
-        ),
-      ),
-    ];
-  }, [boardPreviewItems]);
-
-  const { data: boardFilesData } = useFilesQuery({
-    keys: isAuthenticated === true ? boardImageKeys : [],
-  });
-
-  const boardImageUrlMap = useMemo(
-    () => buildFileUrlMap(boardImageKeys, boardFilesData),
-    [boardFilesData, boardImageKeys],
-  );
-
-  const renderBoardPreviewRows = (items: any[], emptyText: string) => {
-    if (isBoardsLoading) {
-      return (
-        <div className="space-y-3">
-          {[...Array(2)].map((_, index) => (
-            <div key={index} className="animate-pulse">
-              <div className="h-20 rounded-lg bg-primary-980" />
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    if (isBoardsError) {
-      return (
-        <Card className="p-5 text-center">
-          <p className="mb-3 text-body-medium text-muted-foreground">
-            게시글을 불러오지 못했습니다
-          </p>
-          <button
-            type="button"
-            onClick={() => void refetchBoards()}
-            className="text-label-medium text-primary hover:text-primary-800"
-          >
-            다시 시도
-          </button>
-        </Card>
-      );
-    }
-
-    if (items.length === 0) {
-      return (
-        <div className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-body-medium text-muted-foreground">
-          {emptyText}
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        {items.map((board: any, index: number) => {
-          const imageUrls = Array.isArray(board?.images)
-            ? board.images
-                .filter((image: any) => !isPdfFile(image))
-                .map((image: any) =>
-                  resolveFilePreviewUrl(image, boardImageUrlMap),
-                )
-                .filter(Boolean)
-            : [];
-
-          const cardData = {
-            ...board,
-            viewCount: Math.max(
-              Number(board?.viewCount ?? 0),
-              viewCountOverrides[String(board?.id ?? "")] ?? 0,
-            ),
-            userNickname: board?.userNickname ?? board?.nickname ?? "익명",
-            subjectName: board?.subjectName ?? board?.categoryName ?? "",
-            answerCount: getCommentCount(board),
-            createdAt: formatDiffDate(board?.createdAt),
-            images: imageUrls,
-          };
-
-          return (
-            <Fragment key={board.id}>
-              <QuestionListCard
-                question={cardData}
-                onClick={() => handleBoardClick(String(board.id))}
-              />
-              {index < items.length - 1 && <Separator className="mt-4" />}
-            </Fragment>
-          );
-        })}
-      </div>
-    );
-  };
-
   if (isAuthenticated === null) {
-    return <div>Loading...</div>;
+    return <LoadingIndicator label="불러오는 중..." />;
   }
 
   const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
@@ -870,188 +491,103 @@ const Home: FC = () => {
   };
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-app flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col bg-white">
       <AlarmHeader />
 
-      <main className="flex-1 pb-[7.25rem] pt-4">
-        <section className="px-6" aria-label="국가고시 D-Day">
-          <div className="overflow-hidden rounded-2xl bg-primary p-5 text-primary-foreground">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 text-label-medium text-primary-foreground/90">
-                  <Flame
-                    aria-hidden="true"
-                    className="h-3.5 w-3.5"
-                    strokeWidth={1.5}
-                  />
-                  {activeDday?.label ?? "국시"} 카운트다운
-                </div>
-                <div className="mt-2 text-headline-large text-primary-foreground">
-                  {isDdayReady ? formatDday(dday) : "-"}
-                </div>
-                <p className="mt-2 text-body-small text-primary-foreground/90">
-                  {activeDday ? formatExamDate(activeDday.date) : "계산 중"} ·
-                  {activeDday?.source === "api"
-                    ? "국시원 API 기준"
-                    : "직접 설정"}{" "}
-                  {onlineCount === null ? (
-                    " · 접속 인원 확인 중"
-                  ) : (
-                    <>
-                      {" "}
-                      · 현재 <b>{onlineCount.toLocaleString("ko-KR")}명</b>{" "}
-                      접속중
-                    </>
-                  )}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsDdayEditorOpen(true)}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-primary-foreground active:scale-95"
-                aria-label="D-Day 편집"
-              >
-                <Pencil
-                  aria-hidden="true"
-                  className="h-4 w-4"
-                  strokeWidth={1.5}
-                />
-              </button>
-            </div>
-
-            <div className="mt-5 flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {ddays.map((item) => {
-                const days = calculateDday(item.date);
-                const isActive = item.id === activeDdayId;
-
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setActiveDdayId(item.id)}
-                    className={`shrink-0 rounded-full px-3 py-1 text-label-small ${
-                      isActive
-                        ? "bg-white text-primary"
-                        : "bg-white/15 text-primary-foreground"
-                    }`}
-                  >
-                    {item.label}{" "}
-                    <span
-                      className={isActive ? "text-primary/70" : "opacity-70"}
-                    >
-                      {formatDday(days)}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="relative mt-4">
-              <StudyCelebrationParticles burstId={studyCelebrationBurstId} />
-              <button
-                type="button"
-                onClick={handleCertifyStudy}
-                className="flex h-12 w-full items-center justify-center gap-0 rounded-xl bg-white text-label-large text-primary active:scale-[0.98]"
-              >
-                {isStudyCertified ? (
-                  <>
-                    <CheckCircle2
-                      aria-hidden="true"
-                      className="mr-1 h-5 w-5"
-                      strokeWidth={1.5}
-                    />
-                    오늘도 인증 완료
-                  </>
-                ) : (
-                  "오늘도 공부 인증하기"
-                )}
-              </button>
-            </div>
-          </div>
+      <main className="flex-1 pb-[var(--bottom-nav-height)] pt-3">
+        <section className="px-5 md:px-10" aria-label="국가고시 D-Day">
+          <button
+            type="button"
+            onClick={() => setIsDdayEditorOpen(true)}
+            aria-label={`${activeDday?.label ?? "국시"}, ${isDdayReady ? formatDday(dday) : "D-Day 계산 중"}, D-Day 관리 열기`}
+            className="flex min-h-20 w-full items-center justify-between gap-4 bg-transparent px-1 py-3 text-left transition-opacity focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-70"
+          >
+            <span className="flex min-w-0 flex-1 items-baseline gap-2">
+              <span className="truncate text-base font-semibold leading-6 text-foreground">
+                {activeDday?.label ?? "국시"}
+              </span>
+              <span className="shrink-0 whitespace-nowrap text-xs leading-5 text-muted-foreground">
+                {activeDday ? formatExamDate(activeDday.date) : "날짜 미설정"}
+              </span>
+            </span>
+            <span className="flex shrink-0 items-center gap-2">
+              <span className="text-[1.75rem] font-bold tabular-nums leading-none tracking-tight text-primary">
+                {isDdayReady ? formatDday(dday) : "–"}
+              </span>
+              <ChevronRight
+                aria-hidden="true"
+                className="h-4 w-4 text-muted-foreground"
+                strokeWidth={1.6}
+              />
+            </span>
+          </button>
         </section>
 
-        <HomeSection
-          title="내 노력엔 정당한 가치"
-          subtitle="밤새워 만든 고퀄리티 전공 요약본"
-          href="/market"
-        >
-          {isMarketLoading ? (
-            <div className="-mx-6 flex gap-4 overflow-x-auto px-6 pb-1">
-              {[...Array(3)].map((_, index) => (
-                <div
-                  key={index}
-                  className="h-40 w-40 shrink-0 animate-pulse rounded-lg bg-primary-980"
-                />
-              ))}
-            </div>
-          ) : marketPreviewItems.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-body-medium text-muted-foreground">
-              등록된 자료가 없습니다.
-            </div>
-          ) : (
-            <div className="-mx-6 flex gap-4 overflow-x-auto px-6 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {marketPreviewItems.map((item: MarketItemCard) => {
-                return (
-                  <Link
-                    key={item.id}
-                    href={`/market/${item.id}`}
-                    className="w-40 shrink-0 overflow-hidden rounded-lg border border-border bg-card active:scale-[0.98]"
-                  >
-                    <div className="flex h-24 items-center justify-center bg-primary-980 px-3 text-center text-title-small text-primary">
-                      자료
-                    </div>
-                    <div className="px-3 py-2.5">
-                      <p className="truncate text-label-small font-medium text-gray-500">
-                        {item.subjectName || "학습자료"}
-                      </p>
-                      <p className="mt-1 line-clamp-1 text-label-medium text-foreground">
-                        {item.title || "제목 없음"}
-                      </p>
-                      <p className="mt-1 text-label-medium font-semibold text-primary">
-                        {item.price > 0
-                          ? `${item.price.toLocaleString("ko-KR")}원`
-                          : "무료"}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </HomeSection>
+        <AttendanceSummary
+          days={attendance.data?.totalDays}
+          completed={attendance.data?.todayChecked ?? false}
+          pending={attendance.isLoading || attendance.isCheckingIn}
+          onCheckIn={() => {
+            void attendance.checkIn().catch(() => {
+              showDdayToast("출석을 저장하지 못했어요. 다시 시도해 주세요.");
+            });
+          }}
+        />
+        {attendance.isError && (
+          <p role="alert" className="mt-2 px-5 text-sm text-destructive">
+            출석 정보를 불러오지 못했어요.
+            <button
+              className="ml-2 underline"
+              onClick={() => void attendance.refetch()}
+            >
+              다시 시도
+            </button>
+          </p>
+        )}
 
-        <HomeSection
-          title="야매 팁으로 외우는 약물학"
-          subtitle="기발한 암기법 모음"
-          href="/tips"
-        >
-          {renderBoardPreviewRows(
-            tipsPreviewBoards,
-            "아직 올라온 꿀팁 게시글이 없습니다.",
-          )}
-        </HomeSection>
+        <section className="mt-6 px-5 md:px-10" aria-label="학습 메뉴">
+          <div className="flex flex-col gap-4">
+            <EntryButton
+              compact
+              icon={<GalleryVerticalEnd className="h-7 w-7 text-primary" />}
+              title="AI 플래시카드"
+              subtitle="취약 개념을 반복해서 복습하는 학습 루틴"
+              onClick={() => router.push("/flashcards")}
+            />
 
-        <HomeSection
-          title="자유 게시판"
-          subtitle="동기들과 자유롭게 나누는 이야기"
-          href="/board"
-        >
-          {renderBoardPreviewRows(
-            freePreviewBoards,
-            "아직 올라온 자유 게시글이 없습니다.",
-          )}
-        </HomeSection>
+            <EntryButton
+              compact
+              icon={<Monitor className="h-7 w-7 text-primary" />}
+              title="CBT 형태로 학습하기"
+              subtitle="국가시험과 같은 시간·답안 환경에서 연습해요"
+              onClick={() => router.push("/learning/cbt")}
+            />
 
-        <HomeSection
-          title="실습 가기 전, 날 것의 후기부터"
-          subtitle="익명으로 안전하게"
-          href="/reviews"
-        >
-          {renderBoardPreviewRows(
-            reviewPreviewBoards,
-            "아직 올라온 후기 게시글이 없습니다.",
-          )}
-        </HomeSection>
+            <EntryButton
+              compact
+              icon={<BadgeCheck className="h-7 w-7 text-primary" />}
+              title="수제 제작 문제"
+              subtitle="전문가가 직접 만들고 검수한 문제를 풀어요"
+              onClick={() => router.push("/questionbank/handcrafted")}
+            />
+
+            <EntryButton
+              compact
+              icon={<Sparkles className="h-7 w-7 text-primary" />}
+              title="AI 문제 생성"
+              subtitle="내 학습자료와 설정을 바탕으로 문제를 만들어요"
+              onClick={() => router.push("/questionbank/premium")}
+            />
+
+            <EntryButton
+              compact
+              icon={<RotateCcw className="h-7 w-7 text-primary" />}
+              title="복습하기"
+              subtitle="CBT·수제 제작·AI 생성 문제의 오답을 모아 복습해요"
+              onClick={() => router.push("/questionbank/review")}
+            />
+          </div>
+        </section>
 
         {isDdayEditorOpen && (
           <div
@@ -1153,7 +689,7 @@ const Home: FC = () => {
                     return (
                       <div
                         key={draft.id}
-                        className="grid grid-cols-[minmax(5rem,0.7fr)_minmax(7.5rem,1fr)_2.25rem] items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 transition-colors focus-within:border-primary-800"
+                        className="grid grid-cols-[minmax(0,1fr)_2.25rem] items-center gap-x-2 gap-y-1 rounded-lg border border-border bg-background px-3 py-2 transition-colors focus-within:border-primary-800 min-[360px]:grid-cols-[minmax(5rem,0.7fr)_minmax(7.5rem,1fr)_2.25rem] min-[360px]:gap-y-0"
                       >
                         <input
                           type="text"
@@ -1167,10 +703,14 @@ const Home: FC = () => {
                           }
                           placeholder="제목(최대 10자)"
                           aria-label="D-Day 제목"
-                          className="h-7 min-w-0 border-r border-border bg-transparent pr-2 text-body-medium text-foreground outline-none placeholder:text-muted-foreground"
+                          className="col-start-1 row-start-1 h-7 min-w-0 border-b border-border bg-transparent pb-1 text-body-medium text-foreground outline-none placeholder:text-muted-foreground min-[360px]:border-b-0 min-[360px]:border-r min-[360px]:pb-0 min-[360px]:pr-2"
                         />
-                        <div className="flex min-w-0 items-center gap-2">
-                          <img src="/Calendar.svg" width={20} alt="" />
+                        <div className="col-start-1 row-start-2 flex min-w-0 items-center gap-2 min-[360px]:col-start-2 min-[360px]:row-start-1">
+                          <img
+                            src={PUBLIC_ASSETS.icons.calendar}
+                            width={20}
+                            alt=""
+                          />
                           <input
                             type="date"
                             onClick={(event) => handleClick(event)}
@@ -1191,7 +731,7 @@ const Home: FC = () => {
                             className="h-7 min-w-0 flex-1 bg-transparent text-body-medium text-foreground outline-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                           />
                         </div>
-                        <div className="flex h-6 w-9 shrink-0 items-center justify-center">
+                        <div className="col-start-2 row-span-2 row-start-1 flex h-6 w-9 shrink-0 items-center justify-center min-[360px]:col-start-3 min-[360px]:row-span-1">
                           {canAddDraft && (
                             <button
                               type="button"

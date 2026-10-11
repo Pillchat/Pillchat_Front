@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fetchAPI } from "@/lib/client/fetch";
+import { clearTokens, fetchAPI } from "@/lib/client/fetch";
 import { useRouter } from "@/lib/navigation";
 
 export const useDelete = () => {
@@ -14,7 +14,8 @@ export const useDelete = () => {
     try {
       const response = await fetchAPI("/api/auth/delete-user", "DELETE");
       if (response.success) {
-        router.push("/login");
+        clearTokens();
+        router.replace("/login");
       }
     } catch (error: any) {
       console.error("계정탈퇴 실패:", error);

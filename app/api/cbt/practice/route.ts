@@ -5,108 +5,7 @@ import {
   getPublicCbtPracticeSet,
   parseCbtSessionId,
 } from "@/lib/server/cbtPracticeData";
-import type {
-  CbtAnswerSubmission,
-  CbtGradeResult,
-  CbtHighlightPoint,
-  CbtHighlightRange,
-  CbtHighlightStroke,
-} from "@/types/cbt";
-
-const MAX_HIGHLIGHT_STROKES = 32;
-const MAX_POINTS_PER_STROKE = 256;
-const MAX_POINTS_PER_QUESTION = 512;
-const MAX_POINTS_PER_ATTEMPT = 20_000;
-
-function sanitizeHighlightRanges(
-  ranges: CbtHighlightRange[] | undefined,
-  stemLength: number,
-) {
-  if (!Array.isArray(ranges)) return [];
-  return ranges
-    .filter(
-      (range) =>
-        Number.isInteger(range?.start) &&
-        Number.isInteger(range?.end) &&
-        range.start >= 0 &&
-        range.start < range.end &&
-        range.end <= stemLength,
-    )
-    .sort((a, b) => a.start - b.start)
-    .reduce<CbtHighlightRange[]>((merged, range) => {
-      const previous = merged.at(-1);
-      if (previous && range.start < previous.end) {
-        previous.end = Math.max(previous.end, range.end);
-      } else {
-        merged.push({ start: range.start, end: range.end });
-      }
-      return merged;
-    }, []);
-}
-
-function sanitizeHighlightStrokes(
-  strokes: unknown,
-  attemptPointsRemaining: number,
-): CbtHighlightStroke[] {
-  if (!Array.isArray(strokes)) return [];
-  const sanitized: CbtHighlightStroke[] = [];
-  let remainingPoints = Math.min(
-    MAX_POINTS_PER_QUESTION,
-    Math.max(0, attemptPointsRemaining),
-  );
-
-  for (let index = 0; index < strokes.length; index += 1) {
-    if (sanitized.length >= MAX_HIGHLIGHT_STROKES || remainingPoints === 0) {
-      break;
-    }
-    const stroke = strokes[index];
-    if (!stroke || typeof stroke !== "object") continue;
-    const candidate = stroke as { id?: unknown; points?: unknown };
-    if (!Array.isArray(candidate.points)) continue;
-
-    const points: CbtHighlightPoint[] = [];
-    for (const point of candidate.points) {
-      if (
-        !Array.isArray(point) ||
-        point.length !== 2 ||
-        !Number.isFinite(point[0]) ||
-        !Number.isFinite(point[1]) ||
-        point[0] < 0 ||
-        point[0] > 1 ||
-        point[1] < 0 ||
-        point[1] > 1
-      ) {
-        continue;
-      }
-      const normalized: CbtHighlightPoint = [
-        Math.round(point[0] * 10_000) / 10_000,
-        Math.round(point[1] * 10_000) / 10_000,
-      ];
-      const previous = points.at(-1);
-      if (previous?.[0] === normalized[0] && previous[1] === normalized[1]) {
-        continue;
-      }
-      points.push(normalized);
-      if (
-        points.length >= MAX_POINTS_PER_STROKE ||
-        points.length >= remainingPoints
-      ) {
-        break;
-      }
-    }
-    if (points.length === 0) continue;
-
-    const id =
-      typeof candidate.id === "string" &&
-      /^[a-zA-Z0-9_-]{1,80}$/.test(candidate.id)
-        ? candidate.id
-        : `stroke-${index + 1}`;
-    sanitized.push({ id, points });
-    remainingPoints -= points.length;
-  }
-
-  return sanitized;
-}
+import type { CbtAnswerSubmission, CbtGradeResult } from "@/types/cbt";
 
 function sanitizeExcludedChoices(
   choices: unknown,
@@ -154,7 +53,6 @@ export async function POST(request: NextRequest) {
   }
 
   const { questions } = getPrivateCbtPracticeSet(sessionId);
-  let highlightPointsRemaining = MAX_POINTS_PER_ATTEMPT;
   const review = questions.map((question) => {
     const answer = body.answers?.[question.id];
     const selectedChoice = answer?.selectedChoice ?? null;
@@ -164,14 +62,6 @@ export async function POST(request: NextRequest) {
         : selectedChoice === question.correctChoice
           ? ("correct" as const)
           : ("incorrect" as const);
-    const highlightStrokes = sanitizeHighlightStrokes(
-      answer?.highlightStrokes,
-      highlightPointsRemaining,
-    );
-    highlightPointsRemaining -= highlightStrokes.reduce(
-      (total, stroke) => total + stroke.points.length,
-      0,
-    );
     return {
       ...question,
       selectedChoice,
@@ -182,11 +72,6 @@ export async function POST(request: NextRequest) {
         answer?.excludedChoices,
         selectedChoice,
       ),
-      highlightRanges: sanitizeHighlightRanges(
-        answer?.highlightRanges,
-        question.stem.length,
-      ),
-      highlightStrokes,
       status,
     };
   });

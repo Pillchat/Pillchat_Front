@@ -1,3 +1,5 @@
+import { getToken } from "@/lib/client/fetch";
+
 /**
  * JWT 토큰 관련 유틸리티 함수들
  */
@@ -58,9 +60,7 @@ export const getCurrentUserId = (): string | null => {
       return null;
     }
 
-    const token =
-      localStorage.getItem("access_token") ??
-      sessionStorage.getItem("access_token");
+    const token = getToken();
     if (!token) {
       return null;
     }
@@ -104,7 +104,14 @@ export const isTokenExpired = (token: string): boolean => {
  */
 export const isCurrentUserAdmin = (): boolean => {
   const userInfo = getCurrentUserInfo();
-  if (!userInfo) return false;
+  if (
+    !userInfo ||
+    typeof userInfo.exp !== "number" ||
+    !Number.isFinite(userInfo.exp) ||
+    Date.now() >= userInfo.exp * 1000
+  ) {
+    return false;
+  }
 
   const ADMIN_VALUE = "ROLE_ADMIN";
 
@@ -131,7 +138,7 @@ export const isCurrentUserAdmin = (): boolean => {
   // 쉼표 구분 문자열인 경우 (auth: "ROLE_USER,ROLE_ADMIN")
   if (
     typeof userInfo.auth === "string" &&
-    userInfo.auth.includes(ADMIN_VALUE)
+    userInfo.auth.split(",").some((role: string) => role.trim() === ADMIN_VALUE)
   ) {
     return true;
   }
@@ -150,9 +157,7 @@ export const getCurrentUserInfo = (): JWTPayload | null => {
       return null;
     }
 
-    const token =
-      localStorage.getItem("access_token") ??
-      sessionStorage.getItem("access_token");
+    const token = getToken();
     if (!token) {
       return null;
     }

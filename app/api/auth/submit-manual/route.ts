@@ -7,6 +7,7 @@ export const POST = async (request: NextRequest) => {
     nickname,
     password,
     email,
+    emailVerificationToken,
     agreeToTerms,
     realName,
     documentType,
@@ -51,6 +52,15 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
+  if (!emailVerificationToken)
+    return NextResponse.json(
+      {
+        code: "EMAIL_VERIFICATION_REQUIRED",
+        message: "이메일 인증을 다시 진행해주세요.",
+      },
+      { status: 412 },
+    );
+
   try {
     // 3. 백엔드 API 호출 (Temp-Token 헤더 제거)
     const response = await fetch(
@@ -65,6 +75,7 @@ export const POST = async (request: NextRequest) => {
           nickname,
           password,
           email,
+          emailVerificationToken,
           agreeToTerms,
           realName,
           documentType,
@@ -80,7 +91,7 @@ export const POST = async (request: NextRequest) => {
     // 백엔드 에러 응답 처리
     if (!response.ok) {
       return NextResponse.json(
-        { error: data.message || "회원가입 요청 실패" },
+        { ...data, message: data.message || "회원가입 요청 실패" },
         { status: response.status },
       );
     }

@@ -1,4 +1,5 @@
 "use client";
+import { startQuiz } from "@/lib/client/startQuiz";
 
 import { useState, useRef } from "react";
 import { useRouter } from "@/lib/navigation";
@@ -118,7 +119,7 @@ const GeneratePage = () => {
       if (!extractResult) throw new Error("문제 생성 결과를 받지 못했습니다.");
 
       // 3) 퀴즈 세션 시작
-      const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", {
+      const quizRaw = await startQuiz({
         type: "PDF",
         taskId: extractResult.taskId,
       });
@@ -170,7 +171,7 @@ const GeneratePage = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="문제 생성" showIcon />
 
       <div className="flex flex-1 flex-col items-center justify-center px-6">
@@ -222,7 +223,7 @@ const GeneratePage = () => {
         </div>
       </div>
 
-      <div className="flex-shrink-0 px-6 pb-6">
+      <div className="flex-shrink-0 px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <SolidButton
           content="문제 생성"
           disabled={!isFormValid || isLoading}

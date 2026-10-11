@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentUserId } from "@/lib/client/auth";
@@ -90,7 +92,7 @@ const GenerateExamPage = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="AI 시험지 생성" showIcon />
 
       <div className="flex-1 overflow-y-auto px-6 py-4">
@@ -147,7 +149,10 @@ const GenerateExamPage = () => {
 
           {loading ? (
             <div className="flex items-center justify-center py-10">
-              <p className="text-muted-foreground">불러오는 중...</p>
+              <LoadingIndicator
+                label="불러오는 중..."
+                className="text-muted-foreground"
+              />
             </div>
           ) : notes.length === 0 ? (
             <div className="flex items-center justify-center py-10">
@@ -208,8 +213,9 @@ const GenerateExamPage = () => {
         {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
       </div>
 
-      <div className="flex-shrink-0 px-6 pb-6">
+      <div className="flex-shrink-0 px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <SolidButton
+          loading={generating}
           content={generating ? "생성 중..." : "시험지 생성"}
           disabled={selectedIds.size === 0 || generating}
           variant={selectedIds.size > 0 && !generating ? "brand" : "disabled"}

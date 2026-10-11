@@ -1,5 +1,6 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { type FC, type ReactNode } from "react";
 
 import { LeftArrowButton, TextButton } from "@/components/atoms";
@@ -14,6 +15,7 @@ interface CustomHeaderProps {
   onRightButtonClick?: () => void;
   isActive?: boolean;
   rightSlot?: ReactNode;
+  rightButtonLoading?: boolean;
 }
 
 export const CustomHeader: FC<CustomHeaderProps> = ({
@@ -23,12 +25,13 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
   onRightButtonClick,
   isActive = false,
   rightSlot,
+  rightButtonLoading = false,
 }) => {
   const router = useRouter();
 
   return (
     <>
-      <header className="sticky top-0 z-10 flex h-[60px] w-full items-center justify-between bg-white px-6">
+      <header className="sticky top-0 z-10 flex h-[calc(60px+env(safe-area-inset-top))] w-full items-center justify-between bg-white px-6 pt-[env(safe-area-inset-top)]">
         <LeftArrowButton onClick={() => router.back()} />
         <p className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-lg font-semibold">
           {title}
@@ -41,11 +44,17 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
             size="icon"
             onClick={() => router.push("/")}
           >
-            <img src="/icons/Home.svg" alt="home" width={32} height={32} />
+            <img
+              src={PUBLIC_ASSETS.icons.home}
+              alt="home"
+              width={32}
+              height={32}
+            />
           </Button>
         ) : rightButtonLabel ? (
           <TextButton
             label={rightButtonLabel}
+            loading={rightButtonLoading}
             variant="textOnly"
             onClick={onRightButtonClick}
             className={`text-md p-0 ${

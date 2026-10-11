@@ -1,4 +1,7 @@
 "use client";
+import { startQuiz } from "@/lib/client/startQuiz";
+
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "@/lib/navigation";
@@ -67,7 +70,7 @@ const MyTasksPage = () => {
         ),
       );
 
-      const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", {
+      const quizRaw = await startQuiz({
         type: "PDF",
         taskId: task.taskId,
       });
@@ -110,7 +113,7 @@ const MyTasksPage = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="내 학습자료로 문제 생성" showIcon />
 
       {/* 과목 필터 */}
@@ -172,7 +175,10 @@ const MyTasksPage = () => {
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex h-full items-center justify-center">
-            <div className="text-muted-foreground">불러오는 중...</div>
+            <LoadingIndicator
+              label="불러오는 중..."
+              className="text-muted-foreground"
+            />
           </div>
         ) : filteredTasks.length > 0 ? (
           filteredTasks.map((task) => (

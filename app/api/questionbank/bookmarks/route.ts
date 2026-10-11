@@ -1,3 +1,4 @@
+import { parseBackendError } from "@/lib/server/apiError";
 import { NextRequest, NextResponse } from "next/server";
 import { serverFetch } from "@/lib/server/fetch";
 
@@ -12,9 +13,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error: any) {
     console.error("북마크 목록 조회 에러:", error);
-    const errorInfo = JSON.parse(error.message || "{}");
+    const errorInfo = parseBackendError(error);
     return NextResponse.json(
-      { message: errorInfo.message || "북마크 조회에 실패했습니다." },
+      {
+        ...errorInfo.data,
+        message: errorInfo.message || "북마크 조회에 실패했습니다.",
+      },
       { status: errorInfo.status || 500 },
     );
   }
@@ -33,9 +37,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error: any) {
     console.error("북마크 토글 에러:", error);
-    const errorInfo = JSON.parse(error.message || "{}");
+    const errorInfo = parseBackendError(error);
     return NextResponse.json(
-      { message: errorInfo.message || "북마크 변경에 실패했습니다." },
+      {
+        ...errorInfo.data,
+        message: errorInfo.message || "북마크 변경에 실패했습니다.",
+      },
       { status: errorInfo.status || 500 },
     );
   }

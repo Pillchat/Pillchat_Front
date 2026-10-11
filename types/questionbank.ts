@@ -276,6 +276,7 @@ export interface QuestionDraft {
 export interface QuizSession {
   sessionId: number;
   sourceType: QuizSourceType;
+  reviewMode?: ResolveModeType;
   title: string;
   questions: QuizQuestion[];
   results: Record<number, QuestionResult>;

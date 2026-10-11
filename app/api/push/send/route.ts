@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!Array.isArray(userIds)) {
+    if (!Array.isArray(userIds) || userIds.length === 0) {
       return NextResponse.json(
         { message: "userIds는 배열 형식이어야 합니다." },
         { status: 400 },
@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
 
     const data = await enqueueAdminPushJob(request, {
       ...body,
+      audience: "USERS",
       userIds: normalizedUserIds,
     });
 
@@ -37,7 +38,11 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("개인 푸시 발송 API 에러:", error);
 
-    let errorInfo: { message?: string; status?: number } = {};
+    let errorInfo: {
+      message?: string;
+      status?: number;
+      data?: Record<string, unknown>;
+    } = {};
     try {
       errorInfo = JSON.parse(error?.message || "{}");
     } catch {
@@ -46,6 +51,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
+        ...errorInfo.data,
         message:
           errorInfo.message || "백엔드 PushJob 적재 중 오류가 발생했습니다.",
       },

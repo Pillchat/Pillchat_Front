@@ -35,6 +35,11 @@ export const normalizeNotificationSetting = (
   const record = source as Record<string, unknown>;
 
   return {
+    followNotificationEnabled: readBoolean(
+      record,
+      "followNotificationEnabled",
+      "follow_notification_enabled",
+    ),
     notificationEnabled: readBoolean(
       record,
       "notificationEnabled",

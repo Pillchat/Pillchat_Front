@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useAtom } from "jotai";
 
+import { readAttendance } from "@/lib/client/attendance";
 import { fetchAPI } from "@/lib/client/fetch";
 import {
   buildFileUrlMap,
@@ -157,6 +158,11 @@ export const useMyProfile = () => {
       }
 
       const payload = result.data ?? {};
+      const attendance = await readAttendance();
+      const followSummary = await fetchAPI(
+        `/api/users/${payload.id}/follow-summary`,
+        "GET",
+      );
       const { fetchedKeys, profileImageUrl } =
         await resolveProfileImage(payload);
 
@@ -165,12 +171,12 @@ export const useMyProfile = () => {
         isPublic:
           typeof payload.isPublic === "boolean" ? payload.isPublic : true,
         followerCount: numberValue(
-          payload.followerCount,
+          followSummary.followerCount,
           payload.followersCount,
           payload.followers,
         ),
         followingCount: numberValue(
-          payload.followingCount,
+          followSummary.followingCount,
           payload.followingsCount,
           payload.following,
         ),
@@ -191,7 +197,7 @@ export const useMyProfile = () => {
       updateProfile({
         nickname: payload.nickname ?? null,
         school: payload.school ?? null,
-        grade: textValue(payload.grade) || null,
+        grade: attendance.grade,
         studentGrade: payload.studentGrade ?? null,
         id: payload.id ?? null,
         keys: fetchedKeys,
@@ -226,14 +232,9 @@ export const useMyProfile = () => {
     setError(null);
   }, [clearProfile, setError]);
 
-  const setProfileVisibility = useCallback((isPublic: boolean) => {
-    setProfileDetails((current) => ({ ...current, isPublic }));
-  }, []);
-
   return {
     onMyProfile,
     resetProfile,
-    setProfileVisibility,
     isLoading,
     error,
     profile: {

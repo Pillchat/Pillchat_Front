@@ -5,6 +5,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 Directory rules and the rationale for the current App Router layout are documented in [docs/project-structure.md](docs/project-structure.md).
 API query/mutation hook rules are documented in [docs/api-query-mutation-structure.md](docs/api-query-mutation-structure.md).
 
+Keep `docs/` limited to current development information and rules for developers and AI agents. Do not store one-off test reports, work logs, backend handoff messages, or obsolete planning backlogs; share those in chat instead. See the [documentation policy](docs/project-structure.md#docs-보관-기준).
+
 ## Getting Started
 
 First, run the development server:

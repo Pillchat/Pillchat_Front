@@ -239,8 +239,8 @@ export default function IpadExamManagerPage() {
   );
 
   return (
-    <main className="min-h-screen bg-white text-foreground">
-      <header className="flex h-[60px] items-center border-b border-gray-100 bg-white px-4">
+    <main className="min-h-dvh bg-white text-foreground">
+      <header className="flex h-[calc(60px+env(safe-area-inset-top))] items-center border-b border-gray-100 bg-white px-4 pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex w-full max-w-[834px] items-center gap-3">
           <div className="bg-bran flex h-10 w-10 items-center justify-center rounded-full shadow-[0_8px_18px_rgba(255,65,46,0.18)]">
             <Link

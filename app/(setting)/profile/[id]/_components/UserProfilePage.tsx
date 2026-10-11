@@ -1,5 +1,8 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { FC, useEffect, useMemo, useState } from "react";
 import { Lock } from "lucide-react";
 import { LeftArrowButton } from "@/components/atoms";
@@ -74,14 +77,18 @@ const normalizeBadges = (payload: Record<string, unknown>): BadgeItem[] => {
       return {
         id: String(item.id ?? `badge-${index}`),
         name: item.name ?? item.title ?? item.badgeName ?? "뱃지",
-        icon: item.icon ?? item.iconUrl ?? item.image ?? "/Idk.svg",
+        icon:
+          item.icon ??
+          item.iconUrl ??
+          item.image ??
+          PUBLIC_ASSETS.illustrations.badgePlaceholder,
       };
     }
 
     return {
       id: `badge-${index}`,
       name: String(badge),
-      icon: "/Idk.svg",
+      icon: PUBLIC_ASSETS.illustrations.badgePlaceholder,
     };
   });
 };
@@ -124,7 +131,7 @@ const normalizeProfile = (result: unknown): UserProfile => {
         payload.profileImg,
         payload.profileImage,
         payload.imageUrl,
-      ) || "/defaultProfile.svg",
+      ) || PUBLIC_ASSETS.illustrations.defaultProfile,
     affiliation: affiliation || "소속 정보 없음",
     followerCount: numberValue(
       payload.followerCount,
@@ -137,11 +144,13 @@ const normalizeProfile = (result: unknown): UserProfile => {
       payload.following,
     ),
     questionCount: numberValue(
+      (payload.grade as Record<string, unknown> | undefined)?.questionCount,
       payload.questionCount,
       payload.questionsCount,
       payload.questions,
     ),
     answerCount: numberValue(
+      (payload.grade as Record<string, unknown> | undefined)?.answerCount,
       payload.answerCount,
       payload.answersCount,
       payload.answers,
@@ -158,7 +167,7 @@ const normalizeProfile = (result: unknown): UserProfile => {
 const initialProfile: UserProfile = {
   isPublic: null,
   nickname: "사용자",
-  profileImage: "/defaultProfile.svg",
+  profileImage: PUBLIC_ASSETS.illustrations.defaultProfile,
   affiliation: "소속 정보 없음",
   followerCount: 0,
   followingCount: 0,
@@ -179,7 +188,7 @@ function ProfileHeader({ onReport }: { onReport: () => void }) {
   ];
 
   return (
-    <header className="sticky top-0 z-10 flex h-[60px] w-full items-center justify-between bg-white px-6">
+    <header className="sticky top-0 z-10 flex h-[calc(60px+env(safe-area-inset-top))] w-full items-center justify-between bg-white px-6 pt-[env(safe-area-inset-top)]">
       <LeftArrowButton onClick={() => router.back()} />
       <p className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-[#171717]">
         사용자 프로필
@@ -192,7 +201,11 @@ function ProfileHeader({ onReport }: { onReport: () => void }) {
             className="flex h-10 w-10 items-center justify-center"
             aria-label="더보기"
           >
-            <img src="/More.svg" alt="" className="h-8 w-8" />
+            <img
+              src={PUBLIC_ASSETS.icons.ellipsisVertical}
+              alt=""
+              className="h-8 w-8"
+            />
           </button>
         }
       />
@@ -240,6 +253,8 @@ function StudyStat({
 export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile>(initialProfile);
+  const [following, setFollowing] = useState(false);
+  const [followBusy, setFollowBusy] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewerUserId, setViewerUserId] = useState<string | null>();
@@ -254,8 +269,17 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
       setProfile(initialProfile);
 
       try {
-        const result = await fetchAPI(`/api/profile/${userId}`, "GET");
-        if (!ignore) setProfile(normalizeProfile(result));
+        const [result, summary] = await Promise.all([
+          fetchAPI(`/api/profile/${userId}`, "GET"),
+          fetchAPI(`/api/users/${userId}/follow-summary`, "GET"),
+        ]);
+        if (!ignore) setFollowing(summary.following);
+        if (!ignore)
+          setProfile({
+            ...normalizeProfile(result),
+            followerCount: summary.followerCount,
+            followingCount: summary.followingCount,
+          });
       } catch (err) {
         console.error("사용자 프로필 조회 실패:", err);
         if (!ignore) setError("사용자 정보를 불러오지 못했습니다.");
@@ -280,7 +304,7 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
   return (
     <div className="mx-auto min-h-dvh w-full max-w-screen-sm bg-white">
       <ProfileHeader
-        onReport={() => router.push(`/reports?type=PROFILE&id=${userId}`)}
+        onReport={() => router.push(`/reports?type=USER&id=${userId}`)}
       />
 
       <main className="px-6 pb-10">
@@ -296,15 +320,10 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
             </button>
           </div>
         ) : isLoading || viewerUserId === undefined ? (
-          <div
-            className="flex min-h-[28rem] flex-col items-center justify-center gap-4"
-            role="status"
-            aria-label="사용자 프로필 불러오는 중"
-          >
-            <div className="h-[4.25rem] w-[4.25rem] animate-pulse rounded-full bg-[#f1ece9]" />
-            <div className="h-6 w-28 animate-pulse rounded-full bg-[#f1ece9]" />
-            <div className="h-4 w-40 animate-pulse rounded-full bg-[#f5f1ee]" />
-          </div>
+          <LoadingIndicator
+            label="사용자 프로필 불러오는 중..."
+            className="min-h-[28rem]"
+          />
         ) : profile.isPublic === false && !isOwnProfile ? (
           <section className="flex min-h-[28rem] flex-col items-center justify-center text-center">
             <img
@@ -340,7 +359,7 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
                     aria-label={`${profile.attendanceStreak}일 연속 출석`}
                   >
                     <img
-                      src="/BadgeIcon1.svg"
+                      src={PUBLIC_ASSETS.illustrations.attendanceBadge}
                       alt=""
                       className="absolute inset-0 h-full w-full"
                     />
@@ -363,9 +382,35 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
 
               <button
                 type="button"
+                disabled={followBusy || isOwnProfile}
+                onClick={async () => {
+                  setFollowBusy(true);
+                  try {
+                    await fetchAPI(
+                      `/api/follows/${userId}`,
+                      following ? "DELETE" : "POST",
+                    );
+                    const summary = await fetchAPI(
+                      `/api/users/${userId}/follow-summary`,
+                      "GET",
+                    );
+                    setFollowing(summary.following);
+                    setProfile((prev) => ({
+                      ...prev,
+                      followerCount: summary.followerCount,
+                      followingCount: summary.followingCount,
+                    }));
+                  } catch (e) {
+                    setError(
+                      e instanceof Error ? e.message : "팔로우 변경 실패",
+                    );
+                  } finally {
+                    setFollowBusy(false);
+                  }
+                }}
                 className="mt-5 h-12 w-full rounded-xl bg-primary text-sm font-semibold text-white"
               >
-                팔로우
+                {following ? "팔로우 해제" : "팔로우"}
               </button>
             </section>
 
@@ -373,12 +418,12 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
               <h2 className="text-sm font-medium text-[#999]">학습 관리</h2>
               <div className="mt-4 flex h-[4.5rem] items-center">
                 <StudyStat
-                  icon="/Question.svg"
+                  icon={PUBLIC_ASSETS.icons.question}
                   value={profile.questionCount}
                   label="질문 수"
                 />
                 <StudyStat
-                  icon="/Answer.svg"
+                  icon={PUBLIC_ASSETS.icons.answer}
                   value={profile.answerCount}
                   label="답변 수"
                   bordered

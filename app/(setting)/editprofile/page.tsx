@@ -62,7 +62,7 @@ const EditProfile = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center">
+    <div className="flex min-h-dvh flex-col items-center">
       <CustomHeader title="프로필 편집" />
 
       <div className="mt-7 flex w-full flex-col items-center gap-4">
@@ -92,7 +92,7 @@ const EditProfile = () => {
         />
       </div>
 
-      <div className="fixed bottom-8 w-[90%]">
+      <div className="mt-auto w-full px-[5%] pb-[calc(2rem+env(safe-area-inset-bottom))] pt-8">
         <SolidButton content="변경" onClick={handleSave} />
       </div>
 

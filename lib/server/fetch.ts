@@ -33,6 +33,7 @@ export const serverFetch = async (
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method,
+    cache: "no-store",
     headers,
     body: data ? JSON.stringify(data) : undefined,
   });
@@ -60,6 +61,6 @@ export const serverFetch = async (
   try {
     return JSON.parse(text);
   } catch {
-    return { message: "Success" };
+    return text;
   }
 };

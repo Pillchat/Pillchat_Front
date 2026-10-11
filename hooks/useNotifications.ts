@@ -1,62 +1,87 @@
-import { useAtom } from "jotai";
-import { useCallback } from "react";
-import { notificationsAtom } from "@/store/notification";
-import { Notification, NotificationType } from "@/types/notification";
+"use client";
+import { useCallback, useState } from "react";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { fetchAPI } from "@/lib/client/fetch";
+import { useAuthIdentity } from "./useAuthIdentity";
+import type { Notification } from "@/types/notification";
 
+type InboxPage = {
+  items: Notification[];
+  nextCursor: string | null;
+  hasNext: boolean;
+  unreadCount: number;
+  snapshotSequence: string;
+};
 export const useNotifications = () => {
-  const [notifications, setNotifications] = useAtom(notificationsAtom);
-
-  const addNotification = useCallback(
-    (params: {
-      type: NotificationType;
-      title: string;
-      content: string;
-      link?: string;
-    }) => {
-      const newNotification: Notification = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-        type: params.type,
-        title: params.title,
-        content: params.content,
-        link: params.link,
-        isRead: false,
-        createdAt: new Date().toISOString(),
-      };
-      setNotifications((prev) => [newNotification, ...prev]);
-    },
-    [setNotifications],
-  );
-
-  const markAsRead = useCallback(
-    (id: string) => {
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
+  const userId = useAuthIdentity();
+  const client = useQueryClient();
+  const [mutationError, setMutationError] = useState<string | null>(null);
+  const key = ["notification-inbox", userId];
+  const inbox = useInfiniteQuery<InboxPage>({
+    queryKey: key,
+    enabled: !!userId,
+    initialPageParam: null,
+    queryFn: ({ pageParam }) =>
+      fetchAPI("/api/notifications", "GET", { size: 20, cursor: pageParam }),
+    getNextPageParam: (page) => (page.hasNext ? page.nextCursor : undefined),
+  });
+  const count = useQuery<{ unreadCount: number; snapshotSequence: string }>({
+    queryKey: ["notification-count", userId],
+    enabled: !!userId,
+    queryFn: () => fetchAPI("/api/notifications/unread-count", "GET"),
+    refetchInterval: 30000,
+  });
+  const invalidate = useCallback(async () => {
+    await Promise.all([
+      client.invalidateQueries({ queryKey: ["notification-inbox", userId] }),
+      client.invalidateQueries({ queryKey: ["notification-count", userId] }),
+    ]);
+  }, [client, userId]);
+  const mutate = async (url: string, method: string, body?: unknown) => {
+    setMutationError(null);
+    try {
+      await fetchAPI(url, method, body);
+      await invalidate();
+    } catch (error) {
+      setMutationError(
+        error instanceof Error ? error.message : "알림 변경에 실패했습니다.",
       );
-    },
-    [setNotifications],
-  );
-
-  const markAllAsRead = useCallback(() => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-  }, [setNotifications]);
-
-  const removeNotification = useCallback(
-    (id: string) => {
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-    },
-    [setNotifications],
-  );
-
-  const clearAll = useCallback(() => {
-    setNotifications([]);
-  }, [setNotifications]);
-
+    }
+  };
+  // Use the visible inbox snapshot, never an invented maximum or a later poll.
+  const sequence = inbox.data?.pages[0]?.snapshotSequence;
   return {
-    notifications,
-    addNotification,
-    markAsRead,
-    markAllAsRead,
-    removeNotification,
-    clearAll,
+    notifications: userId
+      ? (inbox.data?.pages.flatMap((page) => page.items) ?? [])
+      : [],
+    unreadCount: userId
+      ? (count.data?.unreadCount ?? inbox.data?.pages[0]?.unreadCount ?? 0)
+      : 0,
+    addNotification: invalidate,
+    markAsRead: (id: string) =>
+      mutate(`/api/notifications/${encodeURIComponent(id)}/read`, "PATCH"),
+    markAllAsRead: () =>
+      sequence &&
+      mutate("/api/notifications/read-all", "PATCH", {
+        throughSequence: sequence,
+      }),
+    removeNotification: (id: string) =>
+      mutate(`/api/notifications/${encodeURIComponent(id)}`, "DELETE"),
+    clearAll: () =>
+      sequence &&
+      mutate(
+        `/api/notifications?throughSequence=${encodeURIComponent(sequence)}`,
+        "DELETE",
+      ),
+    isLoading: inbox.isLoading,
+    error: mutationError ?? inbox.error?.message,
+    hasNextPage: inbox.hasNextPage,
+    isFetchingNextPage: inbox.isFetchingNextPage,
+    loadMore: () => inbox.fetchNextPage(),
+    reload: invalidate,
   };
 };

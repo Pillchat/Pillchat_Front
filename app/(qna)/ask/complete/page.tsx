@@ -10,7 +10,7 @@ const CompletePage: FC = () => {
   const queryClient = useQueryClient();
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       <div className="flex flex-grow flex-col items-center justify-center gap-3">
         <div className="text-center">
           <p className="text-[48px]">🙌</p>

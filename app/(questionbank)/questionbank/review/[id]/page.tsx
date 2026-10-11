@@ -1,4 +1,7 @@
 "use client";
+import { startQuiz } from "@/lib/client/startQuiz";
+
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "@/lib/navigation";
@@ -47,15 +50,18 @@ const ReviewDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-muted-foreground">불러오는 중...</div>
+      <div className="flex h-dvh items-center justify-center">
+        <LoadingIndicator
+          label="불러오는 중..."
+          className="text-muted-foreground"
+        />
       </div>
     );
   }
 
   if (!result) {
     return (
-      <div className="flex h-screen flex-col">
+      <div className="flex h-dvh flex-col">
         <CustomHeader title="복습 상세" showIcon />
         <div className="flex flex-1 items-center justify-center">
           <p className="text-muted-foreground">결과를 불러올 수 없습니다.</p>
@@ -89,7 +95,7 @@ const ReviewDetailPage = () => {
       };
       const body = bodyMap[mode];
 
-      const quizRaw = await fetchAPI("/api/questionbank/quiz", "POST", body);
+      const quizRaw = await startQuiz(body);
       const quizData: QuizStartResponse = quizRaw.data ?? quizRaw;
       const answerByQuestionId = new Map(
         result.answers.map((answer) => [answer.questionId, answer]),
@@ -135,7 +141,7 @@ const ReviewDetailPage = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <CustomHeader title="복습 상세" showIcon />
 
       {/* 통계 요약 */}

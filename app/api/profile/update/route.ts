@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const PUT = async (request: NextRequest) => {
   try {
     // 클라이언트에서 넘어온 body 파싱
-    const { accessToken, tempNickname, keys } = await request.json();
+    const { tempNickname, keys } = await request.json();
 
     // 외부 API 호출
     const response = await fetch(
@@ -11,7 +11,9 @@ export const PUT = async (request: NextRequest) => {
       {
         method: "PUT",
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization:
+            request.headers.get("authorization") ??
+            `Bearer ${request.cookies.get("access_token")?.value ?? ""}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -25,7 +27,7 @@ export const PUT = async (request: NextRequest) => {
 
     if (!response.ok) {
       return NextResponse.json(
-        { message: data.message || "프로필 편집 실패" },
+        { ...data, message: data.message || "프로필 편집 실패" },
         { status: response.status },
       );
     }

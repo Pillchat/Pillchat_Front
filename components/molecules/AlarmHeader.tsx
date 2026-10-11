@@ -1,13 +1,13 @@
 "use client";
 
+import { PUBLIC_ASSETS } from "@/constants/assets";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAtomValue } from "jotai";
-import { UserRound } from "lucide-react";
 
 import { useRouter } from "@/lib/navigation";
-import { unreadCountAtom } from "@/store/notification";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface AlarmHeaderProps {
   hideBottomBorder?: boolean;
@@ -19,7 +19,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const unreadCount = useAtomValue(unreadCountAtom);
+  const { unreadCount } = useNotifications();
 
   const currentStatus = useMemo(() => {
     const status = searchParams.get("status");
@@ -66,7 +66,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
   return (
     <>
       <header
-        className={`sticky top-0 z-10 flex h-[60px] w-full items-center justify-between border-b-0 bg-white px-6 backdrop-blur ${
+        className={`sticky top-0 z-10 flex w-full items-center justify-between bg-background/95 px-6 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] backdrop-blur supports-[backdrop-filter]:bg-background/60 ${
           hideBottomBorder ? "" : "border-b border-border/40"
         }`}
       >
@@ -96,7 +96,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
               }}
               onBlur={() => setOpen(false)}
               placeholder="검색어 입력"
-              className="h-10 w-full rounded-md border border-border bg-background px-3 text-label-medium outline-none focus:ring-2 focus:ring-brand/40"
+              className="h-10 w-full rounded-md border border-border bg-background px-3 text-base outline-none focus:ring-2 focus:ring-brand/40 md:text-sm"
             />
             <button
               type="button"
@@ -105,7 +105,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
               onClick={onSubmit}
             >
               <img
-                src="/icons/search.svg"
+                src={PUBLIC_ASSETS.icons.search}
                 alt="search"
                 width={32}
                 height={32}
@@ -119,7 +119,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
               className="flex h-[3.625rem] cursor-pointer items-center"
             >
               <img
-                src="/brand/PillChat.svg"
+                src={PUBLIC_ASSETS.brand.pillchatLogo}
                 alt="logo"
                 width={82}
                 height={32}
@@ -132,7 +132,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
                 onClick={() => router.push("/notifications")}
               >
                 <img
-                  src="/icons/Bell.svg"
+                  src={PUBLIC_ASSETS.icons.bell}
                   alt="notification"
                   width={32}
                   height={32}
@@ -141,15 +141,6 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
                   <span className="absolute right-0 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand" />
                 )}
               </div>
-
-              <button
-                type="button"
-                className="flex h-[3.625rem] items-center text-muted-foreground"
-                onClick={() => router.push("/mypage")}
-                aria-label="마이페이지"
-              >
-                <UserRound aria-hidden="true" className="h-7 w-7" />
-              </button>
             </div>
           </>
         )}
