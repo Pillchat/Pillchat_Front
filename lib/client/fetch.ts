@@ -215,9 +215,7 @@ const requestTokenRefresh = async (): Promise<TokenPair | false> => {
     }
     // Only a definitive rejection of this exact session may clear credentials.
     if (
-      (response.status === 400 ||
-        response.status === 401 ||
-        response.status === 403) &&
+      (response.status === 401 || response.status === 403) &&
       requestSessionRevision === authSessionRevision &&
       getRefreshToken() === refreshToken
     ) {
