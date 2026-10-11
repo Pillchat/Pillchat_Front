@@ -6,6 +6,7 @@ import Script from "next/script";
 import "./styles/globals.css";
 import Providers from "./providers";
 import { TopRouteProgress } from "@/components/molecules";
+import { Analytics } from "@vercel/analytics/next";
 
 const pretendard = localFont({
   src: "../public/fonts/pretendard-variable.woff2",
@@ -47,6 +48,7 @@ export default function RootLayout({
             <Suspense>{children}</Suspense>
           </Providers>
         </div>
+        <Analytics />
       </body>
     </html>
   );
