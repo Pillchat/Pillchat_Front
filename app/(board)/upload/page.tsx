@@ -9,21 +9,15 @@ import {
 } from "@/components/atoms";
 import { IconInputField, SelectModal } from "@/components/molecules";
 import { BoardHeader, BoardButton } from "@/components/molecules/board";
+import { useQuery } from "@tanstack/react-query";
 import { Controller } from "react-hook-form";
 import { useStep, useUploadForm, useUploadFiles } from "./_hooks";
 import { useRouter } from "@/lib/navigation";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import CheckCircle from "@/public/icons/check-circle.svg";
+import { archiveMaterialPayload } from "@/lib/client/materialMetadata";
 import { fetchAPI } from "@/lib/client/fetch";
-import { uploadMaterial } from "@/lib/client/upload";
-import {
-  getMaterials,
-  useFilesQuery,
-  useMaterialQuery,
-  useSubjectQuery,
-  useSubjectsQuery,
-} from "@/hooks/queries";
+import { getMaterials, useFilesQuery, useMaterialQuery } from "@/hooks/queries";
 import {
   type ArchiveLibraryState,
   getArchiveStorageUsageBytes,
@@ -87,6 +81,7 @@ const resolveMaterialKey = (value: any, materialId: string | number) => {
 const requestMaterialUploadTargets = async (files: File[]) => {
   const queryString = buildQueryParams({
     files: files.map((file) => file.name),
+    fileSizes: files.map((file) => file.size),
     type: "material",
   });
 
@@ -161,10 +156,10 @@ const uploadMaterialFiles = async (
 
 type MaterialDraft = {
   step: Step;
-  checked: boolean;
   title: string;
   content: string;
   selectedCategoryId: string;
+  selectedSubjectId: number | null;
   updatedAt: number;
 };
 
@@ -224,27 +219,37 @@ const UploadPage = () => {
   const { data: editMaterial } = useMaterialQuery(editId, {
     enabled: isEditMode && !!editId,
   });
-  const { data: subjectsResponse } = useSubjectsQuery();
-  const fallbackSubjectCode = useMemo(() => {
-    const items = subjectsResponse?.sections.flatMap(
-      (section) => section.items,
-    );
-    return (
-      items?.find((item) => item.label.includes("기타"))?.code ??
-      items?.[0]?.code
-    );
-  }, [subjectsResponse]);
-  const { data: fallbackSubject } = useSubjectQuery(fallbackSubjectCode);
-  const legacySubjectId = editMaterial?.subjectId ?? fallbackSubject?.id;
-
-  const { step, nextStep, prevStep, setStep } = useStep();
-  const [checked, setChecked] = useState(false);
+  const { step, nextStep, setStep } = useStep();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [library, setLibrary] = useState<ArchiveLibraryState>(() =>
     readArchiveLibrary(currentUserId),
   );
-  const [selectedCategoryId, setSelectedCategoryId] = useState("uncategorized");
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(
+    null,
+  );
+  const subjectQuery = useQuery({
+    queryKey: ["material-upload-subjects", currentUserId],
+    queryFn: async (): Promise<
+      { subjectId: number; name: string; categoryName: string }[]
+    > => {
+      const raw = await fetchAPI(
+        "/api/questionbank/ai-questions/subjects",
+        "GET",
+      );
+      const data = raw.data ?? raw;
+      if (!Array.isArray(data))
+        throw new Error("과목 목록을 불러오지 못했습니다.");
+      return data;
+    },
+  });
+  const subjectGroups = (subjectQuery.data ?? []).reduce<
+    Record<string, NonNullable<typeof subjectQuery.data>>
+  >((groups, subject) => {
+    (groups[subject.categoryName || "과목"] ??= []).push(subject);
+    return groups;
+  }, {});
   const [isCategoryCreatorOpen, setIsCategoryCreatorOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [capacityToast, setCapacityToast] = useState("");
@@ -273,9 +278,7 @@ const UploadPage = () => {
   useEffect(() => {
     if (!editId || didApplyEditCategoryRef.current) return;
     didApplyEditCategoryRef.current = true;
-    setSelectedCategoryId(
-      library.materialFolderIds[String(editId)] ?? "uncategorized",
-    );
+    setSelectedCategoryId(library.materialFolderIds[String(editId)] ?? "");
   }, [editId, library.materialFolderIds]);
 
   const archiveUsageBytes = useMemo(
@@ -353,7 +356,7 @@ const UploadPage = () => {
     const currentLibrary = readArchiveLibrary(currentUserId);
     const nextAssignments = { ...currentLibrary.materialFolderIds };
 
-    if (selectedCategoryId === "uncategorized") {
+    if (selectedCategoryId === "") {
       delete nextAssignments[materialId];
     } else {
       nextAssignments[materialId] = selectedCategoryId;
@@ -383,12 +386,13 @@ const UploadPage = () => {
     setValue,
   } = useUploadForm({
     onSubmit: async (data) => {
-      if (!legacySubjectId) {
-        throw new Error(
-          "업로드 정보를 준비하고 있습니다. 잠시 후 다시 시도해주세요.",
-        );
-      }
-
+      if (
+        !selectedSubjectId ||
+        !subjectQuery.data?.some(
+          (subject) => subject.subjectId === selectedSubjectId,
+        )
+      )
+        throw new Error("과목을 선택해주세요.");
       if (isEditMode) {
         // 수정 모드: 기존 presigned URL 방식 유지 (V2 수정 엔드포인트 미지원)
         const existingImageKeys = previewItems
@@ -407,9 +411,9 @@ const UploadPage = () => {
           await uploadMaterialFiles(imageFiles, pdfFile);
 
         const payload = {
+          subjectId: selectedSubjectId,
           title: data.title.trim(),
           content: data.content.trim(),
-          subjectId: Number(legacySubjectId),
           urlKey: [...existingImageKeys, ...newImageKeys],
           pdfKey: newPdfKey ?? existingPdfKey,
         };
@@ -426,14 +430,22 @@ const UploadPage = () => {
         return;
       }
 
-      // 생성 모드: V2 multipart API (파일 + 데이터 한번에)
-      const result = await uploadMaterial({
-        title: data.title.trim(),
-        content: data.content.trim(),
-        subjectId: Number(legacySubjectId),
-        files: imageFiles.length > 0 ? imageFiles : undefined,
-        pdf: pdfFile || undefined,
-      });
+      // Persist the selected subject separately from the personal archive category.
+      const { imageKeys, pdfKey } = await uploadMaterialFiles(
+        imageFiles,
+        pdfFile,
+      );
+      const result = await fetchAPI(
+        "/api/materials",
+        "POST",
+        archiveMaterialPayload(
+          data.title,
+          data.content,
+          imageKeys,
+          pdfKey,
+          selectedSubjectId,
+        ),
+      );
       const materialId =
         getCreatedMaterialId(result) ??
         (await findUploadedMaterialId(data.title.trim(), currentUserId));
@@ -457,12 +469,17 @@ const UploadPage = () => {
     try {
       const parsed: Partial<MaterialDraft> = JSON.parse(savedDraft);
 
+      setSelectedSubjectId(parsed.selectedSubjectId ?? null);
       setValue("title", parsed.title ?? "");
       setValue("content", parsed.content ?? "");
-      setSelectedCategoryId(parsed.selectedCategoryId ?? "uncategorized");
+      setSelectedCategoryId(
+        parsed.selectedCategoryId === "uncategorized"
+          ? ""
+          : (parsed.selectedCategoryId ?? ""),
+      );
 
       if (parsed.step && parsed.step !== Step.Complete) {
-        setStep(parsed.step);
+        setStep(Step.Upload);
       }
 
       setHasDraftValues(!!parsed.title || !!parsed.content);
@@ -520,6 +537,9 @@ const UploadPage = () => {
 
     didApplyEditDataRef.current = true;
 
+    setSelectedSubjectId(
+      editMaterial.subjectId ?? editMaterial.subject?.id ?? null,
+    );
     setValue("title", editMaterial.title ?? "");
     setValue("content", editMaterial.content ?? "");
 
@@ -579,9 +599,9 @@ const UploadPage = () => {
     const hasAnyDraftData =
       !!title ||
       !!content ||
-      selectedCategoryId !== "uncategorized" ||
-      checked ||
-      step !== Step.Guide;
+      selectedCategoryId !== "" ||
+      !!selectedSubjectId ||
+      hasFiles;
 
     if (!hasAnyDraftData) {
       window.localStorage.removeItem(draftKey);
@@ -590,33 +610,32 @@ const UploadPage = () => {
 
     const draft: MaterialDraft = {
       step,
-      checked,
       title: title ?? "",
       content: content ?? "",
       selectedCategoryId,
+      selectedSubjectId,
       updatedAt: Date.now(),
     };
 
     window.localStorage.setItem(draftKey, JSON.stringify(draft));
-  }, [draftKey, draftReady, step, checked, title, content, selectedCategoryId]);
-
-  useEffect(() => {
-    if (step !== Step.Guide) return;
-
-    const previousBodyOverflow = document.body.style.overflow;
-    const previousHtmlOverflow = document.documentElement.style.overflow;
-
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousBodyOverflow;
-      document.documentElement.style.overflow = previousHtmlOverflow;
-    };
-  }, [step]);
+  }, [
+    draftKey,
+    draftReady,
+    step,
+    title,
+    content,
+    selectedCategoryId,
+    selectedSubjectId,
+    hasFiles,
+  ]);
 
   const canSubmit =
-    !!title?.trim() && !!legacySubjectId && hasFiles && !isSubmitting;
+    !!title?.trim() &&
+    hasFiles &&
+    !!subjectQuery.data?.some(
+      (subject) => subject.subjectId === selectedSubjectId,
+    ) &&
+    !isSubmitting;
 
   const openConfirmModal = () => {
     if (!canSubmit) return;
@@ -652,104 +671,23 @@ const UploadPage = () => {
     didRestoreDraftRef.current = false;
     resetForm();
     clearFiles();
-    setChecked(false);
     setInitialized(false);
     setHasDraftValues(false);
-    setSelectedCategoryId("uncategorized");
+    setSelectedCategoryId("");
+    setSelectedSubjectId(null);
     setIsCategoryCreatorOpen(false);
     setNewCategoryName("");
     setDraftReady(false);
-    setStep(Step.Guide);
+    setStep(Step.Upload);
   };
 
   return (
     <>
-      {step === Step.Guide && (
-        <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-white">
-          <div className="shrink-0 border-b border-[#F2F2F2] bg-white">
-            <BoardHeader
-              title={isEditMode ? "학습자료 수정" : "학습자료 업로드"}
-              onLeftButtonClick={() => router.push("/archive")}
-            />
-          </div>
-
-          <div className="flex min-h-0 flex-1 flex-col px-6 pb-6 pt-5">
-            <div className="shrink-0 px-1">
-              <p className="text-headline-large">
-                학습자료 업로드 전, 다음 안내사항을 반드시 읽고 확인해주세요.
-              </p>
-            </div>
-
-            <div className="mt-6 flex min-h-0 flex-1 flex-col justify-between gap-6">
-              <div className="space-y-5 px-1">
-                <div>
-                  <p className="mb-2 text-title-large">
-                    1. 저작권 관련 책임 안내
-                  </p>
-                  <ul className="list-disc space-y-2 pl-5 text-body-medium">
-                    <li>
-                      사용자가 업로드하는 모든 자료는 대한민국 「저작권법」
-                      제2조 및 제4조에 따라 보호받는 저작물에 해당할 수
-                      있습니다.
-                    </li>
-                    <li>
-                      특히 출시 문제, 국가고시(약사국시) 문제, 학원 또는 대학
-                      족보 등 저작권자가 따로 있는 자료를 무단으로 업로드하는
-                      경우, 저작권 침해로 간주되며 법적 책임이 따를 수 있습니다.
-                    </li>
-                    <li>
-                      본 플랫폼은 사용자가 업로드한 자료에 대한 저작권 침해
-                      여부를 사전 심사하지 않으며, 모든 법적 책임은 자료를
-                      업로드한 사용자 본인에게 있습니다.
-                    </li>
-                  </ul>
-                </div>
-
-                <div>
-                  <p className="mb-2 text-title-large">2. 책임 동의 안내</p>
-                  <ul className="list-disc space-y-2 pl-5 text-body-medium">
-                    <li>
-                      본인은 자료를 직접 작성했거나, 저작권 문제가 없는 자료임을
-                      확인합니다.
-                    </li>
-                    <li>
-                      위 사항을 충분히 인지하였으며, 이를 위반하여 발생하는
-                      민형사상 법적 책임은 전적으로 본인에게 있음에 동의합니다.
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="shrink-0 border-t border-[#F2F2F2] px-1 pt-5">
-                <div
-                  className="flex cursor-pointer items-center justify-center gap-2"
-                  onClick={() => setChecked((prev) => !prev)}
-                >
-                  <CheckCircle
-                    className="h-[22px] w-[22px]"
-                    style={{ color: checked ? "#FF412E" : "#C4C4C4" }}
-                  />
-                  <p className="text-title-small">위 내용에 동의합니다.</p>
-                </div>
-
-                <div className="mt-4">
-                  <SolidButton
-                    disabled={!checked}
-                    onClick={nextStep}
-                    content="다음"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {step === Step.Upload && (
         <div className="flex min-h-dvh flex-col bg-white">
           <BoardHeader
             title={isEditMode ? "학습자료 수정" : "학습자료 업로드"}
-            onLeftButtonClick={prevStep}
+            onLeftButtonClick={() => router.push("/archive")}
           />
 
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-8">
@@ -801,6 +739,56 @@ const UploadPage = () => {
               />
             </div>
 
+            <section className="mb-5 px-6" aria-label="과목 선택">
+              <h2 className="mb-3 text-base font-semibold">
+                과목 선택{" "}
+                <span className="text-sm text-destructive">(필수)</span>
+              </h2>
+              {!selectedSubjectId && (
+                <p className="mb-3 text-sm text-muted-foreground">
+                  자료에 맞는 과목을 선택해야 업로드할 수 있어요.
+                </p>
+              )}
+              {subjectQuery.isPending && (
+                <p role="status" className="text-sm text-muted-foreground">
+                  과목을 불러오는 중...
+                </p>
+              )}
+              {subjectQuery.isError && (
+                <div role="alert" className="text-sm text-destructive">
+                  과목 목록을 불러오지 못했습니다.
+                  <button
+                    type="button"
+                    className="ml-2 underline"
+                    onClick={() => void subjectQuery.refetch()}
+                  >
+                    다시 불러오기
+                  </button>
+                </div>
+              )}
+              {Object.entries(subjectGroups).map(([category, subjects]) => (
+                <div key={category} className="mb-4">
+                  <p className="mb-2 text-sm text-muted-foreground">
+                    {category}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {subjects.map((subject) => (
+                      <button
+                        key={subject.subjectId}
+                        type="button"
+                        aria-pressed={selectedSubjectId === subject.subjectId}
+                        disabled={isSubmitting}
+                        onClick={() => setSelectedSubjectId(subject.subjectId)}
+                        className={`rounded-full border px-4 py-2 text-sm ${selectedSubjectId === subject.subjectId ? "border-brand bg-brandSecondary font-medium text-brand" : "border-gray-200 text-muted-foreground"}`}
+                      >
+                        {subject.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </section>
+
             <section className="mb-5 px-6" aria-label="자료 카테고리">
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -850,22 +838,15 @@ const UploadPage = () => {
               )}
 
               <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategoryId("uncategorized")}
-                  className={`shrink-0 rounded-full border px-3 py-1.5 text-label-small ${
-                    selectedCategoryId === "uncategorized"
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border bg-white text-muted-foreground"
-                  }`}
-                >
-                  미분류
-                </button>
                 {library.folders.map((category) => (
                   <button
                     key={category.id}
                     type="button"
-                    onClick={() => setSelectedCategoryId(category.id)}
+                    onClick={() =>
+                      setSelectedCategoryId(
+                        selectedCategoryId === category.id ? "" : category.id,
+                      )
+                    }
                     className={`flex shrink-0 items-center gap-1 rounded-full border px-3 py-1.5 text-label-small ${
                       selectedCategoryId === category.id
                         ? "border-primary bg-primary/10 text-primary"

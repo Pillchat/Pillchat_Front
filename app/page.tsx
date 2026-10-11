@@ -18,12 +18,7 @@ import { Toast } from "@/components/atoms";
 import EntryButton from "@/app/(questionbank)/questionbank/_components/EntryButton";
 import { useRouter } from "@/lib/navigation";
 import { getValidAccessToken } from "@/lib/client/fetch";
-import {
-  ATTENDANCE_STORAGE_KEY,
-  checkInAttendance,
-  readAttendance,
-  type AttendanceSnapshot,
-} from "@/lib/client/attendance";
+import { useAttendance } from "@/hooks/useAttendance";
 import {
   calculateDday,
   formatDday,
@@ -227,12 +222,7 @@ const Home: FC = () => {
   const router = useRouter();
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  // 출석 API 연결 전 UI 확인용 상태이며, 새로고침 시 초기화합니다.
-  const [attendance, setAttendance] = useState<AttendanceSnapshot>({
-    days: 0,
-    completed: false,
-  });
-  const [isAttendanceReady, setIsAttendanceReady] = useState(false);
+  const attendance = useAttendance(isAuthenticated === true);
   const [isDdayReady, setIsDdayReady] = useState(false);
   const [ddays, setDdays] = useState<DDayItem[]>(DEFAULT_DDAYS);
   const [activeDdayId, setActiveDdayId] = useState(DEFAULT_DDAYS[0].id);
@@ -246,51 +236,6 @@ const Home: FC = () => {
   } | null>(null);
   const ddayListRef = useRef<HTMLDivElement | null>(null);
   const newDdayDraftListRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    let midnightTimer: ReturnType<typeof setTimeout>;
-
-    const refreshAttendance = () => {
-      const now = new Date();
-      try {
-        setAttendance(readAttendance(now));
-      } catch {
-        // Keep the current display; a check-in will report storage failures.
-      } finally {
-        setIsAttendanceReady(true);
-      }
-
-      clearTimeout(midnightTimer);
-      const midnight = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate() + 1,
-      );
-      midnightTimer = setTimeout(
-        refreshAttendance,
-        midnight.getTime() - now.getTime() + 100,
-      );
-    };
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === ATTENDANCE_STORAGE_KEY || event.key === null) {
-        refreshAttendance();
-      }
-    };
-    const onVisibilityChange = () => {
-      if (document.visibilityState === "visible") refreshAttendance();
-    };
-
-    refreshAttendance();
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("focus", refreshAttendance);
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    return () => {
-      clearTimeout(midnightTimer);
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("focus", refreshAttendance);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -579,17 +524,26 @@ const Home: FC = () => {
         </section>
 
         <AttendanceSummary
-          days={attendance.days}
-          completed={attendance.completed}
-          pending={!isAttendanceReady}
+          days={attendance.data?.totalDays}
+          completed={attendance.data?.todayChecked ?? false}
+          pending={attendance.isLoading || attendance.isCheckingIn}
           onCheckIn={() => {
-            try {
-              setAttendance(checkInAttendance());
-            } catch {
+            void attendance.checkIn().catch(() => {
               showDdayToast("출석을 저장하지 못했어요. 다시 시도해 주세요.");
-            }
+            });
           }}
         />
+        {attendance.isError && (
+          <p role="alert" className="mt-2 px-5 text-sm text-destructive">
+            출석 정보를 불러오지 못했어요.
+            <button
+              className="ml-2 underline"
+              onClick={() => void attendance.refetch()}
+            >
+              다시 시도
+            </button>
+          </p>
+        )}
 
         <section className="mt-6 px-5 md:px-10" aria-label="학습 메뉴">
           <div className="flex flex-col gap-4">

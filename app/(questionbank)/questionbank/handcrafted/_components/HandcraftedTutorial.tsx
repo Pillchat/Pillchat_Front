@@ -43,8 +43,12 @@ const steps = [
 
 export default function HandcraftedTutorial({
   onClose,
+  mandatory = false,
+  onComplete,
 }: {
   onClose: () => void;
+  mandatory?: boolean;
+  onComplete?: () => void;
 }) {
   const [step, setStep] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -74,10 +78,19 @@ export default function HandcraftedTutorial({
     <Dialog
       open
       onOpenChange={(open) => {
-        if (!open) onClose();
+        if (!open && !mandatory) onClose();
       }}
     >
-      <DialogContent className="max-h-[90dvh] overflow-y-auto rounded-2xl">
+      <DialogContent
+        showCloseButton={!mandatory}
+        onEscapeKeyDown={(event) => {
+          if (mandatory) event.preventDefault();
+        }}
+        onInteractOutside={(event) => {
+          if (mandatory) event.preventDefault();
+        }}
+        className="max-h-[90dvh] overflow-y-auto rounded-2xl"
+      >
         <p className="text-xs font-semibold text-primary">
           수제 문제 사용법 · {step + 1}/{steps.length}
         </p>
@@ -88,7 +101,9 @@ export default function HandcraftedTutorial({
           {steps[step].description}
         </DialogDescription>
         <p className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-muted-foreground">
-          연습 답안과 북마크는 저장되지 않아요. 언제든 닫아도 괜찮아요.
+          {mandatory
+            ? "처음 이용할 때 한 번만 연습해 주세요. 연습 답안과 북마크는 저장되지 않아요."
+            : "연습 답안과 북마크는 저장되지 않아요. 언제든 닫아도 괜찮아요."}
         </p>
         {step < 3 && (
           <section className="rounded-xl border p-4">
@@ -189,7 +204,7 @@ export default function HandcraftedTutorial({
         <button
           type="button"
           disabled={!canNext}
-          onClick={step === steps.length - 1 ? onClose : next}
+          onClick={step === steps.length - 1 ? (onComplete ?? onClose) : next}
           className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white disabled:opacity-40"
         >
           {step === steps.length - 1 ? "연습 마치기" : "다음"}

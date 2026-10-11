@@ -1,6 +1,8 @@
 "use client";
 
-import { BadgeCheck } from "lucide-react";
+import { TutorialButton } from "@/components/learning/TutorialButton";
+
+import { useTutorialProgress } from "@/hooks/useTutorialProgress";
 import { useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
 
 import { AppShell, PracticeHeader } from "@/components/molecules";
@@ -117,7 +119,12 @@ function createSampleCards(): ConceptFlashcard[] {
   ];
 }
 
-export function FlashcardTutorialApp() {
+export function FlashcardTutorialApp({
+  mandatory = false,
+  onComplete,
+}: { mandatory?: boolean; onComplete?: () => void } = {}) {
+  const progress = useTutorialProgress("flashcards");
+  const required = mandatory || progress.completed !== true;
   const router = useRouter();
   const [cards, setCards] = useState<Flashcard[]>(createSampleCards);
   const [selectedCollection, setSelectedCollection] = useState(INITIAL_PACK);
@@ -128,7 +135,15 @@ export function FlashcardTutorialApp() {
   const studyControlsRef = useRef<FlashcardStudyControls>(null);
   const guide = steps[step];
 
-  const exit = () => router.replace("/flashcards");
+  const exit = () => {
+    if (!required) router.replace("/flashcards");
+  };
+  const finish = () => {
+    if (step !== "complete") return;
+    progress.complete();
+    if (onComplete) onComplete();
+    else router.replace("/flashcards");
+  };
   const restart = () => {
     advanceLock.current = false;
     setAdvancing(false);
@@ -230,14 +245,7 @@ export function FlashcardTutorialApp() {
         onBack={exit}
         separator={false}
         rightSlot={
-          <button
-            type="button"
-            onClick={restart}
-            aria-label="사용법 다시 시작"
-            className="flex h-10 w-10 items-center justify-center rounded-lg transition hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-          >
-            <BadgeCheck className="h-5 w-5 text-primary" aria-hidden="true" />
-          </button>
+          <TutorialButton onClick={restart} label="튜토리얼 다시 시작" />
         }
       />
       <main
@@ -274,8 +282,9 @@ export function FlashcardTutorialApp() {
         title={guide.title}
         description={guide.description}
         onExit={exit}
+        canExit={!required}
         completed={step === "complete"}
-        onFinish={exit}
+        onFinish={finish}
         onRestart={restart}
         onNext={() => void advanceGuide()}
         nextDisabled={advancing}

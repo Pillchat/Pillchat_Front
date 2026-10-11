@@ -6,9 +6,10 @@ import type { ReviewCategoryItem } from "@/types/questionbank";
 interface CategoryCardProps {
   item: Pick<
     ReviewCategoryItem,
-    "title" | "subject" | "totalQuestionCount" | "wrongCount"
-  >;
+    "title" | "totalQuestionCount" | "wrongCount"
+  > & { subject?: string };
   onClick: () => void;
+  disabled?: boolean;
   unansweredCount?: number;
   dateLabel?: string;
 }
@@ -16,12 +17,14 @@ interface CategoryCardProps {
 const CategoryCard: FC<CategoryCardProps> = ({
   item,
   onClick,
+  disabled = false,
   unansweredCount = 0,
   dateLabel,
 }) => {
   return (
     <button
       type="button"
+      disabled={disabled}
       className="flex w-full items-center justify-between gap-3 border-b px-6 py-4 text-left hover:bg-gray-50 active:bg-gray-100"
       onClick={onClick}
     >
@@ -33,8 +36,12 @@ const CategoryCard: FC<CategoryCardProps> = ({
           <p className="mt-1 text-xs text-muted-foreground">{dateLabel}</p>
         )}
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-          <span>{item.subject}</span>
-          <span>·</span>
+          {item.subject && (
+            <>
+              <span>{item.subject}</span>
+              <span>·</span>
+            </>
+          )}
           <span>총 {item.totalQuestionCount}문제</span>
           <span>·</span>
           <span className="font-medium text-red-500">

@@ -559,3 +559,28 @@ export async function fetchRemotePackNames(): Promise<Record<string, string>> {
   }
   return names;
 }
+
+export type FlashcardPack = {
+  packId: string;
+  title: string;
+  version: number;
+  cardCount: number;
+  sourceFileId?: string | null;
+};
+
+export async function fetchFlashcardPacks(): Promise<FlashcardPack[]> {
+  const packs: FlashcardPack[] = [];
+  for (let page = 0; ; page++) {
+    const response = await fetchAPI("/api/flashcard-packs", "GET", {
+      page,
+      size: 100,
+    });
+    packs.push(
+      ...response.items.map((pack: FlashcardPack) => ({
+        ...pack,
+        packId: String(pack.packId),
+      })),
+    );
+    if (!response.hasNext) return packs;
+  }
+}

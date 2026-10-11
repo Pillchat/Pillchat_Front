@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import vm from "node:vm";
@@ -7,7 +7,14 @@ const require = createRequire(import.meta.url);
 export function loader(globals = {}, overrides = {}) {
   const cache = new Map();
   function load(file) {
-    const absolute = path.resolve(file);
+    const requested = path.resolve(file);
+    const absolute =
+      [
+        requested,
+        requested.replace(/\.ts$/, ".tsx"),
+        path.join(requested.replace(/\.ts$/, ""), "index.ts"),
+        path.join(requested.replace(/\.ts$/, ""), "index.tsx"),
+      ].find(existsSync) ?? requested;
     if (cache.has(absolute)) return cache.get(absolute);
     const exports = {};
     cache.set(absolute, exports);
@@ -17,6 +24,7 @@ export function loader(globals = {}, overrides = {}) {
         module: ts.ModuleKind.CommonJS,
         target: ts.ScriptTarget.ES2022,
         esModuleInterop: true,
+        jsx: ts.JsxEmit.ReactJSX,
       },
     });
     vm.runInNewContext(

@@ -1,6 +1,5 @@
 "use client";
 
-import { format } from "date-fns";
 import { FC } from "react";
 
 export const MaterialTitleSection: FC<{
@@ -11,7 +10,12 @@ export const MaterialTitleSection: FC<{
 }> = ({ title, userName, subjectName, createdAt }) => {
   const formattedDate =
     createdAt && !Number.isNaN(new Date(createdAt).getTime())
-      ? format(new Date(createdAt), "yyyy-MM-dd HH:mm:ss")
+      ? new Intl.DateTimeFormat("sv-SE", {
+          timeZone: "Asia/Seoul",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(new Date(createdAt))
       : "";
 
   return (

@@ -138,7 +138,9 @@ const PremiumPage = () => {
           subjectId: selectedSubject.subjectId,
           questionType: selectedQuestionType,
           questionCount: parsedCount,
-          subjectHint: subjectHint.trim() || undefined,
+          subjectHint: [selectedSubject.name, subjectHint.trim()]
+            .filter(Boolean)
+            .join(" · "),
         },
       );
       const generateData = generateRaw.data ?? generateRaw;
@@ -192,7 +194,8 @@ const PremiumPage = () => {
             questionType: q.type,
             passage: q.content,
             choices: mapChoices(q.choices),
-            subject: q.subject,
+            // This request generates a single selected subject; server labels may be stale.
+            subject: selectedSubject.name,
             hint: q.hint,
             correctAnswer:
               answer?.answer ??
