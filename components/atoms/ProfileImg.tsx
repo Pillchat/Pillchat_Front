@@ -11,7 +11,7 @@ export const ProfileImg: FC<ProfileImgProps> = ({ src }) => {
   const imgSrc = src || DEFAULT_PROFILE_IMAGE;
 
   return (
-    <div className="h-[4.25rem] w-[4.25rem] overflow-hidden rounded-full border-[0.2rem] border-brand">
+    <div className="h-[4.25rem] w-[4.25rem] shrink-0 overflow-hidden rounded-full border-[0.2rem] border-brand">
       <img
         src={imgSrc}
         className="h-full w-full object-cover"

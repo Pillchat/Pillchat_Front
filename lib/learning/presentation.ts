@@ -1,4 +1,4 @@
-import type { Attempt, Question, SavedAnswer } from "./api";
+import type { Attempt, Grade, Question, SavedAnswer } from "./api";
 import type {
   AnswerState,
   CbtDisplayQuestion,
@@ -11,6 +11,16 @@ export const attemptIndex = (attempt: Attempt) =>
       (q) => q.attemptQuestionId === attempt.currentQuestionId,
     ),
   );
+
+export function choiceExplanations(question: Question, grade: Grade) {
+  return question.choices.flatMap((choice, index) => {
+    const detail = grade.choices?.find(
+      (item) => item.choiceId === choice.choiceId,
+    );
+    return detail ? [{ ...detail, number: index + 1 }] : [];
+  });
+}
+
 export function cbtQuestion(
   question: Question,
   index: number,

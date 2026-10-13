@@ -1703,7 +1703,7 @@ function CbtPracticeContent({
         onKeyDownCapture={guardTutorialKeys}
       >
         <header className="fixed inset-x-0 top-0 z-40 h-[calc(60px+env(safe-area-inset-top))] bg-white pt-[env(safe-area-inset-top)]">
-          <div className="grid h-[60px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 lg:gap-4 lg:px-5">
+          <div className="grid h-[60px] grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 px-3 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-4 lg:px-5">
             <div className="flex min-w-0 items-center gap-2 lg:gap-3">
               <button
                 type="button"

@@ -29,11 +29,11 @@ const QuizProgressBar: FC = () => {
   return (
     <div className="flex-shrink-0">
       {/* 진행도 + 액션 */}
-      <div className="flex items-center justify-between px-6 py-3">
-        <span className="text-sm font-semibold text-foreground">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-6 py-3">
+        <span className="shrink-0 text-sm font-semibold text-foreground">
           {progressLabel}
         </span>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => movePrevQuestion()}
             disabled={!canMovePrev}

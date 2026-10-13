@@ -12,6 +12,7 @@ body {
   background: #fff;
   margin-left: auto;
   margin-right: auto;
+  overflow-wrap: anywhere;
 }
 
 /* 자체 눈 버튼이 있는 필드는 비밀번호 표시 중에도 브라우저 버튼과 겹치지 않게 한다. */
