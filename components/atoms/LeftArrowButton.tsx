@@ -9,7 +9,7 @@ export const LeftArrowButton = ({ onClick }: { onClick: () => void }) => {
       size="icon"
       onClick={onClick}
       aria-label="이전 화면"
-      className="[&_svg]:size-5"
+      className="shrink-0 [&_svg]:size-5"
     >
       <ArrowLeft aria-hidden="true" />
     </Button>

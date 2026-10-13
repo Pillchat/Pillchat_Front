@@ -10,7 +10,7 @@ interface StepHeaderProps {
 function Name({ content, dark }: { content: string; dark?: boolean }) {
   return (
     <p
-      className={`text-[16px] font-bold ${dark ? "text-white" : "text-black"}`}
+      className={`min-w-0 text-center text-[16px] font-bold ${dark ? "text-white" : "text-black"}`}
     >
       {content}
     </p>
@@ -20,7 +20,7 @@ function Name({ content, dark }: { content: string; dark?: boolean }) {
 export function StepHeader({ content, onIconClick, dark }: StepHeaderProps) {
   return (
     <div
-      className={`relative flex h-[calc(60px+env(safe-area-inset-top))] w-full flex-row items-center justify-center pt-[env(safe-area-inset-top)] ${dark ? "bg-black" : "bg-white"}`}
+      className={`relative flex min-h-[calc(60px+env(safe-area-inset-top))] w-full shrink-0 flex-row items-center justify-center px-14 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] ${dark ? "bg-black" : "bg-white"}`}
     >
       <img
         src={

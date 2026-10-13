@@ -10,6 +10,7 @@ import HandcraftedTutorial from "@/app/(questionbank)/questionbank/handcrafted/_
 import { SessionFeedback } from "./SessionFeedback";
 import HandcraftedSetup from "./HandcraftedSetup";
 import { PracticeResult } from "./PracticeResult";
+import { choiceExplanations } from "@/lib/learning/presentation";
 export default function HandcraftedPractice({
   session: s,
 }: {
@@ -58,10 +59,10 @@ export default function HandcraftedPractice({
       ) : question && answer ? (
         <main className="px-5 py-6 md:px-10 md:py-8">
           <div className="flex items-center justify-between gap-4">
-            <p className="text-sm font-semibold">
+            <p className="shrink-0 text-sm font-semibold">
               {s.index + 1} / {attempt.currentSectionQuestions.length}
             </p>
-            <p className="text-xs font-medium text-muted-foreground">
+            <p className="min-w-0 text-right text-xs font-medium text-muted-foreground">
               {question.subjectName}
             </p>
           </div>
@@ -73,7 +74,7 @@ export default function HandcraftedPractice({
               }}
             />
           </div>
-          <section className="mt-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-8">
+          <section className="mt-5 min-w-0 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5 md:p-8">
             <div className="flex items-start justify-between gap-4">
               <span className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-brandSecondary px-2 text-sm font-bold text-primary">
                 Q{s.index + 1}
@@ -144,7 +145,7 @@ export default function HandcraftedPractice({
                         selectedChoiceId: choice.choiceId,
                       })
                     }
-                    className={`flex min-h-14 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium ${resultClass}`}
+                    className={`flex min-h-14 w-full min-w-0 items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm font-medium sm:px-4 ${resultClass}`}
                   >
                     <span
                       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${grade && correct ? "border-green-500 bg-green-500 text-white" : grade && selected ? "border-red-400 bg-red-400 text-white" : selected ? "border-primary bg-primary text-white" : "border-gray-300 text-muted-foreground"}`}
@@ -157,7 +158,9 @@ export default function HandcraftedPractice({
                         index + 1
                       )}
                     </span>
-                    <span className="whitespace-pre-wrap">{choice.text}</span>
+                    <span className="min-w-0 flex-1 whitespace-pre-wrap [overflow-wrap:anywhere]">
+                      {choice.text}
+                    </span>
                   </button>
                 );
               })}
@@ -171,12 +174,12 @@ export default function HandcraftedPractice({
                   </p>
                 </div>
                 <div className="mt-4 space-y-2">
-                  {grade.choices?.map((choice, index) => (
+                  {choiceExplanations(question, grade).map((choice) => (
                     <p
                       key={choice.choiceId}
                       className="whitespace-pre-wrap text-xs leading-5 text-muted-foreground"
                     >
-                      {index + 1}. {choice.explanation}
+                      {choice.number}. {choice.explanation}
                     </p>
                   ))}
                 </div>

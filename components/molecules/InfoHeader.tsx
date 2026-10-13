@@ -31,15 +31,20 @@ export const InfoHeader: FC<InfoHeaderProps> = ({
 
   return (
     <>
-      <header className="fixed left-1/2 top-0 z-50 flex h-[calc(60px+env(safe-area-inset-top))] w-full max-w-app -translate-x-1/2 items-center justify-between bg-white px-6 pt-[env(safe-area-inset-top)] md:px-8">
+      <header className="fixed left-1/2 top-0 z-50 flex h-[calc(60px+env(safe-area-inset-top))] w-full max-w-app -translate-x-1/2 items-center justify-between gap-2 bg-white px-4 pt-[env(safe-area-inset-top)] sm:px-6 md:px-8">
         {/* 왼쪽: 뒤로가기 */}
         <LeftArrowButton onClick={() => router.back()} />
 
         {/* 가운데: 타이틀 */}
-        <p className="text-lg font-semibold">{title}</p>
+        <p
+          className="min-w-0 flex-1 truncate text-center text-lg font-semibold"
+          title={title}
+        >
+          {title}
+        </p>
 
         {/* 오른쪽: 버튼 + 아이콘 */}
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {showIcon ? (
             <Button
               variant="textOnly"

@@ -172,7 +172,7 @@ export function QuestionPane({
       onClick={() => onActivate(question.id)}
       className={cn(
         "mx-auto min-w-0 rounded-2xl bg-white",
-        compact ? "max-w-none p-4" : "max-w-[880px] p-6",
+        compact ? "max-w-none p-4" : "max-w-[880px] p-3 sm:p-6",
         active
           ? "border-2 border-primary"
           : "border-2 border-transparent bg-[#fafafa]",
@@ -330,7 +330,7 @@ export function QuestionPane({
                 </span>
                 <span
                   className={cn(
-                    "min-w-0 flex-1 break-words font-medium",
+                    "min-w-0 flex-1 whitespace-pre-wrap font-medium [overflow-wrap:anywhere]",
                     typography.choice,
                     excluded && "line-through decoration-2",
                   )}
@@ -340,7 +340,7 @@ export function QuestionPane({
                 {selected && (
                   <span
                     className={cn(
-                      "shrink-0 font-extrabold text-primary",
+                      "hidden shrink-0 font-extrabold text-primary sm:inline",
                       typography.action,
                     )}
                   >
