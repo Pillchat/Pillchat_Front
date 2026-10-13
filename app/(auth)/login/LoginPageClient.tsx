@@ -108,6 +108,7 @@ export const LoginPageClient: FC = () => {
                   content="비밀번호"
                   placeholder="비밀번호를 입력해주세요"
                   type={eye ? "text" : "password"}
+                  inputClassName="password-with-toggle"
                   iconSrc={
                     eye ? PUBLIC_ASSETS.icons.eyeOff : PUBLIC_ASSETS.icons.eye
                   }
