@@ -293,7 +293,7 @@ test("handcrafted grading uses the server explanation and latest answer version"
   assert.equal(s.grades[q.attemptQuestionId].explanation, grade.explanation);
 });
 
-const componentLoad = () =>
+const componentLoad = (overrides = {}) =>
   loader(
     {},
     {
@@ -313,6 +313,7 @@ const componentLoad = () =>
       },
       "@/app/(questionbank)/questionbank/handcrafted/_components/HandcraftedTutorial":
         () => null,
+      ...overrides,
     },
   );
 const baseSession = {
@@ -370,4 +371,114 @@ test("handcrafted live screen retains numbered choices and progress and hides un
   for (const value of [q.stem, "Q1", "모르겠어요", "채점하기", "임상약학"])
     assert.ok(html.includes(value), value);
   assert.equal(html.includes("정답 해설"), false);
+});
+
+function handcraftedView(session) {
+  const effects = [];
+  const View = componentLoad({
+    react: {
+      ...React,
+      useState: (initial) => [initial, () => {}],
+      useEffect: (effect) => effects.push(effect),
+    },
+  })("components/learning/practice/HandcraftedPractice.tsx").default;
+  const tree = View({ session });
+  const nodes = (element) => {
+    if (Array.isArray(element)) return element.flatMap(nodes);
+    if (!element || typeof element !== "object") return [];
+    return [element, ...nodes(element.props?.children)];
+  };
+  return {
+    tree,
+    nodes: nodes(tree),
+    runEffects: () => effects.forEach((f) => f()),
+  };
+}
+
+test("completed handcrafted grading, submission and resumption return to setup even without questions", async () => {
+  for (const action of ["grade", "submitSection", "resume"]) {
+    const real = { ...attempt, source: "HANDCRAFTED" };
+    const completed = {
+      ...real,
+      state: "COMPLETED",
+      resultAvailable: true,
+      currentSectionQuestions: [],
+      savedAnswers: [],
+    };
+    const calls = [];
+    const h = hookHarness(async (url, method) => {
+      calls.push({ url, method });
+      if (url === "/api/learning/attempts")
+        return { items: [], nextCursor: null };
+      if (method === "GET") return action === "resume" ? completed : real;
+      return { attempt: completed };
+    }, "HANDCRAFTED");
+    await h.render().resume(real.attemptId);
+    if (action !== "resume") await h.render()[action](false);
+    const session = { ...h.render(), loading: false };
+    assert.equal(session.attempt.state, "COMPLETED");
+    const view = handcraftedView(session);
+    assert.equal(
+      renderToStaticMarkup(view.tree).includes(
+        "현재 문제 또는 답안을 찾지 못하였습니다.",
+      ),
+      false,
+    );
+    view.runEffects();
+    await new Promise(setImmediate);
+    assert.equal(h.render().attempt, null);
+    assert.equal(h.render().result, null);
+    assert.equal(
+      calls.some(({ url }) => url.endsWith("/result")),
+      false,
+    );
+  }
+});
+
+test("missing handcrafted questions or answers show the exception and return button only", async () => {
+  for (const missing of ["currentSectionQuestions", "savedAnswers"]) {
+    let leaves = 0;
+    const view = handcraftedView({
+      ...baseSession,
+      source: "HANDCRAFTED",
+      attempt: { ...attempt, source: "HANDCRAFTED", [missing]: [] },
+      leave: async () => {
+        leaves++;
+      },
+    });
+    view.runEffects();
+    assert.equal(leaves, 0);
+    const html = renderToStaticMarkup(view.tree);
+    assert.ok(html.includes("현재 문제 또는 답안을 찾지 못하였습니다."));
+    assert.equal(html.includes("응시 내용을 확인해주세요."), false);
+    const back = view.nodes.find(
+      (node) => node.type === "button" && node.props.children === "돌아가기",
+    );
+    assert.ok(back);
+    back.props.onClick();
+    assert.equal(leaves, 1);
+  }
+});
+
+test("handcrafted completion waits for pending work and ignores result publication status", () => {
+  for (const resultAvailable of [true, false]) {
+    let leaves = 0;
+    const session = {
+      ...baseSession,
+      source: "HANDCRAFTED",
+      attempt: {
+        ...attempt,
+        source: "HANDCRAFTED",
+        state: "COMPLETED",
+        resultAvailable,
+      },
+      leave: async () => {
+        leaves++;
+      },
+    };
+    handcraftedView({ ...session, disabled: true }).runEffects();
+    assert.equal(leaves, 0);
+    handcraftedView(session).runEffects();
+    assert.equal(leaves, 1);
+  }
 });
