@@ -227,7 +227,12 @@ const requestTokenRefresh = async (): Promise<TokenPair | false> => {
 
           const normalizedAccessToken = normalizeToken(accessToken);
           const normalizedRefreshToken = normalizeToken(nextRefreshToken);
-          persistTokens(normalizedAccessToken, normalizedRefreshToken, rememberMe, true);
+          persistTokens(
+            normalizedAccessToken,
+            normalizedRefreshToken,
+            rememberMe,
+            true,
+          );
           return {
             access_token: normalizedAccessToken,
             refresh_token: normalizedRefreshToken,
