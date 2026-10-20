@@ -86,6 +86,12 @@ const MyPage: FC = () => {
               description="내가 설정한 항목을 변경할 수 있어요."
               onClick={() => router.push("/onboarding")}
             />
+            <SystemField
+              iconSrc={PUBLIC_ASSETS.icons.userInfo}
+              title="계정 연결"
+              description="기존 계정에 카카오 로그인을 연결해보세요."
+              onClick={() => router.push("/settings/account")}
+            />
           </div>
 
           <div className="mt-8 h-px w-full bg-muted" />
