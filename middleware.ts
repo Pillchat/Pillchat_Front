@@ -22,6 +22,17 @@ const isLoginPath = (pathname: string) =>
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Let the callback recover an expired session on the client. Completion still
+  // requires a service Bearer token and the original tab's one-time state.
+  if (pathname === "/settings/account/kakao/callback") {
+    const response = NextResponse.next();
+    for (const [name, value] of Object.entries(LOGIN_NO_STORE_HEADERS)) {
+      response.headers.set(name, value);
+    }
+    response.headers.set("Referrer-Policy", "no-referrer");
+    return response;
+  }
+
   // 공개 경로는 통과
   if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) {
     const response = NextResponse.next();

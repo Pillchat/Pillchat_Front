@@ -131,7 +131,7 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
         )}
       >
         {open ? (
-          <div className="flex w-full items-center gap-3">
+          <div className="flex w-full min-w-0 items-center gap-3">
             <input
               ref={inputRef}
               value={value}
@@ -164,11 +164,11 @@ export const GeneralHeader: FC<GeneralHeaderProps> = ({
                 }
               }}
               placeholder="검색어 입력"
-              className="h-10 w-full rounded-md border border-border bg-background px-3 text-base outline-none focus:ring-2 focus:ring-brand/40 md:text-label-medium"
+              className="h-10 min-w-0 flex-1 rounded-md border border-border bg-background px-3 text-base outline-none focus:ring-2 focus:ring-brand/40 md:text-label-medium"
             />
             <button
               type="button"
-              className="relative z-30 flex items-center"
+              className="relative z-30 flex shrink-0 items-center"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => inputRef.current?.focus()}
             >

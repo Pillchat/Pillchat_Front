@@ -70,7 +70,7 @@ export function PreviewModal({ title, priceLabel }: PreviewModalProps) {
           맛보기 보기
         </button>
       </DialogTrigger>
-      <DialogContent className="w-[calc(100%-2rem)] max-w-[440px] overflow-hidden p-0">
+      <DialogContent className="max-w-[440px] p-0">
         <DialogHeader className="border-b border-border px-5 pb-4 pt-5 text-left">
           <DialogTitle className="pr-8 text-lg">{title}</DialogTitle>
           <DialogDescription>

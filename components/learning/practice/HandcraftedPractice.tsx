@@ -1,7 +1,7 @@
 "use client";
 
 import { TutorialButton } from "@/components/learning/TutorialButton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bookmark, BookmarkCheck, Check, X, CircleHelp } from "lucide-react";
 import { AppShell, PracticeHeader } from "@/components/molecules";
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
@@ -9,7 +9,7 @@ import type { LearningSession } from "@/hooks/useLearningSession";
 import HandcraftedTutorial from "@/app/(questionbank)/questionbank/handcrafted/_components/HandcraftedTutorial";
 import { SessionFeedback } from "./SessionFeedback";
 import HandcraftedSetup from "./HandcraftedSetup";
-import { PracticeResult } from "./PracticeResult";
+import { choiceExplanations } from "@/lib/learning/presentation";
 export default function HandcraftedPractice({
   session: s,
 }: {
@@ -24,22 +24,18 @@ export default function HandcraftedPractice({
   const grade = question ? s.grades[question.attemptQuestionId] : undefined;
   const locked =
     s.disabled || attempt?.state !== "IN_PROGRESS" || !!answer?.finalized;
+  const completed = attempt?.state === "COMPLETED";
+  useEffect(() => {
+    if (completed && !s.loading && !s.disabled) void s.leave();
+  }, [completed, s.loading, s.disabled, s.leave]);
   const next = async () => {
     if (!attempt) return;
     if (s.index + 1 < attempt.currentSectionQuestions.length)
       await s.navigate(
         attempt.currentSectionQuestions[s.index + 1].attemptQuestionId,
       );
-    else if (attempt.resultAvailable) await s.showResult();
     else if (attempt.state === "IN_PROGRESS") await s.submitSection();
   };
-  if (s.result)
-    return (
-      <>
-        {tutorial && <HandcraftedTutorial onClose={() => setTutorial(false)} />}
-        <PracticeResult session={s} onTutorial={() => setTutorial(true)} />
-      </>
-    );
   return (
     <AppShell className="min-h-dvh bg-white">
       {tutorial && <HandcraftedTutorial onClose={() => setTutorial(false)} />}
@@ -53,15 +49,20 @@ export default function HandcraftedPractice({
       <SessionFeedback session={s} />
       {s.loading ? (
         <LoadingIndicator label="문제를 불러오는 중..." className="py-20" />
+      ) : completed ? (
+        <LoadingIndicator
+          label="시작 화면으로 돌아가는 중..."
+          className="py-20"
+        />
       ) : !attempt ? (
         <HandcraftedSetup session={s} />
       ) : question && answer ? (
         <main className="px-5 py-6 md:px-10 md:py-8">
           <div className="flex items-center justify-between gap-4">
-            <p className="text-sm font-semibold">
+            <p className="shrink-0 text-sm font-semibold">
               {s.index + 1} / {attempt.currentSectionQuestions.length}
             </p>
-            <p className="text-xs font-medium text-muted-foreground">
+            <p className="min-w-0 text-right text-xs font-medium text-muted-foreground">
               {question.subjectName}
             </p>
           </div>
@@ -73,7 +74,7 @@ export default function HandcraftedPractice({
               }}
             />
           </div>
-          <section className="mt-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-8">
+          <section className="mt-5 min-w-0 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5 md:p-8">
             <div className="flex items-start justify-between gap-4">
               <span className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-brandSecondary px-2 text-sm font-bold text-primary">
                 Q{s.index + 1}
@@ -144,7 +145,7 @@ export default function HandcraftedPractice({
                         selectedChoiceId: choice.choiceId,
                       })
                     }
-                    className={`flex min-h-14 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium ${resultClass}`}
+                    className={`flex min-h-14 w-full min-w-0 items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm font-medium sm:px-4 ${resultClass}`}
                   >
                     <span
                       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${grade && correct ? "border-green-500 bg-green-500 text-white" : grade && selected ? "border-red-400 bg-red-400 text-white" : selected ? "border-primary bg-primary text-white" : "border-gray-300 text-muted-foreground"}`}
@@ -157,7 +158,9 @@ export default function HandcraftedPractice({
                         index + 1
                       )}
                     </span>
-                    <span className="whitespace-pre-wrap">{choice.text}</span>
+                    <span className="min-w-0 flex-1 whitespace-pre-wrap [overflow-wrap:anywhere]">
+                      {choice.text}
+                    </span>
                   </button>
                 );
               })}
@@ -171,12 +174,12 @@ export default function HandcraftedPractice({
                   </p>
                 </div>
                 <div className="mt-4 space-y-2">
-                  {grade.choices?.map((choice, index) => (
+                  {choiceExplanations(question, grade).map((choice) => (
                     <p
                       key={choice.choiceId}
                       className="whitespace-pre-wrap text-xs leading-5 text-muted-foreground"
                     >
-                      {index + 1}. {choice.explanation}
+                      {choice.number}. {choice.explanation}
                     </p>
                   ))}
                 </div>
@@ -215,41 +218,28 @@ export default function HandcraftedPractice({
                 disabled={
                   s.disabled ||
                   (s.index === attempt.currentSectionQuestions.length - 1 &&
-                    attempt.state !== "IN_PROGRESS" &&
-                    !attempt.resultAvailable)
+                    attempt.state !== "IN_PROGRESS")
                 }
                 onClick={() => void next()}
                 className="h-12 w-full rounded-xl bg-primary text-sm font-bold text-white disabled:bg-gray-300"
               >
                 {s.index === attempt.currentSectionQuestions.length - 1
-                  ? attempt.state !== "IN_PROGRESS" && !attempt.resultAvailable
-                    ? "결과 공개 대기"
-                    : "결과 확인"
+                  ? "학습 마치기"
                   : "다음 문제"}
               </button>
             )}
           </div>
-          {attempt.resultAvailable && (
-            <button
-              type="button"
-              disabled={s.disabled}
-              onClick={() => void s.showResult()}
-              className="mt-4 w-full py-3 text-sm text-primary"
-            >
-              학습 결과 보기
-            </button>
-          )}
-          {attempt.state === "COMPLETED" && !attempt.resultAvailable && (
-            <p className="mt-4 text-sm text-muted-foreground">
-              학습을 완료했어요. 결과 공개를 기다려주세요.
-            </p>
-          )}
         </main>
       ) : (
         <div className="p-6">
-          <p>응시 내용을 확인해주세요.</p>
-          <button onClick={() => void s.leave()} className="mt-4 text-primary">
-            목록으로
+          <p>현재 문제 또는 답안을 찾지 못하였습니다.</p>
+          <button
+            type="button"
+            disabled={s.disabled}
+            onClick={() => void s.leave()}
+            className="mt-4 text-primary"
+          >
+            돌아가기
           </button>
         </div>
       )}

@@ -1,3 +1,5 @@
+import { clearKakaoLinkRequest } from "./kakaoLinkStorage";
+
 export class ApiError extends Error {
   readonly code?: string;
   constructor(
@@ -30,6 +32,7 @@ type TokenPair = { access_token: string; refresh_token: string };
 const AUTH_STORAGE_MODE_KEY = "auth_storage_mode";
 const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
+const AUTH_SESSION_KEY = "auth_session_id";
 
 let refreshPromise: Promise<TokenPair | false> | null = null;
 let authSessionRevision = 0;
@@ -108,6 +111,8 @@ export const getToken = () => getStoredToken(ACCESS_TOKEN_KEY);
 
 export const getRefreshToken = () => getStoredToken(REFRESH_TOKEN_KEY);
 
+export const getAuthSessionId = () => getStoredToken(AUTH_SESSION_KEY);
+
 export const getValidAccessToken = async () => {
   const token = getToken();
   if (token && !isStoredTokenExpired(token)) return token;
@@ -126,10 +131,11 @@ export const getValidAccessToken = async () => {
   return null;
 };
 
-export const setTokens = (
+const persistTokens = (
   accessToken: string,
   refreshToken: string,
   rememberMe = true,
+  refreshing = false,
 ) => {
   if (!isBrowser()) return;
 
@@ -140,6 +146,12 @@ export const setTokens = (
   const mode: AuthStorageMode = rememberMe ? "local" : "session";
   const targetStorage = getStorage(mode);
   const otherStorage = getStorage(rememberMe ? "session" : "local");
+
+  if (!refreshing) {
+    clearKakaoLinkRequest();
+    targetStorage?.setItem(AUTH_SESSION_KEY, crypto.randomUUID());
+  }
+  otherStorage?.removeItem(AUTH_SESSION_KEY);
 
   otherStorage?.removeItem(ACCESS_TOKEN_KEY);
   otherStorage?.removeItem(REFRESH_TOKEN_KEY);
@@ -153,10 +165,20 @@ export const setTokens = (
   window.dispatchEvent(new Event("pillchat:auth"));
 };
 
+export const setTokens = (
+  accessToken: string,
+  refreshToken: string,
+  rememberMe = true,
+) => persistTokens(accessToken, refreshToken, rememberMe);
+
 export const clearTokens = () => {
   if (!isBrowser()) return;
 
   authSessionRevision += 1;
+
+  clearKakaoLinkRequest();
+  window.localStorage.removeItem(AUTH_SESSION_KEY);
+  window.sessionStorage.removeItem(AUTH_SESSION_KEY);
 
   window.localStorage.removeItem(ACCESS_TOKEN_KEY);
   window.localStorage.removeItem(REFRESH_TOKEN_KEY);
@@ -205,7 +227,12 @@ const requestTokenRefresh = async (): Promise<TokenPair | false> => {
 
           const normalizedAccessToken = normalizeToken(accessToken);
           const normalizedRefreshToken = normalizeToken(nextRefreshToken);
-          setTokens(normalizedAccessToken, normalizedRefreshToken, rememberMe);
+          persistTokens(
+            normalizedAccessToken,
+            normalizedRefreshToken,
+            rememberMe,
+            true,
+          );
           return {
             access_token: normalizedAccessToken,
             refresh_token: normalizedRefreshToken,

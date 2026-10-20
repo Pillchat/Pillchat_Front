@@ -32,11 +32,11 @@ export function UserInfoField({ onIconClick, author }: Option) {
   const hasGrade = author ? !!author.grade : !!grade;
 
   return (
-    <div className="mt-3 flex w-[90%] flex-row gap-5">
+    <div className="mt-3 flex w-[90%] min-w-0 flex-row items-center gap-3 sm:gap-5">
       <ProfileImg src={displayProfileImg} />
-      <div className="flex flex-col py-2">
-        <div className="flex flex-row items-center gap-2">
-          <p className="text-xl font-bold">{displayNickname}</p>
+      <div className="flex min-w-0 flex-1 flex-col py-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <p className="min-w-0 text-xl font-bold">{displayNickname}</p>
           {hasGrade && <GradeBadge />}
         </div>
         <p className="text-sm font-light">
@@ -46,7 +46,8 @@ export function UserInfoField({ onIconClick, author }: Option) {
       {onIconClick && (
         <img
           src={PUBLIC_ASSETS.icons.chevronRight}
-          className="ml-auto"
+          className="ml-auto h-6 w-6 shrink-0"
+          alt="프로필 편집"
           onClick={onIconClick}
         />
       )}

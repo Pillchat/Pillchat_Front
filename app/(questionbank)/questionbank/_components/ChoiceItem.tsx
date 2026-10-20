@@ -25,7 +25,7 @@ const ChoiceItem: FC<ChoiceItemProps> = ({
   return (
     <button
       className={cn(
-        "flex w-full items-center gap-3 rounded-xl border p-4 text-left transition-colors",
+        "flex w-full min-w-0 items-center gap-3 rounded-xl border p-4 text-left transition-colors",
         // 채점 전
         !isGraded && isSelected && "border-2 border-brand bg-[#FFF6F5]",
         !isGraded && !isSelected && "border-gray-200",
@@ -63,7 +63,9 @@ const ChoiceItem: FC<ChoiceItemProps> = ({
       </span>
 
       {/* 선지 텍스트 */}
-      <span className="flex-1 text-sm leading-relaxed">{choice.text}</span>
+      <span className="min-w-0 flex-1 whitespace-pre-wrap text-sm leading-relaxed [overflow-wrap:anywhere]">
+        {choice.text}
+      </span>
 
       {/* 채점 결과 아이콘 */}
       {isGraded && isCorrectChoice && (

@@ -255,16 +255,17 @@ const SolvePage = () => {
       <CustomHeader title={session.title} showIcon />
       <QuizProgressBar />
 
-      <div className="flex-1 overflow-y-auto px-6 py-4">
-        {showPassage && (
-          <p className="mb-6 text-base font-medium leading-relaxed text-foreground">
-            {currentQuestion.passage}
-          </p>
-        )}
-        {renderQuestionInput()}
+      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+        <div className="px-6 py-4">
+          {showPassage && (
+            <p className="mb-6 text-base font-medium leading-relaxed text-foreground">
+              {currentQuestion.passage}
+            </p>
+          )}
+          {renderQuestionInput()}
+        </div>
+        <ExplanationPanel />
       </div>
-
-      <ExplanationPanel />
 
       <div className="flex-shrink-0 border-t bg-white px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3">
         {gradingState !== "graded" && (

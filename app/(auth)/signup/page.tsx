@@ -478,6 +478,7 @@ const SignupPage: FC = () => {
                 placeholder="비밀번호를 적어주세요"
                 autoFocus={true}
                 type={showPassword ? "text" : "password"}
+                inputClassName="password-with-toggle"
                 minLength={8}
                 // maxLength={8} // 8자 제한이 너무 짧을 수 있어 주석 처리 혹은 검토 필요
               />
@@ -504,6 +505,7 @@ const SignupPage: FC = () => {
                   iconSize={20}
                   placeholder="비밀번호를 적어주세요"
                   type={showPasswordRe ? "text" : "password"}
+                  inputClassName="password-with-toggle"
                   minLength={8}
                 />
 

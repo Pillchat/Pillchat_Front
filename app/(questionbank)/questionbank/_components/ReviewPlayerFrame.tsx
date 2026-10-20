@@ -34,15 +34,15 @@ export function ReviewPlayerFrame({
 }) {
   const [showHint, setShowHint] = useState(false);
   return (
-    <div className="flex h-dvh flex-col bg-white">
+    <div className="mx-auto flex h-dvh w-full min-w-0 max-w-app flex-col bg-white">
       <PracticeHeader
         title="복습하기"
         subtitle={modeLabel}
         backHref={backHref}
       />
-      <div className="shrink-0 px-6 pb-2 pt-4">
+      <div className="shrink-0 px-4 pb-2 pt-4 sm:px-6">
         <p className="truncate text-sm font-semibold">{title}</p>
-        <div className="mt-3 flex items-center justify-between gap-2">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <span className="shrink-0 text-sm font-semibold">
             문제 {index + 1}/{total}
           </span>
@@ -87,8 +87,8 @@ export function ReviewPlayerFrame({
           </p>
         )}
       </div>
-      <div className="flex-1 overflow-y-auto">
-        <div className="px-6 py-4">{children}</div>
+      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+        <div className="px-4 py-4 sm:px-6">{children}</div>
         {explanation}
       </div>
       <div className="shrink-0 border-t bg-white px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3">
