@@ -322,6 +322,7 @@ const FindPage = () => {
                   placeholder="비밀번호를 입력해주세요."
                   autoFocus
                   type={showPassword ? "text" : "password"}
+                  inputClassName="password-with-toggle"
                   minLength={8}
                 />
 
@@ -353,8 +354,8 @@ const FindPage = () => {
                     minLength={8}
                     inputClassName={
                       passwordConfirm && !isPasswordMatch
-                        ? "border-destructive focus:ring-0"
-                        : undefined
+                        ? "password-with-toggle border-destructive focus:ring-0"
+                        : "password-with-toggle"
                     }
                   />
 

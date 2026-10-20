@@ -31,11 +31,9 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-10 flex h-[calc(60px+env(safe-area-inset-top))] w-full items-center justify-between bg-white px-6 pt-[env(safe-area-inset-top)]">
+      <header className="sticky top-0 z-10 grid min-h-[calc(60px+env(safe-area-inset-top))] w-full shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 bg-white px-4 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] sm:px-6">
         <LeftArrowButton onClick={() => router.back()} />
-        <p className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-lg font-semibold">
-          {title}
-        </p>
+        <p className="min-w-0 text-center text-lg font-semibold">{title}</p>
         {rightSlot !== undefined ? (
           rightSlot
         ) : showIcon ? (

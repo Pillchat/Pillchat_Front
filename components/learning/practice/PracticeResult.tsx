@@ -6,6 +6,7 @@ import { AppShell, PracticeHeader } from "@/components/molecules";
 import type { LearningSession } from "@/hooks/useLearningSession";
 import { SessionFeedback } from "./SessionFeedback";
 import { TutorialButton } from "@/components/learning/TutorialButton";
+import { choiceExplanations } from "@/lib/learning/presentation";
 export function PracticeResult({
   session: s,
   onTutorial,
@@ -106,9 +107,9 @@ export function PracticeResult({
             <div className="mt-4 space-y-4">
               {groups.map(([subject, counts]) => (
                 <div key={subject}>
-                  <div className="flex justify-between text-sm">
-                    <span className="font-semibold">{subject}</span>
-                    <span className="font-bold text-primary">
+                  <div className="flex items-start justify-between gap-3 text-sm">
+                    <span className="min-w-0 font-semibold">{subject}</span>
+                    <span className="shrink-0 font-bold text-primary">
                       {counts.correct}/{counts.total}
                     </span>
                   </div>
@@ -148,7 +149,7 @@ export function PracticeResult({
             </div>
             {result.questions
               .filter((item) => !onlyWrong || item.grade.outcome !== "CORRECT")
-              .map((item, index) => (
+              .map((item) => (
                 <article
                   key={item.question.attemptQuestionId}
                   className="rounded-2xl border p-5"
@@ -190,14 +191,16 @@ export function PracticeResult({
                     <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
                       {item.grade.explanation}
                     </p>
-                    {item.grade.choices?.map((choice, i) => (
-                      <p
-                        key={choice.choiceId}
-                        className="mt-2 whitespace-pre-wrap text-xs text-muted-foreground"
-                      >
-                        {i + 1}. {choice.explanation}
-                      </p>
-                    ))}
+                    {choiceExplanations(item.question, item.grade).map(
+                      (choice) => (
+                        <p
+                          key={choice.choiceId}
+                          className="mt-2 whitespace-pre-wrap text-xs text-muted-foreground"
+                        >
+                          {choice.number}. {choice.explanation}
+                        </p>
+                      ),
+                    )}
                   </div>
                 </article>
               ))}

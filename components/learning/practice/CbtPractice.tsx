@@ -541,7 +541,7 @@ export default function CbtPractice({
     <>
       <main className="h-dvh min-w-0 overflow-hidden bg-white text-foreground lg:min-h-[640px]">
         <header className="fixed inset-x-0 top-0 z-40 h-[calc(60px+env(safe-area-inset-top))] bg-white pt-[env(safe-area-inset-top)]">
-          <div className="grid h-[60px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 lg:px-5">
+          <div className="grid h-[60px] grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 px-3 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:px-5">
             <div className="flex min-w-0 items-center gap-2">
               <button
                 type="button"
@@ -606,7 +606,7 @@ export default function CbtPractice({
             </div>
             <div className="flex items-center justify-end gap-1">
               <TutorialButton onClick={() => setTutorial(true)} />
-              <div className="rounded-xl bg-[#fafafa] px-3 py-2 text-right">
+              <div className="shrink-0 whitespace-nowrap rounded-xl bg-[#fafafa] px-3 py-2 text-right">
                 <p className="text-[10px] font-bold text-muted-foreground">
                   남은 시간
                 </p>
@@ -664,10 +664,10 @@ export default function CbtPractice({
             </div>
           </section>
           <aside
-            className="hidden overflow-hidden bg-[#fafafa] lg:block"
+            className="hidden min-h-0 flex-col overflow-hidden bg-[#fafafa] lg:flex"
             aria-label="답안 표기란"
           >
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex h-16 shrink-0 items-center justify-between px-4">
               <div>
                 <p className="text-xs font-bold text-primary">답안 표기란</p>
                 <p className="mt-1 text-sm font-extrabold">
@@ -676,7 +676,7 @@ export default function CbtPractice({
               </div>
               <ListChecks className="h-5 w-5 text-muted-foreground" />
             </div>
-            <div className="h-[calc(100%-4rem)] overflow-y-auto p-1">
+            <div className="min-h-0 flex-1 overflow-y-auto p-1">
               {questions.map((q) => (
                 <div
                   key={q.id}

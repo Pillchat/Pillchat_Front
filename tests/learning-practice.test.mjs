@@ -93,6 +93,37 @@ test("memo flush preserves versions for every dirty answer and excludes finalize
     { attemptQuestionId: "second", expectedVersion: 12, memo: "second memo" },
   ]);
 });
+
+test("choice explanations follow displayed choice identities, even with shuffled or missing details", () => {
+  const question = {
+    ...q,
+    choices: [...q.choices, { choiceId: "opaque-C", text: "서버 선택지 C" }],
+  };
+  const grade = {
+    correctChoiceId: "opaque-A",
+    explanation: "전체 해설",
+    choices: [
+      { choiceId: "opaque-C", explanation: "C의 해설" },
+      { choiceId: "foreign", explanation: "다른 문제의 해설" },
+      { choiceId: "opaque-B", explanation: "B의 해설" },
+    ],
+  };
+  assert.deepEqual(
+    normal(model.choiceExplanations(question, grade)).map(
+      ({ number, explanation }) => ({ number, explanation }),
+    ),
+    [
+      { number: 1, explanation: "B의 해설" },
+      { number: 3, explanation: "C의 해설" },
+    ],
+  );
+  assert.deepEqual(
+    normal(model.choiceExplanations(question, { ...grade, choices: [] })),
+    [],
+  );
+  assert.equal(question.choices[0].choiceId, "opaque-B");
+  assert.equal(grade.choices[0].choiceId, "opaque-C");
+});
 test("timer follows server offset and break deadlines without finalizing locally", () => {
   const clientNow = Date.parse("2026-10-11T00:55:00Z");
   assert.equal(model.secondsRemaining(attempt, clientNow, 5 * 60 * 1000), 120);
