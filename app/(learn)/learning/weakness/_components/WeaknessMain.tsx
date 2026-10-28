@@ -2,12 +2,8 @@
 import { useRef, useState } from "react";
 import { ApiError } from "@/lib/client/fetch";
 import Link from "next/link";
-import {
-  ChevronRight,
-  CircleHelp,
-  SlidersHorizontal,
-  RotateCcw,
-} from "lucide-react";
+import SettingsIcon from "@/public/icons/settings.svg";
+import { ChevronRight, CircleHelp, RotateCcw } from "lucide-react";
 import { PracticeHeader } from "@/components/molecules/PracticeHeader";
 import { Button } from "@/components/ui/button";
 import {
@@ -170,7 +166,7 @@ export default function WeaknessMain({
                 aria-label="나의 약점 분야 설정"
                 title="나의 약점 분야 설정"
               >
-                <SlidersHorizontal aria-hidden="true" strokeWidth={1.5} />
+                <SettingsIcon aria-hidden="true" />
               </Link>
             </Button>
           </div>

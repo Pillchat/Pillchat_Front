@@ -218,6 +218,8 @@ function harness(file, props, data = library) {
     {
       react: hooks,
       "lucide-react": new Proxy({}, { get: () => () => null }),
+      "@/public/icons/settings.svg": (props) =>
+        React.createElement("svg", props),
       "@/components/ui/dialog": {
         Dialog: ({ open, children }) =>
           open ? React.createElement("div", null, children) : null,
@@ -361,6 +363,8 @@ test("classification has the requested title and all five rules; mastered questi
     {},
     {
       "lucide-react": new Proxy({}, { get: () => () => null }),
+      "@/public/icons/settings.svg": (props) =>
+        React.createElement("svg", props),
       "@/lib/navigation": { useRouter: () => ({ push() {} }) },
     },
   );
