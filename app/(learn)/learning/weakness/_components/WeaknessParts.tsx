@@ -46,7 +46,7 @@ export function WeaknessCount({
         <span className="ml-1 text-title-large">문제</span>
       </p>
       <p className="mt-1 text-body-small text-muted-foreground">
-        현재 저장된 오답 기록 기준
+        오늘 복습 가능한 오답·헷갈림 문제 기준
       </p>
     </section>
   );
