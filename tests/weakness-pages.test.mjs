@@ -438,3 +438,95 @@ test("confusion control stores an explicit state and retries with the identical 
     .props.onClick();
   assert.equal(sent[0], sent[1]);
 });
+
+test("review day labels use server dates across month, leap-year and year boundaries", () => {
+  for (const [due, server, expected] of [
+    ["2026-10-27", "2026-10-28", "오늘"],
+    ["2026-10-28", "2026-10-28", "오늘"],
+    ["2026-11-01", "2026-10-31", "내일"],
+    ["2028-02-29", "2028-02-28", "내일"],
+    ["2027-01-01", "2026-12-31", "내일"],
+    ["2026-10-30", "2026-10-28", "10/30"],
+  ])
+    assert.equal(model.weaknessReviewDay(due, server), expected);
+  assert.equal(model.weaknessReviewDay(null, library.serverDate), null);
+  assert.equal(model.weaknessReviewDay("2026-10-29", undefined), null);
+});
+
+test("scheduled cards include tomorrow while today's count, range and source filters stay strict", () => {
+  const data = {
+    ...library,
+    questions: [
+      ...library.questions,
+      question("8", "AI", "더 나중 복습", 100, { dueDate: "2026-10-30" }),
+    ],
+  };
+  const scheduled = model.scheduledWeaknessQuestions(data, filters);
+  assert.ok(scheduled.some((q) => q.questionId === "5"));
+  assert.ok(
+    !scheduled.some((q) => q.questionId === "6" || q.questionId === "8"),
+  );
+  assert.equal(model.weaknessCount(data, filters), 5);
+  assert.ok(
+    !model
+      .scheduledWeaknessQuestions(data, { ...filters, range: "today" })
+      .some((q) => q.questionId === "5"),
+  );
+  const ai = model.scheduledWeaknessQuestions(data, {
+    ...filters,
+    sources: ["AI"],
+    range: "wrong",
+  });
+  assert.deepEqual(normal(ai.map((q) => q.questionId)), ["2", "5"]);
+});
+
+test("tomorrow cards show their schedule before the source and cannot start a practice", () => {
+  const data = {
+    ...library,
+    questions: [
+      ...library.questions,
+      question("10", "AI", "임상약학", 50, {
+        collectionRef: "AI:2",
+        dueDate: "2026-10-29",
+        lastPracticedAt: "2026-10-28T01:00:00Z",
+      }),
+    ],
+    collections: [
+      ...library.collections,
+      { collectionRef: "AI:5", source: "AI", title: "내일 임상약학 복습" },
+    ],
+  };
+  const h = harness(
+    "app/(learn)/learning/weakness/_components/WeaknessMain.tsx",
+    { filters },
+    data,
+  );
+  let tree = h.render();
+  const tomorrow = nodes(tree).find(
+    (n) => n.type === "button" && n.key === "AI:5",
+  );
+  assert.equal(tomorrow.props.disabled, true);
+  const html = renderToStaticMarkup(tomorrow);
+  assert.ok(html.indexOf("복습 예정 내일") < html.indexOf("AI 생성"));
+  tomorrow.props.onClick();
+  assert.deepEqual(h.requests, []);
+  const today = nodes(tree).find(
+    (n) => n.type === "button" && n.key === "AI:2",
+  );
+  assert.equal(today.props.disabled, false);
+  assert.ok(renderToStaticMarkup(today).includes("복습 예정 오늘"));
+  assert.ok(renderToStaticMarkup(today).includes("1문제"));
+  nodes(tree)
+    .find((n) => n.props?.id === "weakness-tab-subjects")
+    .props.onClick();
+  tree = h.render();
+  nodes(tree)
+    .find((n) => n.type === "button" && n.key === "오늘 푼 문제")
+    .props.onClick();
+  tree = h.render();
+  assert.equal(
+    nodes(tree).find((n) => n.props?.children === "약점 문제 풀기").props
+      .disabled,
+    true,
+  );
+});
