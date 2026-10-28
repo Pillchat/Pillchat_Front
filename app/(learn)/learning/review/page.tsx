@@ -37,6 +37,7 @@ function ReviewLibrary() {
   const router = useRouter();
   const [source, setSource] = useState<ReviewSource>("CBT");
   const [ready, setReady] = useState(false);
+  const [wrongOnly, setWrongOnly] = useState(false);
   const [items, setItems] = useState<ReviewCollection[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [selected, setSelected] = useState<ReviewCollection | null>(null);
@@ -58,6 +59,9 @@ function ReviewLibrary() {
     );
     if (sources.includes(category as ReviewSource))
       setSource(category as ReviewSource);
+    setWrongOnly(
+      new URLSearchParams(window.location.search).get("mode") === "wrong",
+    );
     setReady(true);
     return () => {
       active.current = false;
@@ -133,13 +137,13 @@ function ReviewLibrary() {
     url.searchParams.delete("collection");
     window.history.replaceState(null, "", url);
   };
-  const start = async (mode?: ReviewMode) => {
-    if (lock.current || (!commands.current.pending && (!selected || !mode)))
+  const start = async (mode?: ReviewMode, collection = selected) => {
+    if (lock.current || (!commands.current.pending && (!collection || !mode)))
       return;
     lock.current = true;
     setBusy(true);
     setStartError("");
-    if (selected) setRetryTitle(selected.title);
+    if (collection) setRetryTitle(collection.title);
     try {
       const response = commands.current.pending
         ? await commands.current.retry<
@@ -149,7 +153,7 @@ function ReviewLibrary() {
             "/api/learning/review/attempts",
             "POST",
             {
-              collectionRef: selected!.collectionRef,
+              collectionRef: collection!.collectionRef,
               mode: reviewModeToAPI[mode!],
             },
           );
@@ -167,10 +171,16 @@ function ReviewLibrary() {
       : source === "HANDCRAFTED"
         ? "/questionbank/handcrafted"
         : "/questionbank/premium";
+  const visibleItems = wrongOnly
+    ? items.filter((item) => item.wrong > 0)
+    : items;
 
   return (
     <div className="flex min-h-dvh flex-col bg-white">
-      <PracticeHeader title="복습하기" backHref="/questionbank" />
+      <PracticeHeader
+        title={wrongOnly ? "약점공략" : "복습하기"}
+        backHref="/questionbank"
+      />
       <div className="px-5 pb-5 pt-4">
         <div className="flex items-start gap-3">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent">
@@ -179,7 +189,9 @@ function ReviewLibrary() {
           <div>
             <h1 className="text-xl font-bold">오답을 모아 다시 학습해요</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              풀었던 문제 모음에서 복습할 문제를 골라보세요.
+              {wrongOnly
+                ? "문제 모음을 선택하면 틀린 문제만 다시 풀 수 있어요."
+                : "풀었던 문제 모음에서 복습할 문제를 골라보세요."}
             </p>
           </div>
         </div>
@@ -242,7 +254,7 @@ function ReviewLibrary() {
             className="py-6 text-center"
           />
         )}
-        {items.map((item) => (
+        {visibleItems.map((item) => (
           <CategoryCard
             key={item.collectionRef}
             item={{
@@ -251,7 +263,9 @@ function ReviewLibrary() {
               wrongCount: item.wrong,
             }}
             disabled={disabled || loading}
-            onClick={() => setSelected(item)}
+            onClick={() =>
+              wrongOnly ? void start("wrong", item) : setSelected(item)
+            }
           />
         ))}
         {loading && (
@@ -277,10 +291,14 @@ function ReviewLibrary() {
             </button>
           </div>
         )}
-        {!loading && !loadError && !items.length && (
+        {!loading && !loadError && !visibleItems.length && !cursor && (
           <div className="px-6 py-14 text-center">
             <RotateCcw className="mx-auto h-9 w-9 text-gray-300" />
-            <p className="mt-4 font-semibold">아직 복습할 문제 모음이 없어요</p>
+            <p className="mt-4 font-semibold">
+              {wrongOnly
+                ? "아직 다시 풀 틀린 문제가 없어요"
+                : "아직 복습할 문제 모음이 없어요"}
+            </p>
             <p className="mt-2 text-sm text-muted-foreground">
               {REVIEW_SOURCE_LABELS[source]}를 풀면 오답을 여기서 복습할 수
               있어요.

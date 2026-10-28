@@ -211,6 +211,36 @@ test("legacy cards and selection sheet use server counts and send the selected r
   ]);
 });
 
+test("home weakness shortcut starts WRONG review directly and hides collections without errors", async () => {
+  const calls = [];
+  const h = harness(async (url, method, body) => {
+    calls.push({ url, method, body });
+    return method === "GET"
+      ? {
+          items: [
+            collection,
+            { ...collection, collectionRef: "clean", wrong: 0 },
+          ],
+          nextCursor: null,
+        }
+      : {
+          engine: "LEARNING",
+          result: {
+            attempt: { source: "HANDCRAFTED", attemptId: "wrong-only" },
+          },
+        };
+  }, "?category=HANDCRAFTED&mode=wrong");
+  await h.settle();
+  assert.equal(h.cards().length, 1);
+  h.cards()[0].props.onClick();
+  await h.settle();
+  assert.equal(calls[1].body.mode, "WRONG");
+  assert.equal(calls[1].body.collectionRef, collection.collectionRef);
+  assert.deepEqual(h.navigation, [
+    "/questionbank/handcrafted?attempt=wrong-only",
+  ]);
+});
+
 test("a slow old tab response cannot replace the newly selected source", async () => {
   const old = deferred();
   const current = deferred();
