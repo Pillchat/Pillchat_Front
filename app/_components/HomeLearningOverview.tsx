@@ -1,6 +1,7 @@
 "use client";
 
-import { BadgeCheck, Play, RotateCcw } from "lucide-react";
+import { Play, RotateCcw } from "lucide-react";
+import QuestionBankIcon from "@/public/icons/question-bank.svg";
 import EntryButton from "@/app/(questionbank)/questionbank/_components/EntryButton";
 import StatsCard from "@/app/(questionbank)/questionbank/_components/StatsCard";
 import {
@@ -37,21 +38,19 @@ export default function HomeLearningOverview({
         </h2>
         <div className="mt-3 flex gap-2" aria-live="polite">
           <StatsCard
+            valueClassName="text-sm min-[375px]:text-base sm:text-xl"
             label="학습 문제"
             value={data ? `${data.solvedCount}문제` : "–"}
           />
-          <StatsCard label="정답률" value={accuracy} />
           <StatsCard
+            valueClassName="text-sm min-[375px]:text-base sm:text-xl"
+            label="정답률"
+            value={accuracy}
+          />
+          <StatsCard
+            valueClassName="text-sm min-[375px]:text-base sm:text-xl"
             label="학습 시간"
-            value={
-              data ? (
-                <span className="text-sm min-[375px]:text-base sm:text-xl">
-                  {formatStudyTime(data.studySeconds)}
-                </span>
-              ) : (
-                "–"
-              )
-            }
+            value={data ? formatStudyTime(data.studySeconds) : "–"}
           />
         </div>
       </section>
@@ -76,8 +75,10 @@ export default function HomeLearningOverview({
               icon={
                 <Play
                   aria-hidden="true"
-                  className="h-7 w-7 text-primary"
+                  size={32}
+                  className="h-8 w-8 text-primary"
                   strokeWidth={1.5}
+                  absoluteStrokeWidth
                 />
               }
               title={latest.title}
@@ -104,10 +105,9 @@ export default function HomeLearningOverview({
           <EntryButton
             compact
             icon={
-              <BadgeCheck
+              <QuestionBankIcon
                 aria-hidden="true"
-                className="h-7 w-7 text-primary"
-                strokeWidth={1.5}
+                className="h-8 w-8 text-primary"
               />
             }
             title="수제 제작 문제"
@@ -119,8 +119,10 @@ export default function HomeLearningOverview({
             icon={
               <RotateCcw
                 aria-hidden="true"
-                className="h-7 w-7 text-primary"
+                size={32}
+                className="h-8 w-8 text-primary"
                 strokeWidth={1.5}
+                absoluteStrokeWidth
               />
             }
             title="약점공략"
