@@ -52,7 +52,7 @@ export default async function Page({
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col bg-white">
       <PracticeHeader title="학습 분류 기준" backHref={weaknessHref(filters)} />
       <main className="px-6 pb-8 pt-6">
-        <h1 className="text-headline-medium">문제는 이렇게 분류돼요</h1>
+        <h1 className="text-headline-medium">학습 분류 기준</h1>
         <p className="mt-2 text-body-medium text-muted-foreground">
           풀이 결과와 헷갈림 표시를 기준으로 학습할 곳을 안내해요.
         </p>
@@ -80,7 +80,8 @@ export default async function Page({
         </ol>
         <div className="mt-6">
           <WeaknessNotice title="학습 분류를 위한 안내예요">
-            헷갈림 표시와 2회 연속 정답에 따른 자동 분류는 추후 연결됩니다.
+            오늘 푼 문제는 당일 약점공략에 다시 표시되지 않아요. 2회 연속
+            정답이면 약점공략에서 제외돼요.
           </WeaknessNotice>
         </div>
       </main>

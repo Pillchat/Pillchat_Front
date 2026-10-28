@@ -1,4 +1,5 @@
 "use client";
+import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
 import { useEffect, useRef, useState } from "react";
 import { fetchAPI } from "@/lib/client/fetch";
 import { LearningCommands } from "@/lib/learning/api";
@@ -131,6 +132,12 @@ export default function AiSessionPage() {
             <h1 className="whitespace-pre-wrap text-lg font-semibold">
               {q.content}
             </h1>
+            <ConfusionToggle
+              key={`${q.questionId}:${!!answer}`}
+              source="AI"
+              questionId={q.questionId}
+              disabled={disabled}
+            />
             {q.type === "MULTIPLE_CHOICE" || q.type === "TRUE_FALSE" ? (
               (q.choices ?? []).map((choice) => (
                 <button

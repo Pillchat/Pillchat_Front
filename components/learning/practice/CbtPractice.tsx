@@ -1,4 +1,5 @@
 "use client";
+import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
 
 import { TutorialButton } from "@/components/learning/TutorialButton";
 import dynamic from "next/dynamic";
@@ -637,6 +638,15 @@ export default function CbtPractice({
                   key={q.id}
                   className={`h-full min-w-0 overflow-y-auto ${double && width >= 1180 ? "p-1" : "p-3 sm:p-4 lg:p-6"}`}
                 >
+                  <ConfusionToggle
+                    source="CBT"
+                    questionId={
+                      attempt.currentSectionQuestions.find(
+                        (row) => row.attemptQuestionId === q.id,
+                      )!.sourceQuestionVersionId
+                    }
+                    disabled={s.disabled}
+                  />
                   <QuestionPane
                     question={q}
                     answer={answers[q.id]}

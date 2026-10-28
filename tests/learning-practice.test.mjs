@@ -303,6 +303,7 @@ const componentLoad = (overrides = {}) =>
           get: () => (props) => React.createElement("svg", props),
         },
       ),
+      "@/components/learning/ConfusionToggle": { ConfusionToggle: () => null },
       "next/dynamic": () => () => null,
       "next/link": ({ children, ...props }) =>
         React.createElement("a", props, children),
