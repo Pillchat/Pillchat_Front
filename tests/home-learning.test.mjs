@@ -90,7 +90,7 @@ test("home reuses cards to show server totals and sends users to resume and shor
   assert.deepEqual(view.navigation, [
     "/questionbank/handcrafted?attempt=9007199254740997",
     "/questionbank/handcrafted",
-    "/learning/review?mode=wrong",
+    "/learning/weakness",
   ]);
 });
 
