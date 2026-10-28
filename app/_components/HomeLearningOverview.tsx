@@ -125,7 +125,7 @@ export default function HomeLearningOverview({
             }
             title="약점공략"
             subtitle="틀린 문제를 다시 풀며 약점을 채워요"
-            onClick={() => router.push("/learning/review?mode=wrong")}
+            onClick={() => router.push("/learning/weakness")}
           />
         </div>
       </section>
