@@ -100,23 +100,60 @@ export function compareWeakness(sort: WeaknessFilters["sort"]) {
     return order || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   };
 }
+function nextReviewDate(serverDate: string) {
+  const day = Date.parse(serverDate);
+  return Number.isFinite(day)
+    ? new Date(day + 86400000).toISOString().slice(0, 10)
+    : serverDate;
+}
+
+function weaknessQuestionsDueBy(
+  data: WeaknessLibrary | undefined,
+  filters: WeaknessFilters,
+  dueBy: string | undefined,
+) {
+  if (!data || !dueBy) return [];
+  return data.questions
+    .filter(
+      (q) =>
+        q.status === "WEAKNESS" &&
+        filters.sources.includes(q.source) &&
+        q.dueDate !== null &&
+        q.dueDate <= dueBy &&
+        (filters.range !== "wrong" || q.wrong),
+    )
+    .sort(compareWeakness(filters.sort));
+}
+
 export function weaknessQuestions(
   data: WeaknessLibrary | undefined,
   filters: WeaknessFilters,
 ) {
-  return (
-    data?.questions
-      .filter(
-        (q) =>
-          q.status === "WEAKNESS" &&
-          filters.sources.includes(q.source) &&
-          q.dueDate !== null &&
-          q.dueDate <= data.serverDate &&
-          (filters.range !== "wrong" || q.wrong),
-      )
-      .sort(compareWeakness(filters.sort)) ?? []
-  );
+  return weaknessQuestionsDueBy(data, filters, data?.serverDate);
 }
+
+export function scheduledWeaknessQuestions(
+  data: WeaknessLibrary | undefined,
+  filters: WeaknessFilters,
+) {
+  const dueBy = data
+    ? filters.range === "today"
+      ? data.serverDate
+      : nextReviewDate(data.serverDate)
+    : undefined;
+  return weaknessQuestionsDueBy(data, filters, dueBy);
+}
+
+export function weaknessReviewDay(
+  dueDate: string | null | undefined,
+  serverDate: string | undefined,
+) {
+  if (!dueDate || !serverDate) return null;
+  if (dueDate <= serverDate) return "오늘";
+  if (dueDate === nextReviewDate(serverDate)) return "내일";
+  return dueDate.slice(5).replace("-", "/");
+}
+
 export function weaknessCount(
   data: WeaknessLibrary | undefined,
   filters: WeaknessFilters,

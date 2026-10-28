@@ -2,12 +2,8 @@
 import { useRef, useState } from "react";
 import { ApiError } from "@/lib/client/fetch";
 import Link from "next/link";
-import {
-  ChevronRight,
-  CircleHelp,
-  SlidersHorizontal,
-  RotateCcw,
-} from "lucide-react";
+import SettingsIcon from "@/public/icons/settings.svg";
+import { ChevronRight, CircleHelp, RotateCcw } from "lucide-react";
 import { PracticeHeader } from "@/components/molecules/PracticeHeader";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +22,8 @@ import {
   WEAKNESS_SORTS,
   weaknessHref,
   weaknessQuestions,
+  scheduledWeaknessQuestions,
+  weaknessReviewDay,
   weaknessCount,
   weaknessFields,
   type WeaknessFilters,
@@ -50,17 +48,21 @@ export default function WeaknessMain({
   const [subject, setSubject] = useState<string | null>(null);
   const [chooseSource, setChooseSource] = useState(false);
   const questions = weaknessQuestions(query.data, filters);
+  const scheduled = scheduledWeaknessQuestions(query.data, filters);
+  const practiceQuestions = questions.filter(
+    (q) => !subject || q.subject === subject,
+  );
   const count = weaknessCount(query.data, filters);
   const fields = weaknessFields(query.data, filters);
-  const subjects = [...new Set(questions.map((q) => q.subject))];
-  const visible = questions.filter((q) => !subject || q.subject === subject);
+  const subjects = [...new Set(scheduled.map((q) => q.subject))];
+  const visible = scheduled.filter((q) => !subject || q.subject === subject);
   const collections = [...new Set(visible.map((q) => q.collectionRef))].flatMap(
     (reference) =>
       query.data?.collections.filter((c) => c.collectionRef === reference) ??
       [],
   );
   const sources = filters.sources.filter((source) =>
-    questions.some((q) => q.source === source),
+    practiceQuestions.some((q) => q.source === source),
   );
   const uncertain =
     start.isError &&
@@ -79,7 +81,15 @@ export default function WeaknessMain({
     });
   };
   const launch = (source: ReviewSource, collectionRef?: string) => {
-    if (pending) return;
+    if (
+      pending ||
+      !practiceQuestions.some(
+        (q) =>
+          q.source === source &&
+          (!collectionRef || q.collectionRef === collectionRef),
+      )
+    )
+      return;
     setChooseSource(false);
     run({
       source,
@@ -170,13 +180,13 @@ export default function WeaknessMain({
                 aria-label="나의 약점 분야 설정"
                 title="나의 약점 분야 설정"
               >
-                <SlidersHorizontal aria-hidden="true" strokeWidth={1.5} />
+                <SettingsIcon aria-hidden="true" />
               </Link>
             </Button>
           </div>
           <Button
             className="w-full"
-            disabled={query.isPending || !questions.length || pending}
+            disabled={query.isPending || !practiceQuestions.length || pending}
             onClick={() =>
               sources.length === 1 ? launch(sources[0]) : setChooseSource(true)
             }
@@ -235,7 +245,7 @@ export default function WeaknessMain({
                 학습 기록을 불러오는 중이에요.
               </p>
             )}
-            {!query.isPending && !query.isError && !questions.length && (
+            {!query.isPending && !query.isError && !scheduled.length && (
               <div className="py-8 text-center">
                 <RotateCcw
                   aria-hidden="true"
@@ -258,7 +268,7 @@ export default function WeaknessMain({
                     {name}
                   </span>
                   <span className="shrink-0 text-body-medium text-muted-foreground">
-                    {questions.filter((q) => q.subject === name).length}문제
+                    {scheduled.filter((q) => q.subject === name).length}문제
                   </span>
                   <ChevronRight
                     aria-hidden="true"
@@ -277,36 +287,66 @@ export default function WeaknessMain({
                     전체 과목 보기
                   </button>
                 )}
-                {collections.map((collection) => (
-                  <button
-                    key={collection.collectionRef}
-                    type="button"
-                    disabled={pending}
-                    onClick={() =>
-                      launch(collection.source, collection.collectionRef)
-                    }
-                    className="flex w-full items-center justify-between gap-3 border-b border-border py-4 text-left disabled:opacity-50"
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="block break-words text-title-large">
-                        {collection.title}
+                {collections.map((collection) => {
+                  const items = visible.filter(
+                    (q) => q.collectionRef === collection.collectionRef,
+                  );
+                  const available = practiceQuestions.filter(
+                    (q) => q.collectionRef === collection.collectionRef,
+                  );
+                  const dueDate = items.reduce<string | null>(
+                    (earliest, q) =>
+                      q.dueDate && (!earliest || q.dueDate < earliest)
+                        ? q.dueDate
+                        : earliest,
+                    null,
+                  );
+                  const reviewDay = weaknessReviewDay(
+                    dueDate,
+                    query.data?.serverDate,
+                  );
+                  const canPractice = available.length > 0;
+                  return (
+                    <button
+                      key={collection.collectionRef}
+                      type="button"
+                      disabled={pending || !canPractice}
+                      onClick={() =>
+                        launch(collection.source, collection.collectionRef)
+                      }
+                      className={`flex w-full items-center justify-between gap-3 border-b border-border py-4 text-left disabled:cursor-default ${pending ? "opacity-50" : ""}`}
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span
+                          className={`block break-words text-title-large ${canPractice ? "text-foreground" : "text-muted-foreground"}`}
+                        >
+                          {collection.title}
+                        </span>
+                        <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body-small text-muted-foreground">
+                          {reviewDay && (
+                            <>
+                              <span className="whitespace-nowrap">
+                                복습 예정 {reviewDay}
+                              </span>
+                              <span aria-hidden="true">·</span>
+                            </>
+                          )}
+                          <span className="whitespace-nowrap">
+                            {WEAKNESS_SOURCE_LABELS[collection.source]}
+                          </span>
+                          <span aria-hidden="true">·</span>
+                          <span className="whitespace-nowrap">
+                            {canPractice ? available.length : items.length}문제
+                          </span>
+                        </span>
                       </span>
-                      <span className="mt-1 block text-body-small text-muted-foreground">
-                        {WEAKNESS_SOURCE_LABELS[collection.source]} ·{" "}
-                        {
-                          visible.filter(
-                            (q) => q.collectionRef === collection.collectionRef,
-                          ).length
-                        }
-                        문제
-                      </span>
-                    </span>
-                    <ChevronRight
-                      aria-hidden="true"
-                      className="h-5 w-5 shrink-0 text-muted-foreground"
-                    />
-                  </button>
-                ))}
+                      <ChevronRight
+                        aria-hidden="true"
+                        className="h-5 w-5 shrink-0 text-muted-foreground"
+                      />
+                    </button>
+                  );
+                })}
               </>
             )}
           </div>
@@ -333,7 +373,7 @@ export default function WeaknessMain({
               onClick={() => launch(source)}
             >
               {WEAKNESS_SOURCE_LABELS[source]} ·{" "}
-              {questions.filter((q) => q.source === source).length}문제
+              {practiceQuestions.filter((q) => q.source === source).length}문제
             </Button>
           ))}
         </DialogContent>

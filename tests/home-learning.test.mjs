@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { NextRequest } from "next/server.js";
 import { loader } from "./helpers/load-ts.mjs";
@@ -55,6 +56,8 @@ function overview(props) {
     {},
     {
       "lucide-react": new Proxy({}, { get: () => () => null }),
+      "@/public/icons/question-bank.svg": (props) =>
+        createElement("svg", props),
       "@/lib/navigation": {
         useRouter: () => ({ push: (href) => navigation.push(href) }),
       },
