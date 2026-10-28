@@ -23,7 +23,6 @@ import { reviewAttemptHref } from "@/lib/learning/review";
 import type { ReviewSource } from "@/types/review";
 import {
   WEAKNESS_SOURCE_LABELS,
-  WEAKNESS_RANGES,
   WEAKNESS_SORTS,
   weaknessHref,
   weaknessQuestions,
@@ -129,47 +128,52 @@ export default function WeaknessMain({
           </p>
         )}
         <section aria-label="나의 약점 분야" className="space-y-4">
-          <Link
-            href={weaknessHref(filters, "areas")}
-            className="block rounded-xl border border-border p-4 focus-visible:outline-primary"
-          >
-            <span className="flex items-center gap-3">
-              <SlidersHorizontal
-                aria-hidden="true"
-                className="h-6 w-6 shrink-0 text-primary"
-                strokeWidth={1.5}
-              />
-              <span className="flex-1 text-title-large">나의 약점 분야</span>
-              <ChevronRight
-                aria-hidden="true"
-                className="h-5 w-5 text-muted-foreground"
-              />
-            </span>
-            {fields.length > 0 ? (
-              <ol className="mt-4 space-y-3" aria-label="오답률 상위 3개 분야">
-                {fields.slice(0, 3).map((field) => (
-                  <li
-                    key={field.subject}
-                    className="flex items-center justify-between gap-3 text-body-medium"
-                  >
-                    <span className="min-w-0 break-words">{field.subject}</span>
-                    <strong className="shrink-0 tabular-nums text-primary">
-                      {Math.round(field.wrongRate * 10) / 10}%
-                    </strong>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              query.data && (
-                <p className="mt-4 text-body-small text-muted-foreground">
-                  현재 약점으로 남아 있는 분야가 없어요.
+          <div className="flex items-center gap-4">
+            <div
+              className="flex min-h-32 min-w-0 flex-1 flex-col justify-center rounded-xl border border-border bg-white p-4"
+              aria-busy={query.isPending}
+            >
+              {fields.length > 0 ? (
+                <ol className="space-y-3" aria-label="오답률 상위 3개 분야">
+                  {fields.slice(0, 3).map((field) => (
+                    <li
+                      key={field.subject}
+                      className="flex items-start justify-between gap-3 text-body-medium"
+                    >
+                      <span className="min-w-0 break-words">
+                        {field.subject}
+                      </span>
+                      <strong className="shrink-0 tabular-nums text-primary">
+                        {Math.round(field.wrongRate * 10) / 10}%
+                      </strong>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="text-body-small text-muted-foreground">
+                  {query.isPending
+                    ? "약점 분야를 불러오는 중이에요."
+                    : query.data
+                      ? "현재 약점으로 남아 있는 분야가 없어요."
+                      : "약점 분야를 불러오지 못했어요."}
                 </p>
-              )
-            )}
-            <span className="mt-3 block text-body-small text-muted-foreground">
-              분야별 오답률 · {WEAKNESS_RANGES[filters.range]}
-            </span>
-          </Link>
+              )}
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              size="icon"
+              className="h-[3.625rem] w-[3.625rem] shrink-0 border-border text-primary"
+            >
+              <Link
+                href={weaknessHref(filters, "areas")}
+                aria-label="나의 약점 분야 설정"
+                title="나의 약점 분야 설정"
+              >
+                <SlidersHorizontal aria-hidden="true" strokeWidth={1.5} />
+              </Link>
+            </Button>
+          </div>
           <Button
             className="w-full"
             disabled={query.isPending || !questions.length || pending}

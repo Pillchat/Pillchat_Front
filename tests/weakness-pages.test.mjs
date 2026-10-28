@@ -274,6 +274,18 @@ test("main shows only the three highest subject rates and classification belongs
   assert.ok(rankHtml.indexOf("오늘 푼 문제") < rankHtml.indexOf("임상약학"));
   assert.ok(rankHtml.indexOf("임상약학") < rankHtml.indexOf("약리학"));
   assert.ok(!rankHtml.includes("생약학"));
+  const settingsLink = nodes(tree).find(
+    (n) => n.props?.["aria-label"] === "나의 약점 분야 설정",
+  );
+  assert.match(settingsLink.props.href, /\/weakness\/areas\?/);
+  assert.equal(
+    renderToStaticMarkup(settingsLink)
+      .replace(/<[^>]+>/g, "")
+      .trim(),
+    "",
+  );
+  assert.ok(!nodes(settingsLink).includes(ranking));
+
   const section = nodes(tree).find(
     (n) => n.props?.["aria-labelledby"] === "weakness-practice-title",
   );
