@@ -23,9 +23,20 @@ export type WeaknessFilters = {
 };
 export type WeaknessQuestion = {
   id: string;
+  questionId: string;
   source: ReviewSource;
   subject: string;
   collectionRef: string;
+  status: "UNATTEMPTED" | "HISTORY" | "WEAKNESS" | "MASTERED";
+  confused: boolean;
+  wrong: boolean;
+  consecutiveCorrect: number;
+  totalAttempts: number;
+  wrongAttempts: number;
+  wrongRate: number;
+  dueDate: string | null;
+  lastPracticedAt: string | null;
+  lastWrongAt: string | null;
 };
 export type WeaknessCollection = {
   collectionRef: string;
@@ -33,9 +44,19 @@ export type WeaknessCollection = {
   title: string;
 };
 export type WeaknessLibrary = {
+  serverDate: string;
   questions: WeaknessQuestion[];
   collections: WeaknessCollection[];
 };
+export type WeaknessStart = {
+  source: ReviewSource;
+  range: WeaknessFilters["range"];
+  sort: WeaknessFilters["sort"];
+  collectionRef?: string;
+  subject?: string;
+  idempotencyKey: string;
+};
+
 export function readWeaknessFilters(
   query: Record<string, string | string[] | undefined>,
 ): WeaknessFilters {
@@ -63,22 +84,71 @@ export function weaknessHref(filters: WeaknessFilters, page = "") {
   });
   return `/learning/weakness${page ? `/${page}` : ""}?${query}`;
 }
-// shortcut: 일정·정렬·헷갈림 API 연결 전에는 출처로만 기존 오답을 필터링한다.
+
+export function compareWeakness(sort: WeaknessFilters["sort"]) {
+  const date = (value: string | null) =>
+    value ? Date.parse(value) : -Infinity;
+  const due = (a: WeaknessQuestion, b: WeaknessQuestion) =>
+    (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999");
+  return (a: WeaknessQuestion, b: WeaknessQuestion) => {
+    const order =
+      sort === "accuracy"
+        ? b.wrongRate - a.wrongRate || due(a, b)
+        : sort === "recent"
+          ? date(b.lastWrongAt) - date(a.lastWrongAt)
+          : due(a, b);
+    return order || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  };
+}
 export function weaknessQuestions(
   data: WeaknessLibrary | undefined,
   filters: WeaknessFilters,
 ) {
   return (
-    data?.questions.filter((question) =>
-      filters.sources.includes(question.source),
-    ) ?? []
+    data?.questions
+      .filter(
+        (q) =>
+          q.status === "WEAKNESS" &&
+          filters.sources.includes(q.source) &&
+          q.dueDate !== null &&
+          q.dueDate <= data.serverDate &&
+          (filters.range !== "wrong" || q.wrong),
+      )
+      .sort(compareWeakness(filters.sort)) ?? []
   );
 }
 export function weaknessCount(
   data: WeaknessLibrary | undefined,
   filters: WeaknessFilters,
 ) {
-  return !data || filters.range === "today"
-    ? null
-    : weaknessQuestions(data, filters).length;
+  return data ? weaknessQuestions(data, filters).length : null;
+}
+export function weaknessFields(
+  data: WeaknessLibrary | undefined,
+  filters: WeaknessFilters,
+) {
+  const questions =
+    data?.questions.filter((q) => filters.sources.includes(q.source)) ?? [];
+  const subjects = [
+    ...new Set(
+      questions.filter((q) => q.status === "WEAKNESS").map((q) => q.subject),
+    ),
+  ];
+  return subjects
+    .map((subject) => {
+      const rows = questions.filter((q) => q.subject === subject);
+      const total = rows.reduce((sum, q) => sum + q.totalAttempts, 0);
+      const wrong = rows.reduce((sum, q) => sum + q.wrongAttempts, 0);
+      return {
+        subject,
+        wrongRate: total ? (100 * wrong) / total : 0,
+        count: rows.filter((q) => q.status === "WEAKNESS").length,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.wrongRate - a.wrongRate ||
+        b.count - a.count ||
+        a.subject.localeCompare(b.subject, "ko"),
+    );
 }

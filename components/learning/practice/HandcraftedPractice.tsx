@@ -1,4 +1,5 @@
 "use client";
+import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
 
 import { TutorialButton } from "@/components/learning/TutorialButton";
 import { useEffect, useState } from "react";
@@ -102,6 +103,12 @@ export default function HandcraftedPractice({
                 )}
               </button>
             </div>
+            <ConfusionToggle
+              key={`${question.attemptQuestionId}:${answer.finalized}`}
+              source="HANDCRAFTED"
+              questionId={question.sourceQuestionVersionId}
+              disabled={s.disabled}
+            />
             {question.referenceContent && (
               <p className="mt-5 whitespace-pre-wrap rounded-xl bg-gray-50 p-4 text-sm">
                 {question.referenceContent}

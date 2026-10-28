@@ -1,4 +1,5 @@
 "use client";
+import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
 import { useState } from "react";
 import Link from "next/link";
 import { Trophy } from "lucide-react";
@@ -160,6 +161,11 @@ export function PracticeResult({
                   <h3 className="mt-3 whitespace-pre-wrap font-bold">
                     {item.question.stem}
                   </h3>
+                  <ConfusionToggle
+                    source={s.source}
+                    questionId={item.question.sourceQuestionVersionId}
+                    disabled={s.disabled}
+                  />
                   {item.question.referenceContent && (
                     <p className="mt-3 whitespace-pre-wrap rounded-xl bg-muted p-3">
                       {item.question.referenceContent}

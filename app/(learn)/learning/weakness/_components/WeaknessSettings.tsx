@@ -41,7 +41,7 @@ export default function WeaknessSettings({
         <WeaknessCount
           label="복습할 문제 수"
           count={count}
-          pending={query.isLoading}
+          pending={query.isPending}
         />
         <WeaknessNotice title="오답 • 헷갈림만 보여줘요">
           나에게 필요한 문제 범위와 출처를 골라보세요.
@@ -128,8 +128,8 @@ export default function WeaknessSettings({
           )}
         </fieldset>
         <p className="text-body-small text-muted-foreground">
-          복습 일정·헷갈림 상태와 정렬 데이터는 추후 연결됩니다. 오늘 복습의
-          문제 수는 일정 연결 후 표시돼요.
+          오늘 푼 문제는 내일부터 다시 보여요. 두 번 연속 정답이면 약점공략에서
+          제외돼요.
         </p>
       </main>
       <footer className="fixed bottom-0 left-1/2 z-40 w-full max-w-app -translate-x-1/2 border-t border-border bg-white px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
