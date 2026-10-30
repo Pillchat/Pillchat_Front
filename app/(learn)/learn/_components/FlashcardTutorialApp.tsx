@@ -48,27 +48,28 @@ const steps: Record<
     number: 2,
     targetSelector: '[data-flashcard-tutorial="card"]',
     title: "카드를 눌러보세요",
-    description: "정답이 나타나고, 이 카드는 ‘알고있음’으로 기록돼요.",
+    description:
+      "뒷면의 정답을 확인해요. 뒤집기만 하면 학습 기록은 바뀌지 않아요.",
   },
   next: {
     number: 3,
-    targetSelector: '[data-flashcard-tutorial="card"]',
-    title: "왼쪽으로 넘겨보세요",
-    description: "정답을 확인했으면 카드를 왼쪽으로 밀어 다음 카드로 가세요.",
+    targetSelector: '[data-flashcard-tutorial="rating"]',
+    title: "기억했어요를 눌러보세요",
+    description:
+      "기억한 내용이면 ‘기억했어요’를 눌러 기록하고 다음 카드로 가요.",
   },
   skip: {
     number: 4,
-    targetSelector: '[data-flashcard-tutorial="card"]',
-    title: "모르는 카드는 바로 넘기기",
-    description:
-      "이번 카드는 누르지 말고 왼쪽으로 밀어보세요. ‘모름’으로 기록돼요.",
+    targetSelector: '[data-flashcard-tutorial="rating"]',
+    title: "다시 볼래요를 눌러보세요",
+    description: "다시 공부하고 싶은 카드는 ‘다시 볼래요’로 기록해요.",
   },
   complete: {
     number: 5,
     targetSelector: '[data-flashcard-tutorial="results"]',
     title: "이제 직접 공부해 보세요",
     description:
-      "누른 카드는 ‘알고있음’, 바로 넘긴 카드는 ‘모름’으로 기록됐어요. 예제 연습은 내 카드에 저장되지 않아요.",
+      "두 평가 버튼으로 학습 상태를 기록해요. 예제 연습은 내 카드에 저장되지 않아요.",
   },
 };
 
@@ -164,7 +165,9 @@ export function FlashcardTutorialApp({
       } else if (step === "flip") {
         await studyControlsRef.current?.flip();
       } else {
-        await studyControlsRef.current?.swipe("left");
+        await studyControlsRef.current?.rate(
+          step === "next" ? "good" : "again",
+        );
       }
     } finally {
       advanceLock.current = false;
@@ -174,41 +177,29 @@ export function FlashcardTutorialApp({
 
   const allowStudyAction = (action: FlashcardStudyActionIntent) => {
     if (step === "flip") return action.type === "flip";
-    if (step === "next") {
-      return (
-        action.type === "swipe" && action.direction === "left" && action.flipped
-      );
-    }
-    if (step === "skip") {
-      return (
-        action.type === "swipe" &&
-        action.direction === "left" &&
-        !action.flipped
-      );
-    }
+    if (step === "next")
+      return action.type === "rate" && action.rating === "good";
+    if (step === "skip")
+      return action.type === "rate" && action.rating === "again";
     return false;
   };
 
   const handleStudyAction = (action: FlashcardStudyAction) => {
-    if (step === "flip" && action.type === "flip") {
-      setStep("next");
-    } else if (
+    if (step === "flip" && action.type === "flip") setStep("next");
+    else if (
       step === "next" &&
-      action.type === "swipe" &&
-      action.direction === "left" &&
-      action.flipped &&
+      action.type === "rate" &&
+      action.rating === "good" &&
       action.nextCardId !== null
-    ) {
+    )
       setStep("skip");
-    } else if (
+    else if (
       step === "skip" &&
-      action.type === "swipe" &&
-      action.direction === "left" &&
-      !action.flipped &&
+      action.type === "rate" &&
+      action.rating === "again" &&
       action.nextCardId === null
-    ) {
+    )
       setStep("complete");
-    }
   };
 
   const isCurrentTarget = (target: EventTarget | null) =>
