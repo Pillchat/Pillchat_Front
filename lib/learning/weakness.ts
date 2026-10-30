@@ -37,6 +37,11 @@ export type WeaknessQuestion = {
   dueDate: string | null;
   lastPracticedAt: string | null;
   lastWrongAt: string | null;
+  topic?: string | null;
+  firstPracticedAt?: string | null;
+  firstOutcome?: string | null;
+  firstConfused?: boolean;
+  masteredAt?: string | null;
 };
 export type WeaknessCollection = {
   collectionRef: string;
@@ -174,8 +179,20 @@ export function weaknessFields(
   return subjects
     .map((subject) => {
       const rows = questions.filter((q) => q.subject === subject);
-      const total = rows.reduce((sum, q) => sum + q.totalAttempts, 0);
-      const wrong = rows.reduce((sum, q) => sum + q.wrongAttempts, 0);
+      const hasFirstHistory = rows.some(
+        (q) => q.firstPracticedAt !== undefined,
+      );
+      const recent = rows.filter((q) =>
+        inRecentDays(q.firstPracticedAt, data?.serverDate, 30),
+      );
+      const total = hasFirstHistory
+        ? recent.length
+        : rows.reduce((sum, q) => sum + q.totalAttempts, 0);
+      const wrong = hasFirstHistory
+        ? recent.filter(
+            (q) => q.firstOutcome === "INCORRECT" || q.firstConfused,
+          ).length
+        : rows.reduce((sum, q) => sum + q.wrongAttempts, 0);
       return {
         subject,
         wrongRate: total ? (100 * wrong) / total : 0,
@@ -188,4 +205,39 @@ export function weaknessFields(
         b.count - a.count ||
         a.subject.localeCompare(b.subject, "ko"),
     );
+}
+
+export function koreanStudyDate(value: string | null | undefined) {
+  if (!value) return null;
+  const time = Date.parse(value);
+  return Number.isFinite(time)
+    ? new Date(time + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
+    : null;
+}
+function inRecentDays(
+  value: string | null | undefined,
+  today: string | undefined,
+  days: number,
+) {
+  const date = koreanStudyDate(value);
+  if (!date || !today) return false;
+  const from = new Date(
+    Date.parse(`${today}T00:00:00Z`) - (days - 1) * 86400000,
+  )
+    .toISOString()
+    .slice(0, 10);
+  return date >= from && date <= today;
+}
+export function recentlyMastered(
+  data: WeaknessLibrary | undefined,
+  filters: WeaknessFilters,
+) {
+  return data
+    ? data.questions.filter(
+        (q) =>
+          filters.sources.includes(q.source) &&
+          q.status === "MASTERED" &&
+          inRecentDays(q.masteredAt, data.serverDate, 7),
+      ).length
+    : null;
 }

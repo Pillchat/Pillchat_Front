@@ -4,6 +4,7 @@ import { PracticeHeader } from "@/components/molecules/PracticeHeader";
 import { useWeaknessQuery } from "@/hooks/queries/useWeaknessQuery";
 import {
   weaknessHref,
+  koreanStudyDate,
   WEAKNESS_SOURCE_LABELS,
   type WeaknessFilters,
 } from "@/lib/learning/weakness";
@@ -25,7 +26,7 @@ export default function MasteredQuestions({
         <h1 className="text-headline-medium">
           극복한 문제 {query.data ? questions.length : "–"}개
         </h1>
-        <WeaknessNotice title="두 번 연속 맞혔어요">
+        <WeaknessNotice title="서로 다른 날에 두 번 연속 맞혔어요">
           극복한 문제는 약점공략에서 제외돼요. 다시 틀리거나 헷갈리면 약점으로
           돌아와요.
         </WeaknessNotice>
@@ -41,7 +42,10 @@ export default function MasteredQuestions({
         <ul className="divide-y divide-border">
           {questions.map((q) => (
             <li key={q.id} className="py-4">
-              <p className="text-title-large">{q.subject}</p>
+              <p className="text-title-large">
+                {q.subject}
+                {q.topic ? ` · ${q.topic}` : ""}
+              </p>
               <p className="mt-1 text-body-small text-muted-foreground">
                 {WEAKNESS_SOURCE_LABELS[q.source]} ·{" "}
                 {
@@ -50,13 +54,15 @@ export default function MasteredQuestions({
                   )?.title
                 }{" "}
                 · 2회 연속 정답
+                {q.masteredAt &&
+                  ` · 극복한 날 ${koreanStudyDate(q.masteredAt)}`}
               </p>
             </li>
           ))}
         </ul>
         <Link
           className="block text-body-medium text-primary underline"
-          href="/learning/review"
+          href="/learning/history"
         >
           전체 학습 기록 보기
         </Link>

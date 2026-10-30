@@ -1,5 +1,6 @@
 "use client";
 import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
+import WeaknessReviewFeedback from "@/components/learning/WeaknessReviewFeedback";
 import { useEffect, useRef, useState } from "react";
 import { fetchAPI } from "@/lib/client/fetch";
 import { LearningCommands } from "@/lib/learning/api";
@@ -14,6 +15,7 @@ type Answer = {
   action: string;
 };
 type Quiz = {
+  type?: string;
   sessionId: string;
   status: string;
   questions: {
@@ -132,12 +134,14 @@ export default function AiSessionPage() {
             <h1 className="whitespace-pre-wrap text-lg font-semibold">
               {q.content}
             </h1>
-            <ConfusionToggle
-              key={`${q.questionId}:${!!answer}`}
-              source="AI"
-              questionId={q.questionId}
-              disabled={disabled}
-            />
+            {quiz?.type !== "REVIEW" && (
+              <ConfusionToggle
+                key={`${q.questionId}:${!!answer}`}
+                source="AI"
+                questionId={q.questionId}
+                disabled={disabled}
+              />
+            )}
             {q.type === "MULTIPLE_CHOICE" || q.type === "TRUE_FALSE" ? (
               (q.choices ?? []).map((choice) => (
                 <button
@@ -157,6 +161,14 @@ export default function AiSessionPage() {
                 value={input}
                 disabled={disabled || !!answer}
                 onChange={(e) => setInput(e.target.value)}
+              />
+            )}
+            {answer && quiz?.type === "REVIEW" && (
+              <WeaknessReviewFeedback
+                key={q.questionId}
+                source="AI"
+                questionId={q.questionId}
+                disabled={disabled}
               />
             )}
             {answer ? (
