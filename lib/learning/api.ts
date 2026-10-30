@@ -7,6 +7,9 @@ export type Question = {
   stem: string;
   referenceContent?: string;
   subjectName: string;
+  subjectId?: string;
+  topicId?: string;
+  topicName?: string;
   choices: { choiceId: string; text: string }[];
   media: { url?: string; downloadUrl?: string; alt?: string }[];
 };
