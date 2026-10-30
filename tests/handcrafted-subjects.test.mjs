@@ -54,6 +54,7 @@ function nodes(element) {
 function setup(
   data = catalog,
   query = { data: directory, isPending: false, isError: false },
+  availabilityOverride,
 ) {
   let cursor = 0;
   const slots = [];
@@ -77,9 +78,39 @@ function setup(
     },
   };
   const load = loader(
-    {},
+    {
+      window: {
+        location: {
+          href: "https://app.example/questionbank/handcrafted",
+          search: "",
+        },
+        history: { replaceState() {} },
+      },
+    },
     {
       react: hooks,
+      "@/hooks/queries/useHandcraftedSelectionQueries": {
+        useHandcraftedSubjectsQuery: () => query,
+        useHandcraftedAvailabilityQuery: (subjectId, topicId) =>
+          availabilityOverride ?? {
+            data: {
+              newCount:
+                (topicId
+                  ? data?.subjects
+                      .find((s) => s.subjectId === subjectId)
+                      ?.topics.find((t) => t.topicId === topicId)
+                      ?.availableCount
+                  : data?.subjects.find((s) => s.subjectId === subjectId)
+                      ?.availableCount) ?? 0,
+              answeredCount: 0,
+              inProgressCount: 0,
+              weaknessCount: 0,
+            },
+            isPending: false,
+            isError: false,
+            refetch: () => {},
+          },
+      },
       "@tanstack/react-query": { useQuery: () => query },
       "@/hooks/useAuthIdentity": { useAuthIdentity: () => "user-1" },
       "@/lib/client/fetch": {
@@ -101,6 +132,7 @@ function setup(
     history: [],
     startHandcrafted(...args) {
       calls.push(args);
+      return Promise.resolve(true);
     },
   };
   const render = () => {
@@ -147,7 +179,7 @@ test("dropdown disables unpublished subjects and sends the original server subje
   assert.equal(
     h.find((node) => node.type === "button" && node.props.children === "5문제")
       .props.disabled,
-    true,
+    undefined,
   );
   h.submit();
   assert.deepEqual(h.calls[1], ["biochemistry", "topic-1", 3]);
@@ -185,4 +217,156 @@ test("restored count buttons respect the server limit and the selected topic", (
   h.render();
   h.submit();
   assert.equal(h.calls.length, 2);
+});
+
+test("shortage starts only remaining unseen questions; zero and loading block starts", () => {
+  const h = setup(catalog, undefined, {
+    data: {
+      newCount: 8,
+      answeredCount: 12,
+      weaknessCount: 5,
+      inProgressCount: 2,
+    },
+    isPending: false,
+    isError: false,
+  });
+  h.find(
+    (n) => n.type === "button" && n.props.children === "20문제",
+  ).props.onClick();
+  h.render();
+  assert.equal(
+    h.find((n) => n.type === "button" && n.props.type === "submit").props
+      .children,
+    "새 문제 8개로 시작",
+  );
+  h.submit();
+  assert.deepEqual(h.calls, [["biochemistry", "", 8]]);
+  for (const query of [
+    {
+      data: {
+        newCount: 0,
+        answeredCount: 20,
+        weaknessCount: 5,
+        inProgressCount: 0,
+      },
+      isPending: false,
+      isError: false,
+    },
+    { isPending: true },
+    { isPending: false, isError: true },
+  ]) {
+    const blocked = setup(catalog, undefined, query);
+    assert.equal(
+      blocked.find((n) => n.type === "button" && n.props.type === "submit")
+        .props.disabled,
+      true,
+    );
+    blocked.submit();
+    assert.equal(blocked.calls.length, 0);
+  }
+});
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+
+test("availability cache and request are scoped by user and selected topic", async () => {
+  let query;
+  const calls = [];
+  const load = loader(
+    {},
+    {
+      "@/hooks/useAuthIdentity": { useAuthIdentity: () => "owner-7" },
+      "@tanstack/react-query": {
+        useQuery: (options) => {
+          query = options;
+          return options;
+        },
+      },
+      "@/lib/client/fetch": {
+        fetchAPI: (...args) => {
+          calls.push(args);
+          return Promise.resolve({ newCount: 8 });
+        },
+      },
+    },
+  );
+  const { useHandcraftedAvailabilityQuery } = load(
+    "hooks/queries/useHandcraftedSelectionQueries.ts",
+  );
+  useHandcraftedAvailabilityQuery("subject-1", "topic-3");
+  assert.deepEqual(Array.from(query.queryKey), [
+    "handcrafted-availability",
+    "owner-7",
+    "subject-1",
+    "topic-3",
+  ]);
+  await query.queryFn();
+  assert.equal(calls[0][0], "/api/learning/handcrafted/availability");
+  assert.equal(calls[0][2].topicId, "topic-3");
+  useHandcraftedAvailabilityQuery(undefined);
+  assert.equal(query.enabled, false);
+});
+
+test("result shows topic breakdown, confusion count and weakness destination", () => {
+  const load = loader(
+    {},
+    {
+      "@/hooks/queries/useWeaknessQuery": {
+        useWeaknessQuery: () => ({
+          data: {
+            questions: [
+              { source: "HANDCRAFTED", questionId: "q-1", confused: true },
+            ],
+          },
+        }),
+      },
+      "lucide-react": { Trophy: () => null },
+      "@/components/molecules": {
+        AppShell: ({ children }) => children,
+        PracticeHeader: () => null,
+      },
+      "@/components/learning/ConfusionToggle": { ConfusionToggle: () => null },
+      "@/components/learning/TutorialButton": { TutorialButton: () => null },
+      "next/link": ({ href, children }) =>
+        React.createElement("a", { href }, children),
+    },
+  );
+  const { PracticeResult } = load(
+    "components/learning/practice/PracticeResult.tsx",
+  );
+  const markup = renderToStaticMarkup(
+    React.createElement(PracticeResult, {
+      session: {
+        source: "HANDCRAFTED",
+        result: {
+          score: 50,
+          counts: { total: 2, correct: 1, incorrect: 1, unanswered: 0 },
+          questions: [
+            {
+              question: {
+                sourceQuestionVersionId: "q-1",
+                subjectName: "약물학",
+                topicName: "고혈압",
+              },
+              grade: { outcome: "CORRECT" },
+            },
+            {
+              question: {
+                sourceQuestionVersionId: "q-2",
+                subjectName: "약물학",
+                topicName: "당뇨",
+              },
+              grade: { outcome: "INCORRECT" },
+            },
+          ],
+        },
+      },
+      onTutorial() {},
+    }),
+  );
+  assert.match(markup, /고혈압/);
+  assert.match(markup, /당뇨/);
+  assert.match(markup, /헷갈림/);
+  assert.match(markup, /정답률 50%/);
+  assert.match(markup, /sources=HANDCRAFTED/);
+  assert.match(markup, /같은 조건으로 새 문제/);
 });
