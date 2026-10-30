@@ -249,7 +249,7 @@ export function PracticeResult({
           정답률 {result.score}% · 오답과 헷갈린 문제는 약점공략에서 복습해요.
         </p>
         <Link
-          href="/learning/review"
+          href="/learning/history"
           className="mt-4 block rounded-xl bg-accent/50 p-4 text-center text-sm font-bold"
         >
           학습 기록에서 다시 복습하기
