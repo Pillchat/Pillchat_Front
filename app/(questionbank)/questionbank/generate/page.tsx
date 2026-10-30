@@ -1,7 +1,7 @@
 "use client";
 import { startQuiz } from "@/lib/client/startQuiz";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useSetAtom } from "jotai";
 import { fetchAPI, getToken } from "@/lib/client/fetch";
@@ -27,6 +27,12 @@ const GeneratePage = () => {
   const [error, setError] = useState<string | null>(null);
   const initSession = useSetAtom(initQuizSessionAtom);
   const abortRef = useRef(false);
+  useEffect(() => {
+    abortRef.current = false;
+    return () => {
+      abortRef.current = true;
+    };
+  }, []);
 
   const isPdfFile = (selected: File) => {
     const normalizedName = selected.name.toLowerCase();
@@ -59,10 +65,14 @@ const GeneratePage = () => {
   };
 
   const parsedCount = Number(questionCount);
-  const isFormValid = file && parsedCount >= 1 && parsedCount <= 20;
+  const isFormValid =
+    file &&
+    Number.isInteger(parsedCount) &&
+    parsedCount >= 1 &&
+    parsedCount <= 20;
 
   const handleGenerate = async () => {
-    if (!isFormValid) return;
+    if (isLoading || !isFormValid) return;
     setIsLoading(true);
     setError(null);
     abortRef.current = false;
@@ -131,6 +141,7 @@ const GeneratePage = () => {
         ]),
       );
 
+      if (abortRef.current) return;
       // 4) 세션 초기화 → 풀이 화면 이동
       initSession({
         sessionId: quizData.sessionId,
