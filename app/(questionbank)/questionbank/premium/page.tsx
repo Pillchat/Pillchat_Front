@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { startQuiz } from "@/lib/client/startQuiz";
 
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
@@ -48,6 +49,14 @@ const PremiumPage = () => {
   const [error, setError] = useState<string | null>(null);
   const initSession = useSetAtom(initQuizSessionAtom);
   const abortRef = useRef(false);
+  const topicRequest = useRef(0);
+  useEffect(() => {
+    abortRef.current = false;
+    return () => {
+      abortRef.current = true;
+      topicRequest.current++;
+    };
+  }, []);
 
   // 토픽 모달 관련 state
   const [showTopicModal, setShowTopicModal] = useState(false);
@@ -86,6 +95,42 @@ const PremiumPage = () => {
     setSelectedSubject(subject);
     setSelectedTopic(null);
     setSubjectHint("");
+    topicRequest.current++;
+  };
+  const openTopics = async () => {
+    if (!selectedSubject) return;
+    const subject = selectedSubject;
+    const request = ++topicRequest.current;
+    setTopicSubject(subject);
+    setShowTopicModal(true);
+    setTopicLoading(true);
+    setTopics([]);
+    try {
+      const cached = topicCacheRef.current[subject.subjectId];
+      const raw =
+        cached ??
+        (await fetchAPI(
+          `/api/questionbank/ai-questions/subjects/${subject.subjectId}/topics`,
+          "GET",
+        ));
+      const items: SubjectTopic[] = Array.isArray(raw)
+        ? raw
+        : (raw as { data: SubjectTopic[] }).data;
+      if (request !== topicRequest.current) return;
+      topicCacheRef.current[subject.subjectId] = Array.isArray(items)
+        ? items
+        : [];
+      setTopics(topicCacheRef.current[subject.subjectId]);
+    } catch {
+      if (request === topicRequest.current) {
+        setShowTopicModal(false);
+        setError(
+          "세부 주제를 불러오지 못했어요. 다시 선택하거나 직접 입력해 주세요.",
+        );
+      }
+    } finally {
+      if (request === topicRequest.current) setTopicLoading(false);
+    }
   };
 
   /** 토픽 선택 */
@@ -100,6 +145,7 @@ const PremiumPage = () => {
   const isFormValid =
     selectedSubject &&
     selectedQuestionType &&
+    Number.isInteger(parsedCount) &&
     parsedCount >= 1 &&
     parsedCount <= 20;
 
@@ -123,7 +169,8 @@ const PremiumPage = () => {
   );
 
   const handleGenerate = async () => {
-    if (!isFormValid || !selectedSubject || !selectedQuestionType) return;
+    if (isLoading || !isFormValid || !selectedSubject || !selectedQuestionType)
+      return;
     setIsLoading(true);
     setError(null);
     abortRef.current = false;
@@ -138,9 +185,7 @@ const PremiumPage = () => {
           subjectId: selectedSubject.subjectId,
           questionType: selectedQuestionType,
           questionCount: parsedCount,
-          subjectHint: [selectedSubject.name, subjectHint.trim()]
-            .filter(Boolean)
-            .join(" · "),
+          subjectHint: subjectHint.trim(),
         },
       );
       const generateData = generateRaw.data ?? generateRaw;
@@ -157,6 +202,7 @@ const PremiumPage = () => {
         );
       }
 
+      if (abortRef.current) return;
       // 3) 퀴즈 세션 시작
       const resultRaw = await fetchAPI(
         `/api/questionbank/ai-questions/result/${taskId}`,
@@ -176,6 +222,7 @@ const PremiumPage = () => {
       });
       const quizData: QuizStartResponse = quizRaw.data ?? quizRaw;
 
+      if (abortRef.current) return;
       // 4) 세션 초기화 → 풀이 화면 이동
       initSession({
         sessionId: quizData.sessionId,
@@ -332,10 +379,41 @@ const PremiumPage = () => {
           />
         </div>
 
-        <p className="mb-6 text-sm text-muted-foreground">
-          현재 AI 문제는 선택한 과목을 기준으로 생성됩니다. 세부 주제 지정은
-          아직 지원하지 않습니다.
-        </p>
+        <section className="mb-6 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <label htmlFor="ai-topic" className="font-semibold">
+              세부 주제 (선택)
+            </label>
+            <button
+              type="button"
+              disabled={!selectedSubject}
+              onClick={() => void openTopics()}
+              className="text-sm text-primary disabled:opacity-50"
+            >
+              주제 목록에서 선택
+            </button>
+          </div>
+          <input
+            id="ai-topic"
+            value={subjectHint}
+            maxLength={120}
+            onChange={(e) => {
+              setSubjectHint(e.target.value);
+              setSelectedTopic(null);
+            }}
+            className="w-full rounded-xl border p-4 text-sm"
+            placeholder="예: 약물 상호작용"
+          />
+          <p className="text-xs text-muted-foreground">
+            비워두면 선택한 과목 전체에서 출제해요.
+          </p>
+          <Link
+            href="/questionbank/generate"
+            className="block rounded-xl border p-4 text-sm font-medium"
+          >
+            내 학습자료를 업로드해서 생성하기
+          </Link>
+        </section>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
       </div>
