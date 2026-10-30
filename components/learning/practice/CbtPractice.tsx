@@ -75,7 +75,8 @@ export default function CbtPractice({
   const [touch, setTouch] = useState(false);
   const [consented, setConsented] = useState(false);
   const [fontScale, setFontScale] = useState<80 | 100 | 125>(100);
-  const [double, setDouble] = useState(false);
+  const [double, setDouble] = useState(true);
+  const [retryAttempt, setRetryAttempt] = useState<string | null>(null);
   const [width, setWidth] = useState(0);
   const [note, setNote] = useState<string | null>(null);
   const [unknown, setUnknown] = useState<Record<string, boolean>>({});
@@ -129,10 +130,7 @@ export default function CbtPractice({
         0,
       ) * (ordinal && quick ? 0.5 : 1)
     : null;
-  const total = selectedSections.reduce(
-    (sum, section) => sum + section.questionCount,
-    0,
-  );
+  const total = ordinal && quick ? 25 : 100;
   const attempt = s.attempt;
   const questions = useMemo(
     () => (attempt?.currentSectionQuestions ?? []).map(cbtQuestion),
@@ -171,10 +169,9 @@ export default function CbtPractice({
   const section = attempt?.sections.find(
     (item) => item.sectionId === attempt.currentSectionId,
   );
-  const displayed = questions.slice(
-    s.index,
-    s.index + (double && width >= 1180 ? 2 : 1),
-  );
+  const pageSize = double ? 2 : 1;
+  const pageStart = Math.floor(s.index / pageSize) * pageSize;
+  const displayed = questions.slice(pageStart, pageStart + pageSize);
   const filtered = questions.filter((q) =>
     listFilter === "flagged"
       ? answers[q.id]?.flagged
@@ -273,19 +270,73 @@ export default function CbtPractice({
               </p>
             </section>
             {bankPicker}
+            <p className="mt-4 rounded-xl bg-brandSecondary p-4 text-sm">
+              새 문제에서는 이미 푼 문제와 진행 중인 문제를 제외해요. 이전
+              문제는 재도전을 선택할 때만 다시 나와요.
+            </p>
             <AttemptHistory session={s} />
+            {s.history.some(
+              (item) => item.state === "COMPLETED" && item.mode !== "REVIEW",
+            ) && (
+              <section className="mt-6 space-y-3">
+                <h2 className="font-semibold">이전 세트 재도전</h2>
+                {s.history
+                  .filter(
+                    (item) =>
+                      item.state === "COMPLETED" && item.mode !== "REVIEW",
+                  )
+                  .map((item) => (
+                    <button
+                      key={item.attemptId}
+                      type="button"
+                      disabled={s.disabled}
+                      onClick={() => setRetryAttempt(item.attemptId)}
+                      className="flex w-full items-center justify-between gap-3 rounded-xl border p-4 text-left text-sm"
+                    >
+                      <span>{item.title}</span>
+                      <RotateCcw
+                        className="h-5 w-5 shrink-0 text-primary"
+                        strokeWidth={1.5}
+                      />
+                    </button>
+                  ))}
+              </section>
+            )}
+            {retryAttempt && (
+              <Dialog
+                title="이전 세트 재도전"
+                description="완료한 시험의 문제와 시간을 그대로 사용해요."
+                onClose={() => setRetryAttempt(null)}
+              >
+                <p className="text-sm">
+                  선택한 세트의 같은 문제와 제한시간으로 다시 풀어요. 기존
+                  결과는 그대로 남아요.
+                </p>
+                {feedback}
+                <PrimaryButton
+                  disabled={s.disabled}
+                  onClick={() =>
+                    void s.retryCbt(retryAttempt).then((ok) => {
+                      if (ok) setRetryAttempt(null);
+                    })
+                  }
+                >
+                  같은 세트 재도전
+                </PrimaryButton>
+              </Dialog>
+            )}
             <div className="mt-5 flex flex-col gap-3">
               <ModeCard
                 icon={<BookOpenCheck className="h-7 w-7 text-primary" />}
                 title="교시별 연습"
-                description="교시와 연습 시간 선택"
+                description="1~4교시 · 100문제 실전 / 25문제 연습"
                 disabled={s.disabled || !sections.length}
                 onClick={() => setStage("session-select")}
               />
               <ModeCard
                 icon={<Clock3 className="h-7 w-7 text-primary" />}
                 title={`전체 ${sections.length || ""}교시 실전`}
-                description={`${sections.reduce((n, item) => n + item.questionCount, 0)}문항 · 쉬는 시간 포함`}
+                description="새 문제 100문항 · 쉬는 시간 포함"
                 disabled={
                   s.disabled ||
                   !sections.length ||
@@ -298,7 +349,7 @@ export default function CbtPractice({
                 }}
               />
               <Link
-                href="/learning/review"
+                href="/learning/weakness"
                 className="flex min-h-24 items-center gap-4 rounded-2xl bg-accent/50 p-5"
               >
                 <RotateCcw className="h-7 w-7 text-primary" />
@@ -375,14 +426,14 @@ export default function CbtPractice({
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <ChoiceCard
                   active={!quick}
-                  title="실전 시간"
-                  description="실제 교시 제한시간으로 연습"
+                  title="모의 실전 · 100문제"
+                  description="새 문제 100문제로 실전처럼 풀어요"
                   onClick={() => setQuick(false)}
                 />
                 <ChoiceCard
                   active={quick}
-                  title="빠른 연습"
-                  description="문항은 유지하고 시간을 50%로 단축"
+                  title="모의 연습 · 25문제"
+                  description="새 문제 25개 · 제한시간 50%"
                   onClick={() => setQuick(true)}
                 />
               </div>
@@ -589,7 +640,7 @@ export default function CbtPractice({
               <div
                 role="group"
                 aria-label="문제 화면 배치"
-                className="hidden rounded-xl bg-[#fafafa] p-1 min-[1180px]:flex"
+                className="flex rounded-xl bg-[#fafafa] p-1"
               >
                 {[false, true].map((value) => (
                   <button
@@ -630,13 +681,13 @@ export default function CbtPractice({
               className={
                 double && width >= 1180
                   ? "grid min-h-0 flex-1 grid-cols-2 gap-3 overflow-hidden p-3"
-                  : "min-h-0 flex-1 overflow-hidden"
+                  : "min-h-0 flex-1 overflow-y-auto"
               }
             >
               {displayed.map((q) => (
                 <div
                   key={q.id}
-                  className={`h-full min-w-0 overflow-y-auto ${double && width >= 1180 ? "p-1" : "p-3 sm:p-4 lg:p-6"}`}
+                  className={`${double && width >= 1180 ? "h-full overflow-y-auto" : ""} min-w-0 ${double && width >= 1180 ? "p-1" : "p-3 sm:p-4 lg:p-6"}`}
                 >
                   <ConfusionToggle
                     source="CBT"
@@ -738,8 +789,10 @@ export default function CbtPractice({
               <button
                 type="button"
                 aria-label="이전 문제"
-                disabled={s.disabled || s.index === 0}
-                onClick={() => go(questions[s.index - 1].id)}
+                disabled={s.disabled || pageStart === 0}
+                onClick={() =>
+                  go(questions[Math.max(0, pageStart - pageSize)].id)
+                }
                 className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#fafafa] disabled:opacity-40"
               >
                 <ChevronLeft className="h-5 w-5" />
@@ -760,8 +813,10 @@ export default function CbtPractice({
               <button
                 type="button"
                 aria-label="다음 문제"
-                disabled={s.disabled || s.index >= questions.length - 1}
-                onClick={() => go(questions[s.index + 1].id)}
+                disabled={
+                  s.disabled || pageStart + pageSize >= questions.length
+                }
+                onClick={() => go(questions[pageStart + pageSize].id)}
                 className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#fafafa] disabled:opacity-40"
               >
                 <ChevronRight className="h-5 w-5" />
@@ -791,15 +846,19 @@ export default function CbtPractice({
               <NavButton
                 label="이전"
                 icon={<ChevronLeft className="h-4 w-4" />}
-                disabled={s.disabled || s.index === 0}
-                onClick={() => go(questions[s.index - 1].id)}
+                disabled={s.disabled || pageStart === 0}
+                onClick={() =>
+                  go(questions[Math.max(0, pageStart - pageSize)].id)
+                }
               />
               <NavButton
                 label="다음"
                 icon={<ChevronRight className="h-4 w-4" />}
                 iconAfter
-                disabled={s.disabled || s.index >= questions.length - 1}
-                onClick={() => go(questions[s.index + 1].id)}
+                disabled={
+                  s.disabled || pageStart + pageSize >= questions.length
+                }
+                onClick={() => go(questions[pageStart + pageSize].id)}
               />
             </div>
             <div className="flex gap-2">
