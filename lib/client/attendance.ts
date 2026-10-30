@@ -9,6 +9,12 @@ export type AttendanceSnapshot = {
   longestStreak: number;
   grade: string;
   gradeCode?: string;
+  nextPromotion?: {
+    nextGrade: string | null;
+    target: number;
+    progress: number;
+    progressRate: number;
+  };
 };
 
 // The server owns the attendance date, counts, and earned grade.

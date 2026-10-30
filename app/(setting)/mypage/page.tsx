@@ -15,6 +15,7 @@ import {
 import { isCurrentUserAdmin } from "@/lib/client/auth";
 import { useRouter } from "@/lib/navigation";
 import { useDelete, useLogout, useMyProfile } from "./_hooks";
+import ProfileLearningStatus from "./_components/ProfileLearningStatus";
 
 const MyPage: FC = () => {
   const router = useRouter();
@@ -23,7 +24,7 @@ const MyPage: FC = () => {
   );
   const { onDelete } = useDelete();
   const { onLogout } = useLogout();
-  const { onMyProfile, isLoading, error } = useMyProfile();
+  const { onMyProfile, isLoading, error, profile } = useMyProfile();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -62,10 +63,17 @@ const MyPage: FC = () => {
         ) : (
           <UserInfoField onIconClick={() => router.push("/editprofile")} />
         )}
+        {!isLoading && <ProfileLearningStatus profile={profile} />}
 
         <div className="mt-8 w-[90%]">
           <p className="text-sm text-muted-foreground">정보</p>
           <div className="mt-4 flex flex-col gap-6">
+            <SystemField
+              iconSrc={PUBLIC_ASSETS.icons.questionBank}
+              title="전체 학습 기록"
+              description="맞힌 문제와 오답·헷갈린 문제를 다시 확인해요."
+              onClick={() => router.push("/learning/history")}
+            />
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.userUpgrade}
               title="승급 조건"
@@ -136,11 +144,13 @@ const MyPage: FC = () => {
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.privacyPolicy}
               title="개인정보 처리방침"
+              onClick={() => router.push("/legal/privacy")}
             />
 
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.terms}
               title="서비스 이용약관"
+              onClick={() => router.push("/legal/terms")}
             />
           </div>
 
