@@ -26,6 +26,8 @@ import {
   weaknessReviewDay,
   weaknessCount,
   weaknessFields,
+  recentlyMastered,
+  koreanStudyDate,
   type WeaknessFilters,
   type WeaknessStart,
 } from "@/lib/learning/weakness";
@@ -115,8 +117,15 @@ export default function WeaknessMain({
           pending={query.isPending}
         />
         <WeaknessNotice title="약점공략에는 약점만 모여요">
-          오답·헷갈린 문제를 복습해요. 2회 연속 정답이면 극복한 문제로 옮겨져요.
+          오답·헷갈린 문제를 복습해요. 서로 다른 날에 2회 연속 정답이면 극복한
+          문제로 옮겨져요.
         </WeaknessNotice>
+        <p className="text-body-medium">
+          지난 7일 극복한 문제{" "}
+          <strong className="text-primary">
+            {recentlyMastered(query.data, filters) ?? "–"}개
+          </strong>
+        </p>
         {query.isError && (
           <WeaknessReadError onRetry={() => void query.refetch()} />
         )}
@@ -138,6 +147,9 @@ export default function WeaknessMain({
           </p>
         )}
         <section aria-label="나의 약점 분야" className="space-y-4">
+          <p className="text-body-small text-muted-foreground">
+            최근 30일 최초 풀이 기준 · 오답·헷갈림 비율
+          </p>
           <div className="flex items-center gap-4">
             <div
               className="flex min-h-32 min-w-0 flex-1 flex-col justify-center rounded-xl border border-border bg-white p-4"
@@ -307,44 +319,71 @@ export default function WeaknessMain({
                   );
                   const canPractice = available.length > 0;
                   return (
-                    <button
-                      key={collection.collectionRef}
-                      type="button"
-                      disabled={pending || !canPractice}
-                      onClick={() =>
-                        launch(collection.source, collection.collectionRef)
-                      }
-                      className={`flex w-full items-center justify-between gap-3 border-b border-border py-4 text-left disabled:cursor-default ${pending ? "opacity-50" : ""}`}
-                    >
-                      <span className="min-w-0 flex-1">
-                        <span
-                          className={`block break-words text-title-large ${canPractice ? "text-foreground" : "text-muted-foreground"}`}
-                        >
-                          {collection.title}
-                        </span>
-                        <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body-small text-muted-foreground">
-                          {reviewDay && (
-                            <>
-                              <span className="whitespace-nowrap">
-                                복습 예정 {reviewDay}
-                              </span>
-                              <span aria-hidden="true">·</span>
-                            </>
-                          )}
-                          <span className="whitespace-nowrap">
-                            {WEAKNESS_SOURCE_LABELS[collection.source]}
+                    <div key={collection.collectionRef}>
+                      <button
+                        key={collection.collectionRef}
+                        type="button"
+                        disabled={pending || !canPractice}
+                        onClick={() =>
+                          launch(collection.source, collection.collectionRef)
+                        }
+                        className={`flex w-full items-center justify-between gap-3 border-b border-border py-4 text-left disabled:cursor-default ${pending ? "opacity-50" : ""}`}
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span
+                            className={`block break-words text-title-large ${canPractice ? "text-foreground" : "text-muted-foreground"}`}
+                          >
+                            {collection.title}
                           </span>
-                          <span aria-hidden="true">·</span>
-                          <span className="whitespace-nowrap">
-                            {canPractice ? available.length : items.length}문제
+                          <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body-small text-muted-foreground">
+                            {reviewDay && (
+                              <>
+                                <span className="whitespace-nowrap">
+                                  복습 예정 {reviewDay}
+                                </span>
+                                <span aria-hidden="true">·</span>
+                              </>
+                            )}
+                            <span className="whitespace-nowrap">
+                              {WEAKNESS_SOURCE_LABELS[collection.source]}
+                            </span>
+                            <span aria-hidden="true">·</span>
+                            <span className="whitespace-nowrap">
+                              {canPractice ? available.length : items.length}
+                              문제
+                            </span>
                           </span>
                         </span>
-                      </span>
-                      <ChevronRight
-                        aria-hidden="true"
-                        className="h-5 w-5 shrink-0 text-muted-foreground"
-                      />
-                    </button>
+                        <ChevronRight
+                          aria-hidden="true"
+                          className="h-5 w-5 shrink-0 text-muted-foreground"
+                        />
+                      </button>
+                      <details className="border-b border-border pb-3 text-body-small text-muted-foreground">
+                        <summary className="cursor-pointer py-2">
+                          문제별 복습 현황
+                        </summary>
+                        <ul className="space-y-3">
+                          {items.map((q) => (
+                            <li key={q.id} className="rounded-xl bg-accent p-3">
+                              <p>
+                                {q.subject}
+                                {q.topic ? ` · ${q.topic}` : ""} ·{" "}
+                                {WEAKNESS_SOURCE_LABELS[q.source]}
+                              </p>
+                              <p className="mt-1">
+                                최근 오답{" "}
+                                {koreanStudyDate(q.lastWrongAt) ?? "없음"} ·
+                                연속 정답 {q.consecutiveCorrect}/2회
+                              </p>
+                              <p className="mt-1">
+                                다음 복습 {q.dueDate ?? "–"}
+                              </p>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
+                    </div>
                   );
                 })}
               </>

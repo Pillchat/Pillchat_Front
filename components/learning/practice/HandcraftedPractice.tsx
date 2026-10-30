@@ -1,5 +1,6 @@
 "use client";
 import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
+import WeaknessReviewFeedback from "@/components/learning/WeaknessReviewFeedback";
 
 import { TutorialButton } from "@/components/learning/TutorialButton";
 import { useEffect, useState } from "react";
@@ -103,12 +104,14 @@ export default function HandcraftedPractice({
                 )}
               </button>
             </div>
-            <ConfusionToggle
-              key={`${question.attemptQuestionId}:${answer.finalized}`}
-              source="HANDCRAFTED"
-              questionId={question.sourceQuestionVersionId}
-              disabled={s.disabled}
-            />
+            {attempt.mode !== "REVIEW" && (
+              <ConfusionToggle
+                key={`${question.attemptQuestionId}:${answer.finalized}`}
+                source="HANDCRAFTED"
+                questionId={question.sourceQuestionVersionId}
+                disabled={s.disabled}
+              />
+            )}
             {question.referenceContent && (
               <p className="mt-5 whitespace-pre-wrap rounded-xl bg-gray-50 p-4 text-sm">
                 {question.referenceContent}
@@ -172,6 +175,14 @@ export default function HandcraftedPractice({
                 );
               })}
             </div>
+            {grade && attempt.mode === "REVIEW" && (
+              <WeaknessReviewFeedback
+                key={question.attemptQuestionId}
+                source={s.source}
+                questionId={question.sourceQuestionVersionId}
+                disabled={s.disabled}
+              />
+            )}
             {grade && (
               <div className="mt-6 border-t border-gray-100 pt-6">
                 <div className="rounded-xl bg-gray-50 p-4">
