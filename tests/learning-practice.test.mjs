@@ -479,3 +479,61 @@ test("handcrafted completion only requests published results after pending work 
     assert.equal(requested, resultAvailable ? 1 : 0);
   }
 });
+
+test("CBT defaults to two questions per page and keeps odd-question navigation on the same page", () => {
+  const View = componentLoad()(
+    "components/learning/practice/CbtPractice.tsx",
+  ).default;
+  const qs = [0, 1, 2].map((n) => ({
+    ...q,
+    attemptQuestionId: `q${n}`,
+    ordinal: n + 1,
+    stem: `PAGE_QUESTION_${n}`,
+  }));
+  const html = renderToStaticMarkup(
+    React.createElement(View, {
+      session: {
+        ...baseSession,
+        index: 1,
+        attempt: {
+          ...attempt,
+          currentQuestionId: "q1",
+          currentSectionQuestions: qs,
+          savedAnswers: qs.map((q) => ({
+            ...a,
+            attemptQuestionId: q.attemptQuestionId,
+          })),
+        },
+      },
+    }),
+  );
+  assert.ok(html.includes("PAGE_QUESTION_0"));
+  assert.ok(html.includes("PAGE_QUESTION_1"));
+  assert.equal(html.includes("PAGE_QUESTION_2"), false);
+});
+
+test("CBT start sends explicit problem count and retry uses only the selected previous attempt", async () => {
+  const posts = [];
+  const h = hookHarness(async (url, method, body) => {
+    if (method === "POST") {
+      posts.push({ url, body });
+      return { attempt };
+    }
+    if (url.endsWith("/catalog"))
+      return {
+        banks: [{ bankId: "bank", revisionId: "rev", sections: [] }],
+        subjects: [],
+      };
+    if (url.endsWith("/attempts")) return { items: [], nextCursor: null };
+    return attempt;
+  });
+  await h.render().reconnect();
+  await h.render().startCbt("bank", 1, true);
+  await h.render().startCbt("bank", 2, false);
+  await h.render().retryCbt("previous-id");
+  assert.equal(posts[0].body.questionCount, 25);
+  assert.equal(posts[1].body.questionCount, 100);
+  assert.equal(posts[2].url, "/api/learning/cbt/attempts/previous-id/retry");
+  assert.equal(posts[2].body.questionCount, undefined);
+  assert.ok(posts[2].body.idempotencyKey);
+});
