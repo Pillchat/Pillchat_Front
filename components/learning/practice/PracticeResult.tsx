@@ -221,7 +221,7 @@ export function PracticeResult({
           </section>
         )}
         <Link
-          href="/learning/review"
+          href="/learning/history"
           className="mt-4 block rounded-xl bg-accent/50 p-4 text-center text-sm font-bold"
         >
           학습 기록에서 다시 복습하기
