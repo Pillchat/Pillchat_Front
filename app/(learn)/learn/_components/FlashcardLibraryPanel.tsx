@@ -24,17 +24,18 @@ import {
   type Ref,
 } from "react";
 
-import {
-  DEFAULT_FLASHCARD_COLLECTION,
-  type FlashcardCollectionMap,
-} from "@/lib/flashcards/collections";
+import { type FlashcardCollectionMap } from "@/lib/flashcards/collections";
 import { cn } from "@/lib/utils";
 import type { Flashcard, Rating } from "@/types/flashcard";
 
 import { FlashcardStack } from "./FlashcardStack";
+import { Button } from "@/components/ui/button";
+import type { FlashcardPack } from "@/lib/flashcards/api";
+import { flashcardGroups, flashcardReviewDate } from "@/lib/flashcards/library";
 
 export type FlashcardStudyActionIntent =
   | { type: "flip"; cardId: string }
+  | { type: "rate"; cardId: string; rating: "again" | "good" }
   | {
       type: "swipe";
       cardId: string;
@@ -44,12 +45,13 @@ export type FlashcardStudyActionIntent =
 
 export type FlashcardStudyAction =
   | Extract<FlashcardStudyActionIntent, { type: "flip" }>
-  | (Extract<FlashcardStudyActionIntent, { type: "swipe" }> & {
+  | (Extract<FlashcardStudyActionIntent, { type: "swipe" | "rate" }> & {
       nextCardId: string | null;
     });
 
 export interface FlashcardStudyControls {
   flip: () => Promise<void>;
+  rate: (rating: "again" | "good") => Promise<void>;
   swipe: (direction: "left" | "right") => Promise<void>;
 }
 
@@ -62,6 +64,7 @@ function cardTitle(card: Flashcard) {
 
 export function FlashcardLibraryPanel({
   cards,
+  packs,
   collectionByCardId,
   selectedCollection,
   onSelectCollection,
@@ -72,6 +75,7 @@ export function FlashcardLibraryPanel({
   studyControlsRef,
 }: {
   cards: Flashcard[];
+  packs?: FlashcardPack[];
   collectionByCardId: FlashcardCollectionMap;
   selectedCollection: string | null;
   onSelectCollection: (name: string) => void;
@@ -82,23 +86,16 @@ export function FlashcardLibraryPanel({
   studyControlsRef?: Ref<FlashcardStudyControls>;
 }) {
   const [busy, setBusy] = useState(false);
-  const groups = useMemo(() => {
-    const result = new Map<string, Flashcard[]>();
-    cards
-      .slice()
-      .sort((left, right) => right.createdAt - left.createdAt)
-      .forEach((card) => {
-        const name =
-          collectionByCardId[card.id] ?? DEFAULT_FLASHCARD_COLLECTION;
-        result.set(name, [...(result.get(name) ?? []), card]);
-      });
-    return Array.from(result, ([name, groupCards]) => ({
-      name,
-      cards: groupCards,
-    }));
-  }, [cards, collectionByCardId]);
+  const groups = useMemo(
+    () => flashcardGroups(cards, collectionByCardId, packs),
+    [cards, collectionByCardId, packs],
+  );
   const selectedGroup =
-    groups.find((group) => group.name === selectedCollection) ?? groups[0];
+    groups.find(
+      (group) =>
+        group.id === selectedCollection ||
+        (!packs && group.name === selectedCollection),
+    ) ?? groups[0];
 
   return (
     <div>
@@ -112,7 +109,7 @@ export function FlashcardLibraryPanel({
               내 카드팩
             </h1>
             <p className="mt-1 text-xs text-muted-foreground">
-              {cards.length
+              {groups.length
                 ? `${groups.length}개 카드팩 · 총 ${cards.length}장`
                 : "나만의 카드를 만들고, 한 장씩 익혀보세요"}
             </p>
@@ -140,14 +137,16 @@ export function FlashcardLibraryPanel({
             className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 py-2 [scrollbar-width:none] sm:-mx-6 sm:scroll-px-6 sm:gap-4 sm:px-6 [&::-webkit-scrollbar]:hidden"
           >
             {groups.map((group) => {
-              const selected = group.name === selectedGroup.name;
+              const selected = group.id === selectedGroup.id;
               return (
                 <button
-                  key={group.name}
+                  key={group.id}
                   type="button"
                   disabled={busy}
                   aria-pressed={selected}
-                  onClick={() => onSelectCollection(group.name)}
+                  onClick={() =>
+                    onSelectCollection(packs ? group.id : group.name)
+                  }
                   className={cn(
                     "w-40 shrink-0 snap-start rounded-2xl p-4 text-left text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 disabled:cursor-wait sm:w-44",
                     selected ? "bg-accent" : "bg-accent/50 hover:bg-accent",
@@ -165,6 +164,13 @@ export function FlashcardLibraryPanel({
                   <span className="mt-1 block text-xs text-muted-foreground">
                     카드 {group.cards.length}장
                   </span>
+                  <span className="mt-2 block text-body-small text-muted-foreground">
+                    최근 학습 {flashcardReviewDate(group.lastReviewed)}
+                  </span>
+                  <span className="mt-1 block text-body-small text-muted-foreground">
+                    학습 진행 {group.reviewedCount}/{group.cards.length}장 ·{" "}
+                    {group.progress}%
+                  </span>
                 </button>
               );
             })}
@@ -172,10 +178,10 @@ export function FlashcardLibraryPanel({
         )}
       </section>
 
-      {selectedGroup ? (
+      {selectedGroup?.cards.length ? (
         <div className="pt-20 sm:pt-24">
           <PackViewer
-            key={selectedGroup.name}
+            key={selectedGroup.id}
             name={selectedGroup.name}
             cards={selectedGroup.cards}
             onDelete={onDelete}
@@ -196,7 +202,9 @@ export function FlashcardLibraryPanel({
             <span className="text-xs font-bold text-brand">나의 첫 카드</span>
           </div>
           <h2 className="text-xl font-bold text-foreground">
-            첫 카드팩을 만들어보세요
+            {selectedGroup
+              ? "카드팩에 카드를 추가해보세요"
+              : "첫 카드팩을 만들어보세요"}
           </h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
             공부할 내용을 넣으면 AI가 카드로 정리해줘요.
@@ -207,7 +215,8 @@ export function FlashcardLibraryPanel({
             href="/flashcards/create"
             className="mx-auto mt-6 flex min-h-12 max-w-64 items-center justify-center gap-2 rounded-xl bg-brand px-5 text-sm font-bold text-white"
           >
-            <Plus aria-hidden="true" className="h-4 w-4" />첫 카드 만들기
+            <Plus aria-hidden="true" className="h-4 w-4" />
+            {selectedGroup ? "카드 추가하기" : "첫 카드 만들기"}
           </Link>
         </div>
       )}
@@ -246,6 +255,7 @@ function PackViewer({
   const [showSummary, setShowSummary] = useState(false);
   const [managing, setManaging] = useState(false);
   const [ratingPending, setRatingPending] = useState(false);
+  const [ratingError, setRatingError] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const mutationLock = useRef(false);
@@ -313,14 +323,6 @@ function PackViewer({
     setFlipped(false);
   };
 
-  const recordGestureRating = async (correct: boolean) => {
-    if (!current || ratings[current.id] === correct) return ratings;
-    await onRate(current, correct ? "good" : "again");
-    const nextRatings = { ...ratings, [current.id]: correct };
-    setRatings(nextRatings);
-    return nextRatings;
-  };
-
   const flipCard = async () => {
     if (!current || mutationLock.current) return;
     const action: FlashcardStudyActionIntent = {
@@ -328,29 +330,8 @@ function PackViewer({
       cardId: current.id,
     };
     if (allowStudyAction?.(action) === false) return;
-    if (flipped) {
-      setFlipped(false);
-      return;
-    }
-    setFlipped(true);
-    if (ratings[current.id] === true) {
-      onStudyAction?.(action);
-      return;
-    }
-    mutationLock.current = true;
-    setRatingPending(true);
-    onBusyChange(true);
-    focusIntent.current = "card";
-    try {
-      await recordGestureRating(true);
-      onStudyAction?.(action);
-    } catch {
-      // Keep the answer readable; the next swipe can retry the failed save.
-    } finally {
-      mutationLock.current = false;
-      setRatingPending(false);
-      onBusyChange(false);
-    }
+    setFlipped(!flipped);
+    onStudyAction?.(action);
   };
 
   const swipeCard = async (side: "left" | "right") => {
@@ -362,24 +343,39 @@ function PackViewer({
       flipped,
     };
     if (allowStudyAction?.(action) === false) return;
-    const step = side === "left" ? 1 : -1;
-    const adjacent = studyCards[index + step];
-    if (step < 0 && !adjacent) return;
+    const next = studyCards[index + (side === "left" ? 1 : -1)];
+    if (!next) return;
+    setDirection(side === "left" ? "next" : "previous");
+    setFlipped(false);
+    setCurrentCardId(next.id);
+    focusIntent.current = "card";
+    onStudyAction?.({ ...action, nextCardId: next.id });
+  };
 
+  const rateCard = async (rating: "again" | "good") => {
+    if (!current || mutationLock.current) return;
+    const action: FlashcardStudyActionIntent = {
+      type: "rate",
+      cardId: current.id,
+      rating,
+    };
+    if (allowStudyAction?.(action) === false) return;
     mutationLock.current = true;
     setRatingPending(true);
+    setRatingError("");
     onBusyChange(true);
     try {
-      // A previously known card stays known when revisited on its front face.
-      const correct = flipped || ratings[current.id] === true;
-      const nextRatings = await recordGestureRating(correct);
-      const next =
-        adjacent ??
-        studyCards.find((card) => typeof nextRatings[card.id] !== "boolean");
+      await onRate(current, rating);
+      const nextRatings = { ...ratings, [current.id]: rating === "good" };
+      setRatings(nextRatings);
+      const next = [
+        ...studyCards.slice(index + 1),
+        ...studyCards.slice(0, index),
+      ].find((card) => typeof nextRatings[card.id] !== "boolean");
+      setFlipped(false);
       if (next) {
         focusIntent.current = "card";
-        setDirection(step > 0 ? "next" : "previous");
-        setFlipped(false);
+        setDirection("next");
         setCurrentCardId(next.id);
       } else {
         focusIntent.current = "result";
@@ -387,7 +383,9 @@ function PackViewer({
       }
       onStudyAction?.({ ...action, nextCardId: next?.id ?? null });
     } catch {
-      // A failed save leaves the current card and face available for retry.
+      setRatingError(
+        "학습 기록을 저장하지 못했어요. 선택한 버튼을 다시 눌러주세요.",
+      );
       focusIntent.current = "card";
     } finally {
       mutationLock.current = false;
@@ -398,8 +396,8 @@ function PackViewer({
 
   useImperativeHandle(
     studyControlsRef,
-    () => ({ flip: flipCard, swipe: swipeCard }),
-    [flipCard, swipeCard],
+    () => ({ flip: flipCard, swipe: swipeCard, rate: rateCard }),
+    [flipCard, swipeCard, rateCard],
   );
 
   const restart = (onlyWrong: boolean) => {
@@ -409,6 +407,7 @@ function PackViewer({
     setStudyIds(ids);
     setShuffledIds(null);
     setRatings({});
+    setRatingError("");
     setRetrying(onlyWrong);
     setShowSummary(false);
     setDirection("next");
@@ -473,7 +472,7 @@ function PackViewer({
         </h2>
         {retrying && (
           <p className="mt-1 text-xs text-muted-foreground">
-            틀린 카드 {studyCards.length}장 다시 학습 중
+            다시 볼 카드 {studyCards.length}장 다시 학습 중
           </p>
         )}
         <div className="mt-3 flex items-center gap-5">
@@ -587,7 +586,7 @@ function PackViewer({
           >
             <div className="px-3 py-3">
               <p className="text-sm font-semibold text-muted-foreground">
-                알고있음
+                기억했어요
               </p>
               <p className="mt-1 text-3xl font-bold text-emerald-700">
                 {correctCount}
@@ -595,7 +594,7 @@ function PackViewer({
             </div>
             <div className="px-3 py-3">
               <p className="text-sm font-semibold text-muted-foreground">
-                모름
+                다시 볼래요
               </p>
               <p className="mt-1 text-3xl font-bold text-rose-600">
                 {wrongCards.length}
@@ -611,7 +610,7 @@ function PackViewer({
                 className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold text-brand transition hover:bg-primary-980 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50"
               >
                 <RotateCcw aria-hidden="true" className="h-4 w-4" />
-                틀린 카드 다시 학습
+                다시 볼 카드 다시 학습
               </button>
             )}
             <button
@@ -667,6 +666,29 @@ function PackViewer({
             disabled={busy}
             direction={direction}
           />
+          <div
+            data-flashcard-tutorial="rating"
+            className="mt-3 grid grid-cols-2 gap-3"
+          >
+            <Button
+              variant="outline"
+              disabled={busy}
+              onClick={() => void rateCard("again")}
+            >
+              다시 볼래요
+            </Button>
+            <Button disabled={busy} onClick={() => void rateCard("good")}>
+              기억했어요
+            </Button>
+          </div>
+          {ratingError && (
+            <p role="alert" className="mt-3 text-body-medium text-destructive">
+              {ratingError}
+            </p>
+          )}
+          <p className="mt-3 text-center text-body-small text-muted-foreground">
+            카드를 넘기거나 뒤집은 뒤 두 버튼으로 학습 상태를 기록해요.
+          </p>
           <div className="sr-only">
             <p aria-live="polite" aria-atomic="true">
               {index >= 0
