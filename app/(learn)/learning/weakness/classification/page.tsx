@@ -37,7 +37,7 @@ const rules = [
   {
     label: "2회 연속 정답",
     destination: "극복한 문제",
-    description: "연속으로 두 번 맞히면 극복한 문제로 분류돼요.",
+    description: "서로 다른 날에 연속으로 두 번 맞히면 극복한 문제로 분류돼요.",
     icon: CircleCheck,
   },
 ];

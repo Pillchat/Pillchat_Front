@@ -128,8 +128,8 @@ export default function WeaknessSettings({
           )}
         </fieldset>
         <p className="text-body-small text-muted-foreground">
-          오늘 푼 문제는 내일부터 다시 보여요. 두 번 연속 정답이면 약점공략에서
-          제외돼요.
+          오늘 푼 문제는 내일부터 다시 보여요. 서로 다른 날에 두 번 연속
+          정답이면 약점공략에서 제외돼요.
         </p>
       </main>
       <footer className="fixed bottom-0 left-1/2 z-40 w-full max-w-app -translate-x-1/2 border-t border-border bg-white px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
