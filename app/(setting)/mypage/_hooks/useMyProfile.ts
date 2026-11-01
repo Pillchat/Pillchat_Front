@@ -1,7 +1,10 @@
 import { useCallback, useState } from "react";
 import { useAtom } from "jotai";
 
-import { readAttendance } from "@/lib/client/attendance";
+import {
+  readAttendance,
+  type AttendanceSnapshot,
+} from "@/lib/client/attendance";
 import { fetchAPI } from "@/lib/client/fetch";
 import {
   buildFileUrlMap,
@@ -23,6 +26,7 @@ import {
 } from "@/store/profile";
 
 type ProfileDetails = {
+  nextPromotion?: AttendanceSnapshot["nextPromotion"];
   userType: string;
   isPublic: boolean | null;
   followerCount: number;
@@ -167,6 +171,7 @@ export const useMyProfile = () => {
         await resolveProfileImage(payload);
 
       setProfileDetails({
+        nextPromotion: attendance.nextPromotion,
         userType: payload.userType ?? "STUDENT",
         isPublic:
           typeof payload.isPublic === "boolean" ? payload.isPublic : true,

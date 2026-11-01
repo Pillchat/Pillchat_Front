@@ -1,5 +1,7 @@
 "use client";
+import { useWeaknessQuery } from "@/hooks/queries/useWeaknessQuery";
 import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
+import WeaknessReviewFeedback from "@/components/learning/WeaknessReviewFeedback";
 import { useState } from "react";
 import Link from "next/link";
 import { Trophy } from "lucide-react";
@@ -15,6 +17,7 @@ export function PracticeResult({
   session: LearningSession;
   onTutorial: () => void;
 }) {
+  const weakness = useWeaknessQuery();
   const [review, setReview] = useState(false);
   const [onlyWrong, setOnlyWrong] = useState(true);
   if (!s.result) return null;
@@ -23,7 +26,9 @@ export function PracticeResult({
   const groups = Object.entries(
     result.questions.reduce<Record<string, { correct: number; total: number }>>(
       (acc, item) => {
-        const group = (acc[item.question.subjectName] ??= {
+        const group = (acc[
+          item.question.topicName || item.question.subjectName
+        ] ??= {
           correct: 0,
           total: 0,
         });
@@ -34,6 +39,14 @@ export function PracticeResult({
       {},
     ),
   );
+  const confusedCount = result.questions.filter((item) =>
+    weakness.data?.questions.some(
+      (q) =>
+        q.source === s.source &&
+        q.questionId === item.question.sourceQuestionVersionId &&
+        q.confused,
+    ),
+  ).length;
   const body = (
     <>
       <SessionFeedback session={s} />
@@ -84,12 +97,17 @@ export function PracticeResult({
             </div>
           )}
           <div
-            className={`grid grid-cols-3 ${cbt ? "mt-6 gap-2" : "divide-x divide-gray-200"}`}
+            className={`grid grid-cols-2 sm:grid-cols-4 ${cbt ? "mt-6 gap-2" : "divide-x divide-gray-200"}`}
           >
             {[
               ["정답", result.counts.correct, "text-green-600"],
               ["오답", result.counts.incorrect, "text-red-500"],
               ["미응답", result.counts.unanswered, "text-muted-foreground"],
+              [
+                "헷갈림",
+                weakness.isPending || weakness.isError ? "–" : confusedCount,
+                "text-primary",
+              ],
             ].map(([label, value, color]) => (
               <div key={label} className="rounded-xl p-3 text-center">
                 <strong className={`text-xl font-bold ${color}`}>
@@ -104,7 +122,7 @@ export function PracticeResult({
         </section>
         {groups.length > 0 && (
           <section className="mt-7 rounded-2xl border border-gray-200 p-5">
-            <h2 className="font-bold">과목별 결과</h2>
+            <h2 className="font-bold">세부주제별 결과</h2>
             <div className="mt-4 space-y-4">
               {groups.map(([subject, counts]) => (
                 <div key={subject}>
@@ -161,11 +179,19 @@ export function PracticeResult({
                   <h3 className="mt-3 whitespace-pre-wrap font-bold">
                     {item.question.stem}
                   </h3>
-                  <ConfusionToggle
-                    source={s.source}
-                    questionId={item.question.sourceQuestionVersionId}
-                    disabled={s.disabled}
-                  />
+                  {s.attempt?.mode === "REVIEW" ? (
+                    <WeaknessReviewFeedback
+                      source={s.source}
+                      questionId={item.question.sourceQuestionVersionId}
+                      disabled={s.disabled}
+                    />
+                  ) : (
+                    <ConfusionToggle
+                      source={s.source}
+                      questionId={item.question.sourceQuestionVersionId}
+                      disabled={s.disabled}
+                    />
+                  )}
                   {item.question.referenceContent && (
                     <p className="mt-3 whitespace-pre-wrap rounded-xl bg-muted p-3">
                       {item.question.referenceContent}
@@ -221,7 +247,18 @@ export function PracticeResult({
           </section>
         )}
         <Link
-          href="/learning/review"
+          href={
+            "/learning/weakness?range=all&sources=" + s.source + "&sort=due"
+          }
+          className="mt-4 block rounded-xl bg-primary p-4 text-center font-bold text-white"
+        >
+          오답 복습하기 · 약점공략
+        </Link>
+        <p className="mt-3 text-center text-sm text-muted-foreground">
+          정답률 {result.score}% · 오답과 헷갈린 문제는 약점공략에서 복습해요.
+        </p>
+        <Link
+          href="/learning/history"
           className="mt-4 block rounded-xl bg-accent/50 p-4 text-center text-sm font-bold"
         >
           학습 기록에서 다시 복습하기
@@ -232,7 +269,7 @@ export function PracticeResult({
           onClick={() => void s.leave()}
           className="mt-4 h-12 w-full text-sm font-bold text-muted-foreground"
         >
-          {cbt ? "CBT 허브로 돌아가기" : "다른 문제 풀기"}
+          {cbt ? "CBT 허브로 돌아가기" : "같은 조건으로 새 문제 다시 생성하기"}
         </button>
       </main>
     </>

@@ -4,6 +4,15 @@ export type DashboardAttempt = {
   title: string;
   answeredCount: number;
   questionCount: number;
+  subject?: string | null;
+  topic?: string | null;
+};
+
+export type LearningWeek = {
+  weekStart: string;
+  days: { date: string; solvedCount: number; correctCount: number }[];
+  solvedCount: number;
+  correctCount: number;
 };
 
 export type LearningDashboard = {
@@ -12,6 +21,7 @@ export type LearningDashboard = {
   correctCount: number;
   studySeconds: number;
   latestAttempt: DashboardAttempt | null;
+  weekly?: LearningWeek;
 };
 
 export function formatStudyTime(seconds: number) {

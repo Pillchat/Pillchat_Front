@@ -22,6 +22,10 @@ export function useQuestionConfusionMutation(
         data,
       );
       void client.invalidateQueries({ queryKey: ["weakness-library", user] });
+      void client.invalidateQueries({ queryKey: ["learning-history", user] });
+      void client.invalidateQueries({
+        queryKey: ["learning-history-detail", user],
+      });
     },
   });
 }

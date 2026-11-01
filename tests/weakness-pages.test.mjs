@@ -6,7 +6,94 @@ import { loader } from "./helpers/load-ts.mjs";
 
 const normal = (value) => JSON.parse(JSON.stringify(value));
 const model = loader()("lib/learning/weakness.ts");
+test("review feedback displays the server streak and sends explicit confusion choices", () => {
+  const calls = [];
+  const load = loader(
+    {},
+    {
+      "@/hooks/queries/useWeaknessQuery": {
+        useWeaknessQuery: () => ({
+          data: {
+            questions: [
+              {
+                source: "CBT",
+                questionId: "101",
+                status: "WEAKNESS",
+                consecutiveCorrect: 1,
+                dueDate: "2026-10-31",
+              },
+            ],
+          },
+        }),
+      },
+      "@/hooks/mutations/useQuestionConfusionMutation": {
+        useQuestionConfusionMutation: () => ({
+          mutate: (body) => calls.push(body),
+        }),
+      },
+      "@/components/ui/button": {
+        Button: (props) => React.createElement("button", props),
+      },
+    },
+  );
+  const View = load("components/learning/WeaknessReviewFeedback.tsx").default;
+  const tree = View({ source: "CBT", questionId: "101" });
+  const html = renderToStaticMarkup(tree);
+  assert.match(html, /정답 1회/);
+  assert.match(html, /2026-10-31/);
+  const buttons = tree.props.children[1].props.children;
+  buttons[0].props.onClick();
+  buttons[1].props.onClick();
+  assert.equal(calls[0].confused, true);
+  assert.equal(calls[1].confused, false);
+  assert.notEqual(calls[0].idempotencyKey, calls[1].idempotencyKey);
+});
 const filters = model.readWeaknessFilters({});
+
+test("30-day field rates use unique first answers including confusion, never repeat review counts", () => {
+  const make = (
+    id,
+    firstOutcome,
+    firstConfused,
+    firstPracticedAt,
+    repeats = 1,
+  ) => ({
+    id,
+    source: "AI",
+    subject: "약리학",
+    status: "WEAKNESS",
+    firstOutcome,
+    firstConfused,
+    firstPracticedAt,
+    totalAttempts: repeats,
+    wrongAttempts: repeats,
+  });
+  const data = {
+    serverDate: "2026-10-30",
+    questions: [
+      make("a", "INCORRECT", false, "2026-10-01T00:00:00Z", 100),
+      make("b", "CORRECT", true, "2026-10-28T00:00:00Z"),
+      make("c", "CORRECT", false, "2026-10-29T00:00:00Z"),
+      make("old", "INCORRECT", false, "2026-09-30T00:00:00Z", 500),
+    ],
+  };
+  assert.equal(
+    Math.round(model.weaknessFields(data, filters)[0].wrongRate),
+    67,
+  );
+});
+test("last-seven-day mastery uses the Seoul date and excludes reactivated weaknesses", () => {
+  const data = {
+    serverDate: "2026-10-30",
+    questions: [
+      { source: "AI", status: "MASTERED", masteredAt: "2026-10-23T15:00:00Z" },
+      { source: "CBT", status: "MASTERED", masteredAt: "2026-10-23T14:59:59Z" },
+      { source: "AI", status: "WEAKNESS", masteredAt: "2026-10-29T00:00:00Z" },
+    ],
+  };
+  assert.equal(model.recentlyMastered(data, filters), 1);
+  assert.equal(model.recentlyMastered(undefined, filters), null);
+});
 const question = (id, source, subject, rate, extra = {}) => ({
   id: source + ":" + id,
   questionId: id,

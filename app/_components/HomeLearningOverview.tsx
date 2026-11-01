@@ -6,10 +6,11 @@ import EntryButton from "@/app/(questionbank)/questionbank/_components/EntryButt
 import StatsCard from "@/app/(questionbank)/questionbank/_components/StatsCard";
 import {
   dashboardAttemptHref,
-  formatStudyTime,
   type LearningDashboard,
 } from "@/lib/learning/dashboard";
 import { useRouter } from "@/lib/navigation";
+import HomeWeeklyReport from "./HomeWeeklyReport";
+import { WEAKNESS_SOURCE_LABELS } from "@/lib/learning/weakness";
 
 type Props = {
   data?: LearningDashboard;
@@ -31,7 +32,7 @@ export default function HomeLearningOverview({
     : "–";
 
   return (
-    <div className="mt-6 space-y-6 px-5 pb-6 md:px-10">
+    <div className="mt-6 space-y-6 px-6 pb-6 md:px-10">
       <section aria-labelledby="today-learning-title" aria-busy={pending}>
         <h2 id="today-learning-title" className="text-headline-small">
           오늘의 학습 현황
@@ -47,11 +48,6 @@ export default function HomeLearningOverview({
             label="정답률"
             value={accuracy}
           />
-          <StatsCard
-            valueClassName="text-sm min-[375px]:text-base sm:text-xl"
-            label="학습 시간"
-            value={data ? formatStudyTime(data.studySeconds) : "–"}
-          />
         </div>
       </section>
 
@@ -66,7 +62,9 @@ export default function HomeLearningOverview({
 
       <section aria-labelledby="continue-learning-title" aria-busy={pending}>
         <h2 id="continue-learning-title" className="text-headline-small">
-          이어서 풀기
+          {data && !latest && !pending && !isError
+            ? "추천 문제 풀기"
+            : "이어서 풀기"}
         </h2>
         {latest ? (
           <div className="mt-3 rounded-xl border border-primary-900 bg-primary-980 px-4">
@@ -82,8 +80,36 @@ export default function HomeLearningOverview({
                 />
               }
               title={latest.title}
-              subtitle={`${latest.answeredCount} / ${latest.questionCount}문제 · 이어서 풀기`}
+              subtitle={[
+                latest.subject,
+                latest.topic,
+                WEAKNESS_SOURCE_LABELS[latest.source],
+                `${latest.answeredCount} / ${latest.questionCount}문제 · 이어서 풀기`,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
               onClick={() => router.push(dashboardAttemptHref(latest))}
+            />
+            <progress
+              aria-label="풀이 진행률"
+              className="mb-4 h-2 w-full appearance-none overflow-hidden rounded-full [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:bg-primary-900 [&::-webkit-progress-value]:bg-primary"
+              max={Math.max(latest.questionCount, 1)}
+              value={latest.answeredCount}
+            />
+          </div>
+        ) : data && !pending && !isError ? (
+          <div className="mt-3 rounded-xl border border-primary-900 bg-primary-980 px-4">
+            <EntryButton
+              compact
+              icon={
+                <QuestionBankIcon
+                  aria-hidden="true"
+                  className="h-8 w-8 text-primary"
+                />
+              }
+              title="추천 문제 풀기"
+              subtitle="아직 풀지 않은 수제 제작 문제를 시작해요"
+              onClick={() => router.push("/questionbank/handcrafted")}
             />
           </div>
         ) : (
@@ -92,7 +118,7 @@ export default function HomeLearningOverview({
               ? "최근 학습 기록을 불러오는 중이에요."
               : isError
                 ? "최근 학습 기록을 확인하지 못했어요."
-                : "진행 중인 문제풀이가 없어요. 새로운 학습을 시작해 보세요."}
+                : "최근 학습 기록을 불러오는 중이에요."}
           </p>
         )}
       </section>
@@ -126,11 +152,16 @@ export default function HomeLearningOverview({
               />
             }
             title="약점공략"
-            subtitle="틀린 문제를 다시 풀며 약점을 채워요"
+            subtitle="오답·헷갈린 문제를 다시 풀며 약점을 채워요"
             onClick={() => router.push("/learning/weakness")}
           />
         </div>
       </section>
+      <HomeWeeklyReport
+        weekly={data?.weekly}
+        pending={pending}
+        isError={isError}
+      />
     </div>
   );
 }
