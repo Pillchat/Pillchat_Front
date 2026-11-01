@@ -33,16 +33,12 @@ import {
   createRemoteFlashcard,
   fetchFlashcardPacks,
   type FlashcardPack,
-  fetchRemotePackNames,
   deleteRemoteFlashcard,
   fetchAllFlashcards,
   mergeFlashcards,
   reviewRemoteFlashcard,
 } from "@/lib/flashcards/api";
-import {
-  writeFlashcardCollections,
-  type FlashcardCollectionMap,
-} from "@/lib/flashcards/collections";
+import { type FlashcardCollectionMap } from "@/lib/flashcards/collections";
 import { useRouter } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -170,6 +166,8 @@ function StrokeMaskShape({ mask }: { mask: BlindMask }) {
 
 function useFlashcardData() {
   const [cards, setCards] = useState<Flashcard[]>([]);
+  const [packs, setPacks] = useState<FlashcardPack[]>([]);
+  const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
   const [toast, setToast] = useState("");
 
@@ -177,11 +175,17 @@ function useFlashcardData() {
     if (showLoading) setReady(false);
 
     try {
-      setCards(await fetchAllFlashcards());
+      const [nextCards, nextPacks] = await Promise.all([
+        fetchAllFlashcards(),
+        fetchFlashcardPacks(),
+      ]);
+      setCards(nextCards);
+      setPacks(nextPacks);
+      setError("");
 
       return true;
     } catch (error) {
-      setToast(flashcardErrorMessage(error, "플래시카드를 불러오지 못했어요."));
+      setError(flashcardErrorMessage(error, "플래시카드를 불러오지 못했어요."));
       return false;
     } finally {
       if (showLoading) setReady(true);
@@ -194,6 +198,8 @@ function useFlashcardData() {
 
   return {
     cards,
+    packs,
+    error,
     ready,
     toast,
     setToast,
@@ -1112,39 +1118,22 @@ export function FlashcardApp() {
 }
 
 function FlashcardLibraryApp() {
-  const { cards, ready, toast, setToast, setCards, refresh } =
+  const { cards, packs, error, ready, toast, setToast, setCards, refresh } =
     useFlashcardData();
-  const [collectionByCardId, setCollectionByCardId] =
-    useState<FlashcardCollectionMap>({});
+  const collectionByCardId: FlashcardCollectionMap = Object.fromEntries(
+    cards.map((card) => [
+      card.id,
+      packs.find((pack) => pack.packId === card.packId)?.title ?? "기본 카드팩",
+    ]),
+  );
   const [selectedCollection, setSelectedCollection] = useState<string | null>(
     null,
   );
-
-  useEffect(() => {
-    if (!ready) return;
-    void fetchRemotePackNames()
-      .then((names) => {
-        setCollectionByCardId(
-          Object.fromEntries(
-            cards
-              .filter((c) => c.packId && names[c.packId])
-              .map((c) => [c.id, names[c.packId!]]),
-          ),
-        );
-      })
-      .catch((e) => setToast(flashcardErrorMessage(e)));
-  }, [ready, cards.map((card) => `${card.id}:${card.packId ?? ""}`).join(",")]);
 
   const deleteCard = async (cardId: string) => {
     try {
       await deleteRemoteFlashcard(cardId);
       setCards((prev) => prev.filter((card) => card.id !== cardId));
-      setCollectionByCardId((prev) => {
-        const next = { ...prev };
-        delete next[cardId];
-        writeFlashcardCollections(next);
-        return next;
-      });
       setToast("카드를 삭제했어요.");
       void refresh();
     } catch (error) {
@@ -1195,15 +1184,29 @@ function FlashcardLibraryApp() {
         rightSlot={<FlashcardTutorialLink />}
       />
 
-      <main className="px-4 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-5 sm:px-6">
-        <FlashcardLibraryPanel
-          cards={cards}
-          collectionByCardId={collectionByCardId}
-          selectedCollection={selectedCollection}
-          onSelectCollection={setSelectedCollection}
-          onDelete={deleteCard}
-          onRate={handleRate}
-        />
+      <main className="px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-5">
+        {error && (
+          <div className="mb-6 space-y-3" role="alert">
+            <p className="text-body-medium text-destructive">{error}</p>
+            <Button
+              variant="outline"
+              onClick={() => void refresh({ showLoading: true })}
+            >
+              다시 불러오기
+            </Button>
+          </div>
+        )}
+        {(!error || cards.length > 0 || packs.length > 0) && (
+          <FlashcardLibraryPanel
+            packs={packs}
+            cards={cards}
+            collectionByCardId={collectionByCardId}
+            selectedCollection={selectedCollection}
+            onSelectCollection={setSelectedCollection}
+            onDelete={deleteCard}
+            onRate={handleRate}
+          />
+        )}
       </main>
 
       <Toast open={!!toast} message={toast} onClose={() => setToast("")} />

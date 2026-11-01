@@ -285,7 +285,7 @@ export default function HandcraftedSetup({
       </form>
       <AttemptHistory session={s} />
       <Link
-        href="/learning/review?category=HANDCRAFTED"
+        href="/learning/history"
         className="mt-5 block text-sm font-semibold text-primary"
       >
         학습 기록 복습하기
