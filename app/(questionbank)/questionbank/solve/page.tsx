@@ -1,5 +1,7 @@
 "use client";
 
+import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
+import WeaknessReviewFeedback from "@/components/learning/WeaknessReviewFeedback";
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 
 import { useEffect, useRef, useState } from "react";
@@ -72,7 +74,9 @@ const SolvePage = () => {
           action: "finish",
         });
         setFinishError(false);
-        router.push("/questionbank/result");
+        router.push(
+          `/questionbank/result?session=${encodeURIComponent(String(session.sessionId))}`,
+        );
       } catch {
         setFinishError(true);
       }
@@ -247,6 +251,13 @@ const SolvePage = () => {
           </p>
         )}
         {renderQuestionInput()}
+        {gradingState === "graded" && (
+          <WeaknessReviewFeedback
+            key={currentQuestion.id}
+            source="AI"
+            questionId={String(currentQuestion.id)}
+          />
+        )}
       </ReviewPlayerFrame>
     );
 
@@ -262,6 +273,13 @@ const SolvePage = () => {
               {currentQuestion.passage}
             </p>
           )}
+          <div className="mb-4">
+            <ConfusionToggle
+              key={`${currentQuestion.id}:${gradingState}`}
+              source="AI"
+              questionId={String(currentQuestion.id)}
+            />
+          </div>
           {renderQuestionInput()}
         </div>
         <ExplanationPanel />
