@@ -2,7 +2,8 @@
 import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
 
 import { TutorialButton } from "@/components/learning/TutorialButton";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { PracticeResult } from "./PracticeResult";
 import { Bookmark, BookmarkCheck, Check, X, CircleHelp } from "lucide-react";
 import { AppShell, PracticeHeader } from "@/components/molecules";
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
@@ -26,9 +27,28 @@ export default function HandcraftedPractice({
   const locked =
     s.disabled || attempt?.state !== "IN_PROGRESS" || !!answer?.finalized;
   const completed = attempt?.state === "COMPLETED";
+  const requestedResult = useRef<string | null>(null);
   useEffect(() => {
-    if (completed && !s.loading && !s.disabled) void s.leave();
-  }, [completed, s.loading, s.disabled, s.leave]);
+    if (!attempt) requestedResult.current = null;
+    if (
+      completed &&
+      attempt?.resultAvailable &&
+      !s.result &&
+      !s.loading &&
+      !s.disabled &&
+      requestedResult.current !== attempt.attemptId
+    ) {
+      requestedResult.current = attempt.attemptId;
+      void s.showResult();
+    }
+  }, [completed, attempt, s.result, s.loading, s.disabled, s.showResult]);
+  if (s.result)
+    return (
+      <>
+        {tutorial && <HandcraftedTutorial onClose={() => setTutorial(false)} />}
+        <PracticeResult session={s} onTutorial={() => setTutorial(true)} />
+      </>
+    );
   const next = async () => {
     if (!attempt) return;
     if (s.index + 1 < attempt.currentSectionQuestions.length)
@@ -51,10 +71,26 @@ export default function HandcraftedPractice({
       {s.loading ? (
         <LoadingIndicator label="문제를 불러오는 중..." className="py-20" />
       ) : completed ? (
-        <LoadingIndicator
-          label="시작 화면으로 돌아가는 중..."
-          className="py-20"
-        />
+        <section className="space-y-4 px-6 py-12 text-center">
+          <p>문제풀이를 완료했어요.</p>
+          {attempt.resultAvailable && (
+            <button
+              type="button"
+              disabled={s.disabled}
+              onClick={() => void s.showResult()}
+              className="h-[58px] w-full rounded-xl bg-primary font-semibold text-white disabled:opacity-50"
+            >
+              결과 보기
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => void s.leave()}
+            className="text-sm text-muted-foreground"
+          >
+            시작 화면으로 돌아가기
+          </button>
+        </section>
       ) : !attempt ? (
         <HandcraftedSetup session={s} />
       ) : question && answer ? (

@@ -381,6 +381,7 @@ function handcraftedView(session) {
       ...React,
       useState: (initial) => [initial, () => {}],
       useEffect: (effect) => effects.push(effect),
+      useRef: (initial) => ({ current: initial }),
     },
   })("components/learning/practice/HandcraftedPractice.tsx").default;
   const tree = View({ session });
@@ -396,7 +397,7 @@ function handcraftedView(session) {
   };
 }
 
-test("completed handcrafted grading, submission and resumption return to setup even without questions", async () => {
+test("completed handcrafted grading, submission and resumption load result analysis without dropping the attempt", async () => {
   for (const action of ["grade", "submitSection", "resume"]) {
     const real = { ...attempt, source: "HANDCRAFTED" };
     const completed = {
@@ -427,11 +428,11 @@ test("completed handcrafted grading, submission and resumption return to setup e
     );
     view.runEffects();
     await new Promise(setImmediate);
-    assert.equal(h.render().attempt, null);
-    assert.equal(h.render().result, null);
+    assert.equal(h.render().attempt.attemptId, real.attemptId);
+    assert.ok(h.render().result);
     assert.equal(
       calls.some(({ url }) => url.endsWith("/result")),
-      false,
+      true,
     );
   }
 });
@@ -461,25 +462,20 @@ test("missing handcrafted questions or answers show the exception and return but
   }
 });
 
-test("handcrafted completion waits for pending work and ignores result publication status", () => {
+test("handcrafted completion only requests published results after pending work finishes", () => {
   for (const resultAvailable of [true, false]) {
-    let leaves = 0;
+    let requested = 0;
     const session = {
       ...baseSession,
       source: "HANDCRAFTED",
-      attempt: {
-        ...attempt,
-        source: "HANDCRAFTED",
-        state: "COMPLETED",
-        resultAvailable,
-      },
-      leave: async () => {
-        leaves++;
+      attempt: { ...attempt, state: "COMPLETED", resultAvailable },
+      showResult: async () => {
+        requested++;
       },
     };
     handcraftedView({ ...session, disabled: true }).runEffects();
-    assert.equal(leaves, 0);
+    assert.equal(requested, 0);
     handcraftedView(session).runEffects();
-    assert.equal(leaves, 1);
+    assert.equal(requested, resultAvailable ? 1 : 0);
   }
 });
