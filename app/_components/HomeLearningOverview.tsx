@@ -4,6 +4,7 @@ import { Play, RotateCcw } from "lucide-react";
 import QuestionBankIcon from "@/public/icons/question-bank.svg";
 import EntryButton from "@/app/(questionbank)/questionbank/_components/EntryButton";
 import StatsCard from "@/app/(questionbank)/questionbank/_components/StatsCard";
+import { PercentageBar } from "@/components/atoms/PercentageBar";
 import {
   dashboardAttemptHref,
   type LearningDashboard,
@@ -28,8 +29,10 @@ export default function HomeLearningOverview({
   const router = useRouter();
   const latest = data?.latestAttempt;
   const accuracy = data
-    ? `${data.solvedCount ? Math.round((data.correctCount / data.solvedCount) * 100) : 0}%`
-    : "–";
+    ? data.solvedCount
+      ? Math.round((data.correctCount / data.solvedCount) * 100)
+      : 0
+    : undefined;
 
   return (
     <div className="mt-6 space-y-6 px-6 pb-6 md:px-10">
@@ -46,7 +49,8 @@ export default function HomeLearningOverview({
           <StatsCard
             valueClassName="text-sm min-[375px]:text-base sm:text-xl"
             label="정답률"
-            value={accuracy}
+            value={accuracy == null ? "–" : `${accuracy}%`}
+            percentage={accuracy}
           />
         </div>
       </section>
@@ -90,11 +94,14 @@ export default function HomeLearningOverview({
                 .join(" · ")}
               onClick={() => router.push(dashboardAttemptHref(latest))}
             />
-            <progress
-              aria-label="풀이 진행률"
-              className="mb-4 h-2 w-full appearance-none overflow-hidden rounded-full [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:bg-primary-900 [&::-webkit-progress-value]:bg-primary"
-              max={Math.max(latest.questionCount, 1)}
-              value={latest.answeredCount}
+            <PercentageBar
+              label="풀이 진행률"
+              className="mb-4 h-2"
+              value={
+                latest.questionCount
+                  ? (latest.answeredCount / latest.questionCount) * 100
+                  : 0
+              }
             />
           </div>
         ) : data && !pending && !isError ? (
