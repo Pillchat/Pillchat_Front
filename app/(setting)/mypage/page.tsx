@@ -69,7 +69,7 @@ const MyPage: FC = () => {
           <p className="text-sm text-muted-foreground">정보</p>
           <div className="mt-4 flex flex-col gap-6">
             <SystemField
-              iconSrc={PUBLIC_ASSETS.icons.questionBank}
+              iconSrc={PUBLIC_ASSETS.icons.learningHistoryColored}
               title="전체 학습 기록"
               description="맞힌 문제와 오답·헷갈린 문제를 다시 확인해요."
               onClick={() => router.push("/learning/history")}
@@ -116,7 +116,7 @@ const MyPage: FC = () => {
                 onClick={() => router.push("/admin")}
               />
               <SystemField
-                iconSrc={PUBLIC_ASSETS.icons.questionBank}
+                iconSrc={PUBLIC_ASSETS.icons.learningHistoryColored}
                 title="수제 문제 · CBT 관리"
                 description="문제를 제작하고 등록할 수 있어요."
                 onClick={() => router.push("/admin/questions")}
