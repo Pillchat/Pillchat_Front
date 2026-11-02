@@ -9,11 +9,8 @@ export default function RecentLearning() {
     <section className="space-y-4" aria-busy={query.isPending}>
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-headline-small">최근 학습</h2>
-        <Link
-          href="/learning/history"
-          className="text-body-medium text-primary"
-        >
-          전체 학습 기록
+        <Link href="/learning/recent" className="text-body-medium text-primary">
+          전체 보기
         </Link>
       </div>
       {query.isPending ? (

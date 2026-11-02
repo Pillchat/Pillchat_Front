@@ -4,6 +4,7 @@ import { ApiError } from "@/lib/client/fetch";
 import Link from "next/link";
 import SettingsIcon from "@/public/icons/settings.svg";
 import { ChevronRight, CircleHelp, RotateCcw } from "lucide-react";
+import { AppShell } from "@/components/molecules/AppShell";
 import { PracticeHeader } from "@/components/molecules/PracticeHeader";
 import { Button } from "@/components/ui/button";
 import {
@@ -107,7 +108,7 @@ export default function WeaknessMain({
       (q) => q.status === "MASTERED" && filters.sources.includes(q.source),
     ).length ?? 0;
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col bg-white">
+    <AppShell className="flex flex-col">
       <PracticeHeader title="약점공략" backHref="/" />
       <main className="space-y-6 px-6 pb-8 pt-5">
         <h1 className="sr-only">약점공략</h1>
@@ -417,6 +418,6 @@ export default function WeaknessMain({
           ))}
         </DialogContent>
       </Dialog>
-    </div>
+    </AppShell>
   );
 }
