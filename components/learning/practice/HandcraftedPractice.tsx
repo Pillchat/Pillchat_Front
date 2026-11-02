@@ -214,7 +214,7 @@ export default function HandcraftedPractice({
                 >
                   {grade.outcome === "CORRECT"
                     ? "정답입니다."
-                    : grade.outcome === "REVEAL"
+                    : grade.outcome === "REVEALED"
                       ? "정답을 확인했어요."
                       : "오답입니다."}
                 </p>
