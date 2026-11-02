@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import LearningHistoryPage from "@/components/learning/LearningHistoryPage";
 export default function HistoryPage() {
-  redirect("/learning/recent");
+  return <LearningHistoryPage view="all" />;
 }
