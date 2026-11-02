@@ -307,6 +307,7 @@ function harness(file, props, data = library) {
       "@/components/molecules/AppShell": {
         AppShell: ({ children }) => children,
       },
+      "@/hooks/useAuthIdentity": { useAuthIdentity: () => "test-user" },
       "lucide-react": new Proxy({}, { get: () => () => null }),
       "@/public/icons/settings.svg": (props) =>
         React.createElement("svg", props),
@@ -370,13 +371,14 @@ test("main shows only the three highest subject rates and classification belongs
     (n) => n.props?.["aria-label"] === "나의 약점 분야 설정",
   );
   assert.match(settingsLink.props.href, /\/weakness\/areas\?/);
-  assert.equal(
-    renderToStaticMarkup(settingsLink)
-      .replace(/<[^>]+>/g, "")
-      .trim(),
-    "",
-  );
+  assert.match(renderToStaticMarkup(settingsLink), /필터 설정/);
   assert.ok(!nodes(settingsLink).includes(ranking));
+  const fields = nodes(tree).find(
+    (n) => n.props?.["aria-label"] === "나의 약점 분야",
+  );
+  assert.ok(nodes(fields).includes(settingsLink));
+  assert.ok(nodes(fields).includes(ranking));
+  assert.match(renderToStaticMarkup(fields), /지난 7일 극복한 문제/);
 
   const section = nodes(tree).find(
     (n) => n.props?.["aria-labelledby"] === "weakness-practice-title",
@@ -384,6 +386,8 @@ test("main shows only the three highest subject rates and classification belongs
   assert.ok(
     renderToStaticMarkup(section).includes("/weakness/classification?"),
   );
+  assert.match(renderToStaticMarkup(section), /문제 모음별 복습/);
+  assert.doesNotMatch(renderToStaticMarkup(section), /관련 문제풀이 바로가기/);
   nodes(tree)
     .find((n) => n.props?.id === "weakness-tab-subjects")
     .props.onClick();
@@ -439,6 +443,8 @@ test("settings keep single choices and multiple sources, display today's count a
   );
   const footer = nodes(tree).find((n) => n.type === "footer");
   assert.ok(footer.props.className.includes("fixed"));
+  assert.match(renderToStaticMarkup(footer), /필터 적용/);
+  assert.doesNotMatch(renderToStaticMarkup(footer), /약점공략 시작/);
   nodes(footer)
     .find((n) => n.props?.onClick)
     .props.onClick();
@@ -615,8 +621,112 @@ test("tomorrow cards show their schedule before the source and cannot start a pr
     .props.onClick();
   tree = h.render();
   assert.equal(
-    nodes(tree).find((n) => n.props?.children === "약점 문제 풀기").props
-      .disabled,
+    nodes(tree).find((n) => n.props?.children === "복습 시작").props.disabled,
     true,
   );
+});
+
+test("signed-out weakness pages show a login action retaining their filters instead of a permanent loader", () => {
+  const make = (userId) =>
+    loader(
+      {},
+      {
+        "@/hooks/useAuthIdentity": { useAuthIdentity: () => userId },
+        "@/components/molecules/AppShell": {
+          AppShell: ({ children }) => children,
+        },
+        "@/components/molecules/PracticeHeader": { PracticeHeader: () => null },
+      },
+    )("app/(learn)/learning/weakness/_components/WeaknessAccess.tsx")
+      .WeaknessAccess;
+  const Gate = make(null);
+  const selected = {
+    ...filters,
+    range: "wrong",
+    sort: "recent",
+    sources: ["AI"],
+  };
+  for (const page of ["", "areas", "mastered"]) {
+    const returnTo = model.weaknessHref(selected, page);
+    const html = renderToStaticMarkup(
+      React.createElement(
+        Gate,
+        { returnTo },
+        React.createElement("p", null, "불러오는 중"),
+      ),
+    );
+    assert.match(html, /로그인하고 약점공략 보기/);
+    assert.doesNotMatch(html, /불러오는 중/);
+    const href = html.match(/href="([^"]+)"/)[1].replaceAll("&amp;", "&");
+    const login = new URL(href, "https://app.example");
+    assert.equal(login.pathname, "/login");
+    assert.equal(login.searchParams.get("returnTo"), returnTo);
+  }
+  const SignedIn = make("test-user");
+  assert.equal(
+    renderToStaticMarkup(
+      React.createElement(
+        SignedIn,
+        { returnTo: "/learning/weakness" },
+        "학습 기록",
+      ),
+    ),
+    "학습 기록",
+  );
+});
+
+test("main, settings and mastered routes gate their data before mounting queries and preserve the return location", async () => {
+  const load = loader(
+    {},
+    {
+      "lucide-react": new Proxy({}, { get: () => () => null }),
+      "@/hooks/useAuthIdentity": { useAuthIdentity: () => null },
+      "@/components/molecules/AppShell": {
+        AppShell: ({ children }) => children,
+      },
+      "@/components/molecules/PracticeHeader": { PracticeHeader: () => null },
+      "@/hooks/queries/useWeaknessQuery": {
+        useWeaknessQuery: () => {
+          throw new Error("signed-out query mounted");
+        },
+      },
+      "@/public/icons/settings.svg": () => null,
+    },
+  );
+  const query = { range: "wrong", sources: "AI,CBT", sort: "recent" };
+  for (const page of ["", "areas/", "mastered/"]) {
+    const Page = load(`app/(learn)/learning/weakness/${page}page.tsx`).default;
+    const tree = await Page({ searchParams: Promise.resolve(query) });
+    assert.equal(
+      tree.props.returnTo,
+      model.weaknessHref(
+        model.readWeaknessFilters(query),
+        page.replace("/", ""),
+      ),
+    );
+    const html = renderToStaticMarkup(tree);
+    assert.match(html, /로그인하고 약점공략 보기/);
+    assert.doesNotMatch(html, /불러오는 중/);
+  }
+});
+
+test("the main starts only today's selected questions and exposes per-question review as a separate disclosure", () => {
+  const h = harness(
+    "app/(learn)/learning/weakness/_components/WeaknessMain.tsx",
+    { filters: { ...filters, sources: ["HANDCRAFTED"] } },
+  );
+  const tree = h.render();
+  const html = renderToStaticMarkup(tree);
+  assert.match(html, /오늘 복습할/);
+  assert.match(html, /풀이 중 ‘헷갈려요’를 직접 표시한 문제/);
+  const summary = nodes(tree).find((n) => n.type === "summary");
+  assert.match(renderToStaticMarkup(summary), /문제별 복습 현황/);
+  assert.match(renderToStaticMarkup(summary), /복습 일정과 연속 정답 보기/);
+  nodes(tree)
+    .find((n) => n.props?.children === "복습 시작")
+    .props.onClick();
+  assert.equal(h.requests[0].source, "HANDCRAFTED");
+  assert.equal(h.requests[0].collectionRef, undefined);
+  assert.equal(h.requests[0].range, filters.range);
+  assert.equal(h.requests[0].sort, filters.sort);
 });

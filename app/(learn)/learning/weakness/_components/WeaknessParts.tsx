@@ -12,7 +12,7 @@ export function WeaknessNotice({
       <Info
         aria-hidden="true"
         className="mt-0.5 h-5 w-5 shrink-0 text-primary"
-        strokeWidth={1.5}
+        strokeWidth={2}
       />
       <div className="min-w-0">
         <p className="text-title-small text-foreground">{title}</p>
@@ -26,10 +26,12 @@ export function WeaknessCount({
   label,
   count,
   pending,
+  children,
 }: {
   label: string;
   count: number | null;
   pending: boolean;
+  children?: React.ReactNode;
 }) {
   return (
     <section
@@ -38,15 +40,18 @@ export function WeaknessCount({
       className="rounded-xl bg-gray-50 p-5"
     >
       <p className="text-body-medium text-muted-foreground">{label}</p>
-      <p
-        aria-live="polite"
-        className="mt-2 text-headline-large tabular-nums text-foreground"
-      >
-        {count === null ? "–" : count}
-        <span className="ml-1 text-title-large">문제</span>
-      </p>
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+        <p
+          aria-live="polite"
+          className="text-headline-large tabular-nums text-foreground"
+        >
+          {count === null ? "–" : count}
+          <span className="ml-1 text-title-large">문제</span>
+        </p>
+        {children}
+      </div>
       <p className="mt-1 text-body-small text-muted-foreground">
-        오늘 복습 가능한 오답·헷갈림 문제 기준
+        틀린 문제와 ‘헷갈려요’를 표시한 문제 중 오늘 복습 가능한 문제예요.
       </p>
     </section>
   );

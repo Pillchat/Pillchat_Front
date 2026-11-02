@@ -29,12 +29,13 @@ export default function WeaknessSettings({
   const query = useWeaknessQuery();
   const count = weaknessCount(query.data, filters);
   const choiceClass =
-    "flex cursor-pointer items-center gap-3 rounded-xl border border-border px-4 py-3 text-body-medium has-[:checked]:border-primary has-[:checked]:bg-primary-980";
+    "flex cursor-pointer items-center gap-3 rounded-xl bg-gray-50 px-4 py-3 text-body-medium has-[:checked]:bg-primary-980 has-[:checked]:text-primary";
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col bg-white">
       <PracticeHeader
         title="나의 약점 분야"
         backHref={weaknessHref(initialFilters)}
+        separator={false}
       />
       <main className="space-y-6 px-6 pb-36 pt-5">
         <h1 className="sr-only">나의 약점 분야</h1>
@@ -43,8 +44,9 @@ export default function WeaknessSettings({
           count={count}
           pending={query.isPending}
         />
-        <WeaknessNotice title="오답 • 헷갈림만 보여줘요">
-          나에게 필요한 문제 범위와 출처를 골라보세요.
+        <WeaknessNotice title="오답·‘헷갈려요’ 표시 문제만 모아요">
+          맞힌 문제라도 풀이 중 ‘헷갈려요’를 직접 표시했다면 약점공략에
+          포함돼요. 복습할 범위와 출처를 골라보세요.
         </WeaknessNotice>
         {query.isError && (
           <WeaknessReadError onRetry={() => void query.refetch()} />
@@ -132,13 +134,13 @@ export default function WeaknessSettings({
           정답이면 약점공략에서 제외돼요.
         </p>
       </main>
-      <footer className="fixed bottom-0 left-1/2 z-40 w-full max-w-app -translate-x-1/2 border-t border-border bg-white px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
+      <footer className="fixed bottom-0 left-1/2 z-40 w-full max-w-app -translate-x-1/2 bg-white px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
         <Button
           className="w-full"
           disabled={!filters.sources.length}
           onClick={() => router.push(weaknessHref(filters))}
         >
-          {count === null ? "–" : count}문제 약점공략 시작
+          필터 적용
         </Button>
       </footer>
     </div>

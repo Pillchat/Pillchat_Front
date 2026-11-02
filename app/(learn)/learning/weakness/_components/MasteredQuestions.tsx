@@ -21,14 +21,18 @@ export default function MasteredQuestions({
     ) ?? [];
   return (
     <div className="mx-auto min-h-dvh max-w-app bg-white">
-      <PracticeHeader title="극복한 문제" backHref={weaknessHref(filters)} />
+      <PracticeHeader
+        title="극복한 문제"
+        backHref={weaknessHref(filters)}
+        separator={false}
+      />
       <main className="space-y-6 px-6 pb-8 pt-5">
         <h1 className="text-headline-medium">
           극복한 문제 {query.data ? questions.length : "–"}개
         </h1>
         <WeaknessNotice title="서로 다른 날에 두 번 연속 맞혔어요">
-          극복한 문제는 약점공략에서 제외돼요. 다시 틀리거나 헷갈리면 약점으로
-          돌아와요.
+          극복한 문제는 약점공략에서 제외돼요. 다시 틀리거나 ‘헷갈려요’를 직접
+          표시하면 약점으로 돌아와요.
         </WeaknessNotice>
         {query.isError && (
           <WeaknessReadError onRetry={() => void query.refetch()} />
@@ -39,9 +43,9 @@ export default function MasteredQuestions({
             아직 극복한 문제가 없어요.
           </p>
         )}
-        <ul className="divide-y divide-border">
+        <ul className="space-y-3">
           {questions.map((q) => (
-            <li key={q.id} className="py-4">
+            <li key={q.id} className="rounded-xl bg-gray-50 p-4">
               <p className="text-title-large">
                 {q.subject}
                 {q.topic ? ` · ${q.topic}` : ""}
