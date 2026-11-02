@@ -1,6 +1,7 @@
 "use client";
 
-import { Play, RotateCcw } from "lucide-react";
+import { Play } from "lucide-react";
+import ReviewIcon from "@/public/icons/review.svg";
 import QuestionBankIcon from "@/public/icons/question-bank.svg";
 import EntryButton from "@/app/(questionbank)/questionbank/_components/EntryButton";
 import StatsCard from "@/app/(questionbank)/questionbank/_components/StatsCard";
@@ -28,10 +29,8 @@ export default function HomeLearningOverview({
 }: Props) {
   const router = useRouter();
   const latest = data?.latestAttempt;
-  const accuracy = data
-    ? data.solvedCount
-      ? Math.round((data.correctCount / data.solvedCount) * 100)
-      : 0
+  const accuracy = data?.solvedCount
+    ? Math.round((data.correctCount / data.solvedCount) * 100)
     : undefined;
 
   return (
@@ -64,6 +63,12 @@ export default function HomeLearningOverview({
         </p>
       )}
 
+      <HomeWeeklyReport
+        weekly={data?.weekly}
+        pending={pending}
+        isError={isError}
+      />
+
       <section aria-labelledby="continue-learning-title" aria-busy={pending}>
         <h2 id="continue-learning-title" className="text-headline-small">
           {data && !latest && !pending && !isError
@@ -71,7 +76,7 @@ export default function HomeLearningOverview({
             : "이어서 풀기"}
         </h2>
         {latest ? (
-          <div className="mt-3 rounded-xl border border-primary-900 bg-primary-980 px-4">
+          <div className="mt-3 rounded-xl bg-primary-980 px-4">
             <EntryButton
               compact
               icon={
@@ -79,7 +84,7 @@ export default function HomeLearningOverview({
                   aria-hidden="true"
                   size={32}
                   className="h-8 w-8 text-primary"
-                  strokeWidth={1.5}
+                  strokeWidth={2}
                   absoluteStrokeWidth
                 />
               }
@@ -105,7 +110,7 @@ export default function HomeLearningOverview({
             />
           </div>
         ) : data && !pending && !isError ? (
-          <div className="mt-3 rounded-xl border border-primary-900 bg-primary-980 px-4">
+          <div className="mt-3 rounded-xl bg-primary-980 px-4">
             <EntryButton
               compact
               icon={
@@ -134,7 +139,7 @@ export default function HomeLearningOverview({
         <h2 id="learning-shortcuts-title" className="text-headline-small">
           학습 바로가기
         </h2>
-        <div className="mt-1 divide-y divide-border">
+        <div className="mt-1">
           <EntryButton
             compact
             icon={
@@ -150,25 +155,14 @@ export default function HomeLearningOverview({
           <EntryButton
             compact
             icon={
-              <RotateCcw
-                aria-hidden="true"
-                size={32}
-                className="h-8 w-8 text-primary"
-                strokeWidth={1.5}
-                absoluteStrokeWidth
-              />
+              <ReviewIcon aria-hidden="true" className="h-8 w-8 text-primary" />
             }
             title="약점공략"
-            subtitle="오답·헷갈린 문제를 다시 풀며 약점을 채워요"
+            subtitle="틀린 문제와 ‘헷갈려요’를 표시한 문제를 복습해요"
             onClick={() => router.push("/learning/weakness")}
           />
         </div>
       </section>
-      <HomeWeeklyReport
-        weekly={data?.weekly}
-        pending={pending}
-        isError={isError}
-      />
     </div>
   );
 }

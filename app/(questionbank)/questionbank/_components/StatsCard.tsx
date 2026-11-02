@@ -39,7 +39,11 @@ const StatsCard: FC<StatsCardProps> = ({
         {value}
       </span>
       {percentage != null && (
-        <PercentageBar value={percentage} label={label} className="mt-2" />
+        <PercentageBar
+          value={percentage}
+          label={label}
+          className="mt-2 w-4/5 max-w-32"
+        />
       )}
     </div>
   );
