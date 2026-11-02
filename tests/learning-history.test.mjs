@@ -67,7 +67,40 @@ test("history queries isolate accounts and filters and forward opaque cursors", 
   await options.queryFn();
   assert.equal(calls[1][0], "/api/learning/history/AI/id%2Fwith%2Fslash");
 });
+test("history return links retain the actual list and filter without allowing another destination", () => {
+  for (const view of ["recent", "all"]) {
+    for (const filter of ["all", "correct", "wrong", "confused"]) {
+      const origin = model.historyListHref(view, filter);
+      const detail = model.historyHref(entry, origin);
+      assert.equal(
+        model.historyReturnHref(
+          new URL(detail, "https://pillchat.local").searchParams.get(
+            "returnTo",
+          ),
+        ),
+        origin,
+      );
+    }
+  }
+  assert.equal(model.historyReturnHref("/questionbank"), "/questionbank");
+  for (const unsafe of [
+    "https://evil.example/learning/recent",
+    "//evil.example",
+    "/\\evil.example",
+    "/login",
+    "/learning/history/AI/1",
+    "javascript:alert(1)",
+  ])
+    assert.equal(model.historyReturnHref(unsafe), "/learning/history");
+  assert.equal(
+    model.historyReturnHref(
+      "/learning/recent?filter=unknown&next=https://evil.example",
+    ),
+    "/learning/recent",
+  );
+});
 const overrides = {
+  "next/navigation": { useSearchParams: () => new URLSearchParams() },
   "@/components/molecules/PracticeHeader": {
     PracticeHeader: ({ title }) => React.createElement("h1", null, title),
   },
@@ -90,12 +123,52 @@ test("history bars distinguish progress from accuracy and omit unknown accuracy"
       React.createElement(Card, { entry: { ...entry, ...changes } }),
     );
   const ongoing = render({ state: "IN_PROGRESS", answeredCount: 2 });
-  assert.match(ongoing, /진행률 50%/);
+  assert.match(ongoing, /진행률<\/span><strong[^>]*>50%/);
   assert.match(ongoing, /value="50"/);
   assert.match(render({}), /value="75"/);
   const unknown = render({ correctCount: null });
-  assert.match(unknown, /정답률 –/);
+  assert.match(unknown, /정답률<\/span><strong[^>]*>–/);
   assert.doesNotMatch(unknown, /<progress|null%/);
+});
+test("list filters are URL-backed and its detail links carry the same origin", () => {
+  const replacements = [];
+  let selected;
+  const View = loader(
+    {},
+    {
+      ...overrides,
+      "next/navigation": {
+        useSearchParams: () => new URLSearchParams("filter=wrong"),
+      },
+      "@/lib/navigation": {
+        useRouter: () => ({ replace: (...args) => replacements.push(args) }),
+      },
+      "@/hooks/queries/useLearningHistory": {
+        useLearningHistory: (filter) => {
+          selected = filter;
+          return { data: { pages: [{ items: [entry] }] } };
+        },
+      },
+    },
+  )("components/learning/LearningHistoryPage.tsx").default;
+  const tree = View({ view: "recent" });
+  const nodes = (value) =>
+    Array.isArray(value)
+      ? value.flatMap(nodes)
+      : value && typeof value === "object"
+        ? [value, ...nodes(value.props?.children)]
+        : [];
+  assert.equal(selected, "wrong");
+  assert.equal(
+    nodes(tree).find((node) => node.props?.entry)?.props.returnTo,
+    "/learning/recent?filter=wrong",
+  );
+  nodes(tree)
+    .find((node) => node.props?.children === "맞음")
+    .props.onClick();
+  assert.equal(replacements.length, 1);
+  assert.equal(replacements[0][0], "/learning/recent?filter=correct");
+  assert.equal(replacements[0][1].scroll, false);
 });
 test("recent learning renders only two sets and distinguishes empty, loading and failure", () => {
   for (const [query, expected] of [
@@ -184,4 +257,33 @@ test("detail renders selected answers, case text, individual and full explanatio
     "75%",
   ])
     assert.ok(html.includes(text));
+});
+test("detail header goes back to its recent or full-history list with the original filter", () => {
+  for (const returnTo of [
+    "/learning/recent?filter=wrong",
+    "/learning/history?filter=confused",
+    "/questionbank",
+  ]) {
+    const View = loader(
+      {},
+      {
+        ...overrides,
+        react: { ...React, use: () => ({ source: "AI", id: "1" }) },
+        "next/navigation": {
+          useSearchParams: () => new URLSearchParams({ returnTo }),
+        },
+        "@/components/molecules/PracticeHeader": {
+          PracticeHeader: ({ backHref }) =>
+            React.createElement("a", { href: backHref }, "목록으로"),
+        },
+        "@/hooks/queries/useLearningHistory": {
+          useLearningHistoryDetail: () => ({}),
+        },
+      },
+    )("app/(learn)/learning/history/[source]/[id]/page.tsx").default;
+    const html = renderToStaticMarkup(
+      React.createElement(View, { params: Promise.resolve({}) }),
+    );
+    assert.ok(html.includes(`href="${returnTo}"`));
+  }
 });
