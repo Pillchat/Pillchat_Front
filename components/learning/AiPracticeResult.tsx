@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import ResultActions from "./ResultActions";
 import { CustomHeader } from "@/components/molecules";
 import DonutChart from "@/app/(questionbank)/questionbank/_components/DonutChart";
 import StatsCard from "@/app/(questionbank)/questionbank/_components/StatsCard";
@@ -35,7 +35,9 @@ export default function AiPracticeResult({
     .sort((a, b) => b[1].wrong / b[1].total - a[1].wrong / a[1].total);
   return (
     <div className="min-h-dvh bg-white pb-8">
-      <CustomHeader title="학습 결과" />
+      <CustomHeader
+        title={result.type === "REVIEW" ? "약점공략 결과" : "학습 결과"}
+      />
       <main className="space-y-6 px-6 py-6">
         <div className="flex justify-center">
           <DonutChart percentage={result.scorePercent} />
@@ -88,24 +90,14 @@ export default function AiPracticeResult({
             </p>
           )}
         </section>
-        <div className="grid grid-cols-2 gap-3">
-          <Link
-            href="/learning/weakness"
-            className="flex min-h-[58px] items-center justify-center rounded-xl bg-primary px-3 text-center font-semibold text-white"
-          >
-            오답·헷갈림 복습하기
-          </Link>
-          <Link
-            href={
-              result.type === "PDF"
-                ? "/questionbank/generate"
-                : "/questionbank/premium"
-            }
-            className="flex min-h-[58px] items-center justify-center rounded-xl border px-3 text-center font-semibold"
-          >
-            새 문제 생성하기
-          </Link>
-        </div>
+        <ResultActions
+          review={result.type === "REVIEW"}
+          source="AI"
+          masteredAvailable={
+            !weakness.isError &&
+            !!weakness.data?.questions.some((q) => q.status === "MASTERED")
+          }
+        />
         <section className="space-y-3">
           <h2 className="font-semibold">문제별 해설</h2>
           {result.answers.map((answer, index) => (
@@ -133,12 +125,6 @@ export default function AiPracticeResult({
             </details>
           ))}
         </section>
-        <Link
-          href="/learning/history"
-          className="block text-center text-sm text-muted-foreground"
-        >
-          전체 학습 기록
-        </Link>
       </main>
     </div>
   );

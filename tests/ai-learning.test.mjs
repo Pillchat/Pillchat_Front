@@ -26,7 +26,7 @@ const common = {
     }),
   },
 };
-test("AI results reuse scores, include confusion and weak topics, and route to weakness or fresh generation", () => {
+test("AI results reuse scores, include confusion and weak topics, and route to wrong-answer review or the practice hub", () => {
   const View = loader(
     {},
     common,
@@ -66,7 +66,7 @@ test("AI results reuse scores, include confusion and weak topics, and route to w
     "약리학",
     "약제학",
     "/learning/weakness",
-    "/questionbank/generate",
+    "/questionbank",
     "문제별 해설",
   ])
     assert.ok(html.includes(text), text);

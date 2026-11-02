@@ -244,7 +244,10 @@ test("count options larger than the available pool cannot be selected; all uses 
   h.submit();
   assert.deepEqual(h.calls, [["biochemistry", "", 3]]);
   h.find(
-    (n) => n.type === "button" && n.props.children === "전체" && n.props.className?.includes("h-11"),
+    (n) =>
+      n.type === "button" &&
+      n.props.children === "전체" &&
+      n.props.className?.includes("h-11"),
   ).props.onClick();
   h.render();
   h.submit();
@@ -351,6 +354,8 @@ test("result shows topic breakdown, confusion count and weakness destination", (
           questions: [
             {
               question: {
+                choices: [],
+                attemptQuestionId: "attempt-q-1",
                 sourceQuestionVersionId: "q-1",
                 subjectName: "약물학",
                 topicName: "고혈압",
@@ -359,6 +364,8 @@ test("result shows topic breakdown, confusion count and weakness destination", (
             },
             {
               question: {
+                choices: [],
+                attemptQuestionId: "attempt-q-2",
                 sourceQuestionVersionId: "q-2",
                 subjectName: "약물학",
                 topicName: "당뇨",
@@ -376,5 +383,6 @@ test("result shows topic breakdown, confusion count and weakness destination", (
   assert.match(markup, /헷갈림/);
   assert.match(markup, /정답률 50%/);
   assert.match(markup, /sources=HANDCRAFTED/);
-  assert.match(markup, /같은 조건으로 새 문제/);
+  assert.match(markup, /문제 풀기로 돌아가기/);
+  assert.doesNotMatch(markup, /같은 조건으로 새 문제/);
 });
