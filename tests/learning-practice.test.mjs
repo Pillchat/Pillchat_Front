@@ -574,3 +574,34 @@ test("CBT start sends explicit problem count and retry uses only the selected pr
   assert.equal(posts[2].body.questionCount, undefined);
   assert.ok(posts[2].body.idempotencyKey);
 });
+
+test("revealed handcrafted answers retain their explanation without claiming a wrong submission", () => {
+  const view = handcraftedView({
+    ...baseSession,
+    source: "HANDCRAFTED",
+    attempt: {
+      ...attempt,
+      source: "HANDCRAFTED",
+      state: "COMPLETED",
+      resultAvailable: true,
+      savedAnswers: [{ ...a, finalized: true }],
+    },
+    grades: {
+      [q.attemptQuestionId]: {
+        outcome: "REVEALED",
+        correctChoiceId: "opaque-A",
+        explanation: "공개된 해설",
+        choices: [],
+      },
+    },
+  });
+  const html = renderToStaticMarkup(view.tree);
+  assert.ok(html.includes("정답을 확인했어요."));
+  assert.ok(html.includes("공개된 해설"));
+  assert.equal(html.includes("오답입니다."), false);
+  assert.ok(
+    view.nodes.some(
+      (n) => n.type === "button" && n.props.children === "결과 보기",
+    ),
+  );
+});
