@@ -63,20 +63,7 @@ test("problem hub reuses entries for three practice modes and a separate flashca
   entries.find((n) => n.props.title === "AI 플래시카드").props.onClick();
   assert.deepEqual(calls, ["/flashcards"]);
 });
-test("recent learning owns the complete paginated list and old history address redirects", () => {
-  let redirected;
-  const old = loader(
-    {},
-    {
-      "next/navigation": {
-        redirect: (path) => {
-          redirected = path;
-        },
-      },
-    },
-  )("app/(learn)/learning/history/page.tsx").default;
-  old();
-  assert.equal(redirected, "/learning/recent");
+test("recent learning keeps the paginated list without the full-history summary", () => {
   const View = loader(
     {},
     {
@@ -117,6 +104,8 @@ test("recent learning owns the complete paginated list and old history address r
     },
   )("app/(learn)/learning/recent/page.tsx").default;
   const html = renderToStaticMarkup(React.createElement(View));
+  assert.equal(html.includes("총 풀이"), false);
+  assert.equal(html.includes("전체 학습 집계"), false);
   for (const text of ["최근 학습", "첫 세트", "다음 세트", "더 보기"])
     assert.ok(html.includes(text));
 });

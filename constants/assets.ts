@@ -36,6 +36,7 @@ export const PUBLIC_ASSETS = {
     privacyPolicy: "/icons/privacy-policy.svg",
     question: "/icons/question.svg",
     questionBank: "/icons/question-bank.svg",
+    learningHistoryColored: "/icons/learning-history-colored.svg",
     questionBubble: "/icons/question-bubble.svg",
     questionBubbleMuted: "/icons/question-bubble-muted.svg",
     removeCircleGray: "/icons/remove-circle-gray.svg",
