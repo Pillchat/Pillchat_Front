@@ -3,36 +3,32 @@
 import Link from "next/link";
 import { FC } from "react";
 import HomeIcon from "@/public/icons/home.svg";
-import ArchiveIcon from "@/public/icons/archive.svg";
+import QuestionBankIcon from "@/public/icons/question-bank.svg";
+import { RotateCcw } from "lucide-react";
 import MyPageIcon from "@/public/icons/user.svg";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  {
-    href: "/archive",
-    icon: ArchiveIcon,
-    label: "아카이브",
-  },
-  {
-    href: "/",
-    icon: HomeIcon,
-    label: "홈",
-  },
-  {
-    href: "/mypage",
-    icon: MyPageIcon,
-    label: "마이 페이지",
-  },
+  { href: "/", icon: HomeIcon, label: "홈" },
+  { href: "/questionbank", icon: QuestionBankIcon, label: "문제 풀기" },
+  { href: "/learning/weakness", icon: RotateCcw, label: "약점공략" },
+  { href: "/mypage", icon: MyPageIcon, label: "마이 페이지" },
 ];
-
 const matchesPath = (pathname: string, path: string) =>
   pathname === path || pathname.startsWith(`${path}/`);
-
 const isNavItemActive = (pathname: string, href: string) => {
   if (href === "/") return pathname === href;
-
+  if (href === "/questionbank")
+    return [
+      "/questionbank",
+      "/learning/cbt",
+      "/learning/ai",
+      "/learning/history",
+      "/learning/recent",
+      "/flashcards",
+    ].some((path) => matchesPath(pathname, path));
   return matchesPath(pathname, href);
 };
 
@@ -62,9 +58,11 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
               "flex h-[3.125rem] w-[3.125rem] flex-col items-center justify-center text-border transition-colors hover:text-brand focus:text-brand",
               isActive && "text-brand",
             )}
+            aria-current={isActive ? "page" : undefined}
             prefetch={false}
           >
             <IconComponent
+              strokeWidth={1.5}
               className={cn(
                 "h-8 w-8 focus:text-brand",
                 isActive && "text-brand",

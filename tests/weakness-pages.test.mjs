@@ -304,6 +304,9 @@ function harness(file, props, data = library) {
     {},
     {
       react: hooks,
+      "@/components/molecules/AppShell": {
+        AppShell: ({ children }) => children,
+      },
       "lucide-react": new Proxy({}, { get: () => () => null }),
       "@/public/icons/settings.svg": (props) =>
         React.createElement("svg", props),
