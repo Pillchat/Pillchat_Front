@@ -13,6 +13,7 @@ const mocks = {
   "@/public/icons/archive.svg": Icon,
   "@/public/icons/user.svg": Icon,
   "@/public/icons/question-bank.svg": Icon,
+  "@/public/icons/review.svg": Icon,
   "@/components/molecules/PracticeHeader": {
     PracticeHeader: ({ title }) => React.createElement("header", null, title),
   },
@@ -68,6 +69,7 @@ test("recent learning keeps the paginated list without the full-history summary"
     {},
     {
       ...mocks,
+      "next/navigation": { useSearchParams: () => new URLSearchParams() },
       "@/hooks/queries/useLearningHistory": {
         useLearningHistory: () => ({
           data: {

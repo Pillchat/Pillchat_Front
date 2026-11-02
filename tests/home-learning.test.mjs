@@ -70,6 +70,7 @@ function overview(props) {
       "lucide-react": new Proxy({}, { get: () => () => null }),
       "@/public/icons/question-bank.svg": (props) =>
         createElement("svg", props),
+      "@/public/icons/review.svg": (props) => createElement("svg", props),
       "@/lib/navigation": {
         useRouter: () => ({ push: (href) => navigation.push(href) }),
       },
@@ -126,9 +127,14 @@ test("empty progress differs from failed or pending reads and never fabricates t
   );
   assert.ok(
     empty.includes("0문제") &&
-      empty.includes("0%") &&
+      !empty.includes('aria-label="정답률"') &&
       empty.includes("추천 문제 풀기"),
   );
+  const allWrong = renderToStaticMarkup(
+    overview({ data: { ...data, correctCount: 0 } }).tree,
+  );
+  assert.ok(allWrong.includes("0%"));
+  assert.ok(allWrong.includes('aria-label="정답률"'));
   const pending = renderToStaticMarkup(overview({ pending: true }).tree);
   assert.ok(pending.includes("불러오는 중"));
   assert.ok(!pending.includes("0문제"));
