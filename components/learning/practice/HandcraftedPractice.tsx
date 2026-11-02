@@ -3,7 +3,7 @@ import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
 import WeaknessReviewFeedback from "@/components/learning/WeaknessReviewFeedback";
 
 import { TutorialButton } from "@/components/learning/TutorialButton";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { PracticeResult } from "./PracticeResult";
 import { Bookmark, BookmarkCheck, Check, X, CircleHelp } from "lucide-react";
 import { AppShell, PracticeHeader } from "@/components/molecules";
@@ -28,21 +28,6 @@ export default function HandcraftedPractice({
   const locked =
     s.disabled || attempt?.state !== "IN_PROGRESS" || !!answer?.finalized;
   const completed = attempt?.state === "COMPLETED";
-  const requestedResult = useRef<string | null>(null);
-  useEffect(() => {
-    if (!attempt) requestedResult.current = null;
-    if (
-      completed &&
-      attempt?.resultAvailable &&
-      !s.result &&
-      !s.loading &&
-      !s.disabled &&
-      requestedResult.current !== attempt.attemptId
-    ) {
-      requestedResult.current = attempt.attemptId;
-      void s.showResult();
-    }
-  }, [completed, attempt, s.result, s.loading, s.disabled, s.showResult]);
   if (s.result)
     return (
       <>
@@ -56,7 +41,9 @@ export default function HandcraftedPractice({
       await s.navigate(
         attempt.currentSectionQuestions[s.index + 1].attemptQuestionId,
       );
-    else if (attempt.state === "IN_PROGRESS") await s.submitSection();
+    else if (attempt.state === "COMPLETED") await s.showResult();
+    else if (attempt.state === "IN_PROGRESS" && (await s.submitSection()))
+      await s.showResult();
   };
   return (
     <AppShell className="min-h-dvh bg-white">
@@ -71,7 +58,7 @@ export default function HandcraftedPractice({
       <SessionFeedback session={s} />
       {s.loading ? (
         <LoadingIndicator label="문제를 불러오는 중..." className="py-20" />
-      ) : completed ? (
+      ) : completed && (!question || !answer) ? (
         <section className="space-y-4 px-6 py-12 text-center">
           <p>문제풀이를 완료했어요.</p>
           {attempt.resultAvailable && (
@@ -221,6 +208,16 @@ export default function HandcraftedPractice({
             )}
             {grade && (
               <div className="mt-6 border-t border-gray-100 pt-6">
+                <p
+                  role="status"
+                  className={`mb-4 font-semibold ${grade.outcome === "CORRECT" ? "text-green-700" : "text-primary"}`}
+                >
+                  {grade.outcome === "CORRECT"
+                    ? "정답입니다."
+                    : grade.outcome === "REVEAL"
+                      ? "정답을 확인했어요."
+                      : "오답입니다."}
+                </p>
                 <div className="rounded-xl bg-gray-50 p-4">
                   <p className="text-sm font-bold">정답 해설</p>
                   <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
@@ -271,14 +268,13 @@ export default function HandcraftedPractice({
                 type="button"
                 disabled={
                   s.disabled ||
-                  (s.index === attempt.currentSectionQuestions.length - 1 &&
-                    attempt.state !== "IN_PROGRESS")
+                  (attempt.state === "COMPLETED" && !attempt.resultAvailable)
                 }
                 onClick={() => void next()}
                 className="h-12 w-full rounded-xl bg-primary text-sm font-bold text-white disabled:bg-gray-300"
               >
                 {s.index === attempt.currentSectionQuestions.length - 1
-                  ? "학습 마치기"
+                  ? "결과 보기"
                   : "다음 문제"}
               </button>
             )}
