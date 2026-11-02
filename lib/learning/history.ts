@@ -7,6 +7,35 @@ export const HISTORY_FILTERS = {
   confused: "헷갈림",
 } as const;
 export type HistoryFilter = keyof typeof HISTORY_FILTERS;
+export function readHistoryFilter(
+  value: string | null | undefined,
+): HistoryFilter {
+  return value === "correct" || value === "wrong" || value === "confused"
+    ? value
+    : "all";
+}
+export function historyListHref(view: "recent" | "all", filter: HistoryFilter) {
+  const path = view === "recent" ? "/learning/recent" : "/learning/history";
+  return filter === "all" ? path : `${path}?filter=${filter}`;
+}
+export function historyReturnHref(value: string | null | undefined) {
+  if (!value?.startsWith("/") || value.startsWith("//"))
+    return "/learning/history";
+  try {
+    const url = new URL(value, "https://pillchat.local");
+    if (url.origin !== "https://pillchat.local") return "/learning/history";
+    if (url.pathname === "/questionbank") return "/questionbank";
+    if (
+      url.pathname === "/learning/recent" ||
+      url.pathname === "/learning/history"
+    )
+      return historyListHref(
+        url.pathname === "/learning/recent" ? "recent" : "all",
+        readHistoryFilter(url.searchParams.get("filter")),
+      );
+  } catch {}
+  return "/learning/history";
+}
 export type HistoryEntry = {
   attemptId: string;
   source: ReviewSource;
@@ -46,10 +75,12 @@ export type HistoryDetail = {
     explanation: string | null;
   }[];
 };
-export function historyHref(entry: HistoryEntry) {
-  return entry.state === "IN_PROGRESS"
-    ? dashboardAttemptHref(entry)
-    : `/learning/history/${entry.source}/${encodeURIComponent(entry.attemptId)}`;
+export function historyHref(entry: HistoryEntry, returnTo?: string) {
+  if (entry.state === "IN_PROGRESS") return dashboardAttemptHref(entry);
+  const path = `/learning/history/${entry.source}/${encodeURIComponent(entry.attemptId)}`;
+  return returnTo
+    ? `${path}?${new URLSearchParams({ returnTo: historyReturnHref(returnTo) })}`
+    : path;
 }
 export function historyAccuracy(entry: HistoryEntry) {
   return entry.correctCount == null

@@ -1,10 +1,12 @@
 "use client";
-import { use, useState } from "react";
+import { Suspense, use, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { PracticeHeader } from "@/components/molecules/PracticeHeader";
 import { Button } from "@/components/ui/button";
 import {
   HISTORY_FILTERS,
   historyAccuracy,
+  historyReturnHref,
   type HistoryFilter,
 } from "@/lib/learning/history";
 import { useLearningHistoryDetail } from "@/hooks/queries/useLearningHistory";
@@ -15,12 +17,30 @@ export default function HistoryDetailPage({
 }: {
   params: Promise<{ source: string; id: string }>;
 }) {
+  return (
+    <Suspense
+      fallback={<p className="px-6 py-6">결과와 해설을 불러오는 중이에요.</p>}
+    >
+      <HistoryDetailContent params={params} />
+    </Suspense>
+  );
+}
+function HistoryDetailContent({
+  params,
+}: {
+  params: Promise<{ source: string; id: string }>;
+}) {
   const { source, id } = use(params);
+  const searchParams = useSearchParams();
   const [filter, setFilter] = useState<HistoryFilter>("all");
   const query = useLearningHistoryDetail(source, id, filter);
   return (
     <div className="mx-auto min-h-dvh max-w-screen-sm bg-white">
-      <PracticeHeader title="학습 기록 상세" backHref="/learning/history" />
+      <PracticeHeader
+        title="학습 기록 상세"
+        backHref={historyReturnHref(searchParams.get("returnTo"))}
+        separator={false}
+      />
       <main className="space-y-6 px-6 py-6" aria-busy={query.isPending}>
         {query.data && (
           <section>
@@ -39,7 +59,10 @@ export default function HistoryDetailPage({
             <Button
               key={key}
               aria-pressed={filter === key}
-              variant={filter === key ? "default" : "outline"}
+              variant={filter === key ? "default" : "ghost"}
+              className={
+                filter === key ? undefined : "bg-gray-100 text-muted-foreground"
+              }
               onClick={() => setFilter(key as HistoryFilter)}
             >
               {label}
@@ -65,7 +88,7 @@ export default function HistoryDetailPage({
         {query.data?.questions.map((q, index) => (
           <article
             key={q.questionId}
-            className="space-y-3 rounded-xl border border-border p-4"
+            className="space-y-3 rounded-xl bg-gray-50 p-4"
           >
             <p className="text-body-small text-primary">
               {[q.subject, q.topic].filter(Boolean).join(" · ")}
@@ -103,7 +126,7 @@ export default function HistoryDetailPage({
               {q.choices.map((choice, n) => (
                 <div
                   key={choice.id}
-                  className={`rounded-xl border p-3 text-body-medium ${choice.id === q.correctAnswer ? "border-primary bg-primary-980" : "border-border"}`}
+                  className={`rounded-xl p-3 text-body-medium ${choice.id === q.correctAnswer ? "bg-primary-980" : "bg-white"}`}
                 >
                   <p>
                     {n + 1}. {choice.text}

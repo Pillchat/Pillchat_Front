@@ -31,6 +31,7 @@ export default function RecentLearning() {
             <HistoryAttemptCard
               key={`${entry.source}:${entry.attemptId}`}
               entry={entry}
+              returnTo="/questionbank"
             />
           ))
       ) : (
