@@ -26,7 +26,7 @@ const common = {
     }),
   },
 };
-test("AI results reuse scores, include confusion and weak topics, and route to wrong-answer review or the practice hub", () => {
+test("AI results reuse scores, include confusion and weak topics, and separate this-set explanations from all weaknesses", () => {
   const View = loader(
     {},
     common,
@@ -66,11 +66,13 @@ test("AI results reuse scores, include confusion and weak topics, and route to w
     "약리학",
     "약제학",
     "/learning/weakness",
-    "/questionbank",
+    "이번 세트 오답 해설",
+    "전체 약점공략",
     "문제별 해설",
   ])
     assert.ok(html.includes(text), text);
   assert.equal(html.includes("이번 학습에서 확인된 약점이 없어요"), false);
+  assert.doesNotMatch(html, /range=wrong|sources=AI/);
 });
 
 const nodes = (tree) =>

@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useRef, useState } from "react";
 import ResultActions from "./ResultActions";
 import { CustomHeader } from "@/components/molecules";
 import DonutChart from "@/app/(questionbank)/questionbank/_components/DonutChart";
@@ -13,6 +14,19 @@ export default function AiPracticeResult({
 }: {
   result: QuizResultResponse;
 }) {
+  const [onlyWrong, setOnlyWrong] = useState(false);
+  const [reviewRequest, setReviewRequest] = useState(0);
+  const explanationsRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (reviewRequest === 0) return;
+    explanationsRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, [reviewRequest]);
+  const wrongCount = result.answers.filter(
+    (answer) => !answer.isCorrect,
+  ).length;
   const weakness = useWeaknessQuery();
   const confused = new Set(
     weakness.data?.questions
@@ -92,38 +106,66 @@ export default function AiPracticeResult({
         </section>
         <ResultActions
           review={result.type === "REVIEW"}
-          source="AI"
+          wrongCount={wrongCount}
+          onReviewWrong={() => {
+            setOnlyWrong(true);
+            setReviewRequest((request) => request + 1);
+          }}
           masteredAvailable={
             !weakness.isError &&
             !!weakness.data?.questions.some((q) => q.status === "MASTERED")
           }
         />
-        <section className="space-y-3">
-          <h2 className="font-semibold">문제별 해설</h2>
-          {result.answers.map((answer, index) => (
-            <details
-              key={answer.questionId}
-              className="overflow-hidden rounded-xl border"
-            >
-              <summary className="cursor-pointer p-4 text-sm font-medium">
-                {index + 1}. {answer.content}
-              </summary>
-              <div className="px-4 pb-3 text-sm">
-                제출 답안: {answer.userAnswer || "미응답"}
-              </div>
-              <div className="px-4 pb-3">
-                <ConfusionToggle
-                  source="AI"
-                  questionId={String(answer.questionId)}
+        <section ref={explanationsRef} className="scroll-mt-24 space-y-3">
+          <h2 className="font-semibold">
+            {onlyWrong ? "이번 세트 오답 해설" : "문제별 해설"}
+          </h2>
+          <div className="flex gap-2" aria-label="문제 해설 필터">
+            {[false, true].map((value) => (
+              <button
+                key={String(value)}
+                type="button"
+                aria-pressed={onlyWrong === value}
+                onClick={() => setOnlyWrong(value)}
+                className={`rounded-full px-4 py-2 text-sm ${onlyWrong === value ? "bg-primary text-white" : "bg-gray-100 text-muted-foreground"}`}
+              >
+                {value ? "오답·미응답" : "전체 문제"}
+              </button>
+            ))}
+          </div>
+          {result.answers
+            .map((answer, index) => ({ answer, index }))
+            .filter(({ answer }) => !onlyWrong || !answer.isCorrect)
+            .map(({ answer, index }) => (
+              <details
+                key={answer.questionId}
+                open={onlyWrong || undefined}
+                className="overflow-hidden rounded-xl bg-gray-50"
+              >
+                <summary className="cursor-pointer p-4 text-sm font-medium">
+                  {index + 1}. {answer.content}
+                </summary>
+                <div className="px-4 pb-3 text-sm">
+                  제출 답안: {answer.userAnswer || "미응답"}
+                </div>
+                <div className="px-4 pb-3">
+                  <ConfusionToggle
+                    source="AI"
+                    questionId={String(answer.questionId)}
+                  />
+                </div>
+                <ReviewExplanation
+                  correct={answer.isCorrect}
+                  correctAnswer={answer.correctAnswer}
+                  explanation={answer.explanation}
                 />
-              </div>
-              <ReviewExplanation
-                correct={answer.isCorrect}
-                correctAnswer={answer.correctAnswer}
-                explanation={answer.explanation}
-              />
-            </details>
-          ))}
+              </details>
+            ))}
+          {onlyWrong && wrongCount === 0 && (
+            <p className="rounded-xl bg-gray-50 p-4 text-sm text-muted-foreground">
+              이번 세트에 오답·미응답 문제가 없어요.
+            </p>
+          )}
         </section>
       </main>
     </div>
