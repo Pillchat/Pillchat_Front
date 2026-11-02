@@ -1,6 +1,7 @@
 "use client";
 
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+import { PercentageBar } from "@/components/atoms/PercentageBar";
 
 import { PillLoader } from "@/components/atoms/PillLoader";
 
@@ -99,8 +100,23 @@ export function FlashcardLibraryPanel({
 
   return (
     <div>
+      <Link
+        href="/flashcards/create"
+        aria-disabled={busy}
+        tabIndex={busy ? -1 : undefined}
+        onClick={(event) => {
+          if (busy) event.preventDefault();
+        }}
+        className={cn(
+          "mb-6 flex min-h-[58px] w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-base font-semibold text-white transition hover:bg-primary-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
+          busy && "pointer-events-none opacity-50",
+        )}
+      >
+        <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+        카드 추가
+      </Link>
       <section aria-labelledby="flashcard-packs-heading">
-        <div className="mb-5 flex items-center justify-between gap-3">
+        <div className="mb-5">
           <div>
             <h1
               id="flashcard-packs-heading"
@@ -114,28 +130,10 @@ export function FlashcardLibraryPanel({
                 : "나만의 카드를 만들고, 한 장씩 익혀보세요"}
             </p>
           </div>
-          <Link
-            href="/flashcards/create"
-            aria-disabled={busy}
-            tabIndex={busy ? -1 : undefined}
-            onClick={(event) => {
-              if (busy) event.preventDefault();
-            }}
-            className={cn(
-              "flex h-10 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-bold text-brand transition hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
-              busy && "pointer-events-none opacity-50",
-            )}
-          >
-            <Plus aria-hidden="true" className="h-4 w-4" />
-            카드 만들기
-          </Link>
         </div>
 
         {selectedGroup && (
-          <div
-            data-flashcard-tutorial="packs"
-            className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 py-2 [scrollbar-width:none] sm:-mx-6 sm:scroll-px-6 sm:gap-4 sm:px-6 [&::-webkit-scrollbar]:hidden"
-          >
+          <div data-flashcard-tutorial="packs" className="flex flex-col gap-3">
             {groups.map((group) => {
               const selected = group.id === selectedGroup.id;
               return (
@@ -148,7 +146,7 @@ export function FlashcardLibraryPanel({
                     onSelectCollection(packs ? group.id : group.name)
                   }
                   className={cn(
-                    "w-40 shrink-0 snap-start rounded-2xl p-4 text-left text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 disabled:cursor-wait sm:w-44",
+                    "block w-full min-w-0 rounded-2xl p-4 text-left text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 disabled:cursor-wait",
                     selected ? "bg-accent" : "bg-accent/50 hover:bg-accent",
                   )}
                 >
@@ -171,6 +169,11 @@ export function FlashcardLibraryPanel({
                     학습 진행 {group.reviewedCount}/{group.cards.length}장 ·{" "}
                     {group.progress}%
                   </span>
+                  <PercentageBar
+                    value={group.progress}
+                    label={`${group.name} 학습 진행률`}
+                    className="mt-2"
+                  />
                 </button>
               );
             })}
@@ -211,13 +214,6 @@ export function FlashcardLibraryPanel({
             <br />
             직접 쓰거나 이미지로 만들 수도 있어요.
           </p>
-          <Link
-            href="/flashcards/create"
-            className="mx-auto mt-6 flex min-h-12 max-w-64 items-center justify-center gap-2 rounded-xl bg-brand px-5 text-sm font-bold text-white"
-          >
-            <Plus aria-hidden="true" className="h-4 w-4" />
-            {selectedGroup ? "카드 추가하기" : "첫 카드 만들기"}
-          </Link>
         </div>
       )}
     </div>

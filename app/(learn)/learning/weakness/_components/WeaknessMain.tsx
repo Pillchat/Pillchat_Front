@@ -7,6 +7,7 @@ import { ChevronRight, CircleHelp, RotateCcw } from "lucide-react";
 import { AppShell } from "@/components/molecules/AppShell";
 import { PracticeHeader } from "@/components/molecules/PracticeHeader";
 import { Button } from "@/components/ui/button";
+import { PercentageBar } from "@/components/atoms/PercentageBar";
 import {
   Dialog,
   DialogContent,
@@ -159,16 +160,20 @@ export default function WeaknessMain({
               {fields.length > 0 ? (
                 <ol className="space-y-3" aria-label="오답률 상위 3개 분야">
                   {fields.slice(0, 3).map((field) => (
-                    <li
-                      key={field.subject}
-                      className="flex items-start justify-between gap-3 text-body-medium"
-                    >
-                      <span className="min-w-0 break-words">
-                        {field.subject}
-                      </span>
-                      <strong className="shrink-0 tabular-nums text-primary">
-                        {Math.round(field.wrongRate * 10) / 10}%
-                      </strong>
+                    <li key={field.subject}>
+                      <div className="flex items-start justify-between gap-3 text-body-medium">
+                        <span className="min-w-0 break-words">
+                          {field.subject}
+                        </span>
+                        <strong className="shrink-0 tabular-nums text-primary">
+                          {Math.round(field.wrongRate * 10) / 10}%
+                        </strong>
+                      </div>
+                      <PercentageBar
+                        value={field.wrongRate}
+                        label={`${field.subject} 오답·헷갈림 비율`}
+                        className="mt-1.5"
+                      />
                     </li>
                   ))}
                 </ol>
