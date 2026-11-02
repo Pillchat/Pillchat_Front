@@ -163,7 +163,11 @@ export default function WeaknessMain({
               aria-label="나의 약점 분야 설정"
               className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-white px-3 text-body-small text-foreground"
             >
-              <SettingsIcon aria-hidden="true" className="h-5 w-5" />
+              <SettingsIcon
+                aria-hidden="true"
+                viewBox="0 0 32 32"
+                className="h-5 w-5 shrink-0"
+              />
               필터 설정
             </Link>
           </div>
