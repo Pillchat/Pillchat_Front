@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { ApiError } from "@/lib/client/fetch";
 import Link from "next/link";
 import SettingsIcon from "@/public/icons/settings.svg";
-import { ChevronRight, CircleHelp, RotateCcw } from "lucide-react";
+import { ChevronDown, ChevronRight, CircleHelp, RotateCcw } from "lucide-react";
 import { AppShell } from "@/components/molecules/AppShell";
 import { PracticeHeader } from "@/components/molecules/PracticeHeader";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,6 @@ import {
   weaknessQuestions,
   scheduledWeaknessQuestions,
   weaknessReviewDay,
-  weaknessCount,
   weaknessFields,
   recentlyMastered,
   koreanStudyDate,
@@ -56,7 +55,7 @@ export default function WeaknessMain({
   const practiceQuestions = questions.filter(
     (q) => !subject || q.subject === subject,
   );
-  const count = weaknessCount(query.data, filters);
+  const count = query.data ? practiceQuestions.length : null;
   const fields = weaknessFields(query.data, filters);
   const subjects = [...new Set(scheduled.map((q) => q.subject))];
   const visible = scheduled.filter((q) => !subject || q.subject === subject);
@@ -104,30 +103,35 @@ export default function WeaknessMain({
       idempotencyKey: crypto.randomUUID(),
     });
   };
-  const mastered =
-    query.data?.questions.filter(
-      (q) => q.status === "MASTERED" && filters.sources.includes(q.source),
-    ).length ?? 0;
+  const mastered = query.data
+    ? query.data.questions.filter(
+        (q) => q.status === "MASTERED" && filters.sources.includes(q.source),
+      ).length
+    : null;
   return (
     <AppShell className="flex flex-col">
-      <PracticeHeader title="약점공략" backHref="/" />
+      <PracticeHeader title="약점공략" backHref="/" separator={false} />
       <main className="space-y-6 px-6 pb-8 pt-5">
         <h1 className="sr-only">약점공략</h1>
         <WeaknessCount
-          label="다시 풀 문제 수"
+          label="오늘 복습할"
           count={count}
           pending={query.isPending}
-        />
+        >
+          <Button
+            className="shrink-0"
+            disabled={query.isPending || !practiceQuestions.length || pending}
+            onClick={() =>
+              sources.length === 1 ? launch(sources[0]) : setChooseSource(true)
+            }
+          >
+            복습 시작
+          </Button>
+        </WeaknessCount>
         <WeaknessNotice title="약점공략에는 약점만 모여요">
-          오답·헷갈린 문제를 복습해요. 서로 다른 날에 2회 연속 정답이면 극복한
-          문제로 옮겨져요.
+          틀린 문제와 풀이 중 ‘헷갈려요’를 직접 표시한 문제를 복습해요. 서로
+          다른 날에 2회 연속 정답이면 극복한 문제로 옮겨져요.
         </WeaknessNotice>
-        <p className="text-body-medium">
-          지난 7일 극복한 문제{" "}
-          <strong className="text-primary">
-            {recentlyMastered(query.data, filters) ?? "–"}개
-          </strong>
-        </p>
         {query.isError && (
           <WeaknessReadError onRetry={() => void query.refetch()} />
         )}
@@ -148,93 +152,105 @@ export default function WeaknessMain({
             </button>
           </p>
         )}
-        <section aria-label="나의 약점 분야" className="space-y-4">
-          <p className="text-body-small text-muted-foreground">
-            최근 30일 최초 풀이 기준 · 오답·헷갈림 비율
-          </p>
-          <div className="flex items-center gap-4">
-            <div
-              className="flex min-h-32 min-w-0 flex-1 flex-col justify-center rounded-xl border border-border bg-white p-4"
-              aria-busy={query.isPending}
+        <section
+          aria-label="나의 약점 분야"
+          className="space-y-4 rounded-2xl bg-gray-50 p-4"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-headline-small">나의 약점 분야</h2>
+            <Link
+              href={weaknessHref(filters, "areas")}
+              aria-label="나의 약점 분야 설정"
+              className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-white px-3 text-body-small text-foreground"
             >
-              {fields.length > 0 ? (
-                <ol className="space-y-3" aria-label="오답률 상위 3개 분야">
-                  {fields.slice(0, 3).map((field) => (
-                    <li key={field.subject}>
-                      <div className="flex items-start justify-between gap-3 text-body-medium">
-                        <span className="min-w-0 break-words">
-                          {field.subject}
-                        </span>
-                        <strong className="shrink-0 tabular-nums text-primary">
-                          {Math.round(field.wrongRate * 10) / 10}%
-                        </strong>
-                      </div>
-                      <PercentageBar
-                        value={field.wrongRate}
-                        label={`${field.subject} 오답·헷갈림 비율`}
-                        className="mt-1.5"
-                      />
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <p className="text-body-small text-muted-foreground">
-                  {query.isPending
-                    ? "약점 분야를 불러오는 중이에요."
-                    : query.data
-                      ? "현재 약점으로 남아 있는 분야가 없어요."
-                      : "약점 분야를 불러오지 못했어요."}
-                </p>
-              )}
-            </div>
-            <Button
-              asChild
-              variant="outline"
-              size="icon"
-              className="h-[3.625rem] w-[3.625rem] shrink-0 border-border text-primary"
-            >
-              <Link
-                href={weaknessHref(filters, "areas")}
-                aria-label="나의 약점 분야 설정"
-                title="나의 약점 분야 설정"
-              >
-                <SettingsIcon aria-hidden="true" />
-              </Link>
-            </Button>
+              <SettingsIcon aria-hidden="true" className="h-5 w-5" />
+              필터 설정
+            </Link>
           </div>
-          <Button
-            className="w-full"
-            disabled={query.isPending || !practiceQuestions.length || pending}
-            onClick={() =>
-              sources.length === 1 ? launch(sources[0]) : setChooseSource(true)
-            }
+          <p className="text-body-small text-muted-foreground">
+            최근 30일 최초 풀이 기준 · 오답·‘헷갈려요’ 표시 비율
+          </p>
+          <div className="min-w-0" aria-busy={query.isPending}>
+            {fields.length > 0 ? (
+              <ol className="space-y-3" aria-label="오답률 상위 3개 분야">
+                {fields.slice(0, 3).map((field) => (
+                  <li key={field.subject}>
+                    <div className="flex items-start justify-between gap-3 text-body-medium">
+                      <span className="min-w-0 break-words">
+                        {field.subject}
+                      </span>
+                      <strong className="shrink-0 tabular-nums text-primary">
+                        {Math.round(field.wrongRate * 10) / 10}%
+                      </strong>
+                    </div>
+                    <PercentageBar
+                      value={field.wrongRate}
+                      label={`${field.subject} 오답·‘헷갈려요’ 표시 비율`}
+                      className="mt-1.5"
+                    />
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="text-body-small text-muted-foreground">
+                {query.isPending
+                  ? "약점 분야를 불러오는 중이에요."
+                  : query.data
+                    ? "현재 약점으로 남아 있는 분야가 없어요."
+                    : "약점 분야를 불러오지 못했어요."}
+              </p>
+            )}
+          </div>
+          <Link
+            href={weaknessHref(filters, "mastered")}
+            className="flex items-center justify-between gap-3 rounded-xl bg-white p-4"
           >
-            약점 문제 풀기
-          </Button>
-          <p className="text-center text-body-small text-muted-foreground">
+            <span>
+              <span className="block text-body-medium">
+                지난 7일 극복한 문제{" "}
+                <strong className="text-primary">
+                  {recentlyMastered(query.data, filters) ?? "–"}개
+                </strong>
+              </span>
+              <span className="mt-1 block text-body-small text-muted-foreground">
+                극복한 문제 {mastered ?? "–"}개 모두 보기
+              </span>
+            </span>
+            <ChevronRight
+              aria-hidden="true"
+              className="h-5 w-5 shrink-0 text-muted-foreground"
+            />
+          </Link>
+          <p className="text-body-small text-muted-foreground">
             오늘 푼 문제는 다음 날부터 다시 복습할 수 있어요.
           </p>
         </section>
         <section aria-labelledby="weakness-practice-title">
           <div className="flex items-center justify-between gap-2">
             <h2 id="weakness-practice-title" className="text-headline-small">
-              관련 문제풀이 바로가기
+              문제 모음별 복습
             </h2>
             <Link
               href={weaknessHref(filters, "classification")}
               aria-label="학습 분류 기준 보기"
-              className="shrink-0 rounded-lg p-2 text-muted-foreground"
+              className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-xl bg-gray-50 px-3 text-body-small text-muted-foreground"
             >
-              <CircleHelp className="h-5 w-5" strokeWidth={1.5} />
+              <CircleHelp
+                aria-hidden="true"
+                className="h-4 w-4"
+                strokeWidth={2}
+              />
+              분류 기준
             </Link>
           </div>
           <p className="mt-2 text-body-small text-muted-foreground">
-            {WEAKNESS_SORTS[filters.sort]}
+            문제 모음을 골라 해당 모음의 약점을 복습해요.
+            <span className="mt-1 block">{WEAKNESS_SORTS[filters.sort]}</span>
           </p>
           <div
             role="group"
             aria-label="문제풀이 목록 보기"
-            className="mt-4 flex border-b border-border"
+            className="mt-4 flex gap-1 rounded-xl bg-gray-50 p-1"
           >
             {(
               [
@@ -251,7 +267,7 @@ export default function WeaknessMain({
                   setTab(value);
                   setSubject(null);
                 }}
-                className={`flex-1 border-b-2 py-3 text-title-small ${tab === value ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}
+                className={`flex-1 rounded-lg py-3 text-title-small ${tab === value ? "bg-white text-primary" : "text-muted-foreground"}`}
               >
                 {label}
               </button>
@@ -280,7 +296,7 @@ export default function WeaknessMain({
                   key={name}
                   type="button"
                   onClick={() => setSubject(name)}
-                  className="flex w-full items-center justify-between gap-3 border-b border-border py-4 text-left"
+                  className="mt-3 flex w-full items-center justify-between gap-3 rounded-xl bg-gray-50 p-4 text-left"
                 >
                   <span className="min-w-0 flex-1 text-title-large">
                     {name}
@@ -325,7 +341,10 @@ export default function WeaknessMain({
                   );
                   const canPractice = available.length > 0;
                   return (
-                    <div key={collection.collectionRef}>
+                    <div
+                      key={collection.collectionRef}
+                      className="mt-3 rounded-xl bg-gray-50 p-4"
+                    >
                       <button
                         key={collection.collectionRef}
                         type="button"
@@ -333,7 +352,7 @@ export default function WeaknessMain({
                         onClick={() =>
                           launch(collection.source, collection.collectionRef)
                         }
-                        className={`flex w-full items-center justify-between gap-3 border-b border-border py-4 text-left disabled:cursor-default ${pending ? "opacity-50" : ""}`}
+                        className={`flex w-full items-center justify-between gap-3 pb-4 text-left disabled:cursor-default ${pending ? "opacity-50" : ""}`}
                       >
                         <span className="min-w-0 flex-1">
                           <span
@@ -365,13 +384,24 @@ export default function WeaknessMain({
                           className="h-5 w-5 shrink-0 text-muted-foreground"
                         />
                       </button>
-                      <details className="border-b border-border pb-3 text-body-small text-muted-foreground">
-                        <summary className="cursor-pointer py-2">
-                          문제별 복습 현황
+                      <details className="group text-body-small text-muted-foreground">
+                        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-xl bg-white px-3 py-3 [&::-webkit-details-marker]:hidden">
+                          <span>
+                            <span className="block text-title-small text-foreground">
+                              문제별 복습 현황
+                            </span>
+                            <span className="mt-1 block">
+                              {items.length}문제 · 복습 일정과 연속 정답 보기
+                            </span>
+                          </span>
+                          <ChevronDown
+                            aria-hidden="true"
+                            className="h-5 w-5 shrink-0 transition-transform group-open:rotate-180"
+                          />
                         </summary>
-                        <ul className="space-y-3">
+                        <ul className="mt-3 space-y-3">
                           {items.map((q) => (
-                            <li key={q.id} className="rounded-xl bg-accent p-3">
+                            <li key={q.id} className="rounded-xl bg-white p-3">
                               <p>
                                 {q.subject}
                                 {q.topic ? ` · ${q.topic}` : ""} ·{" "}
@@ -395,13 +425,6 @@ export default function WeaknessMain({
               </>
             )}
           </div>
-          <Link
-            href={weaknessHref(filters, "mastered")}
-            className="mt-5 flex items-center justify-between rounded-xl bg-gray-50 p-4 text-title-small"
-          >
-            극복한 문제 {mastered}개 보기
-            <ChevronRight aria-hidden="true" className="h-5 w-5" />
-          </Link>
         </section>
       </main>
       <Dialog open={chooseSource} onOpenChange={setChooseSource}>
@@ -413,12 +436,14 @@ export default function WeaknessMain({
           {sources.map((source) => (
             <Button
               key={source}
-              variant="outline"
+              variant="ghost"
+              className="bg-gray-50"
               disabled={pending}
               onClick={() => launch(source)}
             >
               {WEAKNESS_SOURCE_LABELS[source]} ·{" "}
-              {practiceQuestions.filter((q) => q.source === source).length}문제
+              {practiceQuestions.filter((q) => q.source === source).length}
+              문제
             </Button>
           ))}
         </DialogContent>
