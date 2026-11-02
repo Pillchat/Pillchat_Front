@@ -1,6 +1,7 @@
 "use client";
 
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+import { PercentageBar } from "@/components/atoms/PercentageBar";
 
 import { PillLoader } from "@/components/atoms/PillLoader";
 
@@ -168,6 +169,11 @@ export function FlashcardLibraryPanel({
                     학습 진행 {group.reviewedCount}/{group.cards.length}장 ·{" "}
                     {group.progress}%
                   </span>
+                  <PercentageBar
+                    value={group.progress}
+                    label={`${group.name} 학습 진행률`}
+                    className="mt-2"
+                  />
                 </button>
               );
             })}

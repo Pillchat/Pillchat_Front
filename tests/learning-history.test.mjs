@@ -80,6 +80,23 @@ const overrides = {
     React.createElement("a", { href }, children),
   "@/components/learning/ConfusionToggle": { ConfusionToggle: () => null },
 };
+test("history bars distinguish progress from accuracy and omit unknown accuracy", () => {
+  const Card = loader(
+    {},
+    overrides,
+  )("components/learning/HistoryAttemptCard.tsx").default;
+  const render = (changes) =>
+    renderToStaticMarkup(
+      React.createElement(Card, { entry: { ...entry, ...changes } }),
+    );
+  const ongoing = render({ state: "IN_PROGRESS", answeredCount: 2 });
+  assert.match(ongoing, /진행률 50%/);
+  assert.match(ongoing, /value="50"/);
+  assert.match(render({}), /value="75"/);
+  const unknown = render({ correctCount: null });
+  assert.match(unknown, /정답률 –/);
+  assert.doesNotMatch(unknown, /<progress|null%/);
+});
 test("recent learning renders only two sets and distinguishes empty, loading and failure", () => {
   for (const [query, expected] of [
     [{ isPending: true }, /불러오는 중/],

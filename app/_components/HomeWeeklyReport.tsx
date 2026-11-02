@@ -16,6 +16,11 @@ export default function HomeWeeklyReport({
     1,
     ...(weekly?.days.map((day) => day.solvedCount) ?? []),
   );
+  const accuracy = weekly
+    ? weekly.solvedCount
+      ? Math.round((weekly.correctCount / weekly.solvedCount) * 100)
+      : 0
+    : undefined;
   return (
     <section aria-labelledby="weekly-report-title" aria-busy={pending}>
       <h2 id="weekly-report-title" className="text-headline-small">
@@ -64,7 +69,8 @@ export default function HomeWeeklyReport({
             />
             <StatsCard
               label="주간 정답률"
-              value={`${weekly.solvedCount ? Math.round((weekly.correctCount / weekly.solvedCount) * 100) : 0}%`}
+              value={`${accuracy}%`}
+              percentage={accuracy}
             />
           </div>
           {weekly.solvedCount === 0 && (

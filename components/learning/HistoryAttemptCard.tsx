@@ -8,9 +8,15 @@ import {
   type HistoryEntry,
 } from "@/lib/learning/history";
 import { REVIEW_SOURCE_LABELS } from "@/types/review";
+import { PercentageBar } from "@/components/atoms/PercentageBar";
 export default function HistoryAttemptCard({ entry }: { entry: HistoryEntry }) {
   const router = useRouter();
   const progress = entry.state === "IN_PROGRESS";
+  const percentage = progress
+    ? entry.questionCount
+      ? Math.round((entry.answeredCount / entry.questionCount) * 100)
+      : 0
+    : historyAccuracy(entry);
   return (
     <div className="rounded-xl border border-border px-4">
       <EntryButton
@@ -28,21 +34,23 @@ export default function HistoryAttemptCard({ entry }: { entry: HistoryEntry }) {
           REVIEW_SOURCE_LABELS[entry.source],
           progress
             ? `${entry.answeredCount}/${entry.questionCount}문제 · 이어서 풀기`
-            : `정답률 ${historyAccuracy(entry)}% · 결과보기`,
+            : `정답률 ${percentage == null ? "–" : `${percentage}%`} · 결과보기`,
         ]
           .filter(Boolean)
           .join(" · ")}
         onClick={() => router.push(historyHref(entry))}
       />
-      {progress && (
-        <p className="pb-3 text-body-small text-muted-foreground">
-          진행률{" "}
-          {entry.questionCount
-            ? Math.round((entry.answeredCount / entry.questionCount) * 100)
-            : 0}
-          %
-        </p>
-      )}
+      <div className="pb-3">
+        {progress && (
+          <p className="mb-2 text-body-small text-muted-foreground">
+            진행률 {percentage}%
+          </p>
+        )}
+        <PercentageBar
+          value={percentage}
+          label={`${entry.title} ${progress ? "진행률" : "정답률"}`}
+        />
+      </div>
     </div>
   );
 }

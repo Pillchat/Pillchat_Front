@@ -1,12 +1,14 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { PercentageBar } from "@/components/atoms/PercentageBar";
 import { FC, ReactNode } from "react";
 
 interface StatsCardProps {
   label: string;
   value: ReactNode;
   valueClassName?: string;
+  percentage?: number;
   color?: "default" | "green" | "red" | "gray";
 }
 
@@ -21,6 +23,7 @@ const StatsCard: FC<StatsCardProps> = ({
   label,
   value,
   valueClassName,
+  percentage,
   color = "default",
 }) => {
   return (
@@ -35,6 +38,9 @@ const StatsCard: FC<StatsCardProps> = ({
       >
         {value}
       </span>
+      {percentage != null && (
+        <PercentageBar value={percentage} label={label} className="mt-2" />
+      )}
     </div>
   );
 };
