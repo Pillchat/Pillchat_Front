@@ -3,7 +3,7 @@ import { useWeaknessQuery } from "@/hooks/queries/useWeaknessQuery";
 import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
 import WeaknessReviewFeedback from "@/components/learning/WeaknessReviewFeedback";
 import { useState } from "react";
-import Link from "next/link";
+import ResultActions from "@/components/learning/ResultActions";
 import { Trophy } from "lucide-react";
 import { AppShell, PracticeHeader } from "@/components/molecules";
 import type { LearningSession } from "@/hooks/useLearningSession";
@@ -18,7 +18,6 @@ export function PracticeResult({
   onTutorial: () => void;
 }) {
   const weakness = useWeaknessQuery();
-  const [review, setReview] = useState(false);
   const [onlyWrong, setOnlyWrong] = useState(true);
   if (!s.result) return null;
   const result = s.result;
@@ -145,14 +144,10 @@ export function PracticeResult({
             </div>
           </section>
         )}
-        <button
-          type="button"
-          onClick={() => setReview(!review)}
-          className="mt-5 h-14 w-full rounded-xl bg-primary font-bold text-white"
-        >
-          {review ? "해설 접기" : "복습하기"}
-        </button>
-        {review && (
+        <details className="mt-5 rounded-xl border p-4">
+          <summary className="cursor-pointer font-semibold">
+            문제별 해설
+          </summary>
           <section className="mt-5 space-y-4">
             <div className="flex gap-2">
               {[true, false].map((value) => (
@@ -245,39 +240,25 @@ export function PracticeResult({
                 </p>
               )}
           </section>
-        )}
-        <Link
-          href={
-            "/learning/weakness?range=all&sources=" + s.source + "&sort=due"
-          }
-          className="mt-4 block rounded-xl bg-primary p-4 text-center font-bold text-white"
-        >
-          오답 복습하기 · 약점공략
-        </Link>
-        <p className="mt-3 text-center text-sm text-muted-foreground">
+        </details>
+        <p className="my-4 text-center text-sm text-muted-foreground">
           정답률 {result.score}% · 오답과 헷갈린 문제는 약점공략에서 복습해요.
         </p>
-        <Link
-          href="/learning/history"
-          className="mt-4 block rounded-xl bg-accent/50 p-4 text-center text-sm font-bold"
-        >
-          학습 기록에서 다시 복습하기
-        </Link>
-        <button
-          type="button"
-          disabled={s.disabled}
-          onClick={() => void s.leave()}
-          className="mt-4 h-12 w-full text-sm font-bold text-muted-foreground"
-        >
-          {cbt ? "CBT 허브로 돌아가기" : "같은 조건으로 새 문제 다시 생성하기"}
-        </button>
+        <ResultActions
+          review={s.attempt?.mode === "REVIEW"}
+          source={s.source}
+          masteredAvailable={
+            !weakness.isError &&
+            !!weakness.data?.questions.some((q) => q.status === "MASTERED")
+          }
+        />
       </main>
     </>
   );
   return cbt ? (
     <div className="min-h-dvh bg-white">
       <PracticeHeader
-        title="CBT 학습 결과"
+        title={s.attempt?.mode === "REVIEW" ? "약점공략 결과" : "CBT 학습 결과"}
         onBack={() => void s.leave()}
         rightSlot={<TutorialButton onClick={onTutorial} />}
       />
@@ -286,7 +267,9 @@ export function PracticeResult({
   ) : (
     <AppShell>
       <PracticeHeader
-        title="수제 제작 문제"
+        title={
+          s.attempt?.mode === "REVIEW" ? "약점공략 결과" : "수제 제작 문제"
+        }
         onBack={() => void s.leave()}
         rightSlot={<TutorialButton onClick={onTutorial} />}
       />
