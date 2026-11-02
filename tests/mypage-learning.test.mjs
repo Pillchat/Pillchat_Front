@@ -36,28 +36,28 @@ test("missing school or year links to existing personal information form", () =>
     /정보 등록하기/,
   );
 });
-test("promotion uses server progress and distinguishes cumulative, streak and maximum grades", () => {
+test("mypage omits next-grade promotion cards while keeping missing-profile guidance", () => {
   const profile = { school: "약학대", studentGrade: "2학년" };
-  assert.match(
+  assert.equal(
     render({
       ...profile,
       nextPromotion: { nextGrade: "HANAL", target: 20, progress: 12 },
     }),
-    /누적 출석 20일 · 8일/,
+    "",
   );
-  assert.match(
+  assert.equal(
     render({
       ...profile,
       nextPromotion: { nextGrade: "DUAL", target: 50, progress: 2 },
     }),
-    /연속 출석 50일 · 48일/,
+    "",
   );
-  assert.match(
+  assert.equal(
     render({
       ...profile,
       nextPromotion: { nextGrade: null, target: 0, progress: 0 },
     }),
-    /최고 등급/,
+    "",
   );
   assert.doesNotMatch(render(profile), /최고 등급/);
 });

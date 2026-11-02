@@ -2,7 +2,7 @@
 import { useWeaknessQuery } from "@/hooks/queries/useWeaknessQuery";
 import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
 import WeaknessReviewFeedback from "@/components/learning/WeaknessReviewFeedback";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ResultActions from "@/components/learning/ResultActions";
 import { Trophy } from "lucide-react";
 import { AppShell, PracticeHeader } from "@/components/molecules";
@@ -19,8 +19,26 @@ export function PracticeResult({
 }) {
   const weakness = useWeaknessQuery();
   const [onlyWrong, setOnlyWrong] = useState(true);
+  const [explanationsOpen, setExplanationsOpen] = useState(false);
+  const [reviewRequest, setReviewRequest] = useState(0);
+  const explanationsRef = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    if (reviewRequest === 0) return;
+    explanationsRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, [reviewRequest]);
   if (!s.result) return null;
   const result = s.result;
+  const wrongCount = result.questions.filter(
+    (item) => item.grade.outcome !== "CORRECT",
+  ).length;
+  const reviewWrong = () => {
+    setOnlyWrong(true);
+    setExplanationsOpen(true);
+    setReviewRequest((request) => request + 1);
+  };
   const cbt = s.source === "CBT";
   const groups = Object.entries(
     result.questions.reduce<Record<string, { correct: number; total: number }>>(
@@ -82,7 +100,7 @@ export function PracticeResult({
           className={
             cbt
               ? "mt-6 rounded-2xl bg-accent p-6"
-              : "mt-7 rounded-2xl border border-gray-200 bg-white py-5 shadow-sm"
+              : "mt-7 rounded-2xl bg-gray-50 py-5"
           }
         >
           {cbt && (
@@ -96,7 +114,7 @@ export function PracticeResult({
             </div>
           )}
           <div
-            className={`grid grid-cols-2 sm:grid-cols-4 ${cbt ? "mt-6 gap-2" : "divide-x divide-gray-200"}`}
+            className={`grid grid-cols-2 gap-2 sm:grid-cols-4 ${cbt ? "mt-6" : ""}`}
           >
             {[
               ["정답", result.counts.correct, "text-green-600"],
@@ -120,7 +138,7 @@ export function PracticeResult({
           </div>
         </section>
         {groups.length > 0 && (
-          <section className="mt-7 rounded-2xl border border-gray-200 p-5">
+          <section className="mt-7 rounded-2xl bg-gray-50 p-5">
             <h2 className="font-bold">세부주제별 결과</h2>
             <div className="mt-4 space-y-4">
               {groups.map(([subject, counts]) => (
@@ -144,7 +162,25 @@ export function PracticeResult({
             </div>
           </section>
         )}
-        <details className="mt-5 rounded-xl border p-4">
+        <p className="my-4 text-center text-sm text-muted-foreground">
+          정답률 {result.score}% · 틀린 문제와 풀이 중 ‘헷갈려요’를 직접 표시한
+          문제는 약점공략에서 복습해요.
+        </p>
+        <ResultActions
+          review={s.attempt?.mode === "REVIEW"}
+          wrongCount={wrongCount}
+          onReviewWrong={reviewWrong}
+          masteredAvailable={
+            !weakness.isError &&
+            !!weakness.data?.questions.some((q) => q.status === "MASTERED")
+          }
+        />
+        <details
+          ref={explanationsRef}
+          open={explanationsOpen}
+          onToggle={(event) => setExplanationsOpen(event.currentTarget.open)}
+          className="mt-5 scroll-mt-24 rounded-xl bg-gray-50 p-4"
+        >
           <summary className="cursor-pointer font-semibold">
             문제별 해설
           </summary>
@@ -155,7 +191,7 @@ export function PracticeResult({
                   key={String(value)}
                   type="button"
                   onClick={() => setOnlyWrong(value)}
-                  className={`rounded-full border px-4 py-2 text-sm ${onlyWrong === value ? "border-primary text-primary" : "text-muted-foreground"}`}
+                  className={`rounded-full px-4 py-2 text-sm ${onlyWrong === value ? "bg-primary text-white" : "bg-white text-muted-foreground"}`}
                 >
                   {value ? "오답·미응답" : "전체 문제"}
                 </button>
@@ -166,7 +202,7 @@ export function PracticeResult({
               .map((item) => (
                 <article
                   key={item.question.attemptQuestionId}
-                  className="rounded-2xl border p-5"
+                  className="rounded-2xl bg-white p-5"
                 >
                   <p className="text-xs text-primary">
                     {item.question.subjectName}
@@ -207,7 +243,7 @@ export function PracticeResult({
                     {item.question.choices.map((choice, i) => (
                       <p
                         key={choice.choiceId}
-                        className={`whitespace-pre-wrap rounded-xl border p-3 text-sm ${choice.choiceId === item.grade.correctChoiceId ? "border-green-500 bg-green-50" : choice.choiceId === item.answer.selectedChoiceId ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+                        className={`whitespace-pre-wrap rounded-xl p-3 text-sm ${choice.choiceId === item.grade.correctChoiceId ? "bg-green-50" : choice.choiceId === item.answer.selectedChoiceId ? "bg-red-50" : "bg-gray-50"}`}
                       >
                         {i + 1}. {choice.text}
                       </p>
@@ -241,17 +277,6 @@ export function PracticeResult({
               )}
           </section>
         </details>
-        <p className="my-4 text-center text-sm text-muted-foreground">
-          정답률 {result.score}% · 오답과 헷갈린 문제는 약점공략에서 복습해요.
-        </p>
-        <ResultActions
-          review={s.attempt?.mode === "REVIEW"}
-          source={s.source}
-          masteredAvailable={
-            !weakness.isError &&
-            !!weakness.data?.questions.some((q) => q.status === "MASTERED")
-          }
-        />
       </main>
     </>
   );

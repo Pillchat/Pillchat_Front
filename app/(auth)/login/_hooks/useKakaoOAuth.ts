@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks";
 import { buildKakaoOAuthUrl } from "../_utils/kakaoOAuth";
 import { completeNachocodeOAuthLogin } from "../_utils/completeNachocodeOAuthLogin";
 import { isNachocodeApp } from "../_utils/nachocodeNativeOAuth";
+import { consumeLoginReturnTo } from "@/lib/client/loginReturn";
 
 export const useKakaoOAuth = (rememberMe: boolean) => {
   const router = useRouter();
@@ -24,7 +25,11 @@ export const useKakaoOAuth = (rememberMe: boolean) => {
           saveTokensAndSetupRefresh,
         });
 
-        router.replace(result === "onboarding" ? "/onboarding/oauth" : "/");
+        router.replace(
+          result === "onboarding"
+            ? "/onboarding/oauth"
+            : consumeLoginReturnTo(),
+        );
         return;
       }
 

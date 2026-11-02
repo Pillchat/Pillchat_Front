@@ -382,7 +382,9 @@ test("result shows topic breakdown, confusion count and weakness destination", (
   assert.match(markup, /당뇨/);
   assert.match(markup, /헷갈림/);
   assert.match(markup, /정답률 50%/);
-  assert.match(markup, /sources=HANDCRAFTED/);
-  assert.match(markup, /문제 풀기로 돌아가기/);
+  assert.match(markup, /이번 세트 오답 해설/);
+  assert.match(markup, /href="\/learning\/weakness"/);
+  assert.match(markup, /전체 약점공략/);
+  assert.doesNotMatch(markup, /sources=HANDCRAFTED/);
   assert.doesNotMatch(markup, /같은 조건으로 새 문제/);
 });

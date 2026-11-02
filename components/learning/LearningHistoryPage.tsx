@@ -1,9 +1,15 @@
 "use client";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { PracticeHeader } from "@/components/molecules/PracticeHeader";
 import StatsCard from "@/app/(questionbank)/questionbank/_components/StatsCard";
 import { Button } from "@/components/ui/button";
-import { HISTORY_FILTERS, type HistoryFilter } from "@/lib/learning/history";
+import {
+  HISTORY_FILTERS,
+  historyListHref,
+  readHistoryFilter,
+  type HistoryFilter,
+} from "@/lib/learning/history";
 import { useLearningHistory } from "@/hooks/queries/useLearningHistory";
 import HistoryAttemptCard from "@/components/learning/HistoryAttemptCard";
 export default function LearningHistoryPage({
@@ -12,7 +18,10 @@ export default function LearningHistoryPage({
   view: "recent" | "all";
 }) {
   const recent = view === "recent";
-  const [filter, setFilter] = useState<HistoryFilter>("all");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const filter = readHistoryFilter(searchParams.get("filter"));
+  const returnTo = historyListHref(view, filter);
   const query = useLearningHistory(filter);
   const summary = query.data?.pages[0]?.summary;
   const items = query.data?.pages.flatMap((page) => page.items) ?? [];
@@ -21,6 +30,7 @@ export default function LearningHistoryPage({
       <PracticeHeader
         title={recent ? "최근 학습" : "전체 학습 기록"}
         backHref={recent ? "/questionbank" : "/mypage"}
+        separator={false}
       />
       <main className="space-y-6 px-6 py-6" aria-busy={query.isPending}>
         {!recent && (
@@ -45,9 +55,16 @@ export default function LearningHistoryPage({
           {Object.entries(HISTORY_FILTERS).map(([key, label]) => (
             <Button
               key={key}
-              variant={filter === key ? "default" : "outline"}
+              variant={filter === key ? "default" : "ghost"}
+              className={
+                filter === key ? undefined : "bg-gray-100 text-muted-foreground"
+              }
               aria-pressed={filter === key}
-              onClick={() => setFilter(key as HistoryFilter)}
+              onClick={() =>
+                router.replace(historyListHref(view, key as HistoryFilter), {
+                  scroll: false,
+                })
+              }
             >
               {label}
             </Button>
@@ -74,13 +91,14 @@ export default function LearningHistoryPage({
             <HistoryAttemptCard
               key={`${entry.source}:${entry.attemptId}`}
               entry={entry}
+              returnTo={returnTo}
             />
           ))}
         </div>
         {query.hasNextPage && (
           <Button
-            className="w-full"
-            variant="outline"
+            className="w-full bg-gray-100"
+            variant="ghost"
             disabled={query.isFetchingNextPage}
             onClick={() => void query.fetchNextPage()}
           >

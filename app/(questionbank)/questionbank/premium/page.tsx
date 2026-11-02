@@ -265,7 +265,7 @@ const PremiumPage = () => {
 
   return (
     <div className="flex h-dvh flex-col">
-      <CustomHeader title="고퀄리티 AI 문제 제작" showIcon />
+      <CustomHeader title="주제로 문제 만들기" showIcon />
 
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {/* 과목 선택 */}
@@ -408,10 +408,10 @@ const PremiumPage = () => {
             비워두면 선택한 과목 전체에서 출제해요.
           </p>
           <Link
-            href="/questionbank/generate"
-            className="block rounded-xl border p-4 text-sm font-medium"
+            href="/questionbank/generate/pdf"
+            className="block rounded-xl bg-primary-980 p-4 text-sm font-medium text-primary"
           >
-            내 학습자료를 업로드해서 생성하기
+            PDF 학습자료로 만들기
           </Link>
         </section>
 

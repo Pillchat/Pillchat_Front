@@ -31,7 +31,8 @@ const rules = [
   {
     label: "헷갈림 표시",
     destination: "약점공략",
-    description: "맞혔어도 헷갈렸다면 약점으로 모아 복습해요.",
+    description:
+      "풀이 중 ‘헷갈려요’를 직접 표시한 문제는 맞혔어도 약점으로 모아요.",
     icon: CircleHelp,
   },
   {
@@ -50,20 +51,24 @@ export default async function Page({
   const filters = readWeaknessFilters(await searchParams);
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col bg-white">
-      <PracticeHeader title="학습 분류 기준" backHref={weaknessHref(filters)} />
+      <PracticeHeader
+        title="학습 분류 기준"
+        backHref={weaknessHref(filters)}
+        separator={false}
+      />
       <main className="px-6 pb-8 pt-6">
         <h1 className="text-headline-medium">학습 분류 기준</h1>
         <p className="mt-2 text-body-medium text-muted-foreground">
-          풀이 결과와 헷갈림 표시를 기준으로 학습할 곳을 안내해요.
+          풀이 결과와 ‘헷갈려요’ 표시를 기준으로 학습할 곳을 안내해요.
         </p>
-        <ol className="mt-6 divide-y divide-border">
+        <ol className="mt-6 space-y-3">
           {rules.map(({ label, destination, description, icon: Icon }) => (
-            <li key={label} className="flex gap-4 py-5">
+            <li key={label} className="flex gap-4 rounded-xl bg-gray-50 p-4">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-980">
                 <Icon
                   aria-hidden="true"
                   className="h-6 w-6 text-primary"
-                  strokeWidth={1.5}
+                  strokeWidth={2}
                 />
               </span>
               <div className="min-w-0">

@@ -11,7 +11,7 @@ export default function QuestionBankPage() {
   const router = useRouter();
   return (
     <AppShell>
-      <PracticeHeader title="문제 풀기" backHref="/" />
+      <PracticeHeader title="문제 풀기" backHref="/" separator={false} />
       <main className="space-y-6 px-6 py-6">
         <p className="rounded-xl bg-primary-980 p-4 text-body-medium">
           새 문제는 한 번도 풀지 않은 문제만 출제돼요. 이미 푼 문제는 자동으로
@@ -21,7 +21,7 @@ export default function QuestionBankPage() {
           <h2 id="practice-options" className="text-headline-small">
             학습 형태
           </h2>
-          <div className="divide-y divide-border">
+          <div>
             {[
               [
                 "수제 제작 문제",
@@ -65,7 +65,9 @@ export default function QuestionBankPage() {
               <Layers
                 aria-hidden="true"
                 className="h-8 w-8 text-primary"
-                strokeWidth={1.5}
+                size={32}
+                strokeWidth={2}
+                absoluteStrokeWidth
               />
             }
             onClick={() => router.push("/flashcards")}

@@ -1,14 +1,16 @@
-import { readWeaknessFilters } from "@/lib/learning/weakness";
+import { readWeaknessFilters, weaknessHref } from "@/lib/learning/weakness";
 import WeaknessSettings from "../_components/WeaknessSettings";
+import { WeaknessAccess } from "../_components/WeaknessAccess";
 
 export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const filters = readWeaknessFilters(await searchParams);
   return (
-    <WeaknessSettings
-      initialFilters={readWeaknessFilters(await searchParams)}
-    />
+    <WeaknessAccess returnTo={weaknessHref(filters, "areas")}>
+      <WeaknessSettings initialFilters={filters} />
+    </WeaknessAccess>
   );
 }

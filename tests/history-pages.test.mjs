@@ -17,6 +17,7 @@ const mocks = {
   },
   "@/lib/navigation": { useRouter: () => ({ push() {} }) },
   "next/navigation": {
+    useSearchParams: () => new URLSearchParams(),
     redirect() {
       throw new Error("Unexpected redirect");
     },
@@ -115,5 +116,8 @@ test("mypage full-history item opens history and uses its dedicated colored icon
   assert.ok(item);
   item.props.onClick();
   assert.deepEqual(navigation, ["/learning/history"]);
-  assert.equal(item.props.iconSrc, "/icons/learning-history-colored.svg");
+  assert.equal(item.props.iconSrc, "/icons/terms.svg");
+  const account = nodes(MyPage()).find((n) => n.props?.title === "계정 연결");
+  assert.match(account.props.description, /소셜 계정/);
+  assert.doesNotMatch(account.props.description, /카카오/);
 });

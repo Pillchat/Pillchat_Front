@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks";
 import { buildGoogleOAuthUrl } from "../_utils/googleOAuth";
 import { completeNachocodeOAuthLogin } from "../_utils/completeNachocodeOAuthLogin";
 import { isNachocodeApp } from "../_utils/nachocodeNativeOAuth";
+import { consumeLoginReturnTo } from "@/lib/client/loginReturn";
 
 export const useGoogleOAuth = (rememberMe: boolean) => {
   const router = useRouter();
@@ -24,7 +25,11 @@ export const useGoogleOAuth = (rememberMe: boolean) => {
           saveTokensAndSetupRefresh,
         });
 
-        router.replace(result === "onboarding" ? "/onboarding/oauth" : "/");
+        router.replace(
+          result === "onboarding"
+            ? "/onboarding/oauth"
+            : consumeLoginReturnTo(),
+        );
         return;
       }
 

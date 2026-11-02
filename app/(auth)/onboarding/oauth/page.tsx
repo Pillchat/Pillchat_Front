@@ -8,6 +8,10 @@ import { StepHeader } from "@/components/molecules";
 import type { SignupGrade, SignupSource } from "@/constants/signup";
 import { useAuth } from "@/hooks";
 import { clearSignupDraft } from "@/lib/client/signupDraft";
+import {
+  consumeLoginReturnTo,
+  loginReturnHref,
+} from "@/lib/client/loginReturn";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -45,7 +49,7 @@ const OAuthOnboardingPage = () => {
     const session = getPendingOAuthSignup();
 
     if (!session) {
-      router.replace("/login");
+      router.replace(loginReturnHref());
       return;
     }
 
@@ -90,7 +94,7 @@ const OAuthOnboardingPage = () => {
     }
 
     clearSignupDraft();
-    router.replace("/login");
+    router.replace(loginReturnHref());
   };
 
   const handleCompleteSignup = async () => {
@@ -146,7 +150,7 @@ const OAuthOnboardingPage = () => {
       );
       clearPendingOAuthSignup();
       clearSignupDraft();
-      router.replace("/");
+      router.replace(consumeLoginReturnTo());
     } catch (caughtError: unknown) {
       setError(
         caughtError instanceof Error

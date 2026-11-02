@@ -17,6 +17,10 @@ import { FcGoogle } from "react-icons/fc";
 import { RiKakaoTalkFill } from "react-icons/ri";
 import type { LoginFormData } from "./types";
 import { clearSignupDraft } from "@/lib/client/signupDraft";
+import {
+  consumeLoginReturnTo,
+  rememberLoginReturnTo,
+} from "@/lib/client/loginReturn";
 
 export const LoginPageClient: FC = () => {
   const router = useRouter();
@@ -55,18 +59,19 @@ export const LoginPageClient: FC = () => {
   };
 
   useEffect(() => {
+    rememberLoginReturnTo();
     const restoreLogin = async () => {
       try {
         const token = getToken();
         if (token && !isTokenExpired(token)) {
-          router.replace("/");
+          router.replace(consumeLoginReturnTo());
           return;
         }
 
         if (getRefreshToken()) {
           const refreshed = await refreshTokens();
           if (refreshed) {
-            router.replace("/");
+            router.replace(consumeLoginReturnTo());
             return;
           }
         }
