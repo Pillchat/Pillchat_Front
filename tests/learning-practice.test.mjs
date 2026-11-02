@@ -397,7 +397,7 @@ function handcraftedView(session) {
   };
 }
 
-test("completed handcrafted grading, submission and resumption load result analysis without dropping the attempt", async () => {
+test("completed handcrafted grading preserves explanations and only opens analysis after the result button", async () => {
   for (const action of ["grade", "submitSection", "resume"]) {
     const real = { ...attempt, source: "HANDCRAFTED" };
     const completed = {
@@ -413,7 +413,15 @@ test("completed handcrafted grading, submission and resumption load result analy
       if (url === "/api/learning/attempts")
         return { items: [], nextCursor: null };
       if (method === "GET") return action === "resume" ? completed : real;
-      return { attempt: completed };
+      return {
+        attempt: completed,
+        grade: {
+          outcome: "CORRECT",
+          correctChoiceId: "opaque-A",
+          explanation: "마지막 해설",
+          choices: [],
+        },
+      };
     }, "HANDCRAFTED");
     await h.render().resume(real.attemptId);
     if (action !== "resume") await h.render()[action](false);
@@ -429,11 +437,25 @@ test("completed handcrafted grading, submission and resumption load result analy
     view.runEffects();
     await new Promise(setImmediate);
     assert.equal(h.render().attempt.attemptId, real.attemptId);
-    assert.ok(h.render().result);
+    assert.equal(h.render().result, null);
     assert.equal(
       calls.some(({ url }) => url.endsWith("/result")),
-      true,
+      false,
     );
+    if (action === "grade") {
+      const html = renderToStaticMarkup(view.tree);
+      assert.ok(html.includes("마지막 해설"));
+      assert.ok(html.includes("정답입니다."));
+      assert.equal(session.attempt.savedAnswers[0].finalized, true);
+    }
+    const resultButton = view.nodes.find(
+      (node) => node.type === "button" && node.props.children === "결과 보기",
+    );
+    assert.ok(resultButton);
+    assert.equal(!!resultButton.props.disabled, false);
+    resultButton.props.onClick();
+    await new Promise(setImmediate);
+    assert.ok(h.render().result);
   }
 });
 
@@ -462,21 +484,36 @@ test("missing handcrafted questions or answers show the exception and return but
   }
 });
 
-test("handcrafted completion only requests published results after pending work finishes", () => {
+test("completed resumption never automatically opens results and only offers published results", () => {
   for (const resultAvailable of [true, false]) {
     let requested = 0;
     const session = {
       ...baseSession,
       source: "HANDCRAFTED",
-      attempt: { ...attempt, state: "COMPLETED", resultAvailable },
+      attempt: {
+        ...attempt,
+        state: "COMPLETED",
+        resultAvailable,
+        currentSectionQuestions: [],
+        savedAnswers: [],
+      },
       showResult: async () => {
         requested++;
       },
     };
-    handcraftedView({ ...session, disabled: true }).runEffects();
+    const view = handcraftedView(session);
+    view.runEffects();
     assert.equal(requested, 0);
-    handcraftedView(session).runEffects();
+    const button = view.nodes.find(
+      (node) => node.type === "button" && node.props.children === "결과 보기",
+    );
+    assert.equal(!!button, resultAvailable);
+    if (button) button.props.onClick();
     assert.equal(requested, resultAvailable ? 1 : 0);
+    const blocked = handcraftedView({ ...session, disabled: true }).nodes.find(
+      (node) => node.type === "button" && node.props.children === "결과 보기",
+    );
+    if (blocked) assert.equal(blocked.props.disabled, true);
   }
 });
 
@@ -536,4 +573,35 @@ test("CBT start sends explicit problem count and retry uses only the selected pr
   assert.equal(posts[2].url, "/api/learning/cbt/attempts/previous-id/retry");
   assert.equal(posts[2].body.questionCount, undefined);
   assert.ok(posts[2].body.idempotencyKey);
+});
+
+test("revealed handcrafted answers retain their explanation without claiming a wrong submission", () => {
+  const view = handcraftedView({
+    ...baseSession,
+    source: "HANDCRAFTED",
+    attempt: {
+      ...attempt,
+      source: "HANDCRAFTED",
+      state: "COMPLETED",
+      resultAvailable: true,
+      savedAnswers: [{ ...a, finalized: true }],
+    },
+    grades: {
+      [q.attemptQuestionId]: {
+        outcome: "REVEALED",
+        correctChoiceId: "opaque-A",
+        explanation: "공개된 해설",
+        choices: [],
+      },
+    },
+  });
+  const html = renderToStaticMarkup(view.tree);
+  assert.ok(html.includes("정답을 확인했어요."));
+  assert.ok(html.includes("공개된 해설"));
+  assert.equal(html.includes("오답입니다."), false);
+  assert.ok(
+    view.nodes.some(
+      (n) => n.type === "button" && n.props.children === "결과 보기",
+    ),
+  );
 });

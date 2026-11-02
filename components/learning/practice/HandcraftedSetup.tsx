@@ -56,6 +56,7 @@ export default function HandcraftedSetup({
     !availability.isError &&
     !!subject &&
     questionCount >= 1 &&
+    !shortage &&
     available > 0;
   const selectClass =
     "mt-3 h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium disabled:bg-gray-50 disabled:text-muted-foreground";
@@ -87,7 +88,7 @@ export default function HandcraftedSetup({
               .startHandcrafted(
                 subject.subjectId,
                 topic?.topicId ?? "",
-                Math.min(questionCount, available),
+                questionCount,
               )
               .then((started) => {
                 if (!started) void availability.refetch();
@@ -195,7 +196,19 @@ export default function HandcraftedSetup({
                       type="button"
                       key={value}
                       aria-pressed={count === value}
-                      onClick={() => setCount(value)}
+                      disabled={
+                        availability.isPending ||
+                        availability.isError ||
+                        (value === "all" ? available < 1 : value > available)
+                      }
+                      onClick={() => {
+                        if (
+                          !availability.isPending &&
+                          !availability.isError &&
+                          (value === "all" ? available > 0 : value <= available)
+                        )
+                          setCount(value);
+                      }}
                       className={`h-11 rounded-xl border text-sm font-semibold disabled:opacity-40 ${count === value ? "border-primary bg-brandSecondary text-primary" : "border-gray-200 text-muted-foreground"}`}
                     >
                       {value === "all"
@@ -279,7 +292,7 @@ export default function HandcraftedSetup({
           {s.busy
             ? "문제를 준비하는 중..."
             : shortage && available > 0
-              ? `새 문제 ${available}개로 시작`
+              ? "문항 수를 다시 선택해주세요"
               : "새 문제 풀기"}
         </button>
       </form>

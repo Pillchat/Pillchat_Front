@@ -79,6 +79,25 @@ export function useLearningSession(source: Source) {
         memoRef.current = {};
         setMemos({});
       }
+      // Completed single-question grading omits the section; retain its prompts until results are opened.
+      const previous = current.current;
+      if (
+        (source === "HANDCRAFTED" || next.mode === "REVIEW") &&
+        next.state === "COMPLETED" &&
+        previous?.attemptId === next.attemptId &&
+        !next.currentSectionQuestions.length
+      ) {
+        next = {
+          ...next,
+          currentSectionId: previous.currentSectionId,
+          currentQuestionId: previous.currentQuestionId,
+          currentSectionQuestions: previous.currentSectionQuestions,
+          savedAnswers: previous.savedAnswers.map((answer) => ({
+            ...answer,
+            finalized: true,
+          })),
+        };
+      }
       current.current = next;
       setAttempt(next);
       setNow(Date.now());
