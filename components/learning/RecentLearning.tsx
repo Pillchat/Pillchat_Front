@@ -6,7 +6,10 @@ export default function RecentLearning() {
   const query = useLearningHistory("all", 2);
   const items = query.data?.pages[0]?.items;
   return (
-    <section className="space-y-4" aria-busy={query.isPending}>
+    <section
+      className="space-y-4 rounded-2xl bg-gray-50 p-4"
+      aria-busy={query.isPending}
+    >
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-headline-small">최근 학습</h2>
         <Link href="/learning/recent" className="text-body-medium text-primary">
