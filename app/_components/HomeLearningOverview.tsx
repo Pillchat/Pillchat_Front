@@ -135,7 +135,10 @@ export default function HomeLearningOverview({
         )}
       </section>
 
-      <section aria-labelledby="learning-shortcuts-title">
+      <section
+        aria-labelledby="learning-shortcuts-title"
+        className="rounded-2xl bg-gray-50 p-4"
+      >
         <h2 id="learning-shortcuts-title" className="text-headline-small">
           학습 바로가기
         </h2>
