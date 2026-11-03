@@ -135,14 +135,11 @@ export default function HomeLearningOverview({
         )}
       </section>
 
-      <section
-        aria-labelledby="learning-shortcuts-title"
-        className="rounded-2xl bg-gray-50 p-4"
-      >
+      <section aria-labelledby="learning-shortcuts-title">
         <h2 id="learning-shortcuts-title" className="text-headline-small">
           학습 바로가기
         </h2>
-        <div className="mt-1">
+        <div className="mt-3 rounded-2xl bg-gray-50 p-4">
           <EntryButton
             compact
             icon={
