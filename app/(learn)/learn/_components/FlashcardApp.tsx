@@ -1164,7 +1164,7 @@ function FlashcardLibraryApp() {
       <AppShell bottomNav={false} bottomSpacing="none">
         <PracticeHeader
           title="AI 플래시카드"
-          backHref="/"
+          backHref="/questionbank"
           separator={false}
           rightSlot={<FlashcardTutorialLink />}
         />
@@ -1179,7 +1179,7 @@ function FlashcardLibraryApp() {
     <AppShell bottomNav={false} bottomSpacing="none">
       <PracticeHeader
         title="AI 플래시카드"
-        backHref="/"
+        backHref="/questionbank"
         separator={false}
         rightSlot={<FlashcardTutorialLink />}
       />
