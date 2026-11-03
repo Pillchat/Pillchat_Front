@@ -17,14 +17,11 @@ export default function QuestionBankPage() {
           새 문제는 한 번도 풀지 않은 문제만 출제돼요. 이미 푼 문제는 자동으로
           제외되고, 틀린 문제는 약점공략에 쌓여요.
         </p>
-        <section
-          aria-labelledby="practice-options"
-          className="rounded-2xl bg-gray-50 p-4"
-        >
+        <section aria-labelledby="practice-options">
           <h2 id="practice-options" className="text-headline-small">
             학습 형태
           </h2>
-          <div>
+          <div className="mt-3 rounded-2xl bg-gray-50 p-4">
             {[
               [
                 "수제 제작 문제",
