@@ -29,7 +29,7 @@ export default function WeaknessSettings({
   const query = useWeaknessQuery();
   const count = weaknessCount(query.data, filters);
   const choiceClass =
-    "flex cursor-pointer items-center gap-3 rounded-xl bg-gray-50 px-4 py-3 text-body-medium has-[:checked]:bg-primary-980 has-[:checked]:text-primary";
+    "flex min-h-12 cursor-pointer items-center gap-3 rounded-xl py-3 text-body-medium has-[:checked]:font-medium has-[:checked]:text-primary";
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col bg-white">
       <PracticeHeader

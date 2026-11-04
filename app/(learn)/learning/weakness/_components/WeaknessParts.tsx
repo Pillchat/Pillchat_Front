@@ -8,7 +8,7 @@ export function WeaknessNotice({
   children: React.ReactNode;
 }) {
   return (
-    <aside className="flex gap-3 rounded-xl bg-primary-980 p-4">
+    <aside className="flex gap-3">
       <Info
         aria-hidden="true"
         className="mt-0.5 h-5 w-5 shrink-0 text-primary"
@@ -34,13 +34,9 @@ export function WeaknessCount({
   children?: React.ReactNode;
 }) {
   return (
-    <section
-      aria-label={label}
-      aria-busy={pending}
-      className="rounded-xl bg-gray-50 p-5"
-    >
-      <p className="text-body-medium text-muted-foreground">{label}</p>
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+    <section aria-label={label} aria-busy={pending} className="py-1">
+      <p className="text-title-large text-foreground">{label}</p>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
         <p
           aria-live="polite"
           className="text-headline-large tabular-nums text-foreground"
@@ -50,7 +46,7 @@ export function WeaknessCount({
         </p>
         {children}
       </div>
-      <p className="mt-1 text-body-small text-muted-foreground">
+      <p className="mt-3 text-body-small text-muted-foreground">
         틀린 문제와 ‘헷갈려요’를 표시한 문제 중 오늘 복습 가능한 문제예요.
       </p>
     </section>

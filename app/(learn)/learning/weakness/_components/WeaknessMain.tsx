@@ -111,15 +111,15 @@ export default function WeaknessMain({
   return (
     <AppShell className="flex flex-col">
       <PracticeHeader title="약점공략" backHref="/" separator={false} />
-      <main className="space-y-6 px-6 pb-8 pt-5">
+      <main className="space-y-8 px-6 pb-8 pt-5">
         <h1 className="sr-only">약점공략</h1>
         <WeaknessCount
-          label="오늘 복습할"
+          label="오늘 복습할 문제"
           count={count}
           pending={query.isPending}
         >
           <Button
-            className="shrink-0"
+            className="h-11 shrink-0 px-5 text-title-small"
             disabled={query.isPending || !practiceQuestions.length || pending}
             onClick={() =>
               sources.length === 1 ? launch(sources[0]) : setChooseSource(true)
@@ -152,16 +152,13 @@ export default function WeaknessMain({
             </button>
           </p>
         )}
-        <section
-          aria-label="나의 약점 분야"
-          className="space-y-4 rounded-2xl bg-gray-50 p-4"
-        >
+        <section aria-label="나의 약점 분야" className="space-y-4">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-headline-small">나의 약점 분야</h2>
             <Link
               href={weaknessHref(filters, "areas")}
               aria-label="나의 약점 분야 설정"
-              className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-white px-3 text-body-small text-foreground"
+              className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl text-body-small text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <SettingsIcon
                 aria-hidden="true"
@@ -176,14 +173,14 @@ export default function WeaknessMain({
           </p>
           <div className="min-w-0" aria-busy={query.isPending}>
             {fields.length > 0 ? (
-              <ol className="space-y-3" aria-label="오답률 상위 3개 분야">
+              <ol className="space-y-4" aria-label="오답률 상위 3개 분야">
                 {fields.slice(0, 3).map((field) => (
                   <li key={field.subject}>
                     <div className="flex items-start justify-between gap-3 text-body-medium">
                       <span className="min-w-0 break-words">
                         {field.subject}
                       </span>
-                      <strong className="shrink-0 tabular-nums text-primary">
+                      <strong className="shrink-0 text-title-large tabular-nums text-foreground">
                         {Math.round(field.wrongRate * 10) / 10}%
                       </strong>
                     </div>
@@ -207,7 +204,7 @@ export default function WeaknessMain({
           </div>
           <Link
             href={weaknessHref(filters, "mastered")}
-            className="flex items-center justify-between gap-3 rounded-xl bg-white p-4"
+            className="flex min-h-14 items-center justify-between gap-3 rounded-xl py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <span>
               <span className="block text-body-medium">
@@ -237,7 +234,7 @@ export default function WeaknessMain({
             <Link
               href={weaknessHref(filters, "classification")}
               aria-label="학습 분류 기준 보기"
-              className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-xl bg-gray-50 px-3 text-body-small text-muted-foreground"
+              className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-xl text-body-small text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <CircleHelp
                 aria-hidden="true"
@@ -254,7 +251,7 @@ export default function WeaknessMain({
           <div
             role="group"
             aria-label="문제풀이 목록 보기"
-            className="mt-4 flex gap-1 rounded-xl bg-gray-50 p-1"
+            className="mt-4 flex gap-6"
           >
             {(
               [
@@ -271,7 +268,7 @@ export default function WeaknessMain({
                   setTab(value);
                   setSubject(null);
                 }}
-                className={`flex-1 rounded-lg py-3 text-title-small ${tab === value ? "bg-white text-primary" : "text-muted-foreground"}`}
+                className={`min-h-11 px-1 text-title-small underline-offset-8 ${tab === value ? "text-primary underline decoration-2" : "text-muted-foreground"}`}
               >
                 {label}
               </button>
@@ -300,7 +297,7 @@ export default function WeaknessMain({
                   key={name}
                   type="button"
                   onClick={() => setSubject(name)}
-                  className="mt-3 flex w-full items-center justify-between gap-3 rounded-xl bg-gray-50 p-4 text-left"
+                  className="mt-3 flex min-h-14 w-full items-center justify-between gap-3 rounded-xl py-3 text-left"
                 >
                   <span className="min-w-0 flex-1 text-title-large">
                     {name}
@@ -347,7 +344,7 @@ export default function WeaknessMain({
                   return (
                     <div
                       key={collection.collectionRef}
-                      className="mt-3 rounded-xl bg-gray-50 p-4"
+                      className="mt-6 space-y-2"
                     >
                       <button
                         key={collection.collectionRef}
@@ -356,12 +353,10 @@ export default function WeaknessMain({
                         onClick={() =>
                           launch(collection.source, collection.collectionRef)
                         }
-                        className={`flex w-full items-center justify-between gap-3 pb-4 text-left disabled:cursor-default ${pending ? "opacity-50" : ""}`}
+                        className={`flex min-h-14 w-full items-center justify-between gap-4 rounded-xl py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-default ${pending ? "opacity-50" : ""}`}
                       >
                         <span className="min-w-0 flex-1">
-                          <span
-                            className={`block break-words text-title-large ${canPractice ? "text-foreground" : "text-muted-foreground"}`}
-                          >
+                          <span className="block break-words text-title-large text-foreground">
                             {collection.title}
                           </span>
                           <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body-small text-muted-foreground">
@@ -383,18 +378,19 @@ export default function WeaknessMain({
                             </span>
                           </span>
                         </span>
-                        <ChevronRight
-                          aria-hidden="true"
-                          className="h-5 w-5 shrink-0 text-muted-foreground"
-                        />
+                        <span
+                          className={`shrink-0 text-title-small ${canPractice ? "text-primary" : "text-muted-foreground"}`}
+                        >
+                          {canPractice ? "복습하기" : "내일 복습"}
+                        </span>
                       </button>
-                      <details className="group text-body-small text-muted-foreground">
-                        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-xl bg-white px-3 py-3 [&::-webkit-details-marker]:hidden">
+                      <details className="group">
+                        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-xl py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-details-marker]:hidden">
                           <span>
                             <span className="block text-title-small text-foreground">
                               문제별 복습 현황
                             </span>
-                            <span className="mt-1 block">
+                            <span className="mt-1 block text-body-small text-muted-foreground">
                               {items.length}문제 · 복습 일정과 연속 정답 보기
                             </span>
                           </span>
@@ -403,21 +399,41 @@ export default function WeaknessMain({
                             className="h-5 w-5 shrink-0 transition-transform group-open:rotate-180"
                           />
                         </summary>
-                        <ul className="mt-3 space-y-3">
-                          {items.map((q) => (
-                            <li key={q.id} className="rounded-xl bg-white p-3">
-                              <p>
-                                {q.subject}
-                                {q.topic ? ` · ${q.topic}` : ""} ·{" "}
-                                {WEAKNESS_SOURCE_LABELS[q.source]}
+                        <ul className="mt-2 space-y-4 pb-2">
+                          {items.map((q, index) => (
+                            <li key={q.id} className="space-y-2 pl-3">
+                              <p className="text-title-small text-foreground">
+                                {index + 1}. {q.subject}
+                                {q.topic ? ` · ${q.topic}` : ""}
                               </p>
-                              <p className="mt-1">
+                              <p className="text-body-small text-foreground">
+                                다음 복습{" "}
+                                {weaknessReviewDay(
+                                  q.dueDate,
+                                  query.data?.serverDate,
+                                ) ??
+                                  q.dueDate ??
+                                  "–"}
+                              </p>
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                <span className="text-body-small text-muted-foreground">
+                                  연속 정답
+                                </span>
+                                <strong className="text-title-small tabular-nums text-foreground">
+                                  {q.consecutiveCorrect}/2회
+                                </strong>
+                                <span aria-hidden="true" className="flex gap-1">
+                                  {[1, 2].map((step) => (
+                                    <span
+                                      key={step}
+                                      className={`h-1.5 w-6 rounded-full ${q.consecutiveCorrect >= step ? "bg-primary" : "bg-gray-100"}`}
+                                    />
+                                  ))}
+                                </span>
+                              </div>
+                              <p className="text-body-small text-muted-foreground">
                                 최근 오답{" "}
-                                {koreanStudyDate(q.lastWrongAt) ?? "없음"} ·
-                                연속 정답 {q.consecutiveCorrect}/2회
-                              </p>
-                              <p className="mt-1">
-                                다음 복습 {q.dueDate ?? "–"}
+                                {koreanStudyDate(q.lastWrongAt) ?? "없음"}
                               </p>
                             </li>
                           ))}
@@ -441,7 +457,6 @@ export default function WeaknessMain({
             <Button
               key={source}
               variant="ghost"
-              className="bg-gray-50"
               disabled={pending}
               onClick={() => launch(source)}
             >
