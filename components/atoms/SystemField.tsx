@@ -16,14 +16,20 @@ export function SystemField({
   const normalizedIconSrc = iconSrc.startsWith("/") ? iconSrc : `/${iconSrc}`;
 
   return (
-    <div className="flex w-full flex-row items-center gap-2" onClick={onClick}>
-      <img src={normalizedIconSrc} alt={title} className="h-10 w-10" />
-      <div className="flex flex-col">
-        <p className={`text-lg ${textColor}`}>{title}</p>
-        <p className="text-sm font-light text-button-foreground">
-          {description}
-        </p>
+    <button
+      type="button"
+      className="flex min-h-14 w-full items-center gap-3 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      onClick={onClick}
+    >
+      <img src={normalizedIconSrc} alt="" className="h-10 w-10 shrink-0" />
+      <div className="min-w-0 flex-1">
+        <p className={`text-title-large ${textColor}`}>{title}</p>
+        {description && (
+          <p className="mt-1 text-body-medium text-muted-foreground">
+            {description}
+          </p>
+        )}
       </div>
-    </div>
+    </button>
   );
 }
