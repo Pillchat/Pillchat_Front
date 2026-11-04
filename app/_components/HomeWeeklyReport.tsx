@@ -25,7 +25,7 @@ export default function HomeWeeklyReport({
         주간 리포트
       </h2>
       {weekly ? (
-        <div className="mt-3 rounded-xl bg-primary-980 p-4">
+        <div className="mt-3">
           <p className="text-body-small text-muted-foreground">
             {weekly.weekStart.replaceAll("-", ".")}부터 · 월요일~일요일
           </p>
@@ -68,7 +68,7 @@ export default function HomeWeeklyReport({
                 ) : (
                   <span
                     aria-hidden="true"
-                    className="block rounded-lg bg-white py-2 text-body-small tabular-nums"
+                    className="block py-2 text-body-small tabular-nums"
                   >
                     0
                   </span>
@@ -89,7 +89,7 @@ export default function HomeWeeklyReport({
           )}
         </div>
       ) : (
-        <p className="mt-3 rounded-xl bg-gray-50 p-4 text-body-medium text-muted-foreground">
+        <p className="mt-3 py-2 text-body-medium text-muted-foreground">
           {pending
             ? "이번 주 학습 기록을 불러오는 중이에요."
             : isError

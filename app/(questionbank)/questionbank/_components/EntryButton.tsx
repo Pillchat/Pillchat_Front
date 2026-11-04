@@ -21,13 +21,13 @@ const EntryButton: FC<EntryButtonProps> = ({
 
   return (
     <button
-      className={`flex w-full items-center text-left transition-transform active:scale-[0.98] disabled:cursor-default disabled:opacity-60 ${compact ? "gap-3.5 py-3.5 tracking-[0.01em]" : "gap-3 py-4"}`}
+      className={`flex w-full items-center rounded-xl text-left transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98] disabled:cursor-default disabled:opacity-60 ${compact ? "gap-3.5 py-3.5 tracking-[0.01em]" : "gap-3 py-4"}`}
       onClick={onClick}
       disabled={isDisabled}
       aria-disabled={isDisabled}
       type="button"
     >
-      <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-accent text-primary-600">
+      <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center text-primary">
         {icon}
       </div>
       <div className="min-w-0 flex-1">
