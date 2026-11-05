@@ -8,7 +8,7 @@ const mocks = {
   "@/lib/navigation": { useRouter: () => ({ push: () => {} }) },
   "next/link": ({ children, href, prefetch, ...props }) =>
     React.createElement("a", { href, ...props }, children),
-  "lucide-react": { RotateCcw: Icon, Layers: Icon },
+  "lucide-react": { RotateCcw: Icon, Layers: Icon, ChevronRight: Icon },
   "@/public/icons/home.svg": Icon,
   "@/public/icons/archive.svg": Icon,
   "@/public/icons/user.svg": Icon,
@@ -46,13 +46,16 @@ test("problem hub reuses entries for three practice modes and a separate flashca
     {
       ...mocks,
       "@/lib/navigation": { useRouter: () => ({ push: (p) => calls.push(p) }) },
-      "@/components/learning/RecentLearning": () => null,
+      "@/components/learning/PracticeResume": () => null,
+      "@/components/learning/RecentLearning": () =>
+        React.createElement("section", null, "최근 학습 기록"),
     },
   )("app/(questionbank)/questionbank/page.tsx").default;
   const tree = View();
   const html = renderToStaticMarkup(tree);
   for (const text of ["학습 형태", "암기 학습", "AI 플래시카드"])
     assert.ok(html.includes(text));
+  assert.ok(html.indexOf("암기 학습") < html.indexOf("최근 학습 기록"));
   const nodes = (t) =>
     Array.isArray(t)
       ? t.flatMap(nodes)
