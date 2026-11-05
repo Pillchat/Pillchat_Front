@@ -208,6 +208,9 @@ test("dashboard query scopes cached data to the current user and uses the real A
     },
   )("hooks/queries/useLearningDashboardQuery.ts").useLearningDashboardQuery;
   const first = useDashboard(true);
+  assert.equal(first.refetchInterval, 60_000);
+  assert.equal(useDashboard(true, false).refetchInterval, false);
+  assert.equal(useDashboard(true, false).refetchOnWindowFocus, true);
   assert.equal(await first.queryFn(), data);
   userId = "second";
   assert.notDeepEqual(first.queryKey, useDashboard(true).queryKey);

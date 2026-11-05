@@ -5,7 +5,7 @@ import QuestionBankIcon from "@/public/icons/question-bank.svg";
 import { useRouter } from "@/lib/navigation";
 import { AppShell } from "@/components/molecules/AppShell";
 import { Layers } from "lucide-react";
-import RecentLearning from "@/components/learning/RecentLearning";
+import PracticeResume from "@/components/learning/PracticeResume";
 
 export default function QuestionBankPage() {
   const router = useRouter();
@@ -13,15 +13,15 @@ export default function QuestionBankPage() {
     <AppShell>
       <PracticeHeader title="문제 풀기" backHref="/" separator={false} />
       <main className="space-y-8 px-6 py-6">
-        <p className="text-body-medium text-muted-foreground">
-          새 문제는 한 번도 풀지 않은 문제만 출제돼요. 이미 푼 문제는 자동으로
-          제외되고, 틀린 문제는 약점공략에 쌓여요.
-        </p>
+        <PracticeResume />
         <section aria-labelledby="practice-options">
           <h2 id="practice-options" className="text-headline-small">
-            학습 형태
+            새 문제 풀기
           </h2>
-          <div className="mt-2">
+          <p className="sr-only">
+            학습 형태 · 이미 푼 문제는 제외되고 틀린 문제는 약점공략에 쌓여요.
+          </p>
+          <div className="mt-4 space-y-3">
             {[
               [
                 "수제 제작 문제",
@@ -41,7 +41,7 @@ export default function QuestionBankPage() {
             ].map(([title, subtitle, path]) => (
               <EntryButton
                 key={path}
-                endAccent
+                framed
                 title={title}
                 subtitle={subtitle}
                 icon={
@@ -59,9 +59,9 @@ export default function QuestionBankPage() {
           <h2 id="memory-options" className="text-headline-small">
             암기 학습
           </h2>
-          <div className="mt-2">
+          <div className="mt-4">
             <EntryButton
-              endAccent
+              framed
               title="AI 플래시카드"
               subtitle="카드를 넘기며 핵심 내용을 기억해요"
               icon={
@@ -77,7 +77,6 @@ export default function QuestionBankPage() {
             />
           </div>
         </section>
-        <RecentLearning />
       </main>
     </AppShell>
   );

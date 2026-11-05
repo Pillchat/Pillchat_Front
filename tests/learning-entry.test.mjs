@@ -8,7 +8,7 @@ const mocks = {
   "@/lib/navigation": { useRouter: () => ({ push: () => {} }) },
   "next/link": ({ children, href, prefetch, ...props }) =>
     React.createElement("a", { href, ...props }, children),
-  "lucide-react": { RotateCcw: Icon, Layers: Icon },
+  "lucide-react": { RotateCcw: Icon, Layers: Icon, ChevronRight: Icon },
   "@/public/icons/home.svg": Icon,
   "@/public/icons/archive.svg": Icon,
   "@/public/icons/user.svg": Icon,
@@ -46,7 +46,7 @@ test("problem hub reuses entries for three practice modes and a separate flashca
     {
       ...mocks,
       "@/lib/navigation": { useRouter: () => ({ push: (p) => calls.push(p) }) },
-      "@/components/learning/RecentLearning": () => null,
+      "@/components/learning/PracticeResume": () => null,
     },
   )("app/(questionbank)/questionbank/page.tsx").default;
   const tree = View();

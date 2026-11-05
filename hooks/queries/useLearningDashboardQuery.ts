@@ -5,7 +5,7 @@ import { useAuthIdentity } from "@/hooks/useAuthIdentity";
 import { fetchAPI } from "@/lib/client/fetch";
 import type { LearningDashboard } from "@/lib/learning/dashboard";
 
-export function useLearningDashboardQuery(enabled: boolean) {
+export function useLearningDashboardQuery(enabled: boolean, polling = true) {
   const userId = useAuthIdentity();
   return useQuery<LearningDashboard>({
     queryKey: ["learning-dashboard", userId],
@@ -13,7 +13,7 @@ export function useLearningDashboardQuery(enabled: boolean) {
     enabled: enabled && !!userId,
     staleTime: 0,
     refetchOnWindowFocus: true,
-    refetchInterval: 60_000,
+    refetchInterval: polling ? 60_000 : false,
     retry: 1,
   });
 }

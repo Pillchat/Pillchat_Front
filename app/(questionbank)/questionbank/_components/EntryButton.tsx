@@ -1,6 +1,7 @@
 "use client";
 
 import { FC, ReactNode } from "react";
+import { ChevronRight } from "lucide-react";
 
 interface EntryButtonProps {
   icon: ReactNode;
@@ -8,7 +9,7 @@ interface EntryButtonProps {
   subtitle: string;
   onClick?: () => void;
   compact?: boolean;
-  endAccent?: boolean;
+  framed?: boolean;
 }
 
 const EntryButton: FC<EntryButtonProps> = ({
@@ -17,13 +18,13 @@ const EntryButton: FC<EntryButtonProps> = ({
   subtitle,
   onClick,
   compact = false,
-  endAccent = false,
+  framed = false,
 }) => {
   const isDisabled = !onClick;
 
   return (
     <button
-      className={`relative flex w-full items-center rounded-xl text-left transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98] disabled:cursor-default disabled:opacity-60 ${compact ? "gap-3.5 py-3.5 tracking-[0.01em]" : "gap-3 py-4"}`}
+      className={`flex w-full items-center rounded-xl text-left transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98] disabled:cursor-default disabled:opacity-60 ${framed ? "gap-3 border border-gray-200 p-3" : compact ? "gap-3.5 py-3.5 tracking-[0.01em]" : "gap-3 py-4"}`}
       onClick={onClick}
       disabled={isDisabled}
       aria-disabled={isDisabled}
@@ -40,10 +41,11 @@ const EntryButton: FC<EntryButtonProps> = ({
           {subtitle}
         </p>
       </div>
-      {endAccent && (
-        <span
+      {framed && (
+        <ChevronRight
           aria-hidden="true"
-          className="absolute -left-6 top-1/2 h-14 w-2 -translate-y-1/2 bg-primary/50"
+          className="h-4 w-4 shrink-0 text-muted-foreground"
+          strokeWidth={1.5}
         />
       )}
     </button>
