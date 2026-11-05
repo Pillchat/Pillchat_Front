@@ -12,8 +12,8 @@ export default function QuestionBankPage() {
   return (
     <AppShell>
       <PracticeHeader title="문제 풀기" backHref="/" separator={false} />
-      <main className="space-y-6 px-6 py-6">
-        <p className="rounded-xl bg-primary-980 p-4 text-body-medium">
+      <main className="space-y-8 px-6 py-6">
+        <p className="text-body-medium text-muted-foreground">
           새 문제는 한 번도 풀지 않은 문제만 출제돼요. 이미 푼 문제는 자동으로
           제외되고, 틀린 문제는 약점공략에 쌓여요.
         </p>
@@ -21,7 +21,7 @@ export default function QuestionBankPage() {
           <h2 id="practice-options" className="text-headline-small">
             학습 형태
           </h2>
-          <div className="mt-3 rounded-2xl bg-gray-50 p-4">
+          <div className="mt-2">
             {[
               [
                 "수제 제작 문제",
@@ -58,20 +58,22 @@ export default function QuestionBankPage() {
           <h2 id="memory-options" className="text-headline-small">
             암기 학습
           </h2>
-          <EntryButton
-            title="AI 플래시카드"
-            subtitle="카드를 넘기며 핵심 내용을 기억해요"
-            icon={
-              <Layers
-                aria-hidden="true"
-                className="h-8 w-8 text-primary"
-                size={32}
-                strokeWidth={2}
-                absoluteStrokeWidth
-              />
-            }
-            onClick={() => router.push("/flashcards")}
-          />
+          <div className="mt-2">
+            <EntryButton
+              title="AI 플래시카드"
+              subtitle="카드를 넘기며 핵심 내용을 기억해요"
+              icon={
+                <Layers
+                  aria-hidden="true"
+                  className="h-8 w-8 text-primary"
+                  size={32}
+                  strokeWidth={2}
+                  absoluteStrokeWidth
+                />
+              }
+              onClick={() => router.push("/flashcards")}
+            />
+          </div>
         </section>
         <RecentLearning />
       </main>
