@@ -25,10 +25,10 @@ export default function HistoryAttemptCard({
   return (
     <Link
       href={historyHref(entry, returnTo)}
-      className="block rounded-xl bg-gray-50 p-4 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      className="block rounded-xl py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
     >
       <div className="flex items-start gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-accent">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center">
           <QuestionBankIcon
             aria-hidden="true"
             className="h-8 w-8 text-primary"
@@ -49,9 +49,7 @@ export default function HistoryAttemptCard({
         </div>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-body-small text-muted-foreground">
-        <span className="rounded-md bg-white px-2 py-1">
-          {REVIEW_SOURCE_LABELS[entry.source]}
-        </span>
+        <span>{REVIEW_SOURCE_LABELS[entry.source]}</span>
         <span>
           풀이 {entry.answeredCount}/{entry.questionCount}문제
         </span>
