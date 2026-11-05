@@ -279,6 +279,7 @@ function harness(file, props, data = library) {
     requests = [];
   const hooks = {
     ...React,
+    useEffect() {},
     useRef(initial) {
       const key = index++;
       if (!(key in slots)) slots[key] = { current: initial };
@@ -722,7 +723,14 @@ test("the main starts only today's selected questions and exposes per-question r
   const tree = h.render();
   const html = renderToStaticMarkup(tree);
   assert.match(html, /오늘 복습할/);
-  assert.match(html, /풀이 중 ‘헷갈려요’를 직접 표시한 문제/);
+  assert.doesNotMatch(html, /풀이 중 ‘헷갈려요’를 직접 표시한 문제/);
+  nodes(tree)
+    .find((n) => n.props?.["aria-label"] === "나의 약점 분야 안내")
+    .props.onClick();
+  assert.match(
+    renderToStaticMarkup(h.render()),
+    /풀이 중 ‘헷갈려요’를 직접 표시한 문제/,
+  );
   const summary = nodes(tree).find((n) => n.type === "summary");
   assert.match(renderToStaticMarkup(summary), /문제별 복습 현황/);
   assert.match(renderToStaticMarkup(summary), /복습 일정과 연속 정답 보기/);
