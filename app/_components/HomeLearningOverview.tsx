@@ -34,19 +34,17 @@ export default function HomeLearningOverview({
     : undefined;
 
   return (
-    <div className="mt-6 space-y-6 px-6 pb-6 md:px-10">
+    <div className="mt-6 space-y-8 px-6 pb-8 md:px-10">
       <section aria-labelledby="today-learning-title" aria-busy={pending}>
         <h2 id="today-learning-title" className="text-headline-small">
           오늘의 학습 현황
         </h2>
         <div className="mt-3 flex gap-2" aria-live="polite">
           <StatsCard
-            valueClassName="text-sm min-[375px]:text-base sm:text-xl"
             label="학습 문제"
             value={data ? `${data.solvedCount}문제` : "–"}
           />
           <StatsCard
-            valueClassName="text-sm min-[375px]:text-base sm:text-xl"
             label="정답률"
             value={accuracy == null ? "–" : `${accuracy}%`}
             percentage={accuracy}
@@ -76,7 +74,7 @@ export default function HomeLearningOverview({
             : "이어서 풀기"}
         </h2>
         {latest ? (
-          <div className="mt-3 rounded-xl bg-primary-980 px-4">
+          <div className="mt-2">
             <EntryButton
               compact
               icon={
@@ -110,7 +108,7 @@ export default function HomeLearningOverview({
             />
           </div>
         ) : data && !pending && !isError ? (
-          <div className="mt-3 rounded-xl bg-primary-980 px-4">
+          <div className="mt-2">
             <EntryButton
               compact
               icon={
@@ -125,7 +123,7 @@ export default function HomeLearningOverview({
             />
           </div>
         ) : (
-          <p className="mt-3 rounded-xl bg-gray-50 p-4 text-body-medium text-muted-foreground">
+          <p className="mt-3 py-2 text-body-medium text-muted-foreground">
             {pending
               ? "최근 학습 기록을 불러오는 중이에요."
               : isError
@@ -139,7 +137,7 @@ export default function HomeLearningOverview({
         <h2 id="learning-shortcuts-title" className="text-headline-small">
           학습 바로가기
         </h2>
-        <div className="mt-3 rounded-2xl bg-gray-50 p-4">
+        <div className="mt-2">
           <EntryButton
             compact
             icon={
