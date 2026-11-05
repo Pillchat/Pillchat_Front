@@ -186,11 +186,19 @@ export default function WeaknessMain({
                       q.dueDate ??
                       "–"}
                   </span>
-                  <span>
+                  <span className="inline-flex items-center gap-2">
                     연속 정답{" "}
                     <strong className="tabular-nums">
                       {q.consecutiveCorrect}/2회
                     </strong>
+                    <span aria-hidden="true" className="inline-flex gap-1">
+                      {[1, 2].map((step) => (
+                        <span
+                          key={step}
+                          className={`h-1.5 w-6 rounded-full ${q.consecutiveCorrect >= step ? "bg-primary" : "bg-gray-100"}`}
+                        />
+                      ))}
+                    </span>
                   </span>
                 </div>
                 <p className="text-body-small text-muted-foreground">
@@ -326,7 +334,7 @@ export default function WeaknessMain({
           <div className="flex items-center justify-between gap-3">
             <h2
               id="weakness-practice-title"
-              className="min-w-0 max-w-[calc(100%-9rem)] text-title-large"
+              className="min-w-0 text-title-large"
             >
               {tab === "all" &&
               remaining.length > 0 &&
@@ -348,47 +356,36 @@ export default function WeaknessMain({
               <span className="hidden min-[375px]:inline">분류 기준</span>
             </Link>
           </div>
-          <details className="group/options !mt-0">
-            <summary className="absolute right-14 top-0 flex min-h-11 cursor-pointer list-none items-center gap-1 rounded-lg text-body-small text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-[375px]:right-20 [&::-webkit-details-marker]:hidden">
-              목록 옵션
-              <ChevronDown
-                aria-hidden="true"
-                className="h-3 w-3 transition-transform group-open/options:rotate-180"
-              />
-            </summary>
-            <div className="space-y-2 rounded-xl border border-gray-200 p-3">
-              <div
-                role="group"
-                aria-label="문제풀이 목록 보기"
-                className="flex gap-6"
+          <div
+            role="group"
+            aria-label="문제풀이 목록 보기"
+            className="flex gap-6"
+          >
+            {(
+              [
+                ["all", "전체"],
+                ["subjects", "과목별"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                id={`weakness-tab-${value}`}
+                type="button"
+                aria-pressed={tab === value}
+                onClick={() => {
+                  setTab(value);
+                  setSubject(null);
+                }}
+                className={`min-h-11 text-title-small underline-offset-8 ${tab === value ? "text-primary underline decoration-2" : "text-muted-foreground"}`}
               >
-                {(
-                  [
-                    ["all", "전체"],
-                    ["subjects", "과목별"],
-                  ] as const
-                ).map(([value, label]) => (
-                  <button
-                    key={value}
-                    id={`weakness-tab-${value}`}
-                    type="button"
-                    aria-pressed={tab === value}
-                    onClick={() => {
-                      setTab(value);
-                      setSubject(null);
-                    }}
-                    className={`min-h-11 text-title-small underline-offset-8 ${tab === value ? "text-primary underline decoration-2" : "text-muted-foreground"}`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-              <p className="text-body-small text-muted-foreground">
-                {WEAKNESS_SORTS[filters.sort]} · 오늘 푼 문제는 내일부터 다시
-                보여요.
-              </p>
-            </div>
-          </details>
+                {label}
+              </button>
+            ))}
+          </div>
+          <p className="text-body-small text-muted-foreground">
+            {WEAKNESS_SORTS[filters.sort]} · 오늘 푼 문제는 내일부터 다시
+            보여요.
+          </p>
           {subject && (
             <button
               type="button"
@@ -467,17 +464,25 @@ export default function WeaknessMain({
           <DialogDescription>
             선택한 범위와 정렬 순서로 출처별 약점공략을 시작해요.
           </DialogDescription>
-          {sources.map((source) => (
-            <Button
-              key={source}
-              variant="ghost"
-              disabled={pending}
-              onClick={() => launch(source)}
-            >
-              {WEAKNESS_SOURCE_LABELS[source]} ·{" "}
-              {practiceQuestions.filter((q) => q.source === source).length}문제
-            </Button>
-          ))}
+          <div
+            className="max-h-48 space-y-3 overflow-y-auto overscroll-contain"
+            role="group"
+            aria-label="복습할 문제 출처 선택지"
+          >
+            {sources.map((source) => (
+              <Button
+                key={source}
+                variant="ghost"
+                className="h-14 w-full border border-solid border-gray-300"
+                disabled={pending}
+                onClick={() => launch(source)}
+              >
+                {WEAKNESS_SOURCE_LABELS[source]} ·{" "}
+                {practiceQuestions.filter((q) => q.source === source).length}
+                문제
+              </Button>
+            ))}
+          </div>
         </DialogContent>
       </Dialog>
     </AppShell>
