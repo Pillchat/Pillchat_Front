@@ -129,24 +129,28 @@ const MyPage: FC = () => {
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.headset}
               title="고객 센터"
+              description="궁금한 점이나 불편한 점을 문의해보세요."
               onClick={() => router.push("/support")}
             />
 
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.notice}
               title="공지사항"
+              description="새로운 소식과 서비스 안내를 확인해요."
               onClick={() => router.push("/notices")}
             />
 
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.privacyPolicy}
               title="개인정보 처리방침"
+              description="개인정보의 수집과 이용 기준을 확인해요."
               onClick={() => router.push("/legal/privacy")}
             />
 
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.terms}
               title="서비스 이용약관"
+              description="서비스 이용에 필요한 내용을 확인해요."
               onClick={() => router.push("/legal/terms")}
             />
           </div>

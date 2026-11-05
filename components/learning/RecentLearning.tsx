@@ -13,7 +13,7 @@ export default function RecentLearning() {
           전체 보기
         </Link>
       </div>
-      <div className="space-y-6">
+      <div className="divide-y divide-solid divide-gray-400 [&>a]:rounded-none [&>a]:py-5">
         {query.isPending ? (
           <p className="text-body-medium text-muted-foreground">
             최근 학습을 불러오는 중이에요.

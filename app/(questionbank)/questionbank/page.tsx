@@ -41,6 +41,7 @@ export default function QuestionBankPage() {
             ].map(([title, subtitle, path]) => (
               <EntryButton
                 key={path}
+                endAccent
                 title={title}
                 subtitle={subtitle}
                 icon={
@@ -60,6 +61,7 @@ export default function QuestionBankPage() {
           </h2>
           <div className="mt-2">
             <EntryButton
+              endAccent
               title="AI 플래시카드"
               subtitle="카드를 넘기며 핵심 내용을 기억해요"
               icon={
