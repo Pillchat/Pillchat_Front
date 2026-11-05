@@ -111,15 +111,15 @@ export default function WeaknessMain({
   return (
     <AppShell className="flex flex-col">
       <PracticeHeader title="약점공략" backHref="/" separator={false} />
-      <main className="space-y-8 px-6 pb-8 pt-5">
-        <h1 className="sr-only">약점공략</h1>
+      <h1 className="sr-only">약점공략</h1>
+      <main className="space-y-8 px-6 pb-8 pt-3">
         <WeaknessCount
           label="오늘 복습할 문제"
           count={count}
           pending={query.isPending}
         >
           <Button
-            className="h-11 shrink-0 px-5 text-title-small"
+            className="h-11 shrink-0 px-5 text-title-small text-white"
             disabled={query.isPending || !practiceQuestions.length || pending}
             onClick={() =>
               sources.length === 1 ? launch(sources[0]) : setChooseSource(true)
@@ -292,12 +292,12 @@ export default function WeaknessMain({
               </div>
             )}
             {tab === "subjects" && !subject ? (
-              subjects.map((name) => (
+              subjects.map((name, index) => (
                 <button
                   key={name}
                   type="button"
                   onClick={() => setSubject(name)}
-                  className="mt-3 flex min-h-14 w-full items-center justify-between gap-3 rounded-xl py-3 text-left"
+                  className={`flex min-h-14 w-full items-center justify-between gap-3 py-4 text-left ${index > 0 ? "border-t border-solid border-black" : ""}`}
                 >
                   <span className="min-w-0 flex-1 text-title-large">
                     {name}
@@ -322,7 +322,7 @@ export default function WeaknessMain({
                     전체 과목 보기
                   </button>
                 )}
-                {collections.map((collection) => {
+                {collections.map((collection, index) => {
                   const items = visible.filter(
                     (q) => q.collectionRef === collection.collectionRef,
                   );
@@ -344,7 +344,7 @@ export default function WeaknessMain({
                   return (
                     <div
                       key={collection.collectionRef}
-                      className="mt-6 space-y-2"
+                      className={`mt-6 space-y-2 ${index > 0 ? "border-t border-solid border-black pt-6" : ""}`}
                     >
                       <button
                         key={collection.collectionRef}

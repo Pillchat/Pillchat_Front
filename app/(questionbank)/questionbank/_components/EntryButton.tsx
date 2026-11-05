@@ -8,6 +8,7 @@ interface EntryButtonProps {
   subtitle: string;
   onClick?: () => void;
   compact?: boolean;
+  endAccent?: boolean;
 }
 
 const EntryButton: FC<EntryButtonProps> = ({
@@ -16,12 +17,13 @@ const EntryButton: FC<EntryButtonProps> = ({
   subtitle,
   onClick,
   compact = false,
+  endAccent = false,
 }) => {
   const isDisabled = !onClick;
 
   return (
     <button
-      className={`flex w-full items-center rounded-xl text-left transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98] disabled:cursor-default disabled:opacity-60 ${compact ? "gap-3.5 py-3.5 tracking-[0.01em]" : "gap-3 py-4"}`}
+      className={`relative flex w-full items-center rounded-xl text-left transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98] disabled:cursor-default disabled:opacity-60 ${compact ? "gap-3.5 py-3.5 tracking-[0.01em]" : "gap-3 py-4"}`}
       onClick={onClick}
       disabled={isDisabled}
       aria-disabled={isDisabled}
@@ -38,6 +40,12 @@ const EntryButton: FC<EntryButtonProps> = ({
           {subtitle}
         </p>
       </div>
+      {endAccent && (
+        <span
+          aria-hidden="true"
+          className="absolute -left-6 top-1/2 h-14 w-2 -translate-y-1/2 bg-primary/50"
+        />
+      )}
     </button>
   );
 };

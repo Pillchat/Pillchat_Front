@@ -51,14 +51,19 @@ export default function LearningHistoryPage({
         <p className="text-body-medium text-muted-foreground">
           맞힌 문제를 포함한 모든 세트와 해설을 확인해요.
         </p>
-        <div className="flex flex-wrap gap-2" aria-label="학습 기록 필터">
+        <div
+          className={
+            recent
+              ? "flex w-full flex-wrap justify-between gap-2"
+              : "flex flex-wrap gap-2"
+          }
+          aria-label="학습 기록 필터"
+        >
           {Object.entries(HISTORY_FILTERS).map(([key, label]) => (
             <Button
               key={key}
               variant={filter === key ? "default" : "ghost"}
-              className={
-                filter === key ? undefined : "bg-gray-100 text-muted-foreground"
-              }
+              className={`${recent ? "h-10 py-2" : ""} ${filter === key ? "" : "bg-gray-100 text-muted-foreground"}`}
               aria-pressed={filter === key}
               onClick={() =>
                 router.replace(historyListHref(view, key as HistoryFilter), {
@@ -86,7 +91,7 @@ export default function LearningHistoryPage({
               : "이 조건에 맞는 학습 기록이 없어요."}
           </p>
         )}
-        <div className="space-y-4">
+        <div className="divide-y divide-solid divide-black [&>a]:rounded-none [&>a]:py-5">
           {items.map((entry) => (
             <HistoryAttemptCard
               key={`${entry.source}:${entry.attemptId}`}
