@@ -6,6 +6,7 @@ import { useRouter } from "@/lib/navigation";
 import { AppShell } from "@/components/molecules/AppShell";
 import { Layers } from "lucide-react";
 import PracticeResume from "@/components/learning/PracticeResume";
+import RecentLearning from "@/components/learning/RecentLearning";
 
 export default function QuestionBankPage() {
   const router = useRouter();
@@ -77,6 +78,7 @@ export default function QuestionBankPage() {
             />
           </div>
         </section>
+        <RecentLearning />
       </main>
     </AppShell>
   );

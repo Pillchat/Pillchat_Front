@@ -4,11 +4,14 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { loader } from "./helpers/load-ts.mjs";
 
-function view(query) {
+function view(query, navigation = []) {
   const View = loader(
     {},
     {
-      "@/public/icons/question-bank.svg": () => null,
+      "lucide-react": new Proxy({}, { get: () => () => null }),
+      "@/lib/navigation": {
+        useRouter: () => ({ push: (href) => navigation.push(href) }),
+      },
       "next/link": ({ href, children, ...props }) =>
         React.createElement("a", { href, ...props }, children),
       "@/hooks/queries/useLearningDashboardQuery": {
@@ -24,8 +27,9 @@ test("resume uses the dashboard's latest unfinished set and the correct engine w
     ["CBT", "/learning/cbt?attempt="],
     ["HANDCRAFTED", "/questionbank/handcrafted?attempt="],
   ]) {
-    const html = renderToStaticMarkup(
-      view({
+    const navigation = [];
+    const tree = view(
+      {
         data: {
           latestAttempt: {
             source,
@@ -36,12 +40,23 @@ test("resume uses the dashboard's latest unfinished set and the correct engine w
             questionCount: 10,
           },
         },
-      }),
+      },
+      navigation,
     );
-    assert.ok(html.includes(`${target}id%2Fa%2B1`));
-    assert.match(html, /4\/10문제/);
-    assert.match(html, /40%/);
-    assert.match(html, /href="\/learning\/recent"/);
+    const html = renderToStaticMarkup(tree);
+    const nodes = (t) =>
+      Array.isArray(t)
+        ? t.flatMap(nodes)
+        : t && typeof t === "object"
+          ? [t, ...nodes(t.props?.children)]
+          : [];
+    nodes(tree)
+      .find((n) => n.props?.onClick)
+      .props.onClick();
+    assert.deepEqual(navigation, [`${target}id%2Fa%2B1`]);
+    assert.match(html, /4 \/ 10문제/);
+    assert.match(html, /value="40"/);
+    assert.doesNotMatch(html, /전체 최근 학습 보기/);
   }
 });
 test("resume loading, empty and failure stay distinct and do not invent progress", () => {
