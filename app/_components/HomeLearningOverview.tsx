@@ -1,18 +1,16 @@
 "use client";
 
-import { Play } from "lucide-react";
 import ReviewIcon from "@/public/icons/review.svg";
 import QuestionBankIcon from "@/public/icons/question-bank.svg";
 import EntryButton from "@/app/(questionbank)/questionbank/_components/EntryButton";
 import StatsCard from "@/app/(questionbank)/questionbank/_components/StatsCard";
-import { PercentageBar } from "@/components/atoms/PercentageBar";
+import ResumeLearningCard from "@/components/learning/ResumeLearningCard";
 import {
   dashboardAttemptHref,
   type LearningDashboard,
 } from "@/lib/learning/dashboard";
 import { useRouter } from "@/lib/navigation";
 import HomeWeeklyReport from "./HomeWeeklyReport";
-import { WEAKNESS_SOURCE_LABELS } from "@/lib/learning/weakness";
 
 type Props = {
   data?: LearningDashboard;
@@ -74,39 +72,10 @@ export default function HomeLearningOverview({
             : "이어서 풀기"}
         </h2>
         {latest ? (
-          <div className="mt-2">
-            <EntryButton
-              compact
-              icon={
-                <Play
-                  aria-hidden="true"
-                  size={32}
-                  className="h-8 w-8 text-primary"
-                  strokeWidth={2}
-                  absoluteStrokeWidth
-                />
-              }
-              title={latest.title}
-              subtitle={[
-                latest.subject,
-                latest.topic,
-                WEAKNESS_SOURCE_LABELS[latest.source],
-                `${latest.answeredCount} / ${latest.questionCount}문제 · 이어서 풀기`,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-              onClick={() => router.push(dashboardAttemptHref(latest))}
-            />
-            <PercentageBar
-              label="풀이 진행률"
-              className="mb-4 h-2"
-              value={
-                latest.questionCount
-                  ? (latest.answeredCount / latest.questionCount) * 100
-                  : 0
-              }
-            />
-          </div>
+          <ResumeLearningCard
+            attempt={latest}
+            onClick={() => router.push(dashboardAttemptHref(latest))}
+          />
         ) : data && !pending && !isError ? (
           <div className="mt-2">
             <EntryButton

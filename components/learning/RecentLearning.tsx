@@ -8,9 +8,12 @@ export default function RecentLearning() {
   return (
     <section className="space-y-4" aria-busy={query.isPending}>
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-headline-small">최근 학습</h2>
-        <Link href="/learning/recent" className="text-body-medium text-primary">
-          전체 보기
+        <h2 className="text-headline-small">최근 학습 기록</h2>
+        <Link
+          href="/learning/recent"
+          className="inline-flex min-h-11 shrink-0 items-center text-body-small text-primary"
+        >
+          전체 최근 학습 보기
         </Link>
       </div>
       <div className="divide-y divide-solid divide-gray-400 [&>a]:rounded-none [&>a]:py-5">
