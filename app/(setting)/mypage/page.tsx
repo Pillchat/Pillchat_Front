@@ -65,7 +65,7 @@ const MyPage: FC = () => {
         )}
         {!isLoading && <ProfileLearningStatus profile={profile} />}
 
-        <div className="mt-8 w-[90%] rounded-2xl bg-gray-50 p-4">
+        <div className="mt-8 w-full px-6">
           <p className="text-sm text-muted-foreground">정보</p>
           <div className="mt-4 flex flex-col gap-6">
             <SystemField
@@ -104,7 +104,7 @@ const MyPage: FC = () => {
         </div>
 
         {isAdmin && (
-          <div className="mt-5 w-[90%] rounded-2xl bg-gray-50 p-4">
+          <div className="mt-8 w-full px-6">
             <p className="text-sm text-muted-foreground">관리자</p>
             <div className="mt-4 flex flex-col gap-6">
               <SystemField
@@ -123,7 +123,7 @@ const MyPage: FC = () => {
           </div>
         )}
 
-        <div className="mt-5 w-[90%] rounded-2xl bg-gray-50 p-4">
+        <div className="mt-8 w-full px-6">
           <p className="text-sm text-muted-foreground">문의 및 안내</p>
           <div className="mt-4 flex flex-col gap-6">
             <SystemField
@@ -152,7 +152,7 @@ const MyPage: FC = () => {
           </div>
         </div>
 
-        <div className="mt-8 w-[90%]">
+        <div className="mt-8 w-full px-6">
           <div className="flex flex-col gap-6">
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.logout}
