@@ -309,6 +309,7 @@ function harness(file, props, data = library) {
       },
       "@/hooks/useAuthIdentity": { useAuthIdentity: () => "test-user" },
       "lucide-react": new Proxy({}, { get: () => () => null }),
+      "@/public/icons/question-bank.svg": () => null,
       "@/public/icons/settings.svg": (props) =>
         React.createElement("svg", props),
       "@/components/ui/dialog": {
@@ -459,6 +460,7 @@ test("classification has the requested title and all five rules; mastered questi
     {},
     {
       "lucide-react": new Proxy({}, { get: () => () => null }),
+      "@/public/icons/question-bank.svg": () => null,
       "@/public/icons/settings.svg": (props) =>
         React.createElement("svg", props),
       "@/lib/navigation": { useRouter: () => ({ push() {} }) },
@@ -621,7 +623,8 @@ test("tomorrow cards show their schedule before the source and cannot start a pr
     .props.onClick();
   tree = h.render();
   assert.equal(
-    nodes(tree).find((n) => n.props?.children === "복습 시작").props.disabled,
+    nodes(tree).find((n) => n.props?.["aria-label"] === "복습 시작").props
+      .disabled,
     true,
   );
 });
@@ -690,6 +693,7 @@ test("main, settings and mastered routes gate their data before mounting queries
           throw new Error("signed-out query mounted");
         },
       },
+      "@/public/icons/question-bank.svg": () => null,
       "@/public/icons/settings.svg": () => null,
     },
   );
@@ -723,7 +727,7 @@ test("the main starts only today's selected questions and exposes per-question r
   assert.match(renderToStaticMarkup(summary), /문제별 복습 현황/);
   assert.match(renderToStaticMarkup(summary), /복습 일정과 연속 정답 보기/);
   nodes(tree)
-    .find((n) => n.props?.children === "복습 시작")
+    .find((n) => n.props?.["aria-label"] === "복습 시작")
     .props.onClick();
   assert.equal(h.requests[0].source, "HANDCRAFTED");
   assert.equal(h.requests[0].collectionRef, undefined);
