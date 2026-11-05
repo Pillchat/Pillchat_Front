@@ -1,10 +1,16 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ApiError } from "@/lib/client/fetch";
 import Link from "next/link";
 import QuestionBankIcon from "@/public/icons/question-bank.svg";
 import SettingsIcon from "@/public/icons/settings.svg";
-import { ChevronDown, ChevronRight, CircleHelp, RotateCcw } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  CircleHelp,
+  Info,
+  RotateCcw,
+} from "lucide-react";
 import { AppShell } from "@/components/molecules/AppShell";
 import { PracticeHeader } from "@/components/molecules/PracticeHeader";
 import { Button } from "@/components/ui/button";
@@ -48,6 +54,28 @@ export default function WeaknessMain({
   const [tab, setTab] = useState<"all" | "subjects">("all");
   const [subject, setSubject] = useState<string | null>(null);
   const [chooseSource, setChooseSource] = useState(false);
+  const [showFieldHelp, setShowFieldHelp] = useState(false);
+  const fieldHelp = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!showFieldHelp) return;
+    const dismiss = (event: Event) => {
+      if (!fieldHelp.current?.contains(event.target as Node))
+        setShowFieldHelp(false);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setShowFieldHelp(false);
+      fieldHelp.current?.querySelector("button")?.focus();
+    };
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("focusin", dismiss);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("focusin", dismiss);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [showFieldHelp]);
   const questions = weaknessQuestions(query.data, filters);
   const scheduled = scheduledWeaknessQuestions(query.data, filters);
   const practiceQuestions = questions.filter(
@@ -255,7 +283,45 @@ export default function WeaknessMain({
         {featured && renderCollection(featured)}
         <section aria-label="나의 약점 분야" className="space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-headline-small">나의 약점 분야</h2>
+            <div className="flex min-w-0 items-center">
+              <h2 className="text-headline-small">나의 약점 분야</h2>
+              <div ref={fieldHelp} className="relative shrink-0">
+                <button
+                  type="button"
+                  aria-label="나의 약점 분야 안내"
+                  aria-expanded={showFieldHelp}
+                  aria-controls={
+                    showFieldHelp ? "weakness-field-help" : undefined
+                  }
+                  aria-describedby={
+                    showFieldHelp ? "weakness-field-help" : undefined
+                  }
+                  onClick={() => setShowFieldHelp((open) => !open)}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <Info
+                    aria-hidden="true"
+                    className="h-5 w-5"
+                    strokeWidth={1.5}
+                  />
+                </button>
+                {showFieldHelp && (
+                  <div
+                    id="weakness-field-help"
+                    role="note"
+                    className="absolute left-1/2 top-full z-20 mt-1 w-64 -translate-x-1/2 space-y-2 rounded-xl bg-white p-3 text-body-small text-foreground shadow-md ring-1 ring-gray-100"
+                  >
+                    <p>
+                      틀린 문제와 풀이 중 ‘헷갈려요’를 직접 표시한 문제를
+                      복습해요. 서로 다른 날 2회 연속 정답이면 극복해요.
+                    </p>
+                    <p className="text-muted-foreground">
+                      최근 30일 최초 풀이 기준 · 오답·‘헷갈려요’ 표시 비율
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
             <Link
               href={weaknessHref(filters, "areas")}
               aria-label="나의 약점 분야 설정"
@@ -269,10 +335,6 @@ export default function WeaknessMain({
               필터 설정
             </Link>
           </div>
-          <p className="text-body-medium text-muted-foreground">
-            틀린 문제와 풀이 중 ‘헷갈려요’를 직접 표시한 문제를 복습해요. 서로
-            다른 날 2회 연속 정답이면 극복해요.
-          </p>
           {fields.length ? (
             <ol
               className="grid grid-cols-3 gap-3"
@@ -303,9 +365,6 @@ export default function WeaknessMain({
                   : "약점 분야를 불러오지 못했어요."}
             </p>
           )}
-          <p className="text-body-small text-muted-foreground">
-            최근 30일 최초 풀이 기준 · 오답·‘헷갈려요’ 표시 비율
-          </p>
           <Link
             href={weaknessHref(filters, "mastered")}
             className="flex min-h-11 items-center justify-between gap-3 rounded-lg text-body-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
