@@ -1,7 +1,7 @@
 "use client";
 
 import ReviewIcon from "@/public/icons/review.svg";
-import QuestionBankIcon from "@/public/icons/question-bank.svg";
+import LearningSourceIcon from "@/components/learning/LearningSourceIcon";
 import EntryButton from "@/app/(questionbank)/questionbank/_components/EntryButton";
 import StatsCard from "@/app/(questionbank)/questionbank/_components/StatsCard";
 import ResumeLearningCard from "@/components/learning/ResumeLearningCard";
@@ -45,7 +45,7 @@ export default function HomeLearningOverview({
           <StatsCard
             label="정답률"
             value={accuracy == null ? "–" : `${accuracy}%`}
-            percentage={accuracy}
+            valueClassName={accuracy == null ? undefined : "text-primary"}
           />
         </div>
       </section>
@@ -80,12 +80,7 @@ export default function HomeLearningOverview({
           <div className="mt-2">
             <EntryButton
               compact
-              icon={
-                <QuestionBankIcon
-                  aria-hidden="true"
-                  className="h-8 w-8 text-primary"
-                />
-              }
+              icon={<LearningSourceIcon source="HANDCRAFTED" />}
               title="추천 문제 풀기"
               subtitle="아직 풀지 않은 수제 제작 문제를 시작해요"
               onClick={() => router.push("/questionbank/handcrafted")}
@@ -109,12 +104,7 @@ export default function HomeLearningOverview({
         <div className="mt-2">
           <EntryButton
             compact
-            icon={
-              <QuestionBankIcon
-                aria-hidden="true"
-                className="h-8 w-8 text-primary"
-              />
-            }
+            icon={<LearningSourceIcon source="HANDCRAFTED" />}
             title="수제 제작 문제"
             subtitle="전문가가 직접 만들고 검수한 문제를 풀어요"
             onClick={() => router.push("/questionbank/handcrafted")}

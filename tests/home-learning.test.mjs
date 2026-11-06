@@ -97,13 +97,14 @@ test("home reuses cards to show server totals and sends users to resume and shor
     "주간 리포트",
     "심혈관계",
     data.latestAttempt.title,
-    "3 / 10문제",
+    "응답 3/10문제",
     "수제 제작 문제",
     "약점공략",
   ])
     assert.ok(html.includes(text), text);
   assert.ok(!html.includes("학습 시간"));
-  assert.ok(html.includes('aria-label="풀이 진행률"'));
+  assert.match(html, /진행률.*30%/s);
+  assert.doesNotMatch(html, /<progress/);
   const entries = nodes(view.tree).filter((node) => node.props?.onClick);
   entries.forEach((entry) => entry.props.onClick());
   assert.deepEqual(view.navigation, [
@@ -134,7 +135,7 @@ test("empty progress differs from failed or pending reads and never fabricates t
     overview({ data: { ...data, correctCount: 0 } }).tree,
   );
   assert.ok(allWrong.includes("0%"));
-  assert.ok(allWrong.includes('aria-label="정답률"'));
+  assert.match(allWrong, /정답률.*0%/s);
   const pending = renderToStaticMarkup(overview({ pending: true }).tree);
   assert.ok(pending.includes("불러오는 중"));
   assert.ok(!pending.includes("0문제"));

@@ -10,6 +10,7 @@ import {
   type HistoryFilter,
 } from "@/lib/learning/history";
 import { useLearningHistoryDetail } from "@/hooks/queries/useLearningHistory";
+import { historyAnswerLabel } from "@/lib/learning/answer-labels";
 import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
 import type { ReviewSource } from "@/types/review";
 export default function HistoryDetailPage({
@@ -141,7 +142,9 @@ function HistoryDetailContent({
               ))}
             </div>
             <p className="text-body-medium">
-              내 답안: {q.userAnswer || "미응답"} · 정답: {q.correctAnswer}
+              내 답안: {historyAnswerLabel(q.choices, q.userAnswer) ?? "미응답"}
+              {" · "}정답:{" "}
+              {historyAnswerLabel(q.choices, q.correctAnswer) ?? "–"}
             </p>
             <div className="whitespace-pre-wrap rounded-xl bg-accent p-4 text-body-medium">
               <strong>전체 해설</strong>
