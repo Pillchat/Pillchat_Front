@@ -12,6 +12,7 @@ import {
 } from "@/lib/learning/history";
 import { useLearningHistory } from "@/hooks/queries/useLearningHistory";
 import HistoryAttemptCard from "@/components/learning/HistoryAttemptCard";
+import { useLearningHistoryPosition } from "@/hooks/useLearningHistoryPosition";
 export default function LearningHistoryPage({
   view,
 }: {
@@ -23,6 +24,7 @@ export default function LearningHistoryPage({
   const filter = readHistoryFilter(searchParams.get("filter"));
   const returnTo = historyListHref(view, filter);
   const query = useLearningHistory(filter);
+  const rememberPosition = useLearningHistoryPosition(returnTo, query);
   const summary = query.data?.pages[0]?.summary;
   const items = query.data?.pages.flatMap((page) => page.items) ?? [];
   return (
@@ -91,12 +93,13 @@ export default function LearningHistoryPage({
               : "이 조건에 맞는 학습 기록이 없어요."}
           </p>
         )}
-        <div className="divide-y divide-solid divide-black [&>a]:rounded-none [&>a]:py-5">
+        <div className="space-y-6">
           {items.map((entry) => (
             <HistoryAttemptCard
               key={`${entry.source}:${entry.attemptId}`}
               entry={entry}
               returnTo={returnTo}
+              onOpen={rememberPosition}
             />
           ))}
         </div>

@@ -18,10 +18,14 @@ export function SystemField({
   return (
     <button
       type="button"
-      className="flex min-h-14 w-full items-center gap-3 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      className="flex min-h-14 w-full items-center gap-2 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       onClick={onClick}
     >
-      <img src={normalizedIconSrc} alt="" className="h-10 w-10 shrink-0" />
+      <img
+        src={normalizedIconSrc}
+        alt=""
+        className="h-10 w-10 shrink-0 object-contain"
+      />
       <div className="min-w-0 flex-1">
         <p className={`text-title-large ${textColor}`}>{title}</p>
         {description && (

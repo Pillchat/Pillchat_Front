@@ -8,7 +8,8 @@ const mocks = {
   "@/lib/navigation": { useRouter: () => ({ push: () => {} }) },
   "next/link": ({ children, href, prefetch, ...props }) =>
     React.createElement("a", { href, ...props }, children),
-  "lucide-react": { RotateCcw: Icon, Layers: Icon, ChevronRight: Icon },
+  "lucide-react": new Proxy({}, { get: () => Icon }),
+  "@/hooks/useAuthIdentity": { useAuthIdentity: () => "history-user" },
   "@/public/icons/home.svg": Icon,
   "@/public/icons/archive.svg": Icon,
   "@/public/icons/user.svg": Icon,

@@ -112,8 +112,12 @@ const overrides = {
   "next/link": ({ href, children }) =>
     React.createElement("a", { href }, children),
   "@/components/learning/ConfusionToggle": { ConfusionToggle: () => null },
+  "@/components/learning/LearningSourceIcon": () => null,
+  "@/hooks/useLearningHistoryPosition": {
+    useLearningHistoryPosition: () => () => {},
+  },
 };
-test("history bars distinguish progress from accuracy and omit unknown accuracy", () => {
+test("history metrics distinguish progress from accuracy and show unknown accuracy without a bar", () => {
   const Card = loader(
     {},
     overrides,
@@ -124,11 +128,20 @@ test("history bars distinguish progress from accuracy and omit unknown accuracy"
     );
   const ongoing = render({ state: "IN_PROGRESS", answeredCount: 2 });
   assert.match(ongoing, /진행률<\/span><strong[^>]*>50%/);
-  assert.match(ongoing, /value="50"/);
-  assert.match(render({}), /value="75"/);
+  assert.match(ongoing, /응답 2\/4문제/);
+  assert.match(render({}), /정답률<\/span><strong[^>]*>75%/);
   const unknown = render({ correctCount: null });
   assert.match(unknown, /정답률<\/span><strong[^>]*>–/);
   assert.doesNotMatch(unknown, /<progress|null%/);
+  assert.doesNotMatch(ongoing, /<progress/);
+});
+test("automatic source-only titles omit the duplicate source description while subject titles retain it", () => {
+  const label = loader()("lib/learning/attemptLabels.ts").learningSourceLabel;
+  assert.equal(label("AI", "AI 문제 풀이"), null);
+  assert.equal(label("AI", "AI 생성 문제"), null);
+  assert.equal(label("AI", "2026.11.05 약리학 - 1"), "AI 생성 문제");
+  assert.equal(label("HANDCRAFTED", "약리학 수제 문제"), "수제 제작 문제");
+  assert.equal(label("CBT", "약사고시 1교시 모의고사 1회"), "CBT");
 });
 test("list filters are URL-backed and its detail links carry the same origin", () => {
   const replacements = [];
