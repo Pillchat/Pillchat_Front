@@ -13,7 +13,7 @@ export function safeLoginReturnTo(value: string | null): string | null {
     const url = new URL(value, "https://pillchat.invalid");
     if (
       url.origin !== "https://pillchat.invalid" ||
-      !/^\/learning\/weakness(?:\/(?:areas|mastered|classification))?\/?$/.test(
+      !/^\/learning\/(?:weakness(?:\/(?:areas|mastered|classification))?|recent|history)\/?$/.test(
         url.pathname,
       )
     )

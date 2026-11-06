@@ -6,7 +6,7 @@ import { ChevronRight } from "lucide-react";
 interface EntryButtonProps {
   icon: ReactNode;
   title: string;
-  subtitle: string;
+  subtitle: ReactNode;
   onClick?: () => void;
   compact?: boolean;
   framed?: boolean;

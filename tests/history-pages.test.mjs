@@ -25,11 +25,19 @@ const mocks = {
   "next/link": ({ children, href, ...props }) =>
     React.createElement("a", { href, ...props }, children),
 };
-const page = (path, query) => {
+const page = (path, query, user = "user-7", filter = "all") => {
   const View = loader(
     {},
     {
       ...mocks,
+      "next/navigation": {
+        ...mocks["next/navigation"],
+        useSearchParams: () => new URLSearchParams({ filter }),
+      },
+      "@/hooks/useAuthIdentity": { useAuthIdentity: () => user },
+      "@/hooks/useLearningHistoryPosition": {
+        useLearningHistoryPosition: () => () => {},
+      },
       "@/hooks/queries/useLearningHistory": { useLearningHistory: () => query },
     },
   )(path).default;
@@ -64,6 +72,27 @@ test("full history owns the server summary and links back to mypage; recent hist
   assert.match(recent, /최근 학습/);
   assert.match(recent, /href="\/questionbank"/);
   assert.doesNotMatch(recent, /전체 학습 집계|총 풀이|13문제/);
+});
+
+test("signed-out recent and full history show login and retain the original list filter", () => {
+  for (const view of ["recent", "history"]) {
+    const html = page(
+      `app/(learn)/learning/${view}/page.tsx`,
+      { isPending: true },
+      null,
+      "wrong",
+    );
+    assert.match(html, /로그인하고 학습 기록 보기/);
+    assert.doesNotMatch(html, /학습 기록을 불러오는 중이에요/);
+    const login = new URL(
+      html.match(/href="(\/login[^\"]+)"/)[1],
+      "https://pillchat.local",
+    );
+    assert.equal(
+      login.searchParams.get("returnTo"),
+      `/learning/${view}?filter=wrong`,
+    );
+  }
 });
 test("full history keeps loading and error states without inventing study totals", () => {
   for (const query of [{ isPending: true }, { isError: true, refetch() {} }]) {
@@ -116,7 +145,7 @@ test("mypage full-history item opens history and uses its dedicated colored icon
   assert.ok(item);
   item.props.onClick();
   assert.deepEqual(navigation, ["/learning/history"]);
-  assert.equal(item.props.iconSrc, "/icons/terms.svg");
+  assert.equal(item.props.iconSrc, "/icons/learning-history-colored.svg");
   const account = nodes(MyPage()).find((n) => n.props?.title === "계정 연결");
   assert.match(account.props.description, /소셜 계정/);
   assert.doesNotMatch(account.props.description, /카카오/);

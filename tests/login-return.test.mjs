@@ -103,13 +103,16 @@ function browser() {
   return { window, load, flow, routes, savedTokens, component };
 }
 
-test("login return allowlist retains weakness filters and rejects external or misleading paths", () => {
+test("login return allowlist retains learning filters and rejects external or misleading paths", () => {
   const { safeLoginReturnTo } = loader()("lib/client/loginReturn.ts");
   for (const path of [
     target,
     "/learning/weakness/areas?range=today&sources=CBT&sort=due",
     "/learning/weakness/mastered#questions",
     "/learning/weakness/classification/",
+    "/learning/recent?filter=wrong",
+    "/learning/history?filter=correct",
+    "/learning/recent/",
   ]) {
     assert.equal(safeLoginReturnTo(path), path);
   }
@@ -122,12 +125,35 @@ test("login return allowlist retains weakness filters and rejects external or mi
     "javascript:alert(1)",
     "/login",
     "/learning/weakness-other",
+    "/learning/history-other",
+    "/learning/recent-other",
+    "/learning/history/CBT/3",
+    "//evil.example/learning/history",
+    "/learning/history/../../login",
     "/learning/weakness/../../login",
     "/learning/weakness/%2e%2e/%2e%2e/login",
     "/learning/weakness\n",
     "/learning/weakness?x=" + "a".repeat(2048),
   ]) {
     assert.equal(safeLoginReturnTo(path), null, String(path));
+  }
+});
+
+test("learning history login returns preserve the chosen list and filter through OAuth", () => {
+  for (const returnTo of [
+    "/learning/recent?filter=wrong",
+    "/learning/history?filter=confused",
+  ]) {
+    const env = browser();
+    env.window.location.search = `?returnTo=${encodeURIComponent(returnTo)}`;
+    env.flow.rememberLoginReturnTo();
+    env.window.location.search = "?code=mock&state=mock";
+    assert.equal(
+      env.flow.loginReturnHref(),
+      `/login?returnTo=${encodeURIComponent(returnTo)}`,
+    );
+    assert.equal(env.flow.consumeLoginReturnTo(), returnTo);
+    assert.equal(env.flow.consumeLoginReturnTo(), "/");
   }
 });
 
@@ -242,23 +268,19 @@ test("email login failures keep the target and only successful authentication co
       },
     },
   );
-  await view
-    .render()
-    .onSubmit({
-      email: "sample@example.test",
-      password: "invalid",
-      rememberMe: true,
-    });
+  await view.render().onSubmit({
+    email: "sample@example.test",
+    password: "invalid",
+    rememberMe: true,
+  });
   assert.deepEqual(env.routes, []);
   assert.equal(env.flow.loginReturnHref(), loginHref);
   succeed = true;
-  await view
-    .render()
-    .onSubmit({
-      email: "sample@example.test",
-      password: "valid",
-      rememberMe: true,
-    });
+  await view.render().onSubmit({
+    email: "sample@example.test",
+    password: "valid",
+    rememberMe: true,
+  });
   assert.deepEqual(env.routes, [target]);
   assert.equal(env.savedTokens.length, 1);
   env.window.location.search = "";

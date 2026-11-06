@@ -37,7 +37,7 @@ export default function HomeWeeklyReport({
             <StatsCard
               label="주간 정답률"
               value={accuracy == null ? "–" : `${accuracy}%`}
-              percentage={accuracy}
+              valueClassName={accuracy == null ? undefined : "text-primary"}
             />
           </div>
           <ul
@@ -83,7 +83,7 @@ export default function HomeWeeklyReport({
             ))}
           </ul>
           {weekly.solvedCount === 0 && (
-            <p className="mt-3 text-center text-body-medium text-muted-foreground">
+            <p className="mt-6 text-center text-body-medium text-muted-foreground">
               이번 주 첫 문제를 풀어보세요.
             </p>
           )}

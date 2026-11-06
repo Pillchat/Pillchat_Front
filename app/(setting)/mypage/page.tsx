@@ -69,7 +69,7 @@ const MyPage: FC = () => {
           <p className="text-sm text-muted-foreground">정보</p>
           <div className="mt-4 flex flex-col gap-6">
             <SystemField
-              iconSrc={PUBLIC_ASSETS.icons.terms}
+              iconSrc={PUBLIC_ASSETS.icons.learningHistoryColored}
               title="전체 학습 기록"
               description="푼 문제와 정답·오답, 학습 내용을 확인해요."
               onClick={() => router.push("/learning/history")}

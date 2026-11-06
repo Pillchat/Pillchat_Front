@@ -2,19 +2,12 @@
 import { useEffect, useRef, useState } from "react";
 import { ApiError } from "@/lib/client/fetch";
 import Link from "next/link";
-import QuestionBankIcon from "@/public/icons/question-bank.svg";
+import LearningSourceIcon from "@/components/learning/LearningSourceIcon";
 import SettingsIcon from "@/public/icons/settings.svg";
-import {
-  ChevronDown,
-  ChevronRight,
-  CircleHelp,
-  Info,
-  RotateCcw,
-} from "lucide-react";
+import { ChevronRight, CircleHelp, Info, RotateCcw } from "lucide-react";
 import { AppShell } from "@/components/molecules/AppShell";
 import { PracticeHeader } from "@/components/molecules/PracticeHeader";
 import { Button } from "@/components/ui/button";
-import { PercentageBar } from "@/components/atoms/PercentageBar";
 import {
   Dialog,
   DialogContent,
@@ -164,10 +157,9 @@ export default function WeaknessMain({
           onClick={() => launch(collection.source, collection.collectionRef)}
           className={`flex min-h-12 w-full items-center gap-3 rounded-lg pr-14 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-default ${pending ? "opacity-50" : ""}`}
         >
-          <QuestionBankIcon
-            aria-hidden="true"
-            viewBox="0 0 32 32"
-            className="h-8 w-8 shrink-0 text-primary"
+          <LearningSourceIcon
+            source={collection.source}
+            className="h-6 w-6 shrink-0 text-primary"
           />
           <span className="min-w-0 flex-1">
             <span className="block break-words text-title-large">
@@ -195,10 +187,6 @@ export default function WeaknessMain({
             <span className="sr-only">
               문제별 복습 현황 · {items.length}문제 · 복습 일정과 연속 정답 보기
             </span>
-            <ChevronDown
-              aria-hidden="true"
-              className="h-4 w-4 transition-transform group-open:rotate-180"
-            />
           </summary>
           <ul className="mt-3 space-y-4 border-t border-gray-100 pt-3">
             {items.map((q, index) => (
@@ -345,14 +333,9 @@ export default function WeaknessMain({
                   <p className="break-words text-title-small">
                     {field.subject}
                   </p>
-                  <strong className="mt-2 block text-xl tabular-nums">
+                  <strong className="mt-2 block text-xl tabular-nums text-primary">
                     {Math.round(field.wrongRate * 10) / 10}%
                   </strong>
-                  <PercentageBar
-                    value={field.wrongRate}
-                    label={`${field.subject} 오답·‘헷갈려요’ 표시 비율`}
-                    className="mt-2"
-                  />
                 </li>
               ))}
             </ol>
@@ -472,10 +455,12 @@ export default function WeaknessMain({
                   key={name}
                   type="button"
                   onClick={() => setSubject(name)}
-                  className="flex min-h-14 w-full items-center justify-between gap-3 rounded-xl border border-gray-200 p-3 text-left"
+                  className="grid min-h-14 w-full grid-cols-[minmax(0,1fr)_5rem_1rem] items-center gap-3 rounded-xl border border-gray-200 p-3 text-left"
                 >
-                  <span className="min-w-0 text-title-large">{name}</span>
-                  <span className="shrink-0 text-body-small text-muted-foreground">
+                  <span className="min-w-0 break-words text-title-large">
+                    {name}
+                  </span>
+                  <span className="text-right text-body-small tabular-nums text-muted-foreground">
                     {scheduled.filter((q) => q.subject === name).length}문제
                   </span>
                   <ChevronRight

@@ -54,8 +54,9 @@ test("resume uses the dashboard's latest unfinished set and the correct engine w
       .find((n) => n.props?.onClick)
       .props.onClick();
     assert.deepEqual(navigation, [`${target}id%2Fa%2B1`]);
-    assert.match(html, /4 \/ 10문제/);
-    assert.match(html, /value="40"/);
+    assert.match(html, /응답 4\/10문제/);
+    assert.match(html, /진행률.*40%/s);
+    assert.doesNotMatch(html, /<progress/);
     assert.doesNotMatch(html, /전체 최근 학습 보기/);
   }
 });
