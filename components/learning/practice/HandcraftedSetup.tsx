@@ -9,7 +9,6 @@ import Link from "next/link";
 import type { LearningSession } from "@/hooks/useLearningSession";
 import { handcraftedSubjects } from "@/lib/learning/handcraftedSubjects";
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
-import { AttemptHistory } from "./SessionFeedback";
 
 export default function HandcraftedSetup({
   session: s,
@@ -296,7 +295,6 @@ export default function HandcraftedSetup({
               : "새 문제 풀기"}
         </button>
       </form>
-      <AttemptHistory session={s} />
       <Link
         href="/learning/history"
         className="mt-5 block text-sm font-semibold text-primary"

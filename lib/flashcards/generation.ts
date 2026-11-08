@@ -121,7 +121,11 @@ export class FlashcardReview {
         card: d.card,
       }));
     // Even when every draft was excluded, persist those removals above.
-    if (!items.length) return generation;
+    if (!items.length) {
+      if (!this.removed.length)
+        throw new ApiError(422, { code: "EMPTY_GENERATION" });
+      return generation;
+    }
     this.pack ??= await fetchAPI(
       `/api/flashcard-packs/${generation.packId}`,
       "GET",

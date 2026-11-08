@@ -1,5 +1,5 @@
 "use client";
-import { FileUp, FileText } from "lucide-react";
+import { CheckCircle2, CircleAlert, FileUp, FileText } from "lucide-react";
 import {
   flashcardErrorMessage,
   generationFailureMessage,
@@ -41,6 +41,7 @@ export default function FlashcardGeneration({
   const [busy, setBusy] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [error, setError] = useState("");
+  const [packError, setPackError] = useState("");
   const [message, setMessage] = useState("");
   const [edits, setEdits] = useState<Record<string, Card>>({});
   const [removed, setRemoved] = useState<string[]>([]);
@@ -48,6 +49,9 @@ export default function FlashcardGeneration({
     null,
   );
   const [saved, setSaved] = useState(false);
+  const [activity, setActivity] = useState<
+    "upload" | "request" | "save" | null
+  >(null);
   const workflow = useRef<{
     file: File;
     packId: string;
@@ -62,6 +66,7 @@ export default function FlashcardGeneration({
   const review = useRef<FlashcardReview | null>(null);
   const pendingAction = useRef<(() => Promise<void>) | null>(null);
   const locked = useRef(false);
+  const polling = useRef(false);
   const revision = useRef(0);
   const refresh = async (id: string) => {
     const requestRevision = revision.current;
@@ -74,18 +79,30 @@ export default function FlashcardGeneration({
       String(packId || workflow.current?.pack?.packId || pack?.packId)
     )
       throw new Error("이 작업이 속한 카드팩을 먼저 선택해 주세요.");
-    const nextPack = await fetchAPI(
-      `/api/flashcard-packs/${next.packId}`,
-      "GET",
-    );
     if (requestRevision === revision.current) {
       setGeneration(next);
-      setPack(nextPack);
       setSource(
         (previous) =>
           previous ?? { id: next.sourceFileId, name: next.sourceFileName },
       );
     }
+    // Pack details must not prevent a terminal generation state from being shown.
+    void fetchAPI(`/api/flashcard-packs/${next.packId}`, "GET")
+      .then((nextPack) => {
+        if (requestRevision === revision.current) {
+          setPack(nextPack);
+          setPackError("");
+        }
+      })
+      .catch((e) => {
+        if (requestRevision === revision.current)
+          setPackError(
+            flashcardErrorMessage(
+              e,
+              "카드팩 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.",
+            ),
+          );
+      });
     return next;
   };
   useEffect(() => {
@@ -100,15 +117,27 @@ export default function FlashcardGeneration({
   }, [packId]);
   useEffect(() => {
     if (!generation || ["READY", "FAILED"].includes(generation.status)) return;
-    const timer = setInterval(() => {
+    const timer = setInterval(async () => {
       if (
         !locked.current &&
+        !polling.current &&
         document.visibilityState === "visible" &&
         navigator.onLine
-      )
-        void refresh(generation.generationId).catch((e) =>
-          setError(flashcardErrorMessage(e)),
-        );
+      ) {
+        polling.current = true;
+        try {
+          await refresh(generation.generationId);
+        } catch (e) {
+          setError(
+            flashcardErrorMessage(
+              e,
+              "진행 상태를 확인하지 못했어요. 진행 상태 새로고침을 눌러 다시 확인해 주세요.",
+            ),
+          );
+        } finally {
+          polling.current = false;
+        }
+      }
     }, 3000);
     return () => clearInterval(timer);
   }, [generation?.generationId, generation?.status]);
@@ -138,6 +167,7 @@ export default function FlashcardGeneration({
     } finally {
       locked.current = false;
       setBusy(false);
+      setActivity(null);
     }
   };
   // Each pipeline stage resumes from its last confirmed result; uncertain requests keep their key/body.
@@ -162,6 +192,7 @@ export default function FlashcardGeneration({
       };
     const flow = workflow.current;
     if (!flow.sourceId) {
+      setActivity("upload");
       flow.sourceId = await uploadFlashcardSource(flow.file, flow.uploadKey);
     }
     if (!flow.pack) {
@@ -180,6 +211,7 @@ export default function FlashcardGeneration({
     if (!flow.pack) throw new Error("카드팩을 불러오지 못했어요.");
     setPack(flow.pack);
     setSource({ name: flow.file.name, id: flow.sourceId });
+    setActivity("request");
     const next = await send<Generation>(
       `/api/flashcard-packs/${flow.pack.packId}/generations`,
       {
@@ -204,9 +236,12 @@ export default function FlashcardGeneration({
     workflow.current = null;
   };
   const save = async () => {
-    if (!generation || !pack) return;
+    if (!generation) return;
+    setActivity("save");
     review.current ??= new FlashcardReview(generation, edits, removed);
     const next = await review.current.finalize();
+    if (!next.drafts?.some((draft) => draft.state === "EDITABLE"))
+      throw new ApiError(422, { code: "EMPTY_GENERATION" });
     setGeneration(next);
     setEdits({});
     setRemoved([]);
@@ -248,14 +283,138 @@ export default function FlashcardGeneration({
       Object.keys(edits).length > 0);
   const editingDisabled = disabled || generation?.status !== "READY" || saved;
   const inputDisabled = disabled || processing || hasDrafts;
+  const emptyResult =
+    generation?.status === "READY" &&
+    !saved &&
+    !visibleDrafts.length &&
+    !removed.length;
+  const working = busy || (restoring && !generation) || processing;
+  let statusTitle = "AI 카드 생성 중";
+  let statusDetail =
+    generation?.stage === "PARSE"
+      ? "AI가 작성한 카드와 원본 근거를 확인하고 있어요."
+      : "자료를 바탕으로 카드를 만들고 있어요. 완료되면 미리보기가 표시됩니다.";
+  if (activity === "upload") {
+    statusTitle = "자료 업로드 중";
+    statusDetail = "선택한 학습자료를 업로드하고 있어요.";
+  } else if (activity === "request") {
+    statusTitle = "AI 생성 요청 중";
+    statusDetail = "자료를 준비하고 AI 생성 작업을 시작하고 있어요.";
+  } else if (activity === "save") {
+    statusTitle = "카드팩에 저장 중";
+    statusDetail =
+      "확인한 카드를 저장하고 있어요. 완료될 때까지 기다려 주세요.";
+  } else if (restoring && !generation) {
+    statusTitle = "이전 작업 확인 중";
+    statusDetail = "저장된 생성 상태와 미리보기를 불러오고 있어요.";
+  } else if (saved) {
+    statusTitle = "카드팩 저장 완료";
+    statusDetail = "저장된 카드 목록에서 학습을 시작할 수 있어요.";
+  } else if (generation?.status === "FAILED") {
+    statusTitle = "카드 생성 실패";
+    statusDetail = generationFailureMessage(generation.errorCode);
+  } else if (
+    generation?.status === "READY" &&
+    !visibleDrafts.length &&
+    removed.length
+  ) {
+    statusTitle = "카드를 모두 제외했어요";
+    statusDetail = "제외 상태를 유지하려면 ‘수정 내용 저장’을 눌러 주세요.";
+  } else if (emptyResult) {
+    statusTitle = "저장할 새 카드가 없어요";
+    statusDetail =
+      "AI 작업은 끝났지만 저장할 카드가 없어요. 자료를 바꾸거나 카드 수를 줄여 다시 생성해 주세요.";
+  } else if (generation?.status === "READY") {
+    statusTitle = `${visibleDrafts.length}장 생성 완료 · 저장 전`;
+    statusDetail =
+      "생성이 완료됐어요. 아직 카드팩에 저장되지 않았어요. 아래 카드를 확인하고 ‘카드팩에 저장’을 눌러 주세요.";
+  }
+  const activeStep = saved
+    ? 4
+    : activity === "save"
+      ? 3
+      : generation?.status === "READY"
+        ? 2
+        : activity === "upload"
+          ? 0
+          : 1;
   useEffect(() => {
     onBusyChange?.(inputDisabled);
   }, [inputDisabled, onBusyChange]);
   return (
     <section className="space-y-4 rounded-2xl border p-4">
-      {error && (
+      {(working || generation) && (
+        <div
+          role="status"
+          aria-live="polite"
+          aria-busy={working}
+          className="space-y-4 rounded-xl border border-gray-300 bg-primary-980 p-4"
+        >
+          <div className="flex items-start gap-3">
+            {working ? (
+              <PillLoader size={32} label={statusTitle} />
+            ) : generation?.status === "FAILED" || emptyResult ? (
+              <CircleAlert
+                aria-hidden="true"
+                size={32}
+                strokeWidth={1.5}
+                className="shrink-0 text-primary"
+              />
+            ) : (
+              <CheckCircle2
+                aria-hidden="true"
+                size={32}
+                strokeWidth={1.5}
+                className="shrink-0 text-primary"
+              />
+            )}
+            <div className="min-w-0 space-y-1">
+              <p className="font-bold text-foreground">{statusTitle}</p>
+              <p className="text-sm leading-6 text-muted-foreground">
+                {statusDetail}
+              </p>
+            </div>
+          </div>
+          <ol
+            aria-label="카드 생성 진행 단계"
+            className="grid grid-cols-4 gap-2 text-center text-xs"
+          >
+            {["자료 업로드", "AI 생성", "미리보기 확인", "카드팩 저장"].map(
+              (label, index) => (
+                <li
+                  key={label}
+                  aria-current={activeStep === index ? "step" : undefined}
+                  className={
+                    index <= activeStep
+                      ? "rounded-lg bg-white p-2 font-semibold text-primary"
+                      : "rounded-lg bg-white/50 p-2 text-muted-foreground"
+                  }
+                >
+                  {index < activeStep ? "✓ " : `${index + 1}. `}
+                  {label}
+                </li>
+              ),
+            )}
+          </ol>
+          {processing && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy || restoring}
+              onClick={() =>
+                void run(async () => {
+                  await refresh(generation.generationId);
+                })
+              }
+            >
+              진행 상태 새로고침
+            </Button>
+          )}
+        </div>
+      )}
+      {(error || packError) && (
         <p role="alert" className="text-destructive">
-          {error}
+          {error || packError}
         </p>
       )}
       {message && <p role="status">{message}</p>}
@@ -374,8 +533,14 @@ export default function FlashcardGeneration({
         }
         onClick={() => void run(generate)}
       >
-        {busy && <PillLoader size={24} className="mr-2" />}
-        AI로 카드 만들기
+        {(activity === "upload" || activity === "request" || processing) && (
+          <PillLoader size={24} className="mr-2" />
+        )}
+        {activity === "upload"
+          ? "자료 업로드 중"
+          : activity === "request" || processing
+            ? "AI 생성 중"
+            : "AI로 카드 만들기"}
       </Button>
       {generation && (
         <>
@@ -384,22 +549,15 @@ export default function FlashcardGeneration({
             aria-live="polite"
           >
             <p className="font-semibold">
-              {pack?.title} · 확인할 카드 {visibleDrafts.length}장
+              {pack?.title} ·{" "}
+              {saved
+                ? "카드팩 저장 완료"
+                : `확인할 카드 ${visibleDrafts.length}장`}
             </p>
             <p className="mt-1 break-all text-muted-foreground">
               원본 자료: {source?.name ?? "이전에 선택한 학습자료"}
             </p>
           </div>
-          <p role="status">
-            {generation.status === "READY"
-              ? "생성이 완료됐어요. 카드를 확인하고 저장해 주세요."
-              : generation.status === "FAILED"
-                ? "생성을 완료하지 못했어요."
-                : "자료에서 카드를 생성하고 있어요. 미리보기부터 확인할 수 있어요."}
-          </p>
-          {generation.status === "FAILED" && (
-            <p role="alert">{generationFailureMessage(generation.errorCode)}</p>
-          )}
           {((generation.drafts?.length ?? 0) > 0 ||
             generation.status === "READY") && (
             <>
@@ -490,7 +648,11 @@ export default function FlashcardGeneration({
                   }
                   onClick={() => void run(save)}
                 >
-                  카드팩에 저장
+                  {activity === "save"
+                    ? "카드팩에 저장 중…"
+                    : saved
+                      ? "저장 완료"
+                      : `카드팩에 저장 (${visibleDrafts.length}장)`}
                 </Button>
               </div>
             </>
