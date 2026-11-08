@@ -36,9 +36,10 @@ const updated = {
 };
 function setup(fetchAPI, globals = {}) {
   class ApiError extends Error {
-    constructor(status) {
+    constructor(status, data = {}) {
       super("error");
       this.status = status;
+      this.code = data.code;
     }
   }
   return {
@@ -135,6 +136,15 @@ test("non-ready generations cannot be finalized", async () => {
       {},
       [],
     ).finalize(),
+  );
+});
+
+test("an empty generation cannot be reported as a successful save", async () => {
+  const client = setup(() => assert.fail("empty cards must not be submitted"));
+  await assert.rejects(
+    () =>
+      new client.FlashcardReview({ ...initial, drafts: [] }, {}, []).finalize(),
+    (error) => error.code === "EMPTY_GENERATION" && error.status === 422,
   );
 });
 test("source upload retries preserve metadata UUID and attach bearer, including token recovery", async () => {

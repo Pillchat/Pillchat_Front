@@ -29,7 +29,7 @@ import {
   choicePatch,
   formatDuration,
 } from "@/lib/learning/presentation";
-import { SessionFeedback, AttemptHistory } from "./SessionFeedback";
+import { SessionFeedback } from "./SessionFeedback";
 import { PracticeResult } from "./PracticeResult";
 import {
   CalculatorDialog,
@@ -274,7 +274,6 @@ export default function CbtPractice({
               새 문제에서는 이미 푼 문제와 진행 중인 문제를 제외해요. 이전
               문제는 재도전을 선택할 때만 다시 나와요.
             </p>
-            <AttemptHistory session={s} />
             {s.history.some(
               (item) => item.state === "COMPLETED" && item.mode !== "REVIEW",
             ) && (

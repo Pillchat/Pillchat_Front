@@ -30,37 +30,3 @@ export function SessionFeedback({ session }: { session: LearningSession }) {
     </div>
   );
 }
-export function AttemptHistory({ session }: { session: LearningSession }) {
-  if (!session.history.length) return null;
-  return (
-    <section className="mt-6 space-y-2">
-      <h2 className="text-sm font-bold">최근 학습</h2>
-      {session.history.map((item) => (
-        <button
-          type="button"
-          key={item.attemptId}
-          disabled={session.disabled}
-          onClick={() => void session.resume(item.attemptId)}
-          className="block w-full rounded-xl border border-primary/20 bg-brandSecondary px-4 py-4 text-left"
-        >
-          <span className="block text-sm font-bold text-primary">
-            {item.state === "COMPLETED" ? "완료한 학습 확인" : "이어서 풀기"}
-          </span>
-          <span className="mt-1 block text-xs text-muted-foreground">
-            {item.title}
-          </span>
-        </button>
-      ))}
-      {session.cursor && (
-        <button
-          type="button"
-          disabled={session.disabled}
-          className="py-3 text-sm text-primary"
-          onClick={() => void session.moreHistory()}
-        >
-          더 보기
-        </button>
-      )}
-    </section>
-  );
-}
