@@ -28,7 +28,7 @@ import {
   choicePatch,
   formatDuration,
 } from "@/lib/learning/presentation";
-import { SessionFeedback, AttemptHistory } from "./SessionFeedback";
+import { SessionFeedback } from "./SessionFeedback";
 import { PracticeResult } from "./PracticeResult";
 import {
   CalculatorDialog,
@@ -272,7 +272,6 @@ export default function CbtPractice({
               </p>
             </section>
             {bankPicker}
-            <AttemptHistory session={s} />
             <div className="mt-5 flex flex-col gap-3">
               <ModeCard
                 icon={<BookOpenCheck className="h-7 w-7 text-primary" />}

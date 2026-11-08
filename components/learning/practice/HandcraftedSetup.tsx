@@ -11,7 +11,6 @@ import {
   type SubjectOption,
 } from "@/lib/learning/handcraftedSubjects";
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
-import { AttemptHistory } from "./SessionFeedback";
 
 export default function HandcraftedSetup({
   session: s,
@@ -213,7 +212,6 @@ export default function HandcraftedSetup({
           {s.busy ? "문제를 준비하는 중..." : "문제 풀기"}
         </button>
       </form>
-      <AttemptHistory session={s} />
       <Link
         href="/learning/review?category=HANDCRAFTED"
         className="mt-5 block text-sm font-semibold text-primary"

@@ -3,6 +3,13 @@ export function flashcardErrorMessage(
   error: unknown,
   fallback = "요청을 완료하지 못했어요. 잠시 후 다시 시도해 주세요.",
 ) {
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    error.code === "EMPTY_GENERATION"
+  )
+    return "저장할 카드가 없어요. 자료를 바꾸거나 카드 수를 줄여 다시 생성해 주세요.";
   const status =
     error && typeof error === "object" && "status" in error
       ? error.status
@@ -34,6 +41,8 @@ export const FLASHCARD_FIELD_LABELS: Record<string, string> = {
 };
 
 export function generationFailureMessage(code?: string) {
+  if (code === "SOURCE_QUOTE_MISMATCH")
+    return "AI가 만든 카드의 근거가 원본 자료와 일치하지 않아 생성을 중단했어요. 자료를 나누거나 카드 수를 줄여 다시 시도해 주세요.";
   if (code?.includes("QUOTA") || code?.includes("RATE_LIMIT"))
     return "생성 요청이 많아요. 잠시 후 다시 시도해 주세요.";
   if (code?.includes("TIMEOUT"))

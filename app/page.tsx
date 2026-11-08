@@ -4,21 +4,15 @@ import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 
 import { PUBLIC_ASSETS } from "@/constants/assets";
 import { type FC, useEffect, useMemo, useRef, useState } from "react";
-import {
-  BadgeCheck,
-  ChevronRight,
-  GalleryVerticalEnd,
-  Monitor,
-  RotateCcw,
-  Sparkles,
-} from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { BottomNavbar, AlarmHeader } from "@/components/molecules";
 import { AttendanceSummary } from "@/components/molecules/AttendanceSummary";
 import { Toast } from "@/components/atoms";
-import EntryButton from "@/app/(questionbank)/questionbank/_components/EntryButton";
+import HomeLearningOverview from "./_components/HomeLearningOverview";
 import { useRouter } from "@/lib/navigation";
 import { getValidAccessToken } from "@/lib/client/fetch";
 import { useAttendance } from "@/hooks/useAttendance";
+import { useLearningDashboardQuery } from "@/hooks/queries/useLearningDashboardQuery";
 import {
   calculateDday,
   formatDday,
@@ -223,6 +217,7 @@ const Home: FC = () => {
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const attendance = useAttendance(isAuthenticated === true);
+  const learning = useLearningDashboardQuery(isAuthenticated === true);
   const [isDdayReady, setIsDdayReady] = useState(false);
   const [ddays, setDdays] = useState<DDayItem[]>(DEFAULT_DDAYS);
   const [activeDdayId, setActiveDdayId] = useState(DEFAULT_DDAYS[0].id);
@@ -545,49 +540,12 @@ const Home: FC = () => {
           </p>
         )}
 
-        <section className="mt-6 px-5 md:px-10" aria-label="학습 메뉴">
-          <div className="flex flex-col gap-4">
-            <EntryButton
-              compact
-              icon={<GalleryVerticalEnd className="h-7 w-7 text-primary" />}
-              title="AI 플래시카드"
-              subtitle="취약 개념을 반복해서 복습하는 학습 루틴"
-              onClick={() => router.push("/flashcards")}
-            />
-
-            <EntryButton
-              compact
-              icon={<Monitor className="h-7 w-7 text-primary" />}
-              title="CBT 형태로 학습하기"
-              subtitle="국가시험과 같은 시간·답안 환경에서 연습해요"
-              onClick={() => router.push("/learning/cbt")}
-            />
-
-            <EntryButton
-              compact
-              icon={<BadgeCheck className="h-7 w-7 text-primary" />}
-              title="수제 제작 문제"
-              subtitle="전문가가 직접 만들고 검수한 문제를 풀어요"
-              onClick={() => router.push("/questionbank/handcrafted")}
-            />
-
-            <EntryButton
-              compact
-              icon={<Sparkles className="h-7 w-7 text-primary" />}
-              title="AI 문제 생성"
-              subtitle="내 학습자료와 설정을 바탕으로 문제를 만들어요"
-              onClick={() => router.push("/questionbank/premium")}
-            />
-
-            <EntryButton
-              compact
-              icon={<RotateCcw className="h-7 w-7 text-primary" />}
-              title="복습하기"
-              subtitle="CBT·수제 제작·AI 생성 문제의 오답을 모아 복습해요"
-              onClick={() => router.push("/questionbank/review")}
-            />
-          </div>
-        </section>
+        <HomeLearningOverview
+          data={learning.data}
+          pending={learning.isLoading}
+          isError={learning.isError}
+          onRetry={() => void learning.refetch()}
+        />
 
         {isDdayEditorOpen && (
           <div
