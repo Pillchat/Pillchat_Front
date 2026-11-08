@@ -15,6 +15,7 @@ import {
 import { isCurrentUserAdmin } from "@/lib/client/auth";
 import { useRouter } from "@/lib/navigation";
 import { useDelete, useLogout, useMyProfile } from "./_hooks";
+import ProfileLearningStatus from "./_components/ProfileLearningStatus";
 
 const MyPage: FC = () => {
   const router = useRouter();
@@ -23,7 +24,7 @@ const MyPage: FC = () => {
   );
   const { onDelete } = useDelete();
   const { onLogout } = useLogout();
-  const { onMyProfile, isLoading, error } = useMyProfile();
+  const { onMyProfile, isLoading, error, profile } = useMyProfile();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -62,10 +63,17 @@ const MyPage: FC = () => {
         ) : (
           <UserInfoField onIconClick={() => router.push("/editprofile")} />
         )}
+        {!isLoading && <ProfileLearningStatus profile={profile} />}
 
-        <div className="mt-8 w-[90%]">
+        <div className="mt-8 w-full px-6">
           <p className="text-sm text-muted-foreground">정보</p>
           <div className="mt-4 flex flex-col gap-6">
+            <SystemField
+              iconSrc={PUBLIC_ASSETS.icons.learningHistoryColored}
+              title="전체 학습 기록"
+              description="푼 문제와 정답·오답, 학습 내용을 확인해요."
+              onClick={() => router.push("/learning/history")}
+            />
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.userUpgrade}
               title="승급 조건"
@@ -86,13 +94,17 @@ const MyPage: FC = () => {
               description="내가 설정한 항목을 변경할 수 있어요."
               onClick={() => router.push("/onboarding")}
             />
+            <SystemField
+              iconSrc={PUBLIC_ASSETS.icons.userInfo}
+              title="계정 연결"
+              description="소셜 계정을 연결하고 로그인 방식을 관리해요."
+              onClick={() => router.push("/settings/account")}
+            />
           </div>
-
-          <div className="mt-8 h-px w-full bg-muted" />
         </div>
 
         {isAdmin && (
-          <div className="mt-5 w-[90%]">
+          <div className="mt-8 w-full px-6">
             <p className="text-sm text-muted-foreground">관리자</p>
             <div className="mt-4 flex flex-col gap-6">
               <SystemField
@@ -102,46 +114,49 @@ const MyPage: FC = () => {
                 onClick={() => router.push("/admin")}
               />
               <SystemField
-                iconSrc={PUBLIC_ASSETS.icons.questionBank}
+                iconSrc={PUBLIC_ASSETS.icons.learningHistoryColored}
                 title="수제 문제 · CBT 관리"
                 description="문제를 제작하고 등록할 수 있어요."
                 onClick={() => router.push("/admin/questions")}
               />
             </div>
-            <div className="mt-8 h-px w-full bg-muted" />
           </div>
         )}
 
-        <div className="mt-5 w-[90%]">
+        <div className="mt-8 w-full px-6">
           <p className="text-sm text-muted-foreground">문의 및 안내</p>
           <div className="mt-4 flex flex-col gap-6">
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.headset}
               title="고객 센터"
+              description="궁금한 점이나 불편한 점을 문의해보세요."
               onClick={() => router.push("/support")}
             />
 
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.notice}
               title="공지사항"
+              description="새로운 소식과 서비스 안내를 확인해요."
               onClick={() => router.push("/notices")}
             />
 
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.privacyPolicy}
               title="개인정보 처리방침"
+              description="개인정보의 수집과 이용 기준을 확인해요."
+              onClick={() => router.push("/legal/privacy")}
             />
 
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.terms}
               title="서비스 이용약관"
+              description="서비스 이용에 필요한 내용을 확인해요."
+              onClick={() => router.push("/legal/terms")}
             />
           </div>
-
-          <div className="mt-8 h-px w-full bg-muted" />
         </div>
 
-        <div className="mt-8 w-[90%]">
+        <div className="mt-8 w-full px-6">
           <div className="flex flex-col gap-6">
             <SystemField
               iconSrc={PUBLIC_ASSETS.icons.logout}

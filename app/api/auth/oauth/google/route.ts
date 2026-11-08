@@ -26,7 +26,7 @@ const getErrorMessage = (data: any) => {
   const errorCode = getErrorCode(data);
 
   if (errorCode === "ALREADY_EXIST_EMAIL") {
-    return "이미 일반 회원가입으로 가입된 이메일입니다. 기존 계정으로 로그인해주세요.";
+    return "이미 사용 중인 이메일입니다. 기존에 가입한 계정과 로그인 방식을 확인해주세요.";
   }
 
   return (

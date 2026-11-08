@@ -3,6 +3,7 @@ import type { LoginFormData } from "../types";
 import { useAuth } from "@/hooks";
 import { useRouter } from "next/navigation";
 import { fetchAPI, setTokens } from "@/lib/client/fetch";
+import { consumeLoginReturnTo } from "@/lib/client/loginReturn";
 
 export const useSubmit = () => {
   const router = useRouter();
@@ -29,7 +30,7 @@ export const useSubmit = () => {
             refresh_token,
             data.rememberMe,
           );
-          router.push("/");
+          router.push(consumeLoginReturnTo());
         } else {
           setError("로그인 응답에 토큰 데이터가 없습니다.");
         }

@@ -15,7 +15,12 @@ import {
   secondsRemaining,
 } from "@/lib/learning/presentation";
 
-type HistoryItem = { attemptId: string; title: string; state: string };
+type HistoryItem = {
+  attemptId: string;
+  title: string;
+  state: string;
+  mode?: string;
+};
 type Effect = {
   attempt?: Attempt;
   grade?: Grade;
@@ -25,7 +30,15 @@ const base = "/api/learning";
 const errorMessage = (error: unknown) =>
   error instanceof ApiError && error.status === 401
     ? "로그인 후 학습할 수 있어요."
-    : "요청을 완료하지 못했어요. 잠시 후 다시 시도해주세요.";
+    : error instanceof ApiError &&
+        [
+          "NO_NEW_QUESTIONS",
+          "INSUFFICIENT_NEW_QUESTIONS",
+          "CBT_RETRY_UNAVAILABLE",
+          "EXAM_CONTENT_UNAVAILABLE",
+        ].includes(error.code ?? "")
+      ? error.message
+      : "요청을 완료하지 못했어요. 잠시 후 다시 시도해주세요.";
 export function useLearningSession(source: Source) {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [attempt, setAttempt] = useState<Attempt | null>(null);
@@ -65,6 +78,25 @@ export function useLearningSession(source: Source) {
         setResult(null);
         memoRef.current = {};
         setMemos({});
+      }
+      // Completed single-question grading omits the section; retain its prompts until results are opened.
+      const previous = current.current;
+      if (
+        (source === "HANDCRAFTED" || next.mode === "REVIEW") &&
+        next.state === "COMPLETED" &&
+        previous?.attemptId === next.attemptId &&
+        !next.currentSectionQuestions.length
+      ) {
+        next = {
+          ...next,
+          currentSectionId: previous.currentSectionId,
+          currentQuestionId: previous.currentQuestionId,
+          currentSectionQuestions: previous.currentSectionQuestions,
+          savedAnswers: previous.savedAnswers.map((answer) => ({
+            ...answer,
+            finalized: true,
+          })),
+        };
       }
       current.current = next;
       setAttempt(next);
@@ -394,9 +426,18 @@ export function useLearningSession(source: Source) {
         revisionId: bank.revisionId,
         mode: ordinal ? "SESSION" : "FULL",
         timingMode: ordinal && quick ? "QUICK" : "STANDARD",
+        questionCount: ordinal && quick ? 25 : 100,
         ...(ordinal ? { sectionOrdinal: ordinal } : {}),
       });
     },
+    retryCbt: (attemptId: string) =>
+      source === "CBT"
+        ? command(
+            `/cbt/attempts/${encodeURIComponent(attemptId)}/retry`,
+            "POST",
+            {},
+          )
+        : Promise.resolve(false),
     reconnect: () =>
       Object.keys(memoRef.current).length
         ? flushMemos()

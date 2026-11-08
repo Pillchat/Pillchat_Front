@@ -1,7 +1,10 @@
 "use client";
+import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
+import WeaknessReviewFeedback from "@/components/learning/WeaknessReviewFeedback";
 
 import { TutorialButton } from "@/components/learning/TutorialButton";
 import { useState } from "react";
+import { PracticeResult } from "./PracticeResult";
 import { Bookmark, BookmarkCheck, Check, X, CircleHelp } from "lucide-react";
 import { AppShell, PracticeHeader } from "@/components/molecules";
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
@@ -9,7 +12,6 @@ import type { LearningSession } from "@/hooks/useLearningSession";
 import HandcraftedTutorial from "@/app/(questionbank)/questionbank/handcrafted/_components/HandcraftedTutorial";
 import { SessionFeedback } from "./SessionFeedback";
 import HandcraftedSetup from "./HandcraftedSetup";
-import { PracticeResult } from "./PracticeResult";
 import { choiceExplanations } from "@/lib/learning/presentation";
 export default function HandcraftedPractice({
   session: s,
@@ -25,15 +27,7 @@ export default function HandcraftedPractice({
   const grade = question ? s.grades[question.attemptQuestionId] : undefined;
   const locked =
     s.disabled || attempt?.state !== "IN_PROGRESS" || !!answer?.finalized;
-  const next = async () => {
-    if (!attempt) return;
-    if (s.index + 1 < attempt.currentSectionQuestions.length)
-      await s.navigate(
-        attempt.currentSectionQuestions[s.index + 1].attemptQuestionId,
-      );
-    else if (attempt.resultAvailable) await s.showResult();
-    else if (attempt.state === "IN_PROGRESS") await s.submitSection();
-  };
+  const completed = attempt?.state === "COMPLETED";
   if (s.result)
     return (
       <>
@@ -41,6 +35,16 @@ export default function HandcraftedPractice({
         <PracticeResult session={s} onTutorial={() => setTutorial(true)} />
       </>
     );
+  const next = async () => {
+    if (!attempt) return;
+    if (s.index + 1 < attempt.currentSectionQuestions.length)
+      await s.navigate(
+        attempt.currentSectionQuestions[s.index + 1].attemptQuestionId,
+      );
+    else if (attempt.state === "COMPLETED") await s.showResult();
+    else if (attempt.state === "IN_PROGRESS" && (await s.submitSection()))
+      await s.showResult();
+  };
   return (
     <AppShell className="min-h-dvh bg-white">
       {tutorial && <HandcraftedTutorial onClose={() => setTutorial(false)} />}
@@ -54,6 +58,27 @@ export default function HandcraftedPractice({
       <SessionFeedback session={s} />
       {s.loading ? (
         <LoadingIndicator label="문제를 불러오는 중..." className="py-20" />
+      ) : completed && (!question || !answer) ? (
+        <section className="space-y-4 px-6 py-12 text-center">
+          <p>문제풀이를 완료했어요.</p>
+          {attempt.resultAvailable && (
+            <button
+              type="button"
+              disabled={s.disabled}
+              onClick={() => void s.showResult()}
+              className="h-[58px] w-full rounded-xl bg-primary font-semibold text-white disabled:opacity-50"
+            >
+              결과 보기
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => void s.leave()}
+            className="text-sm text-muted-foreground"
+          >
+            시작 화면으로 돌아가기
+          </button>
+        </section>
       ) : !attempt ? (
         <HandcraftedSetup session={s} />
       ) : question && answer ? (
@@ -102,6 +127,14 @@ export default function HandcraftedPractice({
                 )}
               </button>
             </div>
+            {attempt.mode !== "REVIEW" && (
+              <ConfusionToggle
+                key={`${question.attemptQuestionId}:${answer.finalized}`}
+                source="HANDCRAFTED"
+                questionId={question.sourceQuestionVersionId}
+                disabled={s.disabled}
+              />
+            )}
             {question.referenceContent && (
               <p className="mt-5 whitespace-pre-wrap rounded-xl bg-gray-50 p-4 text-sm">
                 {question.referenceContent}
@@ -165,8 +198,26 @@ export default function HandcraftedPractice({
                 );
               })}
             </div>
+            {grade && attempt.mode === "REVIEW" && (
+              <WeaknessReviewFeedback
+                key={question.attemptQuestionId}
+                source={s.source}
+                questionId={question.sourceQuestionVersionId}
+                disabled={s.disabled}
+              />
+            )}
             {grade && (
               <div className="mt-6 border-t border-gray-100 pt-6">
+                <p
+                  role="status"
+                  className={`mb-4 font-semibold ${grade.outcome === "CORRECT" ? "text-green-700" : "text-primary"}`}
+                >
+                  {grade.outcome === "CORRECT"
+                    ? "정답입니다."
+                    : grade.outcome === "REVEALED"
+                      ? "정답을 확인했어요."
+                      : "오답입니다."}
+                </p>
                 <div className="rounded-xl bg-gray-50 p-4">
                   <p className="text-sm font-bold">정답 해설</p>
                   <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
@@ -217,42 +268,28 @@ export default function HandcraftedPractice({
                 type="button"
                 disabled={
                   s.disabled ||
-                  (s.index === attempt.currentSectionQuestions.length - 1 &&
-                    attempt.state !== "IN_PROGRESS" &&
-                    !attempt.resultAvailable)
+                  (attempt.state === "COMPLETED" && !attempt.resultAvailable)
                 }
                 onClick={() => void next()}
                 className="h-12 w-full rounded-xl bg-primary text-sm font-bold text-white disabled:bg-gray-300"
               >
                 {s.index === attempt.currentSectionQuestions.length - 1
-                  ? attempt.state !== "IN_PROGRESS" && !attempt.resultAvailable
-                    ? "결과 공개 대기"
-                    : "결과 확인"
+                  ? "결과 보기"
                   : "다음 문제"}
               </button>
             )}
           </div>
-          {attempt.resultAvailable && (
-            <button
-              type="button"
-              disabled={s.disabled}
-              onClick={() => void s.showResult()}
-              className="mt-4 w-full py-3 text-sm text-primary"
-            >
-              학습 결과 보기
-            </button>
-          )}
-          {attempt.state === "COMPLETED" && !attempt.resultAvailable && (
-            <p className="mt-4 text-sm text-muted-foreground">
-              학습을 완료했어요. 결과 공개를 기다려주세요.
-            </p>
-          )}
         </main>
       ) : (
         <div className="p-6">
-          <p>응시 내용을 확인해주세요.</p>
-          <button onClick={() => void s.leave()} className="mt-4 text-primary">
-            목록으로
+          <p>현재 문제 또는 답안을 찾지 못하였습니다.</p>
+          <button
+            type="button"
+            disabled={s.disabled}
+            onClick={() => void s.leave()}
+            className="mt-4 text-primary"
+          >
+            돌아가기
           </button>
         </div>
       )}

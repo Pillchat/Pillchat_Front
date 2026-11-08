@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { NextRequest } from "next/server.js";
 import { loader } from "./helpers/load-ts.mjs";
@@ -16,6 +17,18 @@ const data = {
     title: "최근에 풀던 임상약학",
     answeredCount: 3,
     questionCount: 10,
+    subject: "임상약학",
+    topic: "심혈관계",
+  },
+  weekly: {
+    weekStart: "2026-10-26",
+    days: Array.from({ length: 7 }, (_, index) => ({
+      date: `2026-${index < 6 ? `10-${26 + index}` : "11-01"}`,
+      solvedCount: index === 0 ? 20 : 0,
+      correctCount: index === 0 ? 15 : 0,
+    })),
+    solvedCount: 20,
+    correctCount: 15,
   },
 };
 
@@ -55,6 +68,9 @@ function overview(props) {
     {},
     {
       "lucide-react": new Proxy({}, { get: () => () => null }),
+      "@/public/icons/question-bank.svg": (props) =>
+        createElement("svg", props),
+      "@/public/icons/review.svg": (props) => createElement("svg", props),
       "@/lib/navigation": {
         useRouter: () => ({ push: (href) => navigation.push(href) }),
       },
@@ -78,19 +94,23 @@ test("home reuses cards to show server totals and sends users to resume and shor
     "오늘의 학습 현황",
     "20문제",
     "75%",
-    "1시간 1분",
+    "주간 리포트",
+    "심혈관계",
     data.latestAttempt.title,
-    "3 / 10문제",
+    "응답 3/10문제",
     "수제 제작 문제",
     "약점공략",
   ])
     assert.ok(html.includes(text), text);
+  assert.ok(!html.includes("학습 시간"));
+  assert.match(html, /진행률.*30%/s);
+  assert.doesNotMatch(html, /<progress/);
   const entries = nodes(view.tree).filter((node) => node.props?.onClick);
   entries.forEach((entry) => entry.props.onClick());
   assert.deepEqual(view.navigation, [
     "/questionbank/handcrafted?attempt=9007199254740997",
     "/questionbank/handcrafted",
-    "/learning/review?mode=wrong",
+    "/learning/weakness",
   ]);
 });
 
@@ -108,9 +128,14 @@ test("empty progress differs from failed or pending reads and never fabricates t
   );
   assert.ok(
     empty.includes("0문제") &&
-      empty.includes("0%") &&
-      empty.includes("진행 중인 문제풀이가 없어요"),
+      !empty.includes('aria-label="정답률"') &&
+      empty.includes("추천 문제 풀기"),
   );
+  const allWrong = renderToStaticMarkup(
+    overview({ data: { ...data, correctCount: 0 } }).tree,
+  );
+  assert.ok(allWrong.includes("0%"));
+  assert.match(allWrong, /정답률.*0%/s);
   const pending = renderToStaticMarkup(overview({ pending: true }).tree);
   assert.ok(pending.includes("불러오는 중"));
   assert.ok(!pending.includes("0문제"));
@@ -126,11 +151,45 @@ test("empty progress differs from failed or pending reads and never fabricates t
     html.includes('role="alert"') &&
       html.includes("최근 학습 기록을 확인하지 못했어요"),
   );
-  assert.ok(!html.includes("진행 중인 문제풀이가 없어요"));
+  assert.ok(!html.includes("추천 문제 풀기"));
   nodes(failed.tree)
     .find((node) => node.type === "button")
     .props.onClick();
   assert.equal(retried, true);
+});
+
+test("recommendation opens handcrafted setup and weekly report keeps all seven days including zero days", () => {
+  const view = overview({ data: { ...data, latestAttempt: null } });
+  nodes(view.tree)
+    .find((node) => node.props?.title === "추천 문제 풀기")
+    .props.onClick();
+  assert.deepEqual(view.navigation, ["/questionbank/handcrafted"]);
+  const html = renderToStaticMarkup(view.tree);
+  assert.equal((html.match(/요일 [0-9]+문제/g) ?? []).length, 7);
+  assert.ok(html.includes("2026-11-01 일요일 0문제"));
+  const empty = renderToStaticMarkup(
+    overview({
+      data: {
+        ...data,
+        weekly: {
+          ...data.weekly,
+          solvedCount: 0,
+          correctCount: 0,
+          days: data.weekly.days.map((day) => ({
+            ...day,
+            solvedCount: 0,
+            correctCount: 0,
+          })),
+        },
+      },
+    }).tree,
+  );
+  assert.ok(empty.includes("이번 주 첫 문제를 풀어보세요"));
+  assert.ok(!empty.includes("NaN"));
+  const unavailable = renderToStaticMarkup(
+    overview({ data: { ...data, weekly: undefined } }).tree,
+  );
+  assert.ok(unavailable.includes("주간 학습 기록을 준비"));
 });
 
 test("dashboard query scopes cached data to the current user and uses the real API", async () => {
@@ -150,6 +209,9 @@ test("dashboard query scopes cached data to the current user and uses the real A
     },
   )("hooks/queries/useLearningDashboardQuery.ts").useLearningDashboardQuery;
   const first = useDashboard(true);
+  assert.equal(first.refetchInterval, 60_000);
+  assert.equal(useDashboard(true, false).refetchInterval, false);
+  assert.equal(useDashboard(true, false).refetchOnWindowFocus, true);
   assert.equal(await first.queryFn(), data);
   userId = "second";
   assert.notDeepEqual(first.queryKey, useDashboard(true).queryKey);

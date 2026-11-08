@@ -1,14 +1,16 @@
 "use client";
 
-import { BadgeCheck, Play, RotateCcw } from "lucide-react";
+import ReviewIcon from "@/public/icons/review.svg";
+import LearningSourceIcon from "@/components/learning/LearningSourceIcon";
 import EntryButton from "@/app/(questionbank)/questionbank/_components/EntryButton";
 import StatsCard from "@/app/(questionbank)/questionbank/_components/StatsCard";
+import ResumeLearningCard from "@/components/learning/ResumeLearningCard";
 import {
   dashboardAttemptHref,
-  formatStudyTime,
   type LearningDashboard,
 } from "@/lib/learning/dashboard";
 import { useRouter } from "@/lib/navigation";
+import HomeWeeklyReport from "./HomeWeeklyReport";
 
 type Props = {
   data?: LearningDashboard;
@@ -25,12 +27,12 @@ export default function HomeLearningOverview({
 }: Props) {
   const router = useRouter();
   const latest = data?.latestAttempt;
-  const accuracy = data
-    ? `${data.solvedCount ? Math.round((data.correctCount / data.solvedCount) * 100) : 0}%`
-    : "–";
+  const accuracy = data?.solvedCount
+    ? Math.round((data.correctCount / data.solvedCount) * 100)
+    : undefined;
 
   return (
-    <div className="mt-6 space-y-6 px-5 pb-6 md:px-10">
+    <div className="mt-6 space-y-8 px-6 pb-8 md:px-10">
       <section aria-labelledby="today-learning-title" aria-busy={pending}>
         <h2 id="today-learning-title" className="text-headline-small">
           오늘의 학습 현황
@@ -40,18 +42,10 @@ export default function HomeLearningOverview({
             label="학습 문제"
             value={data ? `${data.solvedCount}문제` : "–"}
           />
-          <StatsCard label="정답률" value={accuracy} />
           <StatsCard
-            label="학습 시간"
-            value={
-              data ? (
-                <span className="text-sm min-[375px]:text-base sm:text-xl">
-                  {formatStudyTime(data.studySeconds)}
-                </span>
-              ) : (
-                "–"
-              )
-            }
+            label="정답률"
+            value={accuracy == null ? "–" : `${accuracy}%`}
+            valueClassName={accuracy == null ? undefined : "text-primary"}
           />
         </div>
       </section>
@@ -65,33 +59,40 @@ export default function HomeLearningOverview({
         </p>
       )}
 
+      <HomeWeeklyReport
+        weekly={data?.weekly}
+        pending={pending}
+        isError={isError}
+      />
+
       <section aria-labelledby="continue-learning-title" aria-busy={pending}>
         <h2 id="continue-learning-title" className="text-headline-small">
-          이어서 풀기
+          {data && !latest && !pending && !isError
+            ? "추천 문제 풀기"
+            : "이어서 풀기"}
         </h2>
         {latest ? (
-          <div className="mt-3 rounded-xl border border-primary-900 bg-primary-980 px-4">
+          <ResumeLearningCard
+            attempt={latest}
+            onClick={() => router.push(dashboardAttemptHref(latest))}
+          />
+        ) : data && !pending && !isError ? (
+          <div className="mt-2">
             <EntryButton
               compact
-              icon={
-                <Play
-                  aria-hidden="true"
-                  className="h-7 w-7 text-primary"
-                  strokeWidth={1.5}
-                />
-              }
-              title={latest.title}
-              subtitle={`${latest.answeredCount} / ${latest.questionCount}문제 · 이어서 풀기`}
-              onClick={() => router.push(dashboardAttemptHref(latest))}
+              icon={<LearningSourceIcon source="HANDCRAFTED" />}
+              title="추천 문제 풀기"
+              subtitle="아직 풀지 않은 수제 제작 문제를 시작해요"
+              onClick={() => router.push("/questionbank/handcrafted")}
             />
           </div>
         ) : (
-          <p className="mt-3 rounded-xl bg-gray-50 p-4 text-body-medium text-muted-foreground">
+          <p className="mt-3 py-2 text-body-medium text-muted-foreground">
             {pending
               ? "최근 학습 기록을 불러오는 중이에요."
               : isError
                 ? "최근 학습 기록을 확인하지 못했어요."
-                : "진행 중인 문제풀이가 없어요. 새로운 학습을 시작해 보세요."}
+                : "최근 학습 기록을 불러오는 중이에요."}
           </p>
         )}
       </section>
@@ -100,16 +101,10 @@ export default function HomeLearningOverview({
         <h2 id="learning-shortcuts-title" className="text-headline-small">
           학습 바로가기
         </h2>
-        <div className="mt-1 divide-y divide-border">
+        <div className="mt-2">
           <EntryButton
             compact
-            icon={
-              <BadgeCheck
-                aria-hidden="true"
-                className="h-7 w-7 text-primary"
-                strokeWidth={1.5}
-              />
-            }
+            icon={<LearningSourceIcon source="HANDCRAFTED" />}
             title="수제 제작 문제"
             subtitle="전문가가 직접 만들고 검수한 문제를 풀어요"
             onClick={() => router.push("/questionbank/handcrafted")}
@@ -117,15 +112,11 @@ export default function HomeLearningOverview({
           <EntryButton
             compact
             icon={
-              <RotateCcw
-                aria-hidden="true"
-                className="h-7 w-7 text-primary"
-                strokeWidth={1.5}
-              />
+              <ReviewIcon aria-hidden="true" className="h-8 w-8 text-primary" />
             }
             title="약점공략"
-            subtitle="틀린 문제를 다시 풀며 약점을 채워요"
-            onClick={() => router.push("/learning/review?mode=wrong")}
+            subtitle="틀린 문제와 ‘헷갈려요’를 표시한 문제를 복습해요"
+            onClick={() => router.push("/learning/weakness")}
           />
         </div>
       </section>

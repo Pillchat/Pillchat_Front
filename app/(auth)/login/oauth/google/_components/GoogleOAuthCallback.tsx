@@ -8,6 +8,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { clearSignupDraft, getSignupDraft } from "@/lib/client/signupDraft";
 import {
+  consumeLoginReturnTo,
+  loginReturnHref,
+} from "@/lib/client/loginReturn";
+import {
   clearStoredGoogleOAuth,
   getGoogleOAuthRedirectUri,
   getStoredGoogleOAuthRememberMe,
@@ -127,7 +131,7 @@ export const GoogleOAuthCallback = () => {
         clearSignupDraft();
         clearPendingOAuthSignup();
         clearStoredGoogleOAuth();
-        router.replace("/");
+        router.replace(consumeLoginReturnTo());
       } catch (error: any) {
         clearStoredGoogleOAuth();
         setStatus("error");
@@ -150,7 +154,10 @@ export const GoogleOAuthCallback = () => {
         </div>
 
         {status === "error" && (
-          <Button className="w-full" onClick={() => router.replace("/login")}>
+          <Button
+            className="w-full"
+            onClick={() => router.replace(loginReturnHref())}
+          >
             로그인으로 돌아가기
           </Button>
         )}

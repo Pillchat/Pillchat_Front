@@ -1,6 +1,9 @@
 "use client";
-import { useState } from "react";
-import Link from "next/link";
+import { useWeaknessQuery } from "@/hooks/queries/useWeaknessQuery";
+import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
+import WeaknessReviewFeedback from "@/components/learning/WeaknessReviewFeedback";
+import { useEffect, useRef, useState } from "react";
+import ResultActions from "@/components/learning/ResultActions";
 import { Trophy } from "lucide-react";
 import { AppShell, PracticeHeader } from "@/components/molecules";
 import type { LearningSession } from "@/hooks/useLearningSession";
@@ -14,15 +17,35 @@ export function PracticeResult({
   session: LearningSession;
   onTutorial: () => void;
 }) {
-  const [review, setReview] = useState(false);
+  const weakness = useWeaknessQuery();
   const [onlyWrong, setOnlyWrong] = useState(true);
+  const [explanationsOpen, setExplanationsOpen] = useState(false);
+  const [reviewRequest, setReviewRequest] = useState(0);
+  const explanationsRef = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    if (reviewRequest === 0) return;
+    explanationsRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, [reviewRequest]);
   if (!s.result) return null;
   const result = s.result;
+  const wrongCount = result.questions.filter(
+    (item) => item.grade.outcome !== "CORRECT",
+  ).length;
+  const reviewWrong = () => {
+    setOnlyWrong(true);
+    setExplanationsOpen(true);
+    setReviewRequest((request) => request + 1);
+  };
   const cbt = s.source === "CBT";
   const groups = Object.entries(
     result.questions.reduce<Record<string, { correct: number; total: number }>>(
       (acc, item) => {
-        const group = (acc[item.question.subjectName] ??= {
+        const group = (acc[
+          item.question.topicName || item.question.subjectName
+        ] ??= {
           correct: 0,
           total: 0,
         });
@@ -33,6 +56,14 @@ export function PracticeResult({
       {},
     ),
   );
+  const confusedCount = result.questions.filter((item) =>
+    weakness.data?.questions.some(
+      (q) =>
+        q.source === s.source &&
+        q.questionId === item.question.sourceQuestionVersionId &&
+        q.confused,
+    ),
+  ).length;
   const body = (
     <>
       <SessionFeedback session={s} />
@@ -69,7 +100,7 @@ export function PracticeResult({
           className={
             cbt
               ? "mt-6 rounded-2xl bg-accent p-6"
-              : "mt-7 rounded-2xl border border-gray-200 bg-white py-5 shadow-sm"
+              : "mt-7 rounded-2xl bg-gray-50 py-5"
           }
         >
           {cbt && (
@@ -83,12 +114,17 @@ export function PracticeResult({
             </div>
           )}
           <div
-            className={`grid grid-cols-3 ${cbt ? "mt-6 gap-2" : "divide-x divide-gray-200"}`}
+            className={`grid grid-cols-2 gap-2 sm:grid-cols-4 ${cbt ? "mt-6" : ""}`}
           >
             {[
               ["정답", result.counts.correct, "text-green-600"],
               ["오답", result.counts.incorrect, "text-red-500"],
               ["미응답", result.counts.unanswered, "text-muted-foreground"],
+              [
+                "헷갈림",
+                weakness.isPending || weakness.isError ? "–" : confusedCount,
+                "text-primary",
+              ],
             ].map(([label, value, color]) => (
               <div key={label} className="rounded-xl p-3 text-center">
                 <strong className={`text-xl font-bold ${color}`}>
@@ -102,8 +138,8 @@ export function PracticeResult({
           </div>
         </section>
         {groups.length > 0 && (
-          <section className="mt-7 rounded-2xl border border-gray-200 p-5">
-            <h2 className="font-bold">과목별 결과</h2>
+          <section className="mt-7 rounded-2xl bg-gray-50 p-5">
+            <h2 className="font-bold">세부주제별 결과</h2>
             <div className="mt-4 space-y-4">
               {groups.map(([subject, counts]) => (
                 <div key={subject}>
@@ -126,14 +162,28 @@ export function PracticeResult({
             </div>
           </section>
         )}
-        <button
-          type="button"
-          onClick={() => setReview(!review)}
-          className="mt-5 h-14 w-full rounded-xl bg-primary font-bold text-white"
+        <p className="my-4 text-center text-sm text-muted-foreground">
+          정답률 {result.score}% · 틀린 문제와 풀이 중 ‘헷갈려요’를 직접 표시한
+          문제는 약점공략에서 복습해요.
+        </p>
+        <ResultActions
+          review={s.attempt?.mode === "REVIEW"}
+          wrongCount={wrongCount}
+          onReviewWrong={reviewWrong}
+          masteredAvailable={
+            !weakness.isError &&
+            !!weakness.data?.questions.some((q) => q.status === "MASTERED")
+          }
+        />
+        <details
+          ref={explanationsRef}
+          open={explanationsOpen}
+          onToggle={(event) => setExplanationsOpen(event.currentTarget.open)}
+          className="mt-5 scroll-mt-24 rounded-xl bg-gray-50 p-4"
         >
-          {review ? "해설 접기" : "복습하기"}
-        </button>
-        {review && (
+          <summary className="cursor-pointer font-semibold">
+            문제별 해설
+          </summary>
           <section className="mt-5 space-y-4">
             <div className="flex gap-2">
               {[true, false].map((value) => (
@@ -141,7 +191,7 @@ export function PracticeResult({
                   key={String(value)}
                   type="button"
                   onClick={() => setOnlyWrong(value)}
-                  className={`rounded-full border px-4 py-2 text-sm ${onlyWrong === value ? "border-primary text-primary" : "text-muted-foreground"}`}
+                  className={`rounded-full px-4 py-2 text-sm ${onlyWrong === value ? "bg-primary text-white" : "bg-white text-muted-foreground"}`}
                 >
                   {value ? "오답·미응답" : "전체 문제"}
                 </button>
@@ -152,7 +202,7 @@ export function PracticeResult({
               .map((item) => (
                 <article
                   key={item.question.attemptQuestionId}
-                  className="rounded-2xl border p-5"
+                  className="rounded-2xl bg-white p-5"
                 >
                   <p className="text-xs text-primary">
                     {item.question.subjectName}
@@ -160,6 +210,19 @@ export function PracticeResult({
                   <h3 className="mt-3 whitespace-pre-wrap font-bold">
                     {item.question.stem}
                   </h3>
+                  {s.attempt?.mode === "REVIEW" ? (
+                    <WeaknessReviewFeedback
+                      source={s.source}
+                      questionId={item.question.sourceQuestionVersionId}
+                      disabled={s.disabled}
+                    />
+                  ) : (
+                    <ConfusionToggle
+                      source={s.source}
+                      questionId={item.question.sourceQuestionVersionId}
+                      disabled={s.disabled}
+                    />
+                  )}
                   {item.question.referenceContent && (
                     <p className="mt-3 whitespace-pre-wrap rounded-xl bg-muted p-3">
                       {item.question.referenceContent}
@@ -180,7 +243,7 @@ export function PracticeResult({
                     {item.question.choices.map((choice, i) => (
                       <p
                         key={choice.choiceId}
-                        className={`whitespace-pre-wrap rounded-xl border p-3 text-sm ${choice.choiceId === item.grade.correctChoiceId ? "border-green-500 bg-green-50" : choice.choiceId === item.answer.selectedChoiceId ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+                        className={`whitespace-pre-wrap rounded-xl p-3 text-sm ${choice.choiceId === item.grade.correctChoiceId ? "bg-green-50" : choice.choiceId === item.answer.selectedChoiceId ? "bg-red-50" : "bg-gray-50"}`}
                       >
                         {i + 1}. {choice.text}
                       </p>
@@ -213,28 +276,14 @@ export function PracticeResult({
                 </p>
               )}
           </section>
-        )}
-        <Link
-          href="/learning/review"
-          className="mt-4 block rounded-xl bg-accent/50 p-4 text-center text-sm font-bold"
-        >
-          학습 기록에서 다시 복습하기
-        </Link>
-        <button
-          type="button"
-          disabled={s.disabled}
-          onClick={() => void s.leave()}
-          className="mt-4 h-12 w-full text-sm font-bold text-muted-foreground"
-        >
-          {cbt ? "CBT 허브로 돌아가기" : "다른 문제 풀기"}
-        </button>
+        </details>
       </main>
     </>
   );
   return cbt ? (
     <div className="min-h-dvh bg-white">
       <PracticeHeader
-        title="CBT 학습 결과"
+        title={s.attempt?.mode === "REVIEW" ? "약점공략 결과" : "CBT 학습 결과"}
         onBack={() => void s.leave()}
         rightSlot={<TutorialButton onClick={onTutorial} />}
       />
@@ -243,7 +292,9 @@ export function PracticeResult({
   ) : (
     <AppShell>
       <PracticeHeader
-        title="수제 제작 문제"
+        title={
+          s.attempt?.mode === "REVIEW" ? "약점공략 결과" : "수제 제작 문제"
+        }
         onBack={() => void s.leave()}
         rightSlot={<TutorialButton onClick={onTutorial} />}
       />
