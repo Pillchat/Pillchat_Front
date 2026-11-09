@@ -9,6 +9,7 @@ import { BottomNavbar, AlarmHeader } from "@/components/molecules";
 import { AttendanceSummary } from "@/components/molecules/AttendanceSummary";
 import { Toast } from "@/components/atoms";
 import HomeLearningOverview from "./_components/HomeLearningOverview";
+import HomeNotice from "./_components/HomeNotice";
 import { useRouter } from "@/lib/navigation";
 import { getValidAccessToken } from "@/lib/client/fetch";
 import { useAttendance } from "@/hooks/useAttendance";
@@ -487,15 +488,16 @@ const Home: FC = () => {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col bg-white">
-      <AlarmHeader />
+      <AlarmHeader compact />
 
       <main className="flex-1 pb-[var(--bottom-nav-height)] pt-3">
+        <HomeNotice enabled={isAuthenticated === true} />
         <section className="px-5 md:px-10" aria-label="국가고시 D-Day">
           <button
             type="button"
             onClick={() => setIsDdayEditorOpen(true)}
             aria-label={`${activeDday?.label ?? "국시"}, ${isDdayReady ? formatDday(dday) : "D-Day 계산 중"}, D-Day 관리 열기`}
-            className="flex min-h-20 w-full items-center justify-between gap-4 bg-transparent px-1 py-3 text-left transition-opacity focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-70"
+            className="flex min-h-16 w-full items-center justify-between gap-4 bg-transparent px-1 py-3 text-left transition-opacity focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-70"
           >
             <span className="flex min-w-0 flex-1 items-baseline gap-2">
               <span className="truncate text-base font-semibold leading-6 text-foreground">
