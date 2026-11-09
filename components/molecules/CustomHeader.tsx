@@ -10,6 +10,7 @@ import { Button } from "../ui/button";
 
 interface CustomHeaderProps {
   title: string;
+  titleAlign?: "left" | "center";
   rightButtonLabel?: string;
   showIcon?: boolean;
   onRightButtonClick?: () => void;
@@ -20,6 +21,7 @@ interface CustomHeaderProps {
 
 export const CustomHeader: FC<CustomHeaderProps> = ({
   title,
+  titleAlign = "center",
   showIcon = false,
   rightButtonLabel = "",
   onRightButtonClick,
@@ -33,7 +35,11 @@ export const CustomHeader: FC<CustomHeaderProps> = ({
     <>
       <header className="sticky top-0 z-10 grid min-h-[calc(60px+env(safe-area-inset-top))] w-full shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 bg-white px-4 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] sm:px-6">
         <LeftArrowButton onClick={() => router.back()} />
-        <p className="min-w-0 text-center text-lg font-semibold">{title}</p>
+        <p
+          className={`min-w-0 text-lg font-semibold ${titleAlign === "left" ? "text-left" : "text-center"}`}
+        >
+          {title}
+        </p>
         {rightSlot !== undefined ? (
           rightSlot
         ) : showIcon ? (

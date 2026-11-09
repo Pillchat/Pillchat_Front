@@ -11,10 +11,12 @@ import { useNotifications } from "@/hooks/useNotifications";
 
 interface AlarmHeaderProps {
   hideBottomBorder?: boolean;
+  compact?: boolean;
 }
 
 export const AlarmHeader: FC<AlarmHeaderProps> = ({
   hideBottomBorder = false,
+  compact = false,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -66,7 +68,7 @@ export const AlarmHeader: FC<AlarmHeaderProps> = ({
   return (
     <>
       <header
-        className={`sticky top-0 z-10 flex w-full items-center justify-between bg-background/95 px-6 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] backdrop-blur supports-[backdrop-filter]:bg-background/60 ${
+        className={`sticky top-0 z-10 flex w-full items-center justify-between bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60 ${compact ? "pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))]" : "pb-4 pt-[calc(1rem+env(safe-area-inset-top))]"} ${
           hideBottomBorder ? "" : "border-b border-border/40"
         }`}
       >

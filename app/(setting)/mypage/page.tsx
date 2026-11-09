@@ -108,6 +108,12 @@ const MyPage: FC = () => {
             <p className="text-sm text-muted-foreground">관리자</p>
             <div className="mt-4 flex flex-col gap-6">
               <SystemField
+                iconSrc={PUBLIC_ASSETS.icons.notice}
+                title="공지 작성"
+                description="새로운 소식을 작성하고 홈에 게시해요."
+                onClick={() => router.push("/admin/notices")}
+              />
+              <SystemField
                 iconSrc={PUBLIC_ASSETS.icons.bellColored}
                 title="푸시 알림 관리"
                 description="푸시 알림 발송 및 이력을 관리할 수 있어요."
