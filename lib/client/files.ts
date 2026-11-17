@@ -6,6 +6,7 @@ export function uploadContentType(file: Pick<File, "type" | "name">) {
     jpg: "image/jpeg",
     jpeg: "image/jpeg",
     png: "image/png",
+    webp: "image/webp",
     pdf: "application/pdf",
     ppt: "application/vnd.ms-powerpoint",
     pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
