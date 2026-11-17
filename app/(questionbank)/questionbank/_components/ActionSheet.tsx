@@ -4,6 +4,7 @@ import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 
 import { FC } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
+import { useNativeBack } from "@/hooks/useNativeBack";
 import { Bookmark, RotateCcw, CircleX, X } from "lucide-react";
 import { REVIEW_MODE_LABELS, type ReviewMode } from "@/types/review";
 
@@ -32,6 +33,7 @@ const ActionSheet: FC<ActionSheetProps> = ({
   questions,
   questionsLoading,
 }) => {
+  useNativeBack(isOpen, onClose, 100);
   const actions = [
     { mode: "all" as const, count: totalCount, icon: RotateCcw },
     {

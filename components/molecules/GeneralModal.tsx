@@ -1,6 +1,7 @@
 "use client";
 
 import { FC } from "react";
+import { ModalSurface } from "./ModalSurface";
 
 interface ModalProps {
   isOpen: boolean;
@@ -20,9 +21,7 @@ export const GeneralModal: FC<ModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-
+    <ModalSurface onClose={onClose} title={title || "알림"}>
       <div className="relative max-h-[calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] w-80 max-w-[90%] overflow-y-auto overscroll-contain rounded-lg bg-white shadow-lg">
         <div className="p-6 text-center">
           {title && <h2 className="mb-2 text-lg font-semibold">{title}</h2>}
@@ -36,6 +35,6 @@ export const GeneralModal: FC<ModalProps> = ({
           확인
         </button>
       </div>
-    </div>
+    </ModalSurface>
   );
 };

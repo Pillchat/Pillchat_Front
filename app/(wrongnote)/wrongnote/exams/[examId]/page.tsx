@@ -2,9 +2,10 @@
 
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
-import { fetchAPI, getToken } from "@/lib/client/fetch";
+import { fetchAPI } from "@/lib/client/fetch";
+import { downloadAuthenticatedFile } from "@/lib/client/files";
 import { CustomHeader } from "@/components/molecules";
 import type { WrongNoteExam } from "@/types/wrongnote";
 
@@ -15,6 +16,7 @@ const ExamDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [showAnswers, setShowAnswers] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const downloadLock = useRef(false);
 
   useEffect(() => {
     const fetchExam = async () => {
@@ -32,26 +34,18 @@ const ExamDetailPage = () => {
   }, [examId]);
 
   const handleDownloadPdf = async () => {
-    if (!exam?.pdfS3Key || downloading) return;
+    if (!exam?.pdfS3Key || downloadLock.current) return;
+    downloadLock.current = true;
     setDownloading(true);
     try {
-      const token = getToken();
-      const res = await fetch(`/api/wrong-notes/exams/${examId}/pdf`, {
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
-      if (!res.ok) throw new Error();
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${exam.title || "exam"}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
+      await downloadAuthenticatedFile(
+        `/api/wrong-notes/exams/${encodeURIComponent(examId)}/pdf`,
+        `${exam.title || "exam"}.pdf`,
+      );
     } catch {
       alert("PDF 다운로드에 실패했습니다.");
     } finally {
+      downloadLock.current = false;
       setDownloading(false);
     }
   };

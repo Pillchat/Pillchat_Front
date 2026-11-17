@@ -1,22 +1,7 @@
 import { fetchAPI, getValidAccessToken, recoverAccessToken } from "./fetch";
+import { uploadContentType as getUploadContentType } from "./files";
 
 const normalizeToken = (token: string) => token.replace(/^(Bearer\s+)+/i, "");
-
-const getUploadContentType = (file: File) => {
-  if (file.type) return file.type;
-
-  const extension = file.name.split(".").pop()?.toLowerCase();
-  const inferredTypes: Record<string, string> = {
-    pdf: "application/pdf",
-    ppt: "application/vnd.ms-powerpoint",
-    pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    mp4: "video/mp4",
-    mov: "video/quicktime",
-    webm: "video/webm",
-  };
-
-  return (extension && inferredTypes[extension]) || "application/octet-stream";
-};
 
 const readUploadError = async (response: Response) => {
   const text = await response.text();

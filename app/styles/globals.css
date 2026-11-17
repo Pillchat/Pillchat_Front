@@ -15,6 +15,45 @@ body {
   overflow-wrap: anywhere;
 }
 
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+.app-modal-surface {
+  top: var(--app-viewport-top, 0px);
+  height: var(--app-viewport-height, 100dvh);
+  padding-top: max(1rem, env(safe-area-inset-top, 0px));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+.app-modal-surface > section,
+.app-modal-surface > div {
+  max-height: 100%;
+}
+
+html[data-keyboard-open="true"] [data-bottom-navigation] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+html[data-keyboard-open="true"] [data-keyboard-footer] {
+  bottom: var(--app-keyboard-inset, 0px);
+  padding-bottom: 0.75rem;
+}
+
+html[data-keyboard-open="true"] [data-app-dialog] {
+  top: calc(
+    var(--app-viewport-top, 0px) + var(--app-viewport-height, 100dvh) / 2
+  );
+  max-height: calc(var(--app-viewport-height, 100dvh) - 2rem);
+}
+
 /* 자체 눈 버튼이 있는 필드는 비밀번호 표시 중에도 브라우저 버튼과 겹치지 않게 한다. */
 input.password-with-toggle::-webkit-credentials-auto-fill-button {
   display: none;

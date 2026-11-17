@@ -21,6 +21,7 @@ import {
   StickyNote,
 } from "lucide-react";
 import { PracticeHeader } from "@/components/molecules";
+import { useNativeBack } from "@/hooks/useNativeBack";
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 import type { LearningSession } from "@/hooks/useLearningSession";
 import {
@@ -85,6 +86,11 @@ export default function CbtPractice({
   const [calculator, setCalculator] = useState(false);
   const [submitOpen, setSubmitOpen] = useState(false);
   const [exitOpen, setExitOpen] = useState(false);
+  useNativeBack(
+    !!s.attempt && !s.result && !tutorial,
+    () => setExitOpen(true),
+    10,
+  );
   useEffect(() => {
     const resize = () => setWidth(window.innerWidth);
     resize();
@@ -598,7 +604,7 @@ export default function CbtPractice({
                 type="button"
                 aria-label="시험 나가기"
                 onClick={() => setExitOpen(true)}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#fafafa]"
+                className="-m-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#fafafa]"
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>

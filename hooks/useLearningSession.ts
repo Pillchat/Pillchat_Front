@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, fetchAPI } from "@/lib/client/fetch";
+import { APP_BACKGROUND, APP_RESUME } from "@/lib/client/nativeApp";
 import {
   LearningCommands,
   type Attempt,
@@ -56,6 +57,7 @@ export function useLearningSession(source: Source) {
   const clockOffset = useRef(0);
   const commands = useRef(new LearningCommands());
   const lock = useRef(false);
+  const refreshing = useRef(false);
   const revision = useRef(0);
   const active = useRef(true);
   const current = useRef<Attempt | null>(null);
@@ -173,22 +175,42 @@ export function useLearningSession(source: Source) {
   useEffect(() => {
     if (!attempt || attempt.state === "COMPLETED") return;
     const refresh = () => {
+      setNow(Date.now());
       if (
         !lock.current &&
+        !refreshing.current &&
         !commands.current.pending &&
         !Object.keys(memoRef.current).length &&
         document.visibilityState === "visible"
-      )
-        void recover(attempt.attemptId).catch(() =>
-          setError("현재 응시 상태를 확인하지 못했어요. 다시 연결해주세요."),
-        );
+      ) {
+        refreshing.current = true;
+        const requestRevision = revision.current;
+        void recover(attempt.attemptId)
+          .catch(() => {
+            if (active.current && requestRevision === revision.current)
+              setError(
+                "현재 응시 상태를 확인하지 못했어요. 다시 연결해주세요.",
+              );
+          })
+          .finally(() => {
+            refreshing.current = false;
+          });
+      }
     };
     const timer = setInterval(refresh, 15000);
     window.addEventListener("focus", refresh);
+    window.addEventListener(APP_RESUME, refresh);
+    window.addEventListener("online", refresh);
+    window.addEventListener("pageshow", refresh);
+    document.addEventListener("visibilitychange", refresh);
     if (remaining === 0) refresh();
     return () => {
       clearInterval(timer);
       window.removeEventListener("focus", refresh);
+      window.removeEventListener(APP_RESUME, refresh);
+      window.removeEventListener("online", refresh);
+      window.removeEventListener("pageshow", refresh);
+      document.removeEventListener("visibilitychange", refresh);
     };
   }, [attempt?.attemptId, attempt?.state, remaining === 0, recover]);
   const execute = async (
@@ -277,6 +299,35 @@ export function useLearningSession(source: Source) {
     current.current?.state !== "IN_PROGRESS" ||
     !Object.keys(memoRef.current).length ||
     (await writeAnswers());
+  const backgroundSave = useRef(flushMemos);
+  backgroundSave.current = flushMemos;
+  useEffect(() => {
+    const save = () => {
+      if (!lock.current && !commands.current.pending)
+        void backgroundSave.current();
+    };
+    const visibility = () => {
+      if (document.visibilityState === "hidden") save();
+    };
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      if (
+        lock.current ||
+        commands.current.pending ||
+        Object.keys(memoRef.current).length
+      ) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    };
+    window.addEventListener(APP_BACKGROUND, save);
+    document.addEventListener("visibilitychange", visibility);
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => {
+      window.removeEventListener(APP_BACKGROUND, save);
+      document.removeEventListener("visibilitychange", visibility);
+      window.removeEventListener("beforeunload", beforeUnload);
+    };
+  }, []);
   const navigate = async (id: string) => {
     const a = current.current;
     if (

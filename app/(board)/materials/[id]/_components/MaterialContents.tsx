@@ -3,6 +3,7 @@
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 
 import { FC } from "react";
+import { openNativeExternal } from "@/lib/client/externalLinks";
 
 export const MaterialContents: FC<{
   images: string[];
@@ -41,7 +42,23 @@ export const MaterialContents: FC<{
           <a
             href={pdfUrl}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
+            onClick={(event) => {
+              if (
+                event.button !== 0 ||
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey
+              )
+                return;
+              try {
+                if (openNativeExternal(pdfUrl)) event.preventDefault();
+              } catch {
+                event.preventDefault();
+                alert("PDF를 열지 못했습니다. 잠시 후 다시 시도해주세요.");
+              }
+            }}
             className="break-all text-sm text-primary underline"
           >
             {pdfName || "PDF 열기"}
