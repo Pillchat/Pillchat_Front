@@ -149,7 +149,10 @@ export const OnboardingFooter: FC<OnboardingFooterProps> = ({
 
   return (
     <>
-      <footer className="fixed bottom-0 left-1/2 z-50 flex w-full max-w-app -translate-x-1/2 flex-col gap-2 bg-white px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 md:px-8">
+      <footer
+        data-keyboard-footer
+        className="fixed bottom-0 left-1/2 z-50 flex w-full max-w-app -translate-x-1/2 flex-col gap-2 bg-white px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 md:px-8"
+      >
         {currentStep < getFinalStep() && (
           <p className="text-center text-xs text-muted-foreground">
             선택한 항목은 마이페이지에서 변경 가능합니다.

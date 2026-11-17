@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 import { CustomHeader } from "@/components/molecules";
@@ -47,6 +47,7 @@ function SupportDetail({
 }) {
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const downloadLock = useRef(false);
   const query = useQuery({
     queryKey: ["support-inquiry", userId, inquiryId],
     queryFn: () => readSupportInquiry(inquiryId),
@@ -56,7 +57,8 @@ function SupportDetail({
   });
   const inquiry = query.data;
   const download = async (attachment: SupportAttachment) => {
-    if (downloadingId) return;
+    if (downloadLock.current) return;
+    downloadLock.current = true;
     setDownloadError(null);
     setDownloadingId(attachment.id);
     try {
@@ -66,6 +68,7 @@ function SupportDetail({
         "첨부파일을 내려받지 못했습니다. 잠시 후 다시 시도해주세요.",
       );
     } finally {
+      downloadLock.current = false;
       setDownloadingId(null);
     }
   };

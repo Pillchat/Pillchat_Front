@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export type UploadFormData = {
@@ -19,6 +19,7 @@ const DEFAULT_VALUES: UploadFormData = {
 
 export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitting = useRef(false);
 
   const {
     control,
@@ -44,6 +45,8 @@ export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
   };
 
   const handleUpload = handleSubmit(async (formData) => {
+    if (submitting.current) return;
+    submitting.current = true;
     try {
       setIsSubmitting(true);
       await onSubmit?.({
@@ -51,6 +54,7 @@ export const useUploadForm = ({ onSubmit }: UseUploadFormParams = {}) => {
         content: formData.content.trim(),
       });
     } finally {
+      submitting.current = false;
       setIsSubmitting(false);
     }
   });

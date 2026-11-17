@@ -30,6 +30,30 @@ declare global {
       env: {
         isApp: () => boolean;
       };
+      browser?: {
+        openLink: (
+          url: string,
+          option?: "external" | "internal" | "internal_default",
+        ) => void;
+      };
+      event?: {
+        on: (
+          name:
+            | "foreground"
+            | "background"
+            | "networkchanged"
+            | "keyboardshown"
+            | "keyboardhidden",
+          callback: (params?: { isConnected?: boolean }) => void,
+        ) => void;
+      };
+      backkey?: {
+        addEvent: (
+          callback: (id: string) => void,
+          id?: string,
+        ) => string | void;
+        removeEvent: (id?: string) => unknown;
+      };
       google?: {
         login: (
           callback: (

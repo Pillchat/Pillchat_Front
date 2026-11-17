@@ -4,6 +4,7 @@ import WeaknessReviewFeedback from "@/components/learning/WeaknessReviewFeedback
 
 import { TutorialButton } from "@/components/learning/TutorialButton";
 import { useState } from "react";
+import { useNativeBack } from "@/hooks/useNativeBack";
 import { PracticeResult } from "./PracticeResult";
 import { Bookmark, BookmarkCheck, Check, X, CircleHelp } from "lucide-react";
 import { AppShell, PracticeHeader } from "@/components/molecules";
@@ -19,6 +20,18 @@ export default function HandcraftedPractice({
   session: LearningSession;
 }) {
   const [tutorial, setTutorial] = useState(false);
+  useNativeBack(
+    !!s.attempt && !s.result && !tutorial,
+    () => {
+      if (
+        window.confirm(
+          "문제 풀이를 나갈까요? 저장한 답안은 이어서 풀 수 있어요.",
+        )
+      )
+        void s.leave();
+    },
+    10,
+  );
   const attempt = s.attempt;
   const question = attempt?.currentSectionQuestions[s.index];
   const answer = attempt?.savedAnswers.find(

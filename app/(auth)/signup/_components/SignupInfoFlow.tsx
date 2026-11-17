@@ -243,7 +243,10 @@ export function SignupInfoFlow({
         )}
       </main>
 
-      <div className="fixed bottom-0 left-1/2 z-10 flex w-full max-w-app -translate-x-1/2 flex-col gap-3 bg-gradient-to-t from-background via-background to-transparent px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-8">
+      <div
+        data-keyboard-footer
+        className="fixed bottom-0 left-1/2 z-10 flex w-full max-w-app -translate-x-1/2 flex-col gap-3 bg-gradient-to-t from-background via-background to-transparent px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-8"
+      >
         {stage === 3 && (
           <button
             type="button"

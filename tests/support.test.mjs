@@ -218,8 +218,14 @@ test("support list allows summaries without detail fields; detail uses nullable 
   });
   assert.equal((await unanswered.readSupportInquiry("31")).answer, null);
 });
-test("support download uses returned downloadUrl and rejects executable URLs", async () => {
-  let anchor;
+test("support download reserves a window before fetching and rejects executable URLs", async () => {
+  const popup = {
+    location: {},
+    closed: false,
+    close() {
+      this.closed = true;
+    },
+  };
   const client = setup(
     {
       fetchAPI: async () => ({
@@ -227,28 +233,24 @@ test("support download uses returned downloadUrl and rejects executable URLs", a
       }),
     },
     {
-      document: {
-        createElement: () =>
-          (anchor = {
-            click() {
-              this.clicked = true;
-            },
-          }),
-      },
+      window: { open: () => popup },
     },
   );
   await client.downloadSupportAttachment("31", {
     id: "91",
     name: "evidence.png",
   });
-  assert.equal(anchor.href, "https://files.example/signed?token=test");
-  assert.equal(anchor.clicked, true);
-  assert.equal(anchor.rel, "noopener noreferrer");
+  assert.equal(popup.location.href, "https://files.example/signed?token=test");
+  assert.equal(popup.opener, null);
   await assert.rejects(() =>
-    setup({
-      fetchAPI: async () => ({ downloadUrl: "javascript:alert(1)" }),
-    }).downloadSupportAttachment("31", { id: "91", name: "x" }),
+    setup(
+      {
+        fetchAPI: async () => ({ downloadUrl: "javascript:alert(1)" }),
+      },
+      { window: { open: () => popup } },
+    ).downloadSupportAttachment("31", { id: "91", name: "x" }),
   );
+  assert.equal(popup.closed, true);
 });
 test("support validates image 10MB and PDF/total 30MB with no mixing", () => {
   const client = setup();

@@ -114,6 +114,7 @@ export function openPractice(
   cy.contains(question.stem.split("\n")[0])
     .scrollIntoView()
     .should("be.visible");
+  return attempt;
 }
 
 export function prepareStorage(win: Window) {

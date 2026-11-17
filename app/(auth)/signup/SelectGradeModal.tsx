@@ -6,6 +6,7 @@ import { useId, useState } from "react";
 
 import { SIGNUP_GRADE_OPTIONS, type SignupGrade } from "@/constants/signup";
 import { cn } from "@/lib/utils";
+import { useNativeBack } from "@/hooks/useNativeBack";
 
 type SelectGradeModalProps = {
   value: SignupGrade | "";
@@ -14,6 +15,7 @@ type SelectGradeModalProps = {
 
 export function SelectGradeModal({ value, onSelect }: SelectGradeModalProps) {
   const [isOpen, setIsOpen] = useState(false);
+  useNativeBack(isOpen, () => setIsOpen(false), 100);
   const labelId = useId();
   const valueId = useId();
 

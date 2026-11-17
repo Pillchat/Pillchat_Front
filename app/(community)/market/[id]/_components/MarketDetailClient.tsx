@@ -5,7 +5,7 @@ import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 import Image from "next/image";
 import Link from "next/link";
 import { Bookmark, Heart, Lock, MessageCircle, Star } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { AppShell, CustomHeader } from "@/components/molecules";
 import {
@@ -19,6 +19,7 @@ import {
 import { useMarketCommentsQuery, useMarketDetailQuery } from "@/hooks/queries";
 import { getCurrentUserId } from "@/lib/client/auth";
 import { getMarketSample } from "@/lib/market/api";
+import { prepareExternalOpen } from "@/lib/client/externalLinks";
 import { useRouter } from "@/lib/navigation";
 import type { MarketGrade } from "@/types/market";
 
@@ -51,6 +52,7 @@ export function MarketDetailClient({ marketId }: { marketId: string }) {
   const [editingContent, setEditingContent] = useState("");
   const [commentPage, setCommentPage] = useState(0);
   const [actionError, setActionError] = useState<string | null>(null);
+  const sampleLock = useRef(false);
 
   const detailQuery = useMarketDetailQuery(marketId);
   const commentsQuery = useMarketCommentsQuery(marketId, {
@@ -122,18 +124,21 @@ export function MarketDetailClient({ marketId }: { marketId: string }) {
   };
 
   const openSample = async () => {
-    const previewWindow = window.open("about:blank", "_blank");
-    if (!previewWindow) {
-      setActionError("팝업이 차단되어 맛보기를 열지 못했습니다.");
-      return;
+    if (sampleLock.current) return;
+    sampleLock.current = true;
+    try {
+      await runAction(async () => {
+        const target = prepareExternalOpen();
+        try {
+          target.open(await getMarketSample(marketId));
+        } catch (error) {
+          target.close();
+          throw error;
+        }
+      });
+    } finally {
+      sampleLock.current = false;
     }
-    previewWindow.opener = null;
-
-    const succeeded = await runAction(async () => {
-      const url = await getMarketSample(marketId);
-      previewWindow.location.href = url;
-    });
-    if (!succeeded) previewWindow.close();
   };
 
   const deleteItem = async () => {

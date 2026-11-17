@@ -7,6 +7,7 @@ import { Check, ChevronDown, ChevronRight, X } from "lucide-react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
+import { useNativeBack } from "@/hooks/useNativeBack";
 
 export type MarketSubjectSection = {
   title: string;
@@ -36,6 +37,7 @@ export function MarketSubjectPicker({
   onSelect,
 }: MarketSubjectPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  useNativeBack(isOpen, () => setIsOpen(false), 100);
   const selectedSubject = sections
     .flatMap((section) => section.items)
     .find((item) => item.code === value);
