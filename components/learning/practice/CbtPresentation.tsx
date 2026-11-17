@@ -1132,9 +1132,9 @@ export function Dialog({
     >
       <section
         data-cbt-tutorial={tutorialTarget}
-        className="w-full max-w-[min(720px,80vw)] rounded-2xl bg-white p-5"
+        className="flex max-h-[calc(100dvh-2.5rem)] w-full max-w-[min(720px,80vw)] flex-col overflow-hidden rounded-2xl bg-white p-5"
       >
-        <header className="flex items-start justify-between gap-4">
+        <header className="flex shrink-0 items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-extrabold">{title}</h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -1150,7 +1150,9 @@ export function Dialog({
             <X className="h-5 w-5" />
           </button>
         </header>
-        <div className="mt-5">{children}</div>
+        <div className="mt-5 min-h-0 overflow-y-auto overscroll-contain">
+          {children}
+        </div>
       </section>
     </div>
   );

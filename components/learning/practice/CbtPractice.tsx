@@ -592,7 +592,7 @@ export default function CbtPractice({
     <>
       <main className="h-dvh min-w-0 overflow-hidden bg-white text-foreground lg:min-h-[640px]">
         <header className="fixed inset-x-0 top-0 z-40 h-[calc(60px+env(safe-area-inset-top))] bg-white pt-[env(safe-area-inset-top)]">
-          <div className="grid h-[60px] grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 px-3 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:px-5">
+          <div className="grid h-[60px] grid-cols-[minmax(40px,1fr)_auto_auto] items-center gap-1 px-2 min-[480px]:gap-2 min-[480px]:px-3 lg:grid-cols-[minmax(40px,1fr)_auto_minmax(0,1fr)] lg:px-5">
             <div className="flex min-w-0 items-center gap-2">
               <button
                 type="button"
@@ -615,7 +615,7 @@ export default function CbtPractice({
               <button
                 type="button"
                 onClick={() => setListOpen(true)}
-                className="rounded-xl bg-[#fafafa] px-3 py-2 text-xs font-bold lg:hidden"
+                className="hidden whitespace-nowrap rounded-xl bg-[#fafafa] px-3 py-2 text-xs font-bold min-[480px]:block lg:hidden"
               >
                 {s.index + 1}/{questions.length}
               </button>
@@ -647,9 +647,9 @@ export default function CbtPractice({
                     type="button"
                     aria-pressed={double === value}
                     onClick={() => setDouble(value)}
-                    className={`flex h-11 items-center gap-1 rounded-lg px-3 text-xs font-extrabold ${double === value ? "bg-foreground text-white" : ""}`}
+                    className={`flex h-11 items-center gap-1 whitespace-nowrap rounded-lg px-2 text-xs font-extrabold min-[480px]:px-3 ${double === value ? "bg-foreground text-white" : ""}`}
                   >
-                    <Columns2 className="h-4 w-4" />
+                    <Columns2 className="hidden h-4 w-4 min-[480px]:block" />
                     {value ? "2문제" : "1문제"}
                   </button>
                 ))}
@@ -657,11 +657,11 @@ export default function CbtPractice({
             </div>
             <div className="flex items-center justify-end gap-1">
               <TutorialButton onClick={() => setTutorial(true)} />
-              <div className="shrink-0 whitespace-nowrap rounded-xl bg-[#fafafa] px-3 py-2 text-right">
+              <div className="shrink-0 whitespace-nowrap rounded-xl bg-[#fafafa] px-2 py-2 text-right min-[480px]:px-3">
                 <p className="text-[10px] font-bold text-muted-foreground">
                   남은 시간
                 </p>
-                <p className="mt-0.5 text-sm font-extrabold tabular-nums text-primary">
+                <p className="mt-0.5 text-xs font-extrabold tabular-nums text-primary min-[480px]:text-sm">
                   {formatDuration(s.remaining)}
                 </p>
               </div>
