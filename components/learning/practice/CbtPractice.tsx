@@ -1,6 +1,7 @@
 "use client";
 import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
 
+import { LearningBetaNotice } from "@/components/learning/LearningBetaNotice";
 import { TutorialButton } from "@/components/learning/TutorialButton";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
@@ -271,7 +272,8 @@ export default function CbtPractice({
             rightSlot={<TutorialButton onClick={() => setTutorial(true)} />}
           />
           {feedback}
-          <div className="mx-auto max-w-[1024px] px-4 sm:px-6">
+          <div className="mx-auto max-w-[1024px] px-4 pt-4 sm:px-6">
+            <LearningBetaNotice />
             <section className="mt-7">
               <h1 className="text-xl font-semibold leading-snug sm:text-2xl">
                 실제 시험 흐름으로
