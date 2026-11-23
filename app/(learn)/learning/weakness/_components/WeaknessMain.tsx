@@ -18,6 +18,7 @@ import { useRouter } from "@/lib/navigation";
 import { useWeaknessQuery } from "@/hooks/queries/useWeaknessQuery";
 import { useStartWeaknessMutation } from "@/hooks/mutations/useStartWeaknessMutation";
 import { reviewAttemptHref } from "@/lib/learning/review";
+import { learningDisplayTitle } from "@/lib/learning/attemptLabels";
 import type { ReviewSource } from "@/types/review";
 import {
   WEAKNESS_SOURCE_LABELS,
@@ -75,6 +76,8 @@ export default function WeaknessMain({
     (q) => !subject || q.subject === subject,
   );
   const count = query.data ? practiceQuestions.length : null;
+  const reviewSteps = query.data?.reviewSteps ?? 2;
+  const sessionSize = query.data?.reviewSessionSize;
   const fields = weaknessFields(query.data, filters);
   const subjects = [...new Set(scheduled.map((q) => q.subject))];
   const visible = scheduled.filter((q) => !subject || q.subject === subject);
@@ -163,7 +166,7 @@ export default function WeaknessMain({
           />
           <span className="min-w-0 flex-1">
             <span className="block break-words text-title-large">
-              {collection.title}
+              {learningDisplayTitle(collection.source, collection.title)}
             </span>
             <span className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-body-small text-muted-foreground">
               {reviewDay && <span>복습 예정 {reviewDay}</span>}
@@ -185,7 +188,7 @@ export default function WeaknessMain({
           <summary className="absolute right-2 top-4 flex min-h-11 w-12 cursor-pointer list-none flex-col items-center justify-center gap-1 rounded-lg text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-details-marker]:hidden">
             <span className="text-label-small">현황 보기</span>
             <span className="sr-only">
-              문제별 복습 현황 · {items.length}문제 · 복습 일정과 연속 정답 보기
+              문제별 복습 현황 · {items.length}문제 · 복습 일정과 단계 보기
             </span>
           </summary>
           <ul className="mt-3 space-y-4 border-t border-gray-100 pt-3">
@@ -203,12 +206,15 @@ export default function WeaknessMain({
                       "–"}
                   </span>
                   <span className="inline-flex items-center gap-2">
-                    연속 정답{" "}
+                    완료한 단계{" "}
                     <strong className="tabular-nums">
-                      {q.consecutiveCorrect}/2회
+                      {q.consecutiveCorrect}/{reviewSteps}
                     </strong>
                     <span aria-hidden="true" className="inline-flex gap-1">
-                      {[1, 2].map((step) => (
+                      {Array.from(
+                        { length: reviewSteps },
+                        (_, index) => index + 1,
+                      ).map((step) => (
                         <span
                           key={step}
                           className={`h-1.5 w-6 rounded-full ${q.consecutiveCorrect >= step ? "bg-primary" : "bg-gray-100"}`}
@@ -242,6 +248,12 @@ export default function WeaknessMain({
             {count ?? "–"}
             <span className="ml-1 text-title-large">문제</span>
           </p>
+          {query.data?.reviewedToday !== undefined &&
+            sessionSize !== undefined && (
+              <p className="mt-1 text-body-small text-muted-foreground">
+                오늘 복습 {query.data.reviewedToday}/{sessionSize}
+              </p>
+            )}
         </section>
         {query.isError && (
           <WeaknessReadError onRetry={() => void query.refetch()} />
@@ -300,8 +312,8 @@ export default function WeaknessMain({
                     className="absolute left-1/2 top-full z-20 mt-1 w-64 -translate-x-1/2 space-y-2 rounded-xl bg-white p-3 text-body-small text-foreground shadow-md ring-1 ring-gray-100"
                   >
                     <p>
-                      틀린 문제와 풀이 중 ‘헷갈려요’를 직접 표시한 문제를
-                      복습해요. 서로 다른 날 2회 연속 정답이면 극복해요.
+                      틀렸거나 정답 후 북마크한 문제를 복습해요. 예정일에 맞힐
+                      때마다 복습 간격이 늘어나요.
                     </p>
                     <p className="text-muted-foreground">
                       최근 30일 최초 풀이 기준 · 오답·‘헷갈려요’ 표시 비율
@@ -499,7 +511,8 @@ export default function WeaknessMain({
             sources.length === 1 ? launch(sources[0]) : setChooseSource(true)
           }
         >
-          {count ?? "–"}문제 복습 시작
+          {count === null ? "–" : Math.min(count, sessionSize ?? count)}문제
+          복습 시작
         </Button>
       </footer>
       <Dialog open={chooseSource} onOpenChange={setChooseSource}>

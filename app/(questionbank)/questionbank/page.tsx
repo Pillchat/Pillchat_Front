@@ -26,7 +26,7 @@ export default function QuestionBankPage() {
             {(
               [
                 [
-                  "수제 제작 문제",
+                  "전문검수문제",
                   "과목과 세부주제를 골라 새 문제를 풀어요",
                   "/questionbank/handcrafted",
                   "HANDCRAFTED",

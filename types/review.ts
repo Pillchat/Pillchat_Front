@@ -11,7 +11,7 @@ export const REVIEW_MODE_LABELS: Record<ReviewMode, string> = {
 
 export const REVIEW_SOURCE_LABELS: Record<ReviewSource, string> = {
   CBT: "CBT",
-  HANDCRAFTED: "수제 제작 문제",
+  HANDCRAFTED: "전문검수문제",
   AI: "AI 생성 문제",
 };
 

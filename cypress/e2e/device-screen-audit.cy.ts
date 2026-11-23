@@ -108,7 +108,7 @@ describe("브라우저 화면 크기별 점검 (실기기 검증 아님)", () =>
       cy.screenshot(`upload-${id}`, { capture: "viewport" });
     });
 
-    it(`${id}: 수제 문제 긴 본문·선지·채점 결과`, () => {
+    it(`${id}: 전문검수문제 긴 본문·선지·채점 결과`, () => {
       cy.viewport(width, height);
       cy.setCookie("access_token", "layout-test-only");
       openPractice("HANDCRAFTED");

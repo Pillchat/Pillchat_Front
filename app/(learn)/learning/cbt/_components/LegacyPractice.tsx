@@ -66,6 +66,7 @@ import {
 } from "@/components/learning/practice/CbtPresentation";
 import { PracticeHeader } from "@/components/molecules";
 import { completeDailyQuest } from "@/lib/client/dailyQuest";
+import { useTutorialProgress } from "@/hooks/useTutorialProgress";
 import { cn } from "@/lib/utils";
 import { useRouter } from "@/lib/navigation";
 import { isTutorialCbtReview, saveCbtReview } from "@/lib/review/collections";
@@ -490,6 +491,7 @@ function CbtPracticeContent({
   const router = useRouter();
   const searchParams = useSearchParams();
   const isReviewEntry = !tutorialOnly && searchParams.get("view") === "review";
+  const { complete: saveTutorialCompletion } = useTutorialProgress("cbt");
   const [stage, setStage] = useState<Stage>(isReviewEntry ? "review" : "hub");
   const [reviewReady, setReviewReady] = useState(false);
   const [preparedSet, setPreparedSet] = useState<CbtPracticeSet | null>(null);
@@ -740,6 +742,12 @@ function CbtPracticeContent({
       if (current.mode === "tutorial") {
         setSubmitOpen(false);
         persistImmediately({ ...current, status: "COMPLETED" });
+        saveTutorialCompletion();
+        try {
+          completeDailyQuest("cbt-tutorial");
+        } catch {
+          // 튜토리얼 완료는 퀘스트 기록 가능 여부와 관계없이 진행합니다.
+        }
         setTutorialStepIndex(CBT_TUTORIAL_STEPS.length - 1);
         return;
       }
@@ -833,7 +841,7 @@ function CbtPracticeContent({
         submittingRef.current = false;
       }
     },
-    [],
+    [saveTutorialCompletion],
   );
 
   useEffect(() => {
@@ -1686,11 +1694,6 @@ function CbtPracticeContent({
     setTutorialStepIndex((index) => index + 1);
   };
   const finishTutorial = () => {
-    try {
-      completeDailyQuest("cbt-tutorial");
-    } catch {
-      // 튜토리얼 종료는 퀘스트 기록 가능 여부와 관계없이 진행합니다.
-    }
     if (tutorialOnly) onTutorialComplete?.();
     else leaveAttempt();
   };

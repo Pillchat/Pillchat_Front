@@ -684,7 +684,7 @@ const UploadPage = () => {
   return (
     <>
       {step === Step.Upload && (
-        <div className="flex min-h-dvh flex-col bg-white">
+        <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col bg-white">
           <BoardHeader
             title={isEditMode ? "학습자료 수정" : "학습자료 업로드"}
             onLeftButtonClick={() => router.push("/archive")}

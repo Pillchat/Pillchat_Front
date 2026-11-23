@@ -3,6 +3,7 @@ import { useWeaknessQuery } from "@/hooks/queries/useWeaknessQuery";
 import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
 import WeaknessReviewFeedback from "@/components/learning/WeaknessReviewFeedback";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import ResultActions from "@/components/learning/ResultActions";
 import { Trophy } from "lucide-react";
 import { AppShell, PracticeHeader } from "@/components/molecules";
@@ -40,6 +41,7 @@ export function PracticeResult({
     setReviewRequest((request) => request + 1);
   };
   const cbt = s.source === "CBT";
+  const wrongOnly = cbt || onlyWrong;
   const groups = Object.entries(
     result.questions.reduce<Record<string, { correct: number; total: number }>>(
       (acc, item) => {
@@ -163,8 +165,7 @@ export function PracticeResult({
           </section>
         )}
         <p className="my-4 text-center text-sm text-muted-foreground">
-          정답률 {result.score}% · 틀린 문제와 풀이 중 ‘헷갈려요’를 직접 표시한
-          문제는 약점공략에서 복습해요.
+          정답률 {result.score}% · 틀린 문제는 약점공략에서 다시 풀어요.
         </p>
         <ResultActions
           review={s.attempt?.mode === "REVIEW"}
@@ -175,6 +176,14 @@ export function PracticeResult({
             !!weakness.data?.questions.some((q) => q.status === "MASTERED")
           }
         />
+        {cbt && (
+          <Link
+            href="/learning/history"
+            className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-primary underline"
+          >
+            전체 학습 보기
+          </Link>
+        )}
         <details
           ref={explanationsRef}
           open={explanationsOpen}
@@ -182,23 +191,25 @@ export function PracticeResult({
           className="mt-5 scroll-mt-24 rounded-xl bg-gray-50 p-4"
         >
           <summary className="cursor-pointer font-semibold">
-            문제별 해설
+            {cbt ? "오답·미응답 해설" : "문제별 해설"}
           </summary>
           <section className="mt-5 space-y-4">
-            <div className="flex gap-2">
-              {[true, false].map((value) => (
-                <button
-                  key={String(value)}
-                  type="button"
-                  onClick={() => setOnlyWrong(value)}
-                  className={`rounded-full px-4 py-2 text-sm ${onlyWrong === value ? "bg-primary text-white" : "bg-white text-muted-foreground"}`}
-                >
-                  {value ? "오답·미응답" : "전체 문제"}
-                </button>
-              ))}
-            </div>
+            {!cbt && (
+              <div className="flex gap-2">
+                {[true, false].map((value) => (
+                  <button
+                    key={String(value)}
+                    type="button"
+                    onClick={() => setOnlyWrong(value)}
+                    className={`rounded-full px-4 py-2 text-sm ${onlyWrong === value ? "bg-primary text-white" : "bg-white text-muted-foreground"}`}
+                  >
+                    {value ? "오답·미응답" : "전체 문제"}
+                  </button>
+                ))}
+              </div>
+            )}
             {result.questions
-              .filter((item) => !onlyWrong || item.grade.outcome !== "CORRECT")
+              .filter((item) => !wrongOnly || item.grade.outcome !== "CORRECT")
               .map((item) => (
                 <article
                   key={item.question.attemptQuestionId}
@@ -267,14 +278,11 @@ export function PracticeResult({
                   </div>
                 </article>
               ))}
-            {onlyWrong &&
-              !result.questions.some(
-                (item) => item.grade.outcome !== "CORRECT",
-              ) && (
-                <p className="py-6 text-center text-sm text-muted-foreground">
-                  오답·미응답 문제가 없습니다.
-                </p>
-              )}
+            {wrongOnly && wrongCount === 0 && (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                오답·미응답 문제가 없습니다.
+              </p>
+            )}
           </section>
         </details>
       </main>
@@ -293,7 +301,7 @@ export function PracticeResult({
     <AppShell>
       <PracticeHeader
         title={
-          s.attempt?.mode === "REVIEW" ? "약점공략 결과" : "수제 제작 문제"
+          s.attempt?.mode === "REVIEW" ? "약점공략 결과" : "전문검수문제"
         }
         onBack={() => void s.leave()}
         rightSlot={<TutorialButton onClick={onTutorial} />}

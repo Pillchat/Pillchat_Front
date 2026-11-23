@@ -220,7 +220,7 @@ const SupportForm = ({ userId }: { userId: string | null }) => {
   };
 
   return (
-    <div className="flex h-full w-full flex-1 flex-col bg-white">
+    <div className="mx-auto flex h-full w-full max-w-app flex-1 flex-col bg-white">
       <BoardHeader
         title={TEXT.pageTitle}
         showIcon

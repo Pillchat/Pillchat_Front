@@ -218,11 +218,11 @@ export default function HandcraftedSetup({
                     </button>
                   ))}
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {availability.isPending
-                    ? "새 문제 수를 확인하는 중..."
-                    : `출제 가능한 새 문제 ${available}개`}
-                </p>
+                {subject && availability.isPending && (
+                  <p role="status" className="mt-2 text-xs text-muted-foreground">
+                    남은 문제 수를 확인하는 중...
+                  </p>
+                )}
               </fieldset>
             </>
           )}
@@ -242,33 +242,28 @@ export default function HandcraftedSetup({
         {availability.data && (
           <section
             aria-label="출제 전 문제 현황"
-            className="mt-4 rounded-xl bg-accent p-4 text-sm"
+            className="mt-4 text-sm"
           >
-            <p>
-              새 문제 {available}개 · 이미 풀어서 제외{" "}
-              {availability.data.answeredCount}개
+            <p aria-live="polite" className="text-muted-foreground">
+              남은 문제 {available}개
             </p>
-            <p className="mt-2">
-              약점공략 {availability.data.weaknessCount}개 · 진행 중{" "}
-              {availability.data.inProgressCount}개
-            </p>
-            {shortage && (
-              <p className="mt-3">
-                요청한 {questionCount}문제 중 새 문제는 {available}개예요. 약점
-                문제는 자동으로 섞지 않아요.
+            {available === 0 ? (
+              <p className="mt-2">선택한 범위의 새 문제를 모두 풀었어요.</p>
+            ) : shortage ? (
+              <p className="mt-2">
+                요청한 {questionCount}문제보다 남은 문제가 적어요.
               </p>
-            )}
-            {available === 0 && (
-              <p className="mt-3">선택한 범위의 새 문제를 모두 풀었어요.</p>
-            )}
+            ) : null}
             {(shortage || available === 0) && (
-              <div className="mt-3 flex flex-wrap gap-4">
-                <Link
-                  href="/learning/weakness?range=all&sources=HANDCRAFTED&sort=due"
-                  className="font-semibold text-primary"
-                >
-                  약점공략 {availability.data.weaknessCount}문제 보기
-                </Link>
+              <div className="mt-2 flex flex-wrap gap-4">
+                {availability.data.weaknessCount > 0 && (
+                  <Link
+                    href="/learning/weakness?range=all&sources=HANDCRAFTED&sort=due"
+                    className="font-semibold text-primary"
+                  >
+                    약점공략 보기
+                  </Link>
+                )}
                 <button
                   type="button"
                   className="underline"

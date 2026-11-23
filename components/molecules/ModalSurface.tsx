@@ -34,6 +34,9 @@ export function ModalSurface({
         <Primitive.Content
           aria-describedby={undefined}
           className={`app-modal-surface fixed inset-x-0 flex items-center justify-center outline-none ${className}`}
+          onPointerDownOutside={(event) => {
+            if (!closeOnBackdrop) event.preventDefault();
+          }}
           onClick={(event) => {
             if (closeOnBackdrop && event.target === event.currentTarget)
               onClose();

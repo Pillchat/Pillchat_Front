@@ -4,7 +4,7 @@ import { CustomHeader } from "@/components/molecules";
 
 export default function BadgeSettingPage() {
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-screen-sm flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col bg-white">
       <CustomHeader title="뱃지 설정" />
 
       <main className="flex flex-1 items-center justify-center px-6 pb-32 pt-12">

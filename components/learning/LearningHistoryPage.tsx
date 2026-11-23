@@ -28,7 +28,7 @@ export default function LearningHistoryPage({
   const summary = query.data?.pages[0]?.summary;
   const items = query.data?.pages.flatMap((page) => page.items) ?? [];
   return (
-    <div className="mx-auto min-h-dvh max-w-screen-sm bg-white">
+    <div className="mx-auto min-h-dvh w-full max-w-app bg-white">
       <PracticeHeader
         title={recent ? "최근 학습" : "전체 학습 기록"}
         backHref={recent ? "/questionbank" : "/mypage"}

@@ -19,8 +19,12 @@ export function hasCompletedTutorial(
 export function completeTutorial(kind: TutorialKind, userId: string | null) {
   const key = keyFor(kind, userId);
   completedInSession.add(key);
+  const guestKey = keyFor(kind, null);
+  if (userId) completedInSession.delete(guestKey);
   try {
     window.localStorage.setItem(key, "complete");
+    // Consume the previous device-only marker once the account copy is saved.
+    if (userId) window.localStorage.removeItem(guestKey);
   } catch {
     /* Keep completion for this session if storage is unavailable. */
   }

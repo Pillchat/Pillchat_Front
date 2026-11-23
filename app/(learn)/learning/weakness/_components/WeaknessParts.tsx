@@ -47,7 +47,7 @@ export function WeaknessCount({
         {children}
       </div>
       <p className="mt-3 text-body-small text-muted-foreground">
-        틀린 문제와 ‘헷갈려요’를 표시한 문제 중 오늘 복습 가능한 문제예요.
+        예정일이 도래한 오답과 북마크 복습 문제예요.
       </p>
     </section>
   );

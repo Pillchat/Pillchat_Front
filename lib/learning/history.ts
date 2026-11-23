@@ -39,7 +39,7 @@ export function historyReturnHref(value: string | null | undefined) {
 export type HistoryEntry = {
   attemptId: string;
   source: ReviewSource;
-  title: string;
+  title?: string | null;
   subject: string | null;
   topic: string | null;
   state: "IN_PROGRESS" | "COMPLETED";

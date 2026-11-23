@@ -98,7 +98,7 @@ test("home reuses cards to show server totals and sends users to resume and shor
     "심혈관계",
     data.latestAttempt.title,
     "응답 3/10문제",
-    "수제 제작 문제",
+    "전문검수문제",
     "약점공략",
   ])
     assert.ok(html.includes(text), text);

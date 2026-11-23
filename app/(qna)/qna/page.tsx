@@ -53,7 +53,7 @@ const QnaPage: FC = () => {
     : `아직 ${currentStatus === "pending" ? "등록된" : "답변이 달린"} 질문이 없습니다.`;
 
   return (
-    <div className="flex h-dvh flex-col">
+    <div className="mx-auto flex h-dvh w-full max-w-app flex-col">
       <div className="flex-shrink-0">
         <GeneralHeader currentQ={q} currentStatus={currentStatus} />
         <TabsWithUnderline

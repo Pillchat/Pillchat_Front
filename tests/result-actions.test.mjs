@@ -171,6 +171,12 @@ test("this-set review opens only wrong explanations for AI, handcrafted and CBT 
     const html = renderToStaticMarkup(reviewed);
     assert.ok(html.includes("이번 세트 오답 근거"), source);
     assert.ok(!html.includes("맞힌 문항"), source);
+    if (source === "CBT") {
+      assert.doesNotMatch(html, />전체 문제<\/button>/);
+      assert.match(html, /href="\/learning\/history"[^>]*>전체 학습 보기/);
+    } else {
+      assert.match(html, />전체 문제<\/button>/);
+    }
     committedOpen = nodes(reviewed).some(
       (node) => node.type === "details" && node.props.open === true,
     );

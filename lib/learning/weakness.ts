@@ -2,7 +2,7 @@ import type { ReviewSource } from "@/types/review";
 
 export const WEAKNESS_SOURCES: ReviewSource[] = ["HANDCRAFTED", "CBT", "AI"];
 export const WEAKNESS_SOURCE_LABELS: Record<ReviewSource, string> = {
-  HANDCRAFTED: "수제 제작",
+  HANDCRAFTED: "전문검수문제",
   CBT: "CBT",
   AI: "AI 생성",
 };
@@ -35,6 +35,9 @@ export type WeaknessQuestion = {
   wrongAttempts: number;
   wrongRate: number;
   dueDate: string | null;
+  bookmarked?: boolean;
+  reviewRegisteredAt?: string | null;
+  reviewWrongAttempts?: number;
   lastPracticedAt: string | null;
   lastWrongAt: string | null;
   topic?: string | null;
@@ -52,6 +55,9 @@ export type WeaknessLibrary = {
   serverDate: string;
   questions: WeaknessQuestion[];
   collections: WeaknessCollection[];
+  reviewSteps?: number;
+  reviewSessionSize?: number;
+  reviewedToday?: number;
 };
 export type WeaknessStart = {
   source: ReviewSource;
@@ -94,7 +100,12 @@ export function compareWeakness(sort: WeaknessFilters["sort"]) {
   const date = (value: string | null) =>
     value ? Date.parse(value) : -Infinity;
   const due = (a: WeaknessQuestion, b: WeaknessQuestion) =>
-    (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999");
+    (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999") ||
+    Number(b.wrong) - Number(a.wrong) ||
+    (b.reviewWrongAttempts ?? 0) - (a.reviewWrongAttempts ?? 0) ||
+    (a.reviewRegisteredAt ?? "9999").localeCompare(
+      b.reviewRegisteredAt ?? "9999",
+    );
   return (a: WeaknessQuestion, b: WeaknessQuestion) => {
     const order =
       sort === "accuracy"
@@ -154,7 +165,9 @@ export function weaknessReviewDay(
   serverDate: string | undefined,
 ) {
   if (!dueDate || !serverDate) return null;
-  if (dueDate <= serverDate) return "오늘";
+  if (dueDate === serverDate) return "오늘";
+  if (dueDate < serverDate)
+    return `${dueDate.slice(5).replace("-", "/")} 기한 지남`;
   if (dueDate === nextReviewDate(serverDate)) return "내일";
   return dueDate.slice(5).replace("-", "/");
 }

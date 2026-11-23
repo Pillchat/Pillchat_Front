@@ -11,6 +11,7 @@ import {
 } from "@/lib/learning/history";
 import { useLearningHistoryDetail } from "@/hooks/queries/useLearningHistory";
 import { historyAnswerLabel } from "@/lib/learning/answer-labels";
+import { learningDisplayTitle } from "@/lib/learning/attemptLabels";
 import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
 import type { ReviewSource } from "@/types/review";
 export default function HistoryDetailPage({
@@ -36,7 +37,7 @@ function HistoryDetailContent({
   const [filter, setFilter] = useState<HistoryFilter>("all");
   const query = useLearningHistoryDetail(source, id, filter);
   return (
-    <div className="mx-auto min-h-dvh max-w-screen-sm bg-white">
+    <div className="mx-auto min-h-dvh w-full max-w-app bg-white">
       <PracticeHeader
         title="학습 기록 상세"
         backHref={historyReturnHref(searchParams.get("returnTo"))}
@@ -45,7 +46,12 @@ function HistoryDetailContent({
       <main className="space-y-6 px-6 py-6" aria-busy={query.isPending}>
         {query.data && (
           <section>
-            <h1 className="text-headline-medium">{query.data.attempt.title}</h1>
+            <h1 className="text-headline-medium">
+              {learningDisplayTitle(
+                query.data.attempt.source,
+                query.data.attempt.title,
+              )}
+            </h1>
             <p className="mt-2 text-body-medium">
               총 {query.data.attempt.questionCount}문제 · 정답{" "}
               {query.data.attempt.correctCount} · 오답{" "}

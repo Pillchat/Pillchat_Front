@@ -1,5 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuthIdentity } from "@/hooks/useAuthIdentity";
 import { ApiError, fetchAPI } from "@/lib/client/fetch";
 import { APP_BACKGROUND, APP_RESUME } from "@/lib/client/nativeApp";
 import {
@@ -18,9 +20,11 @@ import {
 
 type HistoryItem = {
   attemptId: string;
-  title: string;
+  title?: string | null;
   state: string;
   mode?: string;
+  createdAt?: string;
+  completedAt?: string | null;
 };
 type Effect = {
   attempt?: Attempt;
@@ -41,6 +45,10 @@ const errorMessage = (error: unknown) =>
       ? error.message
       : "요청을 완료하지 못했어요. 잠시 후 다시 시도해주세요.";
 export function useLearningSession(source: Source) {
+  const queryClient = useQueryClient();
+  const userId = useAuthIdentity();
+  const refreshReview = () =>
+    void queryClient.invalidateQueries({ queryKey: ["weakness-library", userId] });
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [result, setResult] = useState<Result | null>(null);
@@ -360,6 +368,7 @@ export function useLearningSession(source: Source) {
       (response) => {
         if (response.grade)
           setGrades((previous) => ({ ...previous, [id]: response.grade! }));
+        refreshReview();
       },
     );
   };
@@ -376,7 +385,10 @@ export function useLearningSession(source: Source) {
         expectedSectionVersion: section.version,
         finalUpdates,
       },
-      () => acknowledgeMemos(finalUpdates),
+      () => {
+        acknowledgeMemos(finalUpdates);
+        refreshReview();
+      },
     );
   };
   const showResult = async () => {
@@ -417,11 +429,13 @@ export function useLearningSession(source: Source) {
       `/questions/${q.sourceQuestionVersionId}/bookmark`,
       enabled ? "PUT" : "DELETE",
       {},
-      () =>
+      () => {
         setBookmarks((previous) => ({
           ...previous,
           [q.sourceQuestionVersionId]: enabled,
-        })),
+        }));
+        refreshReview();
+      },
     );
   };
   return {
