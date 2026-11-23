@@ -85,7 +85,7 @@ export default {
         sans: ["var(--font-pretendard)", "sans-serif"],
       },
       maxWidth: {
-        app: "52.125rem",
+        app: "var(--app-max-width)",
       },
       fontSize: {
         "headline-large": ["1.5rem", { lineHeight: "2rem", fontWeight: "700" }],

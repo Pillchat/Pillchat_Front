@@ -302,7 +302,7 @@ export const UserProfilePage: FC<{ userId: string }> = ({ userId }) => {
     String(viewerUserId) === String(userId);
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-screen-sm bg-white">
+    <div className="mx-auto min-h-dvh w-full max-w-app bg-white">
       <ProfileHeader
         onReport={() => router.push(`/reports?type=USER&id=${userId}`)}
       />

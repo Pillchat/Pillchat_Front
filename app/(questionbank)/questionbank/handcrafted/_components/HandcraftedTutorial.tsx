@@ -9,6 +9,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { handcraftedQuestions } from "@/lib/handcrafted/questions";
+import { useTutorialProgress } from "@/hooks/useTutorialProgress";
 import { REVIEW_MODE_LABELS, type ReviewMode } from "@/types/review";
 import ChoiceItem from "../../_components/ChoiceItem";
 import ActionSheet from "../../_components/ActionSheet";
@@ -37,19 +38,18 @@ const steps = [
   {
     title: "사용법을 익혔어요",
     description:
-      "실제 풀이에서 북마크한 문제는 복습하기 → 수제 제작 문제 → 문제 모음 → 북마크 문제 복습으로 다시 풀 수 있어요.",
+      "실제 풀이에서 북마크한 문제는 복습하기 → 전문검수문제 → 문제 모음 → 북마크 문제 복습으로 다시 풀 수 있어요.",
   },
 ];
 
 export default function HandcraftedTutorial({
   onClose,
   mandatory = false,
-  onComplete,
 }: {
   onClose: () => void;
   mandatory?: boolean;
-  onComplete?: () => void;
 }) {
+  const progress = useTutorialProgress("handcrafted");
   const [step, setStep] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [bookmarked, setBookmarked] = useState(false);
@@ -72,6 +72,7 @@ export default function HandcraftedTutorial({
   const next = () => {
     if (!canNext) return;
     if (step === 2) setBookmarked(true);
+    if (step === steps.length - 2) progress.complete();
     setStep(step + 1);
   };
   return (
@@ -92,7 +93,7 @@ export default function HandcraftedTutorial({
         className="max-h-[90dvh] overflow-y-auto rounded-2xl"
       >
         <p className="text-xs font-semibold text-primary">
-          수제 문제 사용법 · {step + 1}/{steps.length}
+          전문검수문제 사용법 · {step + 1}/{steps.length}
         </p>
         <DialogTitle className="pr-5 text-lg font-bold">
           {steps[step].title}
@@ -204,7 +205,7 @@ export default function HandcraftedTutorial({
         <button
           type="button"
           disabled={!canNext}
-          onClick={step === steps.length - 1 ? (onComplete ?? onClose) : next}
+          onClick={step === steps.length - 1 ? onClose : next}
           className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white disabled:opacity-40"
         >
           {step === steps.length - 1 ? "연습 마치기" : "다음"}

@@ -9,7 +9,7 @@ export default function CouponPage() {
   const [couponCode, setCouponCode] = useState("");
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-screen-sm bg-white">
+    <div className="mx-auto min-h-dvh w-full max-w-app bg-white">
       <CustomHeader title="내 쿠폰" />
 
       <main className="px-6 pb-3">

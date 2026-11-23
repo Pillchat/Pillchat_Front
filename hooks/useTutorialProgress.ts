@@ -1,5 +1,5 @@
 "use client";
-import { useSyncExternalStore } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { useAuthIdentity } from "@/hooks/useAuthIdentity";
 import {
   completeTutorial,
@@ -17,14 +17,28 @@ const subscribe = (listener: () => void) => {
 };
 export function useTutorialProgress(kind: TutorialKind) {
   const userId = useAuthIdentity();
+  useEffect(() => {
+    if (userId && hasCompletedTutorial(kind, null)) {
+      completeTutorial(kind, userId);
+    }
+  }, [kind, userId]);
+
   const completed = useSyncExternalStore(
     subscribe,
-    () => hasCompletedTutorial(kind, userId),
+    () => {
+      if (!userId) return null;
+      if (hasCompletedTutorial(kind, userId)) return true;
+      return hasCompletedTutorial(kind, null) ? null : false;
+    },
     () => null,
   );
+  const complete = useCallback(() => {
+    if (userId) completeTutorial(kind, userId);
+  }, [kind, userId]);
+
   return {
     completed,
     scope: userId ?? "guest",
-    complete: () => completeTutorial(kind, userId),
+    complete,
   };
 }

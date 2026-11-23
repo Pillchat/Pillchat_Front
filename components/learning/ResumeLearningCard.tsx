@@ -3,7 +3,10 @@
 import { Play } from "lucide-react";
 import EntryButton from "@/app/(questionbank)/questionbank/_components/EntryButton";
 import type { DashboardAttempt } from "@/lib/learning/dashboard";
-import { learningSourceLabel } from "@/lib/learning/attemptLabels";
+import {
+  learningDisplayTitle,
+  learningSourceLabel,
+} from "@/lib/learning/attemptLabels";
 
 export default function ResumeLearningCard({
   attempt,
@@ -32,7 +35,7 @@ export default function ResumeLearningCard({
             strokeWidth={1.5}
           />
         }
-        title={attempt.title}
+        title={learningDisplayTitle(attempt.source, attempt.title)}
         subtitle={
           <>
             <span className="block">

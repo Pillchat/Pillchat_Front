@@ -65,7 +65,7 @@ export default function InvitePage() {
   };
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-screen-sm bg-white">
+    <div className="mx-auto min-h-dvh w-full max-w-app bg-white">
       <CustomHeader title="친구 초대" />
 
       <main>

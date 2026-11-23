@@ -14,6 +14,7 @@ export default function WeaknessReviewFeedback({
 }) {
   const query = useWeaknessQuery();
   const mutation = useQuestionConfusionMutation(source, questionId);
+  const reviewSteps = query.data?.reviewSteps;
   const question = query.data?.questions.find(
     (q) => q.source === source && q.questionId === questionId,
   );
@@ -38,12 +39,15 @@ export default function WeaknessReviewFeedback({
           </button>
         </p>
       ) : question?.status === "MASTERED" ? (
-        <p>서로 다른 날에 2회 연속 정답! 극복한 문제로 옮겼어요.</p>
-      ) : question ? (
+        <p>예정된 복습을 모두 완료했어요.</p>
+      ) : question?.dueDate ? (
         <p>
-          극복까지 정답 {Math.max(0, 2 - question.consecutiveCorrect)}회
-          남았어요. 다음 복습: {question.dueDate ?? "–"}
+          다음 복습 {question.dueDate}
+          {reviewSteps &&
+            ` · 완료까지 ${Math.max(0, reviewSteps - question.consecutiveCorrect)}회`}
         </p>
+      ) : question ? (
+        <p>예정된 복습이 없어요.</p>
       ) : (
         <p>복습 기록을 새로 불러와주세요.</p>
       )}
@@ -76,7 +80,7 @@ export default function WeaknessReviewFeedback({
       {mutation.isSuccess && (
         <p role="status">
           {mutation.data.confused
-            ? "헷갈림으로 기록했어요. 연속 정답 횟수를 다시 시작해요."
+            ? "헷갈림으로 기록했어요."
             : "이해한 상태로 기록했어요."}
         </p>
       )}

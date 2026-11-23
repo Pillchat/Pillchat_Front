@@ -122,8 +122,8 @@ function createSampleCards(): ConceptFlashcard[] {
 
 export function FlashcardTutorialApp({
   mandatory = false,
-  onComplete,
-}: { mandatory?: boolean; onComplete?: () => void } = {}) {
+  onClose,
+}: { mandatory?: boolean; onClose?: () => void } = {}) {
   const progress = useTutorialProgress("flashcards");
   const required = mandatory || progress.completed !== true;
   const router = useRouter();
@@ -141,9 +141,8 @@ export function FlashcardTutorialApp({
   };
   const finish = () => {
     if (step !== "complete") return;
-    progress.complete();
-    if (onComplete) onComplete();
-    else router.replace("/flashcards");
+    if (onClose) onClose();
+    else if (!mandatory) router.replace("/flashcards");
   };
   const restart = () => {
     advanceLock.current = false;
@@ -198,8 +197,10 @@ export function FlashcardTutorialApp({
       action.type === "rate" &&
       action.rating === "again" &&
       action.nextCardId === null
-    )
+    ) {
+      progress.complete();
       setStep("complete");
+    }
   };
 
   const isCurrentTarget = (target: EventTarget | null) =>

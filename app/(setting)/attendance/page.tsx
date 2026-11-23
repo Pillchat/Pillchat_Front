@@ -46,7 +46,7 @@ export default function AttendancePage() {
   }, [onMyProfile]);
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-screen-sm bg-white">
+    <div className="mx-auto min-h-dvh w-full max-w-app bg-white">
       <CustomHeader title="출석체크" />
 
       <main className="px-6 pb-10">

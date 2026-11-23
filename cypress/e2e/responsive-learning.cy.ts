@@ -21,7 +21,7 @@ describe("기기별 학습 화면 레이아웃", () => {
     [744, 1024],
     [1280, 720],
   ]) {
-    it(`수제 문제 ${width}×${height}: 긴 선지와 본문, 하단 채점 버튼`, () => {
+    it(`전문검수문제 ${width}×${height}: 긴 선지와 본문, 하단 채점 버튼`, () => {
       cy.viewport(width, height);
       openPractice("HANDCRAFTED");
       expectNoHorizontalOverflow();

@@ -24,6 +24,7 @@ import { PracticeHeader } from "@/components/molecules";
 import { useNativeBack } from "@/hooks/useNativeBack";
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 import type { LearningSession } from "@/hooks/useLearningSession";
+import { learningDisplayTitle } from "@/lib/learning/attemptLabels";
 import {
   cbtAnswer,
   cbtQuestion,
@@ -256,7 +257,13 @@ export default function CbtPractice({
     </fieldset>
   );
   if (!attempt) {
-    if (stage === "hub")
+    if (stage === "hub") {
+      const retryTime = (item: LearningSession["history"][number]) =>
+        Date.parse(item.completedAt ?? item.createdAt ?? "") || 0;
+      const latestRetry = s.history
+        .filter((item) => item.state === "COMPLETED" && item.mode !== "REVIEW")
+        .sort((a, b) => retryTime(b) - retryTime(a))[0];
+
       return (
         <main className="min-h-dvh bg-white pb-8">
           <PracticeHeader
@@ -280,31 +287,21 @@ export default function CbtPractice({
               새 문제에서는 이미 푼 문제와 진행 중인 문제를 제외해요. 이전
               문제는 재도전을 선택할 때만 다시 나와요.
             </p>
-            {s.history.some(
-              (item) => item.state === "COMPLETED" && item.mode !== "REVIEW",
-            ) && (
+            {latestRetry && (
               <section className="mt-6 space-y-3">
                 <h2 className="font-semibold">이전 세트 재도전</h2>
-                {s.history
-                  .filter(
-                    (item) =>
-                      item.state === "COMPLETED" && item.mode !== "REVIEW",
-                  )
-                  .map((item) => (
-                    <button
-                      key={item.attemptId}
-                      type="button"
-                      disabled={s.disabled}
-                      onClick={() => setRetryAttempt(item.attemptId)}
-                      className="flex w-full items-center justify-between gap-3 rounded-xl border p-4 text-left text-sm"
-                    >
-                      <span>{item.title}</span>
-                      <RotateCcw
-                        className="h-5 w-5 shrink-0 text-primary"
-                        strokeWidth={1.5}
-                      />
-                    </button>
-                  ))}
+                <button
+                  type="button"
+                  disabled={s.disabled}
+                  onClick={() => setRetryAttempt(latestRetry.attemptId)}
+                  className="flex w-full items-center justify-between gap-3 rounded-xl border p-4 text-left text-sm"
+                >
+                  <span>{learningDisplayTitle("CBT", latestRetry.title)}</span>
+                  <RotateCcw
+                    className="h-5 w-5 shrink-0 text-primary"
+                    strokeWidth={1.5}
+                  />
+                </button>
               </section>
             )}
             {retryAttempt && (
@@ -374,6 +371,7 @@ export default function CbtPractice({
           </div>
         </main>
       );
+    }
     if (stage === "session-select")
       return (
         <FlowPage

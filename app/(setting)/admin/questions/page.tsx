@@ -211,7 +211,7 @@ export default function AdminQuestionsPage() {
         <>
           <div className="space-y-6 px-6 py-5">
             <div className="space-y-2">
-              <h1 className="text-headline-small">수제 문제 · CBT 관리</h1>
+              <h1 className="text-headline-small">전문검수문제 · CBT 관리</h1>
               <p className="text-body-medium text-muted-foreground">
                 직접 작성한 문제를 불러오거나 새 세트를 제작하고 미리
                 확인해보세요.

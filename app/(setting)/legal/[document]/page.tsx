@@ -11,7 +11,7 @@ export default async function LegalPage({
   if (document !== "terms" && document !== "privacy") notFound();
   const title = document === "terms" ? "서비스 이용약관" : "개인정보 처리방침";
   return (
-    <div className="mx-auto min-h-dvh max-w-screen-sm bg-white">
+    <div className="mx-auto min-h-dvh w-full max-w-app bg-white">
       <CustomHeader title={title} />
       <main className="whitespace-pre-wrap px-6 py-6 text-body-medium leading-relaxed">
         {document === "terms" ? TERMS_TEXT : PRIVACY_TEXT}

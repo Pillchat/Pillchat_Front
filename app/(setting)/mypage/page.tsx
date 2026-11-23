@@ -54,7 +54,7 @@ const MyPage: FC = () => {
   }
 
   return (
-    <div className="min-h-dvh w-full overflow-y-auto pb-[calc(var(--bottom-nav-height)+1.5rem)]">
+    <div className="mx-auto min-h-dvh w-full max-w-app overflow-y-auto pb-[calc(var(--bottom-nav-height)+1.5rem)]">
       <div className="flex w-full flex-col items-center">
         <MeaninglessHeader />
 
@@ -121,7 +121,7 @@ const MyPage: FC = () => {
               />
               <SystemField
                 iconSrc={PUBLIC_ASSETS.icons.learningHistoryColored}
-                title="수제 문제 · CBT 관리"
+                title="전문검수문제 · CBT 관리"
                 description="문제를 제작하고 등록할 수 있어요."
                 onClick={() => router.push("/admin/questions")}
               />

@@ -100,7 +100,7 @@ export function QuestionEditor({
           <div className="grid grid-cols-2 gap-2">
             {(
               [
-                ["HANDCRAFTED", "수제 문제"],
+                ["HANDCRAFTED", "전문검수문제"],
                 ["CBT", "CBT"],
               ] as const
             ).map(([kind, label]) => (

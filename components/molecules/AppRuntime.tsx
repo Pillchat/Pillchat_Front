@@ -2,6 +2,9 @@
 
 import { useEffect } from "react";
 import { onlineManager, useQueryClient } from "@tanstack/react-query";
+import { usePathname } from "next/navigation";
+import { getValidAccessToken } from "@/lib/client/fetch";
+import { isPublicPage, loginHrefForPage } from "@/lib/shared/pageAccess";
 import {
   APP_KEYBOARD,
   APP_RESUME,
@@ -20,6 +23,33 @@ function editable(element: Element | null): element is HTMLElement {
 
 export function AppRuntime() {
   const queryClient = useQueryClient();
+  const pathname = usePathname();
+  useEffect(() => {
+    if (!pathname || isPublicPage(pathname)) return;
+
+    let active = true;
+    const checkSession = async () => {
+      try {
+        const token = await getValidAccessToken();
+        if (active && !token && window.location.pathname === pathname) {
+          window.location.replace(
+            loginHrefForPage(`${pathname}${window.location.search}`),
+          );
+        }
+      } catch {
+        // A temporary refresh failure does not end a session.
+      }
+    };
+    void checkSession();
+    window.addEventListener("pillchat:auth", checkSession);
+    window.addEventListener("storage", checkSession);
+    return () => {
+      active = false;
+      window.removeEventListener("pillchat:auth", checkSession);
+      window.removeEventListener("storage", checkSession);
+    };
+  }, [pathname]);
+
   useEffect(() => {
     let disposed = false;
     let attempts = 0;

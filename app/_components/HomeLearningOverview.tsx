@@ -82,7 +82,7 @@ export default function HomeLearningOverview({
               compact
               icon={<LearningSourceIcon source="HANDCRAFTED" />}
               title="추천 문제 풀기"
-              subtitle="아직 풀지 않은 수제 제작 문제를 시작해요"
+              subtitle="아직 풀지 않은 전문검수문제를 시작해요"
               onClick={() => router.push("/questionbank/handcrafted")}
             />
           </div>
@@ -105,7 +105,7 @@ export default function HomeLearningOverview({
           <EntryButton
             compact
             icon={<LearningSourceIcon source="HANDCRAFTED" />}
-            title="수제 제작 문제"
+            title="전문검수문제"
             subtitle="전문가가 직접 만들고 검수한 문제를 풀어요"
             onClick={() => router.push("/questionbank/handcrafted")}
           />

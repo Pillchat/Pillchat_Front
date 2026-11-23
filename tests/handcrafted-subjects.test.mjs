@@ -230,6 +230,11 @@ test("count options larger than the available pool cannot be selected; all uses 
     isPending: false,
     isError: false,
   });
+  const summary = h.find((node) => node.props?.["aria-label"] === "출제 전 문제 현황");
+  const summaryHtml = renderToStaticMarkup(summary);
+  assert.match(summaryHtml, /남은 문제 8개/);
+  assert.doesNotMatch(summaryHtml, /bg-|이미 풀어서 제외|약점공략|진행 중/);
+  assert.doesNotMatch(renderToStaticMarkup(h.render()), /출제 가능한 새 문제/);
   const tooMany = h.find(
     (n) => n.type === "button" && n.props.children === "20문제",
   );

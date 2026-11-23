@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-
-const PUBLIC_PATHS = [
-  "/login",
-  "/signup",
-  "/find",
-  "/onboarding",
-  "/learn",
-  "/flashcards",
-];
+import {
+  accountLinkCallback,
+  isPublicPage,
+  loginHrefForPage,
+} from "./lib/shared/pageAccess";
 
 const LOGIN_NO_STORE_HEADERS = {
   "Cache-Control": "no-store, no-cache, max-age=0, must-revalidate",
@@ -24,7 +20,7 @@ export function middleware(request: NextRequest) {
 
   // Let the callback recover an expired session on the client. Completion still
   // requires a service Bearer token and the original tab's one-time state.
-  if (pathname === "/settings/account/kakao/callback") {
+  if (pathname === accountLinkCallback) {
     const response = NextResponse.next();
     for (const [name, value] of Object.entries(LOGIN_NO_STORE_HEADERS)) {
       response.headers.set(name, value);
@@ -34,7 +30,7 @@ export function middleware(request: NextRequest) {
   }
 
   // 공개 경로는 통과
-  if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) {
+  if (isPublicPage(pathname)) {
     const response = NextResponse.next();
 
     if (isLoginPath(pathname)) {
@@ -50,7 +46,10 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("access_token")?.value;
 
   if (!token) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = new URL(
+      loginHrefForPage(`${pathname}${request.nextUrl.search}`),
+      request.url,
+    );
     return NextResponse.redirect(loginUrl);
   }
 
@@ -58,5 +57,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
+  matcher: [
+    "/((?!api/|_next/|brand/|fonts/|icons/|illustrations/|favicon\\.ico$).*)",
+  ],
 };

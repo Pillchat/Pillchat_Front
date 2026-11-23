@@ -10,6 +10,7 @@ import { AttendanceSummary } from "@/components/molecules/AttendanceSummary";
 import { Toast } from "@/components/atoms";
 import HomeLearningOverview from "./_components/HomeLearningOverview";
 import HomeNotice from "./_components/HomeNotice";
+import HomeQuestionPreview from "./_components/HomeQuestionPreview";
 import { useRouter } from "@/lib/navigation";
 import { getValidAccessToken } from "@/lib/client/fetch";
 import { useAttendance } from "@/hooks/useAttendance";
@@ -541,6 +542,8 @@ const Home: FC = () => {
             </button>
           </p>
         )}
+
+        <HomeQuestionPreview />
 
         <HomeLearningOverview
           data={learning.data}

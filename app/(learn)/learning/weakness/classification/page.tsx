@@ -1,7 +1,7 @@
 import {
   BookOpen,
   CircleCheck,
-  CircleHelp,
+  Bookmark,
   FileQuestion,
   Target,
 } from "lucide-react";
@@ -25,20 +25,20 @@ const rules = [
   {
     label: "틀린 문제",
     destination: "약점공략",
-    description: "틀린 문제를 다시 풀며 부족한 부분을 채워요.",
+    description: "오답을 제출하면 다음 날 복습을 예약해요.",
     icon: Target,
   },
   {
-    label: "헷갈림 표시",
+    label: "북마크한 문제",
     destination: "약점공략",
     description:
-      "풀이 중 ‘헷갈려요’를 직접 표시한 문제는 맞혔어도 약점으로 모아요.",
-    icon: CircleHelp,
+      "정답 후 북마크하면 다음 날 복습해요. 진행 중인 일정은 그대로 유지해요.",
+    icon: Bookmark,
   },
   {
-    label: "2회 연속 정답",
+    label: "복습 완료",
     destination: "극복한 문제",
-    description: "서로 다른 날에 연속으로 두 번 맞히면 극복한 문제로 분류돼요.",
+    description: "마지막 30일 간격의 복습에서 맞히면 극복한 문제로 분류돼요.",
     icon: CircleCheck,
   },
 ];
@@ -59,7 +59,7 @@ export default async function Page({
       <main className="px-6 pb-8 pt-6">
         <h1 className="text-headline-medium">학습 분류 기준</h1>
         <p className="mt-2 text-body-medium text-muted-foreground">
-          풀이 결과와 ‘헷갈려요’ 표시를 기준으로 학습할 곳을 안내해요.
+          풀이 결과와 북마크에 따라 복습 일정이 정해져요.
         </p>
         <ol className="mt-6 space-y-3">
           {rules.map(({ label, destination, description, icon: Icon }) => (
@@ -85,8 +85,8 @@ export default async function Page({
         </ol>
         <div className="mt-6">
           <WeaknessNotice title="학습 분류를 위한 안내예요">
-            오늘 푼 문제는 당일 약점공략에 다시 표시되지 않아요. 2회 연속
-            정답이면 약점공략에서 제외돼요.
+            첫 복습은 다음 날이에요. 예정된 복습을 맞힐 때마다 실제 제출일에서
+            3일, 7일, 14일, 30일 뒤로 간격이 늘어나요.
           </WeaknessNotice>
         </div>
       </main>
