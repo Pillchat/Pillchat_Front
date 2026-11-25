@@ -58,7 +58,7 @@ export default function SettingPage() {
   const [openModal, setOpenModal] = useState<ModalType>(null);
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-screen-sm bg-white">
+    <div className="mx-auto min-h-dvh w-full max-w-app bg-white">
       <CustomHeader title="전체 설정" />
 
       <main className="px-6 pb-10 pt-4">

@@ -1,7 +1,7 @@
 export type DashboardAttempt = {
   attemptId: string;
   source: "CBT" | "HANDCRAFTED" | "AI";
-  title: string;
+  title?: string | null;
   answeredCount: number;
   questionCount: number;
   subject?: string | null;

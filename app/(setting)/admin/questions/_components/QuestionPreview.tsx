@@ -9,7 +9,7 @@ export function QuestionPreview({ value }: { value: AdminQuestionSetDraft }) {
       <section className="space-y-3 rounded-2xl border border-gray-300 bg-white p-5">
         <div className="flex flex-wrap items-center gap-2 text-body-small">
           <span className="rounded-lg bg-primary-980 px-2 py-1 text-primary">
-            {value.kind === "CBT" ? "CBT" : "수제 문제"}
+            {value.kind === "CBT" ? "CBT" : "전문검수문제"}
           </span>
           <span className="rounded-lg bg-gray-100 px-2 py-1 text-muted-foreground">
             {value.isActive ? "활성" : "비활성"}

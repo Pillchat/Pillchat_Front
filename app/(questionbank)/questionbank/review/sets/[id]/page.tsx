@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { PracticeHeader } from "@/components/molecules";
 import { useRouter } from "@/lib/navigation";
+import { learningDisplayTitle } from "@/lib/learning/attemptLabels";
 import {
   readReviewCollections,
   selectReviewQuestions,
@@ -157,7 +158,7 @@ export default function ReviewSetPage() {
             </p>
             <h1 className="mt-2 text-2xl font-bold">복습을 완료했어요</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              {collection.title}
+              {learningDisplayTitle(collection.source, collection.title)}
             </p>
             <div className="mt-6 grid grid-cols-3 gap-3 rounded-2xl bg-gray-50 p-5 text-center">
               {[
@@ -205,7 +206,7 @@ export default function ReviewSetPage() {
   return (
     <ReviewPlayerFrame
       key={question.id}
-      title={collection.title}
+      title={learningDisplayTitle(collection.source, collection.title)}
       modeLabel={REVIEW_MODE_LABELS[mode]}
       backHref={backHref}
       index={index}

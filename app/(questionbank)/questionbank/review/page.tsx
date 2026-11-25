@@ -11,6 +11,7 @@ import { useSetAtom } from "jotai";
 import { fetchAPI } from "@/lib/client/fetch";
 import { initQuizSessionAtom, mapChoices } from "@/store/quizSession";
 import { PracticeHeader } from "@/components/molecules";
+import { learningDisplayTitle } from "@/lib/learning/attemptLabels";
 import { RotateCcw } from "lucide-react";
 import {
   REVIEW_SOURCE_LABELS,
@@ -263,7 +264,7 @@ const ReviewListPage = () => {
         className="m-5 block rounded-xl border border-brand p-4 text-brand"
         href="/learning/review"
       >
-        서버에 저장된 AI·수제·CBT 학습 복습
+        서버에 저장된 AI·전문검수문제·CBT 학습 복습
       </Link>
       <div className="px-5 pb-5 pt-4">
         <div className="flex items-start gap-3">
@@ -354,6 +355,7 @@ const ReviewListPage = () => {
                 key={item.id}
                 item={{
                   ...item,
+                  title: learningDisplayTitle(item.source, item.title),
                   totalQuestionCount: item.questions.length,
                   wrongCount: counts.wrong,
                 }}

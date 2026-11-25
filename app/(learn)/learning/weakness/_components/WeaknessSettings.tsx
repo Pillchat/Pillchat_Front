@@ -44,9 +44,8 @@ export default function WeaknessSettings({
           count={count}
           pending={query.isPending}
         />
-        <WeaknessNotice title="오답·‘헷갈려요’ 표시 문제만 모아요">
-          맞힌 문제라도 풀이 중 ‘헷갈려요’를 직접 표시했다면 약점공략에
-          포함돼요. 복습할 범위와 출처를 골라보세요.
+        <WeaknessNotice title="오답과 북마크한 문제를 복습해요">
+          오답을 제출하거나 정답 후 북마크한 문제는 다음 날 복습할 수 있어요.
         </WeaknessNotice>
         {query.isError && (
           <WeaknessReadError onRetry={() => void query.refetch()} />
@@ -130,8 +129,8 @@ export default function WeaknessSettings({
           )}
         </fieldset>
         <p className="text-body-small text-muted-foreground">
-          오늘 푼 문제는 내일부터 다시 보여요. 서로 다른 날에 두 번 연속
-          정답이면 약점공략에서 제외돼요.
+          기한이 지난 문제도 예정일을 유지해요. 복습에서 틀리면 다음 날에 다시
+          풀어요.
         </p>
       </main>
       <footer className="fixed bottom-0 left-1/2 z-40 w-full max-w-app -translate-x-1/2 bg-white px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">

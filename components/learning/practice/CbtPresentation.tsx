@@ -15,6 +15,7 @@ import {
 import { PillLoader } from "@/components/atoms/PillLoader";
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 import { cn } from "@/lib/utils";
+import { ModalSurface } from "@/components/molecules/ModalSurface";
 import type { CbtExamQuestion as SampleQuestion } from "@/types/cbt";
 export type CbtDisplayQuestion = Omit<SampleQuestion, "subject" | "media"> & {
   subject: string;
@@ -718,13 +719,20 @@ export function QuestionListDialog({
     ).length,
   };
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-5"
-      role="dialog"
-      aria-modal="true"
-      aria-label="문제 목록"
+    <ModalSurface
+      title="문제 목록"
+      onClose={onClose}
+      className="z-50 p-5"
+      closeOnBackdrop={false}
+      backdropClassName="bg-black/40"
     >
-      <section className="flex max-h-[80dvh] w-full max-w-[720px] flex-col overflow-hidden rounded-2xl bg-white">
+      <section
+        style={{
+          maxHeight:
+            "min(80dvh, calc(var(--app-viewport-height, 100dvh) - 2.5rem))",
+        }}
+        className="flex w-full max-w-[720px] flex-col overflow-hidden rounded-2xl bg-white"
+      >
         <header className="flex items-center justify-between p-5">
           <div>
             <p className="text-sm font-bold text-primary">문제 탐색</p>
@@ -818,7 +826,7 @@ export function QuestionListDialog({
           )}
         </div>
       </section>
-    </div>
+    </ModalSurface>
   );
 }
 
@@ -1125,16 +1133,18 @@ export function Dialog({
   tutorialTarget?: string;
 }) {
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-5"
-      role="dialog"
-      aria-modal="true"
+    <ModalSurface
+      title={title}
+      onClose={onClose}
+      className="z-[60] p-5"
+      closeOnBackdrop={false}
+      backdropClassName="bg-black/40"
     >
       <section
         data-cbt-tutorial={tutorialTarget}
-        className="w-full max-w-[min(720px,80vw)] rounded-2xl bg-white p-5"
+        className="flex max-h-[calc(100dvh-2.5rem)] w-full max-w-[min(720px,80vw)] flex-col overflow-hidden rounded-2xl bg-white p-5"
       >
-        <header className="flex items-start justify-between gap-4">
+        <header className="flex shrink-0 items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-extrabold">{title}</h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -1150,9 +1160,11 @@ export function Dialog({
             <X className="h-5 w-5" />
           </button>
         </header>
-        <div className="mt-5">{children}</div>
+        <div className="mt-5 min-h-0 overflow-y-auto overscroll-contain">
+          {children}
+        </div>
       </section>
-    </div>
+    </ModalSurface>
   );
 }
 export function PrimaryButton({

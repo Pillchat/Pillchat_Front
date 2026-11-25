@@ -23,26 +23,28 @@ export default function QuestionBankPage() {
             학습 형태 · 이미 푼 문제는 제외되고 틀린 문제는 약점공략에 쌓여요.
           </p>
           <div className="mt-4 space-y-3">
-            {([
+            {(
               [
-                "수제 제작 문제",
-                "과목과 세부주제를 골라 새 문제를 풀어요",
-                "/questionbank/handcrafted",
-                "HANDCRAFTED",
-              ],
-              [
-                "AI 생성 문제",
-                "주제나 학습자료로 문제를 만들어요",
-                "/questionbank/generate",
-                "AI",
-              ],
-              [
-                "CBT 형태로 학습하기",
-                "실전처럼 연습하고 결과를 확인해요",
-                "/learning/cbt",
-                "CBT",
-              ],
-            ] as const).map(([title, subtitle, path, source]) => (
+                [
+                  "전문검수문제",
+                  "과목과 세부주제를 골라 새 문제를 풀어요",
+                  "/questionbank/handcrafted",
+                  "HANDCRAFTED",
+                ],
+                [
+                  "AI 생성 문제",
+                  "주제나 학습자료로 문제를 만들어요",
+                  "/questionbank/generate",
+                  "AI",
+                ],
+                [
+                  "CBT 형태로 학습하기",
+                  "실전처럼 연습하고 결과를 확인해요",
+                  "/learning/cbt",
+                  "CBT",
+                ],
+              ] as const
+            ).map(([title, subtitle, path, source]) => (
               <EntryButton
                 key={path}
                 framed

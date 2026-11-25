@@ -1,3 +1,4 @@
+import { prepareExternalOpen } from "./externalLinks";
 import {
   ApiError,
   fetchAPI,
@@ -197,19 +198,18 @@ export async function downloadSupportAttachment(
   inquiryId: string,
   attachment: SupportAttachment,
 ) {
-  const data = await fetchAPI(
-    `${BASE}/${encodeURIComponent(inquiryId)}/attachments/${encodeURIComponent(attachment.id)}/download`,
-    "GET",
-  );
-  if (typeof data?.downloadUrl !== "string") throw invalidResponse();
-  const url = new URL(data.downloadUrl);
-  if (!["https:", "http:"].includes(url.protocol)) throw invalidResponse();
-  const anchor = document.createElement("a");
-  anchor.href = url.href;
-  anchor.download = attachment.name;
-  anchor.target = "_blank";
-  anchor.rel = "noopener noreferrer";
-  anchor.click();
+  const target = prepareExternalOpen();
+  try {
+    const data = await fetchAPI(
+      `${BASE}/${encodeURIComponent(inquiryId)}/attachments/${encodeURIComponent(attachment.id)}/download`,
+      "GET",
+    );
+    if (typeof data?.downloadUrl !== "string") throw invalidResponse();
+    target.open(data.downloadUrl);
+  } catch (error) {
+    target.close();
+    throw error;
+  }
 }
 export function supportErrorMessage(error: unknown, submitting = false) {
   if (error instanceof ApiError) {

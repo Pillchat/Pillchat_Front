@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import { uploadContentType } from "@/lib/client/files";
 
 export type UploadPreviewItem = {
   id: string;
@@ -61,7 +62,7 @@ export const useUploadFiles = ({
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files ?? []).filter((file) =>
-      ["image/jpeg", "image/png"].includes(file.type),
+      ["image/jpeg", "image/png"].includes(uploadContentType(file)),
     );
 
     if (selectedFiles.length === 0) {
@@ -117,7 +118,7 @@ export const useUploadFiles = ({
 
   const handlePdfChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = Array.from(e.target.files ?? []).find(
-      (item) => item.type === "application/pdf",
+      (item) => uploadContentType(item) === "application/pdf",
     );
 
     if (!file) {

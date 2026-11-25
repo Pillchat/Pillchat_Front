@@ -6,7 +6,10 @@ import {
   historyHref,
   type HistoryEntry,
 } from "@/lib/learning/history";
-import { learningSourceLabel } from "@/lib/learning/attemptLabels";
+import {
+  learningDisplayTitle,
+  learningSourceLabel,
+} from "@/lib/learning/attemptLabels";
 export default function HistoryAttemptCard({
   entry,
   returnTo,
@@ -41,7 +44,7 @@ export default function HistoryAttemptCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <h3 className="min-w-0 break-words text-title-large">
-              {entry.title}
+              {learningDisplayTitle(entry.source, entry.title)}
             </h3>
             <span className="shrink-0 text-title-small text-primary">
               {progress ? "이어서 풀기" : "결과 보기"}

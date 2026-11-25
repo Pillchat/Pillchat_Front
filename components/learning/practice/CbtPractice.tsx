@@ -1,6 +1,7 @@
 "use client";
 import { ConfusionToggle } from "@/components/learning/ConfusionToggle";
 
+import { LearningBetaNotice } from "@/components/learning/LearningBetaNotice";
 import { TutorialButton } from "@/components/learning/TutorialButton";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
@@ -21,8 +22,10 @@ import {
   StickyNote,
 } from "lucide-react";
 import { PracticeHeader } from "@/components/molecules";
+import { useNativeBack } from "@/hooks/useNativeBack";
 import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
 import type { LearningSession } from "@/hooks/useLearningSession";
+import { learningDisplayTitle } from "@/lib/learning/attemptLabels";
 import {
   cbtAnswer,
   cbtQuestion,
@@ -85,6 +88,11 @@ export default function CbtPractice({
   const [calculator, setCalculator] = useState(false);
   const [submitOpen, setSubmitOpen] = useState(false);
   const [exitOpen, setExitOpen] = useState(false);
+  useNativeBack(
+    !!s.attempt && !s.result && !tutorial,
+    () => setExitOpen(true),
+    10,
+  );
   useEffect(() => {
     const resize = () => setWidth(window.innerWidth);
     resize();
@@ -250,7 +258,13 @@ export default function CbtPractice({
     </fieldset>
   );
   if (!attempt) {
-    if (stage === "hub")
+    if (stage === "hub") {
+      const retryTime = (item: LearningSession["history"][number]) =>
+        Date.parse(item.completedAt ?? item.createdAt ?? "") || 0;
+      const latestRetry = s.history
+        .filter((item) => item.state === "COMPLETED" && item.mode !== "REVIEW")
+        .sort((a, b) => retryTime(b) - retryTime(a))[0];
+
       return (
         <main className="min-h-dvh bg-white pb-8">
           <PracticeHeader
@@ -258,7 +272,8 @@ export default function CbtPractice({
             rightSlot={<TutorialButton onClick={() => setTutorial(true)} />}
           />
           {feedback}
-          <div className="mx-auto max-w-[1024px] px-4 sm:px-6">
+          <div className="mx-auto max-w-[1024px] px-4 pt-4 sm:px-6">
+            <LearningBetaNotice />
             <section className="mt-7">
               <h1 className="text-xl font-semibold leading-snug sm:text-2xl">
                 실제 시험 흐름으로
@@ -274,31 +289,21 @@ export default function CbtPractice({
               새 문제에서는 이미 푼 문제와 진행 중인 문제를 제외해요. 이전
               문제는 재도전을 선택할 때만 다시 나와요.
             </p>
-            {s.history.some(
-              (item) => item.state === "COMPLETED" && item.mode !== "REVIEW",
-            ) && (
+            {latestRetry && (
               <section className="mt-6 space-y-3">
                 <h2 className="font-semibold">이전 세트 재도전</h2>
-                {s.history
-                  .filter(
-                    (item) =>
-                      item.state === "COMPLETED" && item.mode !== "REVIEW",
-                  )
-                  .map((item) => (
-                    <button
-                      key={item.attemptId}
-                      type="button"
-                      disabled={s.disabled}
-                      onClick={() => setRetryAttempt(item.attemptId)}
-                      className="flex w-full items-center justify-between gap-3 rounded-xl border p-4 text-left text-sm"
-                    >
-                      <span>{item.title}</span>
-                      <RotateCcw
-                        className="h-5 w-5 shrink-0 text-primary"
-                        strokeWidth={1.5}
-                      />
-                    </button>
-                  ))}
+                <button
+                  type="button"
+                  disabled={s.disabled}
+                  onClick={() => setRetryAttempt(latestRetry.attemptId)}
+                  className="flex w-full items-center justify-between gap-3 rounded-xl border p-4 text-left text-sm"
+                >
+                  <span>{learningDisplayTitle("CBT", latestRetry.title)}</span>
+                  <RotateCcw
+                    className="h-5 w-5 shrink-0 text-primary"
+                    strokeWidth={1.5}
+                  />
+                </button>
               </section>
             )}
             {retryAttempt && (
@@ -368,6 +373,7 @@ export default function CbtPractice({
           </div>
         </main>
       );
+    }
     if (stage === "session-select")
       return (
         <FlowPage
@@ -592,13 +598,13 @@ export default function CbtPractice({
     <>
       <main className="h-dvh min-w-0 overflow-hidden bg-white text-foreground lg:min-h-[640px]">
         <header className="fixed inset-x-0 top-0 z-40 h-[calc(60px+env(safe-area-inset-top))] bg-white pt-[env(safe-area-inset-top)]">
-          <div className="grid h-[60px] grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 px-3 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:px-5">
+          <div className="grid h-[60px] grid-cols-[minmax(40px,1fr)_auto_auto] items-center gap-1 px-2 min-[480px]:gap-2 min-[480px]:px-3 lg:grid-cols-[minmax(40px,1fr)_auto_minmax(0,1fr)] lg:px-5">
             <div className="flex min-w-0 items-center gap-2">
               <button
                 type="button"
                 aria-label="시험 나가기"
                 onClick={() => setExitOpen(true)}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#fafafa]"
+                className="-m-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#fafafa]"
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
@@ -615,7 +621,7 @@ export default function CbtPractice({
               <button
                 type="button"
                 onClick={() => setListOpen(true)}
-                className="rounded-xl bg-[#fafafa] px-3 py-2 text-xs font-bold lg:hidden"
+                className="hidden whitespace-nowrap rounded-xl bg-[#fafafa] px-3 py-2 text-xs font-bold min-[480px]:block lg:hidden"
               >
                 {s.index + 1}/{questions.length}
               </button>
@@ -647,9 +653,9 @@ export default function CbtPractice({
                     type="button"
                     aria-pressed={double === value}
                     onClick={() => setDouble(value)}
-                    className={`flex h-11 items-center gap-1 rounded-lg px-3 text-xs font-extrabold ${double === value ? "bg-foreground text-white" : ""}`}
+                    className={`flex h-11 items-center gap-1 whitespace-nowrap rounded-lg px-2 text-xs font-extrabold min-[480px]:px-3 ${double === value ? "bg-foreground text-white" : ""}`}
                   >
-                    <Columns2 className="h-4 w-4" />
+                    <Columns2 className="hidden h-4 w-4 min-[480px]:block" />
                     {value ? "2문제" : "1문제"}
                   </button>
                 ))}
@@ -657,11 +663,11 @@ export default function CbtPractice({
             </div>
             <div className="flex items-center justify-end gap-1">
               <TutorialButton onClick={() => setTutorial(true)} />
-              <div className="shrink-0 whitespace-nowrap rounded-xl bg-[#fafafa] px-3 py-2 text-right">
+              <div className="shrink-0 whitespace-nowrap rounded-xl bg-[#fafafa] px-2 py-2 text-right min-[480px]:px-3">
                 <p className="text-[10px] font-bold text-muted-foreground">
                   남은 시간
                 </p>
-                <p className="mt-0.5 text-sm font-extrabold tabular-nums text-primary">
+                <p className="mt-0.5 text-xs font-extrabold tabular-nums text-primary min-[480px]:text-sm">
                   {formatDuration(s.remaining)}
                 </p>
               </div>

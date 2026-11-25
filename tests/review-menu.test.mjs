@@ -25,6 +25,7 @@ const { default: menu } = load(
   "../app/(questionbank)/questionbank/_components/ActionSheet.tsx",
   (name) => {
     if (name === "@/types/review") return labels;
+    if (name === "@/hooks/useNativeBack") return { useNativeBack() {} };
     if (name === "@/components/atoms/LoadingIndicator")
       return { LoadingIndicator: "span" };
     // Test menu choices independently of the icon library's module packaging.

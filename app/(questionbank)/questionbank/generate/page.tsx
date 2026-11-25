@@ -2,6 +2,7 @@
 
 import { Sparkles } from "lucide-react";
 import FileIcon from "@/public/icons/file.svg";
+import { LearningBetaNotice } from "@/components/learning/LearningBetaNotice";
 import { AppShell } from "@/components/molecules/AppShell";
 import { PracticeHeader } from "@/components/molecules/PracticeHeader";
 import EntryButton from "../_components/EntryButton";
@@ -18,6 +19,7 @@ export default function GeneratePage() {
         separator={false}
       />
       <main className="space-y-6 px-6 pb-8 pt-5">
+        <LearningBetaNotice />
         <div>
           <h1 className="text-headline-medium">
             어떤 내용으로 문제를 만들까요?

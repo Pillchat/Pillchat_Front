@@ -236,7 +236,7 @@ export default function HandcraftedPage() {
         <HandcraftedTutorial onClose={() => setShowTutorial(false)} />
       )}
       <PracticeHeader
-        title="수제 제작 문제"
+        title="전문검수문제"
         subtitle="전문가 제작 · 검수 완료"
         onBack={() =>
           stage === "setup" ? router.push("/questionbank") : reset()

@@ -1,41 +1,29 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { CustomHeader } from "@/components/molecules";
-import { fetchAPI } from "@/lib/client/fetch";
+import { useNoticesQuery } from "@/hooks/queries/useNoticesQuery";
 export default function NoticesPage() {
   const [page, setPage] = useState(0);
-  const [data, setData] = useState<{
-    content: {
-      id: number;
-      title: string;
-      pinned: boolean;
-      publishedAt: string;
-    }[];
-    last: boolean;
-  } | null>(null);
-  const [error, setError] = useState("");
-  useEffect(() => {
-    let active = true;
-    setData(null);
-    setError("");
-    void fetchAPI("/api/notices", "GET", { page, size: 20 })
-      .then((value) => {
-        if (active) setData(value);
-      })
-      .catch((e) => {
-        if (active) setError(e.message);
-      });
-    return () => {
-      active = false;
-    };
-  }, [page]);
+  const query = useNoticesQuery(page);
+  const data = query.data;
   return (
     <div className="min-h-dvh">
       <CustomHeader title="공지사항" />
       <main className="space-y-4 p-5">
-        {error && <p role="alert">{error}</p>}
-        {!data && !error && <p>불러오는 중입니다.</p>}
+        {query.isError && (
+          <p role="alert">
+            {query.error.message}{" "}
+            <button
+              type="button"
+              className="text-primary underline"
+              onClick={() => void query.refetch()}
+            >
+              다시 시도
+            </button>
+          </p>
+        )}
+        {query.isPending && <p role="status">불러오는 중입니다.</p>}
         {data?.content.length === 0 && <p>등록된 공지가 없습니다.</p>}
         {data?.content.map((n) => (
           <Link

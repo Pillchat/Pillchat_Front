@@ -41,8 +41,9 @@ export const BottomNavbar: FC<BottomNavbarProps> = ({ className }) => {
 
   return (
     <nav
+      data-bottom-navigation
       className={cn(
-        "shadow-t dark:shadow-t-gray-800 fixed bottom-0 left-1/2 z-50 flex h-[var(--bottom-nav-height)] w-full max-w-screen-sm -translate-x-1/2 items-center justify-around bg-background px-3 pb-[env(safe-area-inset-bottom,0px)] sm:px-6 md:max-w-app md:px-10",
+        "shadow-t dark:shadow-t-gray-800 fixed bottom-0 left-1/2 z-50 flex h-[var(--bottom-nav-height)] w-full max-w-app -translate-x-1/2 items-center justify-around bg-background px-3 pb-[env(safe-area-inset-bottom,0px)] sm:px-6 md:px-10",
         className,
       )}
     >

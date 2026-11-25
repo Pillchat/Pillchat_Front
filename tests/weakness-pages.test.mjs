@@ -6,7 +6,7 @@ import { loader } from "./helpers/load-ts.mjs";
 
 const normal = (value) => JSON.parse(JSON.stringify(value));
 const model = loader()("lib/learning/weakness.ts");
-test("review feedback displays the server streak and sends explicit confusion choices", () => {
+test("review feedback displays the remaining scheduled steps and sends explicit confusion choices", () => {
   const calls = [];
   const load = loader(
     {},
@@ -14,6 +14,7 @@ test("review feedback displays the server streak and sends explicit confusion ch
       "@/hooks/queries/useWeaknessQuery": {
         useWeaknessQuery: () => ({
           data: {
+            reviewSteps: 5,
             questions: [
               {
                 source: "CBT",
@@ -39,7 +40,7 @@ test("review feedback displays the server streak and sends explicit confusion ch
   const View = load("components/learning/WeaknessReviewFeedback.tsx").default;
   const tree = View({ source: "CBT", questionId: "101" });
   const html = renderToStaticMarkup(tree);
-  assert.match(html, /정답 1회/);
+  assert.match(html, /완료까지 4회/);
   assert.match(html, /2026-10-31/);
   const buttons = tree.props.children[1].props.children;
   buttons[0].props.onClick();
@@ -142,7 +143,7 @@ const library = {
     {
       collectionRef: "HANDCRAFTED:1",
       source: "HANDCRAFTED",
-      title: "약리학 수제 문제",
+      title: "약리학 전문검수문제",
     },
     { collectionRef: "AI:2", source: "AI", title: "임상약학 AI 문제" },
     { collectionRef: "CBT:3", source: "CBT", title: "약제학 CBT" },
@@ -480,8 +481,8 @@ test("classification has the requested title and all five rules; mastered questi
     "맞힌 문제",
     "전체 학습 기록",
     "틀린 문제",
-    "헷갈림 표시",
-    "2회 연속 정답",
+    "북마크한 문제",
+    "복습 완료",
     "극복한 문제",
   ])
     assert.ok(html.includes(text), text);
@@ -540,7 +541,7 @@ test("confusion control stores an explicit state and retries with the identical 
 
 test("review day labels use server dates across month, leap-year and year boundaries", () => {
   for (const [due, server, expected] of [
-    ["2026-10-27", "2026-10-28", "오늘"],
+    ["2026-10-27", "2026-10-28", "10/27 기한 지남"],
     ["2026-10-28", "2026-10-28", "오늘"],
     ["2026-11-01", "2026-10-31", "내일"],
     ["2028-02-29", "2028-02-28", "내일"],
@@ -723,17 +724,17 @@ test("the main starts only today's selected questions and exposes per-question r
   const tree = h.render();
   const html = renderToStaticMarkup(tree);
   assert.match(html, /오늘 복습할/);
-  assert.doesNotMatch(html, /풀이 중 ‘헷갈려요’를 직접 표시한 문제/);
+  assert.doesNotMatch(html, /정답 후 북마크한 문제를 복습해요/);
   nodes(tree)
     .find((n) => n.props?.["aria-label"] === "나의 약점 분야 안내")
     .props.onClick();
   assert.match(
     renderToStaticMarkup(h.render()),
-    /풀이 중 ‘헷갈려요’를 직접 표시한 문제/,
+    /정답 후 북마크한 문제를 복습해요/,
   );
   const summary = nodes(tree).find((n) => n.type === "summary");
   assert.match(renderToStaticMarkup(summary), /문제별 복습 현황/);
-  assert.match(renderToStaticMarkup(summary), /복습 일정과 연속 정답 보기/);
+  assert.match(renderToStaticMarkup(summary), /복습 일정과 단계 보기/);
   nodes(tree)
     .find((n) => n.props?.["aria-label"] === "복습 시작")
     .props.onClick();

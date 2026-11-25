@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { PracticeHeader } from "@/components/molecules/PracticeHeader";
 import { useWeaknessQuery } from "@/hooks/queries/useWeaknessQuery";
+import { learningDisplayTitle } from "@/lib/learning/attemptLabels";
 import {
   weaknessHref,
   koreanStudyDate,
@@ -30,9 +31,9 @@ export default function MasteredQuestions({
         <h1 className="text-headline-medium">
           극복한 문제 {query.data ? questions.length : "–"}개
         </h1>
-        <WeaknessNotice title="서로 다른 날에 두 번 연속 맞혔어요">
-          극복한 문제는 약점공략에서 제외돼요. 다시 틀리거나 ‘헷갈려요’를 직접
-          표시하면 약점으로 돌아와요.
+        <WeaknessNotice title="예정된 복습을 마쳤어요">
+          다시 틀리면 다음 날부터 복습해요. 북마크한 문항은 저장 목록에서 볼 수
+          있어요.
         </WeaknessNotice>
         {query.isError && (
           <WeaknessReadError onRetry={() => void query.refetch()} />
@@ -44,25 +45,26 @@ export default function MasteredQuestions({
           </p>
         )}
         <ul className="space-y-3">
-          {questions.map((q) => (
-            <li key={q.id} className="rounded-xl bg-gray-50 p-4">
-              <p className="text-title-large">
-                {q.subject}
-                {q.topic ? ` · ${q.topic}` : ""}
-              </p>
-              <p className="mt-1 text-body-small text-muted-foreground">
-                {WEAKNESS_SOURCE_LABELS[q.source]} ·{" "}
-                {
-                  query.data?.collections.find(
-                    (c) => c.collectionRef === q.collectionRef,
-                  )?.title
-                }{" "}
-                · 2회 연속 정답
-                {q.masteredAt &&
-                  ` · 극복한 날 ${koreanStudyDate(q.masteredAt)}`}
-              </p>
-            </li>
-          ))}
+          {questions.map((q) => {
+            const collectionTitle = query.data?.collections.find(
+              (collection) => collection.collectionRef === q.collectionRef,
+            )?.title;
+            return (
+              <li key={q.id} className="rounded-xl bg-gray-50 p-4">
+                <p className="text-title-large">
+                  {q.subject}
+                  {q.topic ? ` · ${q.topic}` : ""}
+                </p>
+                <p className="mt-1 text-body-small text-muted-foreground">
+                  {WEAKNESS_SOURCE_LABELS[q.source]}
+                  {collectionTitle?.trim() &&
+                    ` · ${learningDisplayTitle(q.source, collectionTitle)}`}
+                  {q.masteredAt &&
+                    ` · 극복한 날 ${koreanStudyDate(q.masteredAt)}`}
+                </p>
+              </li>
+            );
+          })}
         </ul>
         <Link
           className="block text-body-medium text-primary underline"

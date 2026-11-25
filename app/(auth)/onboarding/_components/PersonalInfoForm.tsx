@@ -225,7 +225,10 @@ export function PersonalInfoForm({
         </p>
       ) : null}
 
-      <div className="fixed bottom-0 left-1/2 z-10 w-full max-w-app -translate-x-1/2 bg-gradient-to-t from-background via-background to-transparent px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-8">
+      <div
+        data-keyboard-footer
+        className="fixed bottom-0 left-1/2 z-10 w-full max-w-app -translate-x-1/2 bg-gradient-to-t from-background via-background to-transparent px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-8"
+      >
         <SolidButton
           type="submit"
           content={saving ? "저장 중..." : "변경 저장"}

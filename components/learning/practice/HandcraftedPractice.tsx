@@ -4,6 +4,8 @@ import WeaknessReviewFeedback from "@/components/learning/WeaknessReviewFeedback
 
 import { TutorialButton } from "@/components/learning/TutorialButton";
 import { useState } from "react";
+import { useNativeBack } from "@/hooks/useNativeBack";
+import { useWeaknessQuery } from "@/hooks/queries/useWeaknessQuery";
 import { PracticeResult } from "./PracticeResult";
 import { Bookmark, BookmarkCheck, Check, X, CircleHelp } from "lucide-react";
 import { AppShell, PracticeHeader } from "@/components/molecules";
@@ -19,8 +21,33 @@ export default function HandcraftedPractice({
   session: LearningSession;
 }) {
   const [tutorial, setTutorial] = useState(false);
+  useNativeBack(
+    !!s.attempt && !s.result && !tutorial,
+    () => {
+      if (
+        window.confirm(
+          "문제 풀이를 나갈까요? 저장한 답안은 이어서 풀 수 있어요.",
+        )
+      )
+        void s.leave();
+    },
+    10,
+  );
   const attempt = s.attempt;
   const question = attempt?.currentSectionQuestions[s.index];
+  const weakness = useWeaknessQuery(!!question && !s.result);
+  const review =
+    question &&
+    weakness.data?.questions.find(
+      (item) =>
+        item.source === s.source &&
+        item.questionId === question.sourceQuestionVersionId,
+    );
+  const bookmarked =
+    question &&
+    (s.bookmarks[question.sourceQuestionVersionId] ??
+      review?.bookmarked ??
+      false);
   const answer = attempt?.savedAnswers.find(
     (a) => a.attemptQuestionId === question?.attemptQuestionId,
   );
@@ -49,7 +76,7 @@ export default function HandcraftedPractice({
     <AppShell className="min-h-dvh bg-white">
       {tutorial && <HandcraftedTutorial onClose={() => setTutorial(false)} />}
       <PracticeHeader
-        title="수제 제작 문제"
+        title="전문검수문제"
         subtitle="전문가 제작 · 검수 완료"
         backHref="/questionbank"
         onBack={attempt ? () => void s.leave() : undefined}
@@ -108,19 +135,12 @@ export default function HandcraftedPractice({
                 type="button"
                 disabled={s.disabled}
                 onClick={() =>
-                  void s.bookmark(
-                    question.attemptQuestionId,
-                    !s.bookmarks[question.sourceQuestionVersionId],
-                  )
+                  void s.bookmark(question.attemptQuestionId, !bookmarked)
                 }
-                aria-label={
-                  s.bookmarks[question.sourceQuestionVersionId]
-                    ? "북마크 해제"
-                    : "북마크"
-                }
+                aria-label={bookmarked ? "북마크 해제" : "북마크"}
                 className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-muted-foreground"
               >
-                {s.bookmarks[question.sourceQuestionVersionId] ? (
+                {bookmarked ? (
                   <BookmarkCheck className="h-5 w-5 text-primary" />
                 ) : (
                   <Bookmark className="h-5 w-5" />
@@ -198,14 +218,6 @@ export default function HandcraftedPractice({
                 );
               })}
             </div>
-            {grade && attempt.mode === "REVIEW" && (
-              <WeaknessReviewFeedback
-                key={question.attemptQuestionId}
-                source={s.source}
-                questionId={question.sourceQuestionVersionId}
-                disabled={s.disabled}
-              />
-            )}
             {grade && (
               <div className="mt-6 border-t border-gray-100 pt-6">
                 <p
@@ -234,6 +246,20 @@ export default function HandcraftedPractice({
                     </p>
                   ))}
                 </div>
+                {attempt.mode === "REVIEW" ? (
+                  <WeaknessReviewFeedback
+                    key={question.attemptQuestionId}
+                    source={s.source}
+                    questionId={question.sourceQuestionVersionId}
+                    disabled={s.disabled}
+                  />
+                ) : (
+                  review?.dueDate && (
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      다음 복습 {review.dueDate}
+                    </p>
+                  )
+                )}
               </div>
             )}
             {answer.finalized && !grade && (

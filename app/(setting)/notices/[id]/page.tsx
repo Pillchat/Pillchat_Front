@@ -1,37 +1,47 @@
 "use client";
-import { use, useEffect, useState } from "react";
-import { CustomHeader } from "@/components/molecules";
-import { fetchAPI } from "@/lib/client/fetch";
+import { use } from "react";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
+import { AppShell } from "@/components/molecules/AppShell";
+import { CustomHeader } from "@/components/molecules/CustomHeader";
+import { LoadingIndicator } from "@/components/atoms/LoadingIndicator";
+import { NoticeArticle } from "@/components/notices/NoticeArticle";
+import { useNoticeQuery } from "@/hooks/queries/useNoticesQuery";
 export default function NoticeDetail({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [notice, setNotice] = useState<{
-    title: string;
-    content: string;
-    publishedAt: string;
-  } | null>(null);
-  const [error, setError] = useState("");
-  useEffect(() => {
-    void fetchAPI(`/api/notices/${encodeURIComponent(id)}`, "GET")
-      .then(setNotice)
-      .catch((e) => setError(e.message));
-  }, [id]);
+  const query = useNoticeQuery(id);
   return (
-    <div className="min-h-dvh">
-      <CustomHeader title="공지사항" />
-      <article className="space-y-4 p-5">
-        {error && <p role="alert">{error}</p>}
-        {notice && (
-          <>
-            <h1 className="text-xl font-semibold">{notice.title}</h1>
-            <time>{notice.publishedAt?.slice(0, 10)}</time>
-            <p className="whitespace-pre-wrap">{notice.content}</p>
-          </>
-        )}
-      </article>
-    </div>
+    <AppShell bottomNav={false} bottomSpacing="none">
+      <CustomHeader title="공지사항" titleAlign="left" />
+      {query.isPending ? (
+        <LoadingIndicator label="공지 불러오는 중…" className="py-16" />
+      ) : query.isError ? (
+        <div role="alert" className="space-y-3 px-6 py-10 text-sm">
+          <p>{query.error.message}</p>
+          <button
+            type="button"
+            onClick={() => void query.refetch()}
+            className="min-h-11 text-primary underline"
+          >
+            다시 시도
+          </button>
+        </div>
+      ) : (
+        <NoticeArticle {...query.data} />
+      )}
+      <div className="mx-6 mt-2 border-t border-gray-200 py-3 md:mx-10">
+        <Link
+          href="/notices"
+          className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground"
+        >
+          <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+          목록으로
+        </Link>
+      </div>
+    </AppShell>
   );
 }

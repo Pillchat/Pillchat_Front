@@ -43,7 +43,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <TopRouteProgress />
         </Suspense>
-        <div className="container mx-auto w-full max-w-screen-sm md:max-w-none">
+        <div className="w-full">
           <Providers>
             <Suspense>{children}</Suspense>
           </Providers>

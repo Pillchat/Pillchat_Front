@@ -51,7 +51,7 @@ export function buildHandcraftedReviewCollection(
   return {
     id: `handcrafted:${record.id}`,
     source: "HANDCRAFTED",
-    title: `${subjects.join(" · ")} 수제 제작 문제 모음`,
+    title: `${subjects.join(" · ")} 전문검수문제 모음`,
     subject: subjects.join(" · "),
     totalQuestionCount: questions.length,
     updatedAt: new Date().toISOString(),

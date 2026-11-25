@@ -7,6 +7,7 @@ import StatsCard from "@/app/(questionbank)/questionbank/_components/StatsCard";
 import { ReviewExplanation } from "@/app/(questionbank)/questionbank/_components/ReviewPlayerFrame";
 import { useWeaknessQuery } from "@/hooks/queries/useWeaknessQuery";
 import { ConfusionToggle } from "./ConfusionToggle";
+import WeaknessReviewFeedback from "@/components/learning/WeaknessReviewFeedback";
 import type { QuizResultResponse } from "@/types/questionbank";
 
 export default function AiPracticeResult({
@@ -148,17 +149,27 @@ export default function AiPracticeResult({
                 <div className="px-4 pb-3 text-sm">
                   제출 답안: {answer.userAnswer || "미응답"}
                 </div>
-                <div className="px-4 pb-3">
-                  <ConfusionToggle
-                    source="AI"
-                    questionId={String(answer.questionId)}
-                  />
-                </div>
+                {result.type !== "REVIEW" && (
+                  <div className="px-4 pb-3">
+                    <ConfusionToggle
+                      source="AI"
+                      questionId={String(answer.questionId)}
+                    />
+                  </div>
+                )}
                 <ReviewExplanation
                   correct={answer.isCorrect}
                   correctAnswer={answer.correctAnswer}
                   explanation={answer.explanation}
                 />
+                {result.type === "REVIEW" && (
+                  <div className="px-4 pb-3">
+                    <WeaknessReviewFeedback
+                      source="AI"
+                      questionId={String(answer.questionId)}
+                    />
+                  </div>
+                )}
               </details>
             ))}
           {onlyWrong && wrongCount === 0 && (

@@ -187,7 +187,14 @@ function hookHarness(fetchAPI, source = "CBT") {
   };
   const { useLearningSession } = loader(
     { window },
-    { react: hooks, "@/lib/client/fetch": { fetchAPI, ApiError } },
+    {
+      react: hooks,
+      "@/lib/client/fetch": { fetchAPI, ApiError },
+      "@/hooks/useAuthIdentity": { useAuthIdentity: () => "test-user" },
+      "@tanstack/react-query": {
+        useQueryClient: () => ({ invalidateQueries() {} }),
+      },
+    },
   )("hooks/useLearningSession.ts");
   return {
     render() {
@@ -304,6 +311,9 @@ const componentLoad = (overrides = {}) =>
         },
       ),
       "@/components/learning/ConfusionToggle": { ConfusionToggle: () => null },
+      "@/hooks/queries/useWeaknessQuery": {
+        useWeaknessQuery: () => ({ data: { questions: [] } }),
+      },
       "next/dynamic": () => () => null,
       "next/link": ({ children, ...props }) =>
         React.createElement("a", props, children),
@@ -547,6 +557,50 @@ test("CBT defaults to two questions per page and keeps odd-question navigation o
   assert.ok(html.includes("PAGE_QUESTION_0"));
   assert.ok(html.includes("PAGE_QUESTION_1"));
   assert.equal(html.includes("PAGE_QUESTION_2"), false);
+});
+
+test("CBT offers only the most recently completed non-review retry", () => {
+  const View = componentLoad()(
+    "components/learning/practice/CbtPractice.tsx",
+  ).default;
+  const render = (history) =>
+    renderToStaticMarkup(
+      React.createElement(View, {
+        session: { ...baseSession, attempt: null, history },
+      }),
+    );
+  const ongoing = {
+    attemptId: "ongoing",
+    title: "진행 중인 세트",
+    state: "IN_PROGRESS",
+  };
+  const review = {
+    attemptId: "review",
+    title: "최신 약점 복습",
+    mode: "REVIEW",
+    state: "COMPLETED",
+    completedAt: "2026-11-22T12:00:00+09:00",
+  };
+  const html = render([
+    ongoing,
+    {
+      attemptId: "older",
+      title: "먼저 끝낸 세트",
+      state: "COMPLETED",
+      completedAt: "2026-11-22T09:00:00+09:00",
+    },
+    review,
+    {
+      attemptId: "newest",
+      title: "가장 최근 완료 세트",
+      state: "COMPLETED",
+      completedAt: "2026-11-22T01:00:00Z",
+    },
+  ]);
+  assert.match(html, /이전 세트 재도전/);
+  assert.match(html, /가장 최근 완료 세트/);
+  assert.doesNotMatch(html, /먼저 끝낸 세트|최신 약점 복습|진행 중인 세트/);
+  assert.doesNotMatch(render([ongoing, review]), /이전 세트 재도전/);
 });
 
 test("CBT start sends explicit problem count and retry uses only the selected previous attempt", async () => {

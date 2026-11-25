@@ -117,6 +117,31 @@ const overrides = {
     useLearningHistoryPosition: () => () => {},
   },
 };
+test("the full history list renders unnamed attempts and keeps their links", () => {
+  const { title, ...untitled } = entry;
+  const items = [
+    { ...untitled, title: null },
+    { ...untitled, attemptId: "ai-untitled", source: "AI", state: "IN_PROGRESS" },
+    { ...untitled, attemptId: "cbt-untitled", source: "CBT", title: " " },
+  ];
+  const List = loader(
+    {},
+    {
+      ...overrides,
+      "@/hooks/queries/useLearningHistory": {
+        useLearningHistory: () => ({ data: { pages: [{ items }] } }),
+      },
+    },
+  )("components/learning/LearningHistoryPage.tsx").default;
+
+  const html = renderToStaticMarkup(React.createElement(List, { view: "all" }));
+  for (const source of ["전문검수문제", "AI 생성 문제", "CBT"]) {
+    assert.match(html, new RegExp(`<h3[^>]*>${source}</h3>`));
+    assert.doesNotMatch(html, new RegExp(`<span>${source}</span>`));
+  }
+  assert.match(html, /\/learning\/history\/HANDCRAFTED\/9007199254740997/);
+  assert.match(html, /\/learning\/ai\?session=ai-untitled/);
+});
 test("history metrics distinguish progress from accuracy and show unknown accuracy without a bar", () => {
   const Card = loader(
     {},
@@ -136,11 +161,21 @@ test("history metrics distinguish progress from accuracy and show unknown accura
   assert.doesNotMatch(ongoing, /<progress/);
 });
 test("automatic source-only titles omit the duplicate source description while subject titles retain it", () => {
-  const label = loader()("lib/learning/attemptLabels.ts").learningSourceLabel;
+  const { learningSourceLabel: label, learningDisplayTitle: title } =
+    loader()("lib/learning/attemptLabels.ts");
   assert.equal(label("AI", "AI 문제 풀이"), null);
   assert.equal(label("AI", "AI 생성 문제"), null);
   assert.equal(label("AI", "2026.11.05 약리학 - 1"), "AI 생성 문제");
-  assert.equal(label("HANDCRAFTED", "약리학 수제 문제"), "수제 제작 문제");
+  assert.equal(label("HANDCRAFTED", "약리학 전문검수문제"), "전문검수문제");
+  assert.equal(label("HANDCRAFTED", "수제 제작 문제"), null);
+  assert.equal(
+    title("HANDCRAFTED", "약리학 수제 제작 문제 모음"),
+    "약리학 전문검수문제 모음",
+  );
+  assert.equal(
+    title("AI", "수제 문제에 대한 질문"),
+    "수제 문제에 대한 질문",
+  );
   assert.equal(label("CBT", "약사고시 1교시 모의고사 1회"), "CBT");
 });
 test("list filters are URL-backed and its detail links carry the same origin", () => {
@@ -232,7 +267,7 @@ test("detail renders selected answers, case text, individual and full explanatio
       "@/hooks/queries/useLearningHistory": {
         useLearningHistoryDetail: () => ({
           data: {
-            attempt: entry,
+            attempt: { ...entry, title: null },
             questions: [
               {
                 questionId: "question-1",
@@ -262,6 +297,7 @@ test("detail renders selected answers, case text, individual and full explanatio
     React.createElement(View, { params: Promise.resolve({}) }),
   );
   for (const text of [
+    "전문검수문제",
     "환자 사례 본문",
     "선지별 근거",
     "전체 근거",
