@@ -87,8 +87,8 @@ describe("홈 미리보기 문제", () => {
     preview().contains("3문제 중 2문제를 맞혔어요.").should("be.visible");
     cy.contains("h2", "오늘의 학습 현황").should("exist");
     press("추가문제풀기");
-    cy.location("pathname").should("eq", "/questionbank/handcrafted");
-    cy.contains("header", "전문검수문제").should("be.visible");
+    cy.location("pathname").should("eq", "/membership");
+    cy.contains("header", "멤버십 관리").should("be.visible");
     cy.go("back");
     preview()
       .contains("오늘의 미리보기 3문제를 모두 풀었어요.")
@@ -105,6 +105,22 @@ describe("홈 미리보기 문제", () => {
     press("추천 미리보기 3문제 풀기");
     preview().contains("약물치료학 · 위장관").should("be.visible");
     preview().contains("1 / 3").should("be.visible");
+  });
+
+  it("마이페이지에서 이용권과 결제 금액을 확인한다", () => {
+    cy.viewport(390, 844);
+    cy.visit("/mypage", { onBeforeLoad: prepareStorage });
+    cy.contains("button", "멤버십 관리").click();
+    cy.location("pathname").should("eq", "/membership");
+
+    cy.contains("button", "구매하기").should("be.disabled");
+    cy.contains("label", "15일 · ₩2,900").click();
+    cy.get("footer output").should("have.text", "₩2,900");
+    cy.contains("label", "30일 · ₩3,900").click();
+    cy.get("footer output").should("have.text", "₩3,900");
+    cy.contains("button", "구매하기").click();
+    cy.contains("이용권 구매 기능을 준비 중이에요.").should("be.visible");
+    expectNoHorizontalOverflow();
   });
 
   it("320px 홈에서 추천 세트를 열고 양쪽 단원 문제를 풀 수 있다", () => {
