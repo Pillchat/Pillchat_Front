@@ -5,6 +5,14 @@ declare global {
     message?: string;
   };
 
+  type NachocodePurchaseResult = {
+    purchaseId?: number;
+    status: {
+      success: boolean;
+      error?: { code?: string; message?: string };
+    };
+  };
+
   type NachocodeKakaoLoginData = {
     accessToken?: string;
     accessTokenExpiresAt?: Date;
@@ -26,9 +34,19 @@ declare global {
   interface Window {
     Kakao: any;
     Nachocode?: {
-      initAsync: (apiKey: string) => Promise<void>;
+      initAsync: (
+        apiKey: string,
+        options?: { sandbox?: boolean },
+      ) => Promise<void>;
       env: {
         isApp: () => boolean;
+      };
+      iap?: {
+        purchase: (
+          productKey: string,
+          userId: string,
+          callback: (result: NachocodePurchaseResult) => void,
+        ) => Promise<void>;
       };
       browser?: {
         openLink: (

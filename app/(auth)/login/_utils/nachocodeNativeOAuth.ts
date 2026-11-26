@@ -1,4 +1,5 @@
 import type { OAuthProvider } from "./oauthSignup";
+import { nachocodeSandbox } from "@/lib/client/nativeApp";
 
 const NACHOCODE_API_KEY = process.env.NEXT_PUBLIC_NACHOCODE_API_KEY || "";
 
@@ -11,7 +12,9 @@ export const isNachocodeApp = async () => {
     throw new Error("Nachocode API 키가 설정되지 않았습니다.");
   }
 
-  await window.Nachocode.initAsync(NACHOCODE_API_KEY);
+  await window.Nachocode.initAsync(NACHOCODE_API_KEY, {
+    sandbox: nachocodeSandbox,
+  });
 
   return window.Nachocode.env.isApp();
 };

@@ -114,13 +114,91 @@ describe("홈 미리보기 문제", () => {
     cy.location("pathname").should("eq", "/membership");
 
     cy.contains("button", "구매하기").should("be.disabled");
+    cy.contains("label", "필챗 패스 15일 이용권").should("be.visible");
+    cy.contains("label", "필챗 패스 30일 이용권").should("be.visible");
     cy.contains("label", "15일 · ₩2,900").click();
     cy.get("footer output").should("have.text", "₩2,900");
     cy.contains("label", "30일 · ₩3,900").click();
     cy.get("footer output").should("have.text", "₩3,900");
     cy.contains("button", "구매하기").click();
-    cy.contains("이용권 구매 기능을 준비 중이에요.").should("be.visible");
+    cy.contains("이용권은 필챗 앱에서 구매할 수 있어요.").should("be.visible");
     expectNoHorizontalOverflow();
+  });
+
+  it("네이티브 결제에 상품 키를 전달하고 해당 거래의 서버 확인을 기다린다", () => {
+    cy.viewport(390, 844);
+    let confirmed = false;
+    cy.intercept("GET", "**/api/subscription/my*", (request) => {
+      request.reply({
+        planName: confirmed ? "필챗 패스 15일 이용권" : "Free",
+        passDays: confirmed ? 15 : null,
+        endDate: confirmed ? "2026-12-05T23:55:00" : null,
+        purchaseUserId: "123",
+        purchaseEnvironment: "production",
+        storeProducts: { 15: "NP-TEST-15", 30: "NP-TEST-30" },
+        purchaseStatus:
+          confirmed && request.query.purchaseId === "321"
+            ? "CONFIRMED"
+            : "PENDING",
+      });
+    }).as("membership");
+    const purchase = cy
+      .stub()
+      .callsFake(
+        (
+          productKey: string,
+          _userId: string,
+          callback: (result: NachocodePurchaseResult) => void,
+        ) => {
+          callback(
+            productKey === "NP-TEST-30"
+              ? {
+                  status: { success: false, error: { code: "ERR-NNA-ILA-22" } },
+                }
+              : { purchaseId: 321, status: { success: true } },
+          );
+          return Promise.resolve();
+        },
+      );
+    cy.visit("/membership", {
+      onBeforeLoad(win) {
+        const payload = win.btoa(
+          JSON.stringify({ sub: "123", exp: 2_000_000_000 }),
+        );
+        win.localStorage.setItem("access_token", `e30.${payload}.test`);
+        win.Nachocode = {
+          env: { isApp: () => true },
+          initAsync: async () => {},
+          iap: { purchase },
+          permission: {
+            checkPermission: (_options, callback) => callback(false),
+          },
+          push: {
+            registerPushToken: async () => ({ status: "success" }),
+            deletePushToken: async () => ({ status: "success" }),
+            sendLocalPush: () => {},
+            cancelLocalPush: () => {},
+          },
+        };
+      },
+    });
+    cy.wait("@membership");
+    cy.contains("label", "필챗 패스 30일 이용권").click();
+    cy.contains("button", "구매하기").click();
+    cy.contains("결제가 취소됐어요.").should("be.visible");
+    cy.wrap(purchase).should("have.been.calledWith", "NP-TEST-30", "123");
+
+    cy.contains("label", "필챗 패스 15일 이용권").click();
+    cy.contains("button", "구매하기").click();
+    cy.wrap(purchase).should("have.been.calledWith", "NP-TEST-15", "123");
+    cy.contains("구매를 확인 중이에요.").should("be.visible");
+    cy.contains("button", "구매하기").should("be.disabled");
+    cy.then(() => {
+      confirmed = true;
+    });
+    cy.contains("button", "구매 상태 다시 확인").click();
+    cy.contains("구매가 완료됐어요.").should("be.visible");
+    cy.contains("필챗 패스 15일 이용권 이용 중").should("be.visible");
   });
 
   it("320px 홈에서 추천 세트를 열고 양쪽 단원 문제를 풀 수 있다", () => {
