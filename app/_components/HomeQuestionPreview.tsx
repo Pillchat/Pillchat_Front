@@ -340,7 +340,9 @@ function QuestionPreview({ userId }: { userId: string | null }) {
               className="mt-4 w-full"
               onClick={() => {
                 if (remainingCount) save({ ...progress, attempt: null });
-                router.push("/questionbank/handcrafted");
+                router.push(
+                  remainingCount ? "/questionbank/handcrafted" : "/membership",
+                );
               }}
             >
               추가문제풀기
