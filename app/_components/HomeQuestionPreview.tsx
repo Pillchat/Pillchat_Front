@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthIdentity } from "@/hooks/useAuthIdentity";
+import { readMembership } from "@/lib/client/membership";
 import {
   getPreviewQuestion,
   getPreviewQuestionIds,
@@ -338,10 +339,17 @@ function QuestionPreview({ userId }: { userId: string | null }) {
             <Button
               type="button"
               className="mt-4 w-full"
-              onClick={() => {
-                if (remainingCount) save({ ...progress, attempt: null });
+              onClick={async () => {
+                if (remainingCount) {
+                  save({ ...progress, attempt: null });
+                  router.push("/questionbank/handcrafted");
+                  return;
+                }
+                const membership = await readMembership().catch(() => null);
                 router.push(
-                  remainingCount ? "/questionbank/handcrafted" : "/membership",
+                  membership?.passDays
+                    ? "/questionbank/handcrafted"
+                    : "/membership",
                 );
               }}
             >

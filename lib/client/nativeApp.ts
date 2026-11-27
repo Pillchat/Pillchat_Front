@@ -4,6 +4,8 @@ export const NATIVE_READY = "pillchat:native-ready";
 export const APP_RESUME = "pillchat:resume";
 export const APP_BACKGROUND = "pillchat:background";
 export const APP_KEYBOARD = "pillchat:keyboard";
+export const nachocodeSandbox =
+  process.env.NEXT_PUBLIC_NACHOCODE_SANDBOX === "true";
 
 const initialized = new WeakMap<NativeSdk, Promise<NativeSdk | null>>();
 const connected = new WeakSet<NativeSdk>();
@@ -25,7 +27,7 @@ export async function initializeNativeApp() {
   if (!task) {
     task = (async () => {
       const key = process.env.NEXT_PUBLIC_NACHOCODE_API_KEY;
-      if (key) await sdk.initAsync(key);
+      if (key) await sdk.initAsync(key, { sandbox: nachocodeSandbox });
       return getNativeApp();
     })().catch(() => {
       initialized.delete(sdk);

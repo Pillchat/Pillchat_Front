@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useNotifications } from "./useNotifications";
 import { NotificationType } from "@/types/notification";
+import { nachocodeSandbox } from "@/lib/client/nativeApp";
 
 const NACHOCODE_API_KEY = process.env.NEXT_PUBLIC_NACHOCODE_API_KEY || "";
 
@@ -16,7 +17,9 @@ export const useNachocodePush = () => {
       if (!isAvailable()) return;
 
       try {
-        await window.Nachocode!.initAsync(NACHOCODE_API_KEY);
+        await window.Nachocode!.initAsync(NACHOCODE_API_KEY, {
+          sandbox: nachocodeSandbox,
+        });
 
         if (!window.Nachocode!.env.isApp()) return;
 
